@@ -49,7 +49,7 @@ if (empty($_SESSION['userid'])){
 <html>
 
 <head>
-  <title>WebLoot! Start Page</title>
+  <title>Joey! Start Page</title>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link href="style.css" rel="stylesheet" type="text/css">
 </head>
@@ -59,10 +59,10 @@ if (empty($_SESSION['userid'])){
 <?php
 echo "<div style=\"float: right\"><a href=\"logout.php\">Logout</a></div><p><p>";
 ?>
-<a href="webloot.xpi">Download the extension</a>
-<a href="Generic-midp2-en_US-webloot.jar">Download the midlet</a>
+<a href="joey.xpi">Download the extension</a>
+<a href="Generic-midp2-en_US-joey.jar">Download the midlet</a>
 <center>
-<h1><span>WebLoot!</span></h1>
+<h1><span>Joey!</span></h1>
 </center>
 
 <div id="leftcol">
