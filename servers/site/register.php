@@ -78,7 +78,7 @@ if(isset($_POST['Submit'])){
   
     if (@mysql_query ($query))
     {
-      header("location:beta.php");
+      header("location:index.php");
       exit;
     }
   }

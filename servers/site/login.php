@@ -64,7 +64,7 @@ if(isset($_POST['submit'])){
     $_SESSION['userid'] = $fetched['id'];
     
     //goto next page
-    header("location:beta.php");
+    header("location:index.php");
     exit;
   }
   else
