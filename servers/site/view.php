@@ -1,4 +1,5 @@
-  <!-- ***** BEGIN LICENSE BLOCK *****
+<?php
+  /***** BEGIN LICENSE BLOCK *****
    - Version: MPL 1.1/GPL 2.0/LGPL 2.1
    -
    - The contents of this file are subject to the Mozilla Public License Version
@@ -32,10 +33,8 @@
    - the provisions above, a recipient may use your version of this file under
    - the terms of any one of the MPL, the GPL or the LGPL.
    -
-   - ***** END LICENSE BLOCK ***** -->
+   - ***** END LICENSE BLOCK *****/
  
- <?php
-
 session_start();
 
 $userid = $_SESSION['userid'];
@@ -46,8 +45,8 @@ if (empty($userid)){
 }
 
 
-    $id = $_GET['id'];
-    $doom = $_GET['doom'];
+    $id = mysql_real_escape_string($_GET['id']);
+    $doom = mysql_real_escape_string($_GET['doom']);
 
 //  $type = $_GET['type']; //ddd
 
@@ -60,7 +59,7 @@ if (empty($userid)){
       if(isset($doom))
       {
         
-        $sql = "DELETE from upload where id='$id' and owner='$userid'";
+        $sql = "DELETE from upload where id='$id' and owner='".mysql_real_escape_string($userid)."'";
         
         $result = mysql_query("$sql");
         
@@ -90,9 +89,9 @@ if (empty($userid)){
         $use_thumb = false; // fix!
         
         if ($use_thumb)
-          $sql = "SELECT type, thumbnail FROM upload WHERE id='$id' and owner='$userid'";
+          $sql = "SELECT type, thumbnail FROM upload WHERE id='$id' and owner='".mysql_real_escape_string($userid)."'";
         else
-          $sql = "SELECT type, content FROM upload WHERE id='$id' and owner='$userid'";
+          $sql = "SELECT type, content FROM upload WHERE id='$id' and owner='".mysql_real_escape_string($userid)."'";
         
         // the result of the query
         $result = mysql_query("$sql") or die("Invalid query: " . mysql_error());

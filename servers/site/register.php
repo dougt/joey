@@ -1,4 +1,5 @@
-  <!-- ***** BEGIN LICENSE BLOCK *****
+<?php
+  /***** BEGIN LICENSE BLOCK *****
    - Version: MPL 1.1/GPL 2.0/LGPL 2.1
    -
    - The contents of this file are subject to the Mozilla Public License Version
@@ -32,10 +33,8 @@
    - the provisions above, a recipient may use your version of this file under
    - the terms of any one of the MPL, the GPL or the LGPL.
    -
-   - ***** END LICENSE BLOCK ***** -->
+   - ***** END LICENSE BLOCK *****/
  
- <?php 
-
 if(isset($_POST['Submit'])){
 
   //NEED TO CHECK IF FIELDS ARE FILLED IN
@@ -48,8 +47,8 @@ if(isset($_POST['Submit'])){
     echo "password";
     exit();
   }
-  $name=$_POST['name'];
-  $email=$_POST['email'];
+  $name=mysql_real_escape_string($_POST['name']);
+  $email=mysql_real_escape_string($_POST['email']);
   
   $pw1=$_POST['pw1'];
   $pw2=$_POST['pw2'];
@@ -73,8 +72,9 @@ if(isset($_POST['Submit'])){
   }
   else
   {
+      $pw1 = sha1($pw1);
     //if username does not exist insert user details
-    $query=( "INSERT INTO user (uname, pw, email, date_joined, ip, level) VALUES ('$name',sha1('$pw1'), '$email', NOW(), '$ip', 'Normal')");
+    $query=( "INSERT INTO user (uname, pw, email, date_joined, ip, level) VALUES ('$name','$pw1', '$email', NOW(), '$ip', 'Normal')");
   
     if (@mysql_query ($query))
     {
