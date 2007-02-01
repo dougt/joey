@@ -1,0 +1,21 @@
+
+
+div#menu-box {
+
+    width:200px;
+    float:left;
+}
+
+div#header {
+    border-bottom:1px solid #000;
+}
+
+div#footer{
+    border-top:1px solid #000;
+    clear:both;
+}
+
+div.clear{
+
+clear:both;
+    }

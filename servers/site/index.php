@@ -1,115 +1,77 @@
-  <!-- ***** BEGIN LICENSE BLOCK *****
-   - Version: MPL 1.1/GPL 2.0/LGPL 2.1
-   -
-   - The contents of this file are subject to the Mozilla Public License Version
-   - 1.1 (the "License"); you may not use this file except in compliance with
-   - the License. You may obtain a copy of the License at
-   - http://www.mozilla.org/MPL/
-   -
-   - Software distributed under the License is distributed on an "AS IS" basis,
-   - WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-   - for the specific language governing rights and limitations under the
-   - License.
-   -
-   - The Original Code is Joey Mozilla Project.
-   -
-   - The Initial Developer of the Original Code is
-   - Doug Turner <dougt@meer.net>.
-   - Portions created by the Initial Developer are Copyright (C) 2007
-   - the Initial Developer. All Rights Reserved.
-   -
-   - Contributor(s):
-   -
-   - Alternatively, the contents of this file may be used under the terms of
-   - either the GNU General Public License Version 2 or later (the "GPL"), or
-   - the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
-   - in which case the provisions of the GPL or the LGPL are applicable instead
-   - of those above. If you wish to allow use of your version of this file only
-   - under the terms of either the GPL or the LGPL, and not to allow others to
-   - use your version of this file under the terms of the MPL, indicate your
-   - decision by deleting the provisions above and replace them with the notice
-   - and other provisions required by the LGPL or the GPL. If you do not delete
-   - the provisions above, a recipient may use your version of this file under
-   - the terms of any one of the MPL, the GPL or the LGPL.
-   -
-   - ***** END LICENSE BLOCK ***** -->
-   
 <?php
+/* SVN FILE: $Id: index.php 3085 2006-06-14 18:02:37Z phpnut $ */
+/**
+ * Requests collector.
+ *
+ *  This file collects requests if:
+ *	- no mod_rewrite is avilable or .htaccess files are not supported
+ *	-/public is not set as a web root.
+ *
+ * PHP versions 4 and 5
+ *
+ * CakePHP : Rapid Development Framework <http://www.cakephp.org/>
+ * Copyright (c)	2006, Cake Software Foundation, Inc.
+ *								1785 E. Sahara Avenue, Suite 490-204
+ *								Las Vegas, Nevada 89104
+ *
+ * Licensed under The MIT License
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @filesource
+ * @copyright		Copyright (c) 2006, Cake Software Foundation, Inc.
+ * @link				http://www.cakefoundation.org/projects/info/cakephp CakePHP Project
+ * @package			cake
+ * @since			CakePHP v 0.2.9
+ * @version			$Revision: 3085 $
+ * @modifiedby		$LastChangedBy: phpnut $
+ * @lastmodified	$Date: 2006-06-14 13:02:37 -0500 (Wed, 14 Jun 2006) $
+ * @license			http://www.opensource.org/licenses/mit-license.php The MIT License
+ */
+/**
+ *  Get Cake's root directory
+ */
+	define('APP_DIR', 'app');
+	define('DS', DIRECTORY_SEPARATOR);
+	define('ROOT', dirname(__FILE__));
+	define('WEBROOT_DIR', 'webroot');
+	define('WWW_ROOT', ROOT . DS . APP_DIR . DS . WEBROOT_DIR . DS);
+/**
+ * This only needs to be changed if the cake installed libs are located
+ * outside of the distributed directory structure.
+ */
+	if (!defined('CAKE_CORE_INCLUDE_PATH')) {
+		//define ('CAKE_CORE_INCLUDE_PATH', FULL PATH TO DIRECTORY WHERE CAKE CORE IS INSTALLED DO NOT ADD A TRAILING DIRECTORY SEPARATOR';
+		define('CAKE_CORE_INCLUDE_PATH', ROOT);
+	}
+	if (function_exists('ini_set')) {
+		ini_set('include_path', ini_get('include_path') . PATH_SEPARATOR . CAKE_CORE_INCLUDE_PATH . PATH_SEPARATOR . ROOT . DS . APP_DIR . DS);
+		define('APP_PATH', null);
+		define('CORE_PATH', null);
+	} else {
+		define('APP_PATH', ROOT . DS . APP_DIR . DS);
+		define('CORE_PATH', CAKE_CORE_INCLUDE_PATH . DS);
+	}
+	require CORE_PATH . 'cake' . DS . 'basics.php';
+	require APP_PATH . 'config' . DS . 'core.php';
+	require CORE_PATH . 'cake' . DS . 'config' . DS . 'paths.php';
+	$bootstrap=true;
+	$uri      =setUri();
+/**
+ * As mod_rewrite (or .htaccess files) is not working, we need to take care
+ * of what would normally be rewritten, i.e. the static files in app/webroot/
+ */
+	if ($uri === '/' || $uri === '/index.php') {
+		$_GET['url'] = '/';
+		require APP_DIR . DS . WEBROOT_DIR . DS . 'index.php';
+	} else {
+		$elements=explode('/index.php', $uri);
 
-session_start();
-
-if (empty($_SESSION['userid'])){
-  header("location:login.php");
-  exit;
-}
-
+		if (!empty($elements[1])) {
+			$path = $elements[1];
+		} else {
+			$path = '/';
+		}
+		$_GET['url']=$path;
+		require APP_DIR . DS . WEBROOT_DIR . DS . 'index.php';
+	}
 ?>
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<html>
-
-<head>
-  <title>Joey! Start Page</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
-  <link href="style.css" rel="stylesheet" type="text/css">
-</head>
-<body>
-
-
-<?php
-echo "<div style=\"float: right\"><a href=\"logout.php\">Logout</a></div><p><p>";
-?>
-<a href="joey.xpi">Download the extension</a>
-<a href="Generic-midp2-en_US-joey.jar">Download the midlet</a>
-<center>
-<h1><span>Joey!</span></h1>
-</center>
-
-<div id="leftcol">
-
-<?php
-
-include 'config.php';
-$ownerid = $_SESSION['userid']; 
-$query = "SELECT id, name, uri, title, date_created, type, size FROM upload where owner='$ownerid'";
-$result = mysql_query($query) or die('Error, query failed');
-
-if(mysql_num_rows($result) == 0)
-{
-  echo "Database is empty <br>";
-}
-else
-{
-  while($fetched= mysql_fetch_array($result))
-  {
-      $name = $fetched['name'];
-      echo "<div style=\"border: solid; border-color:black; background: grey; font-family:verdana;\">";
-      echo "<b>Text Clipping " . $fetched[id] . "</b>";
-      echo "<p> <b>Name</b>: " . $name;
-      echo "<br><b>Type</b>: " . $fetched['type'];
-      echo "<br><b>Date</b>: " . $fetched['date_created'];
-      echo "<br><b>URI</b>: " .  base64_decode($fetched['uri']);
-      echo "<br><b>Title</b>: " .  base64_decode($fetched['title']);
-      echo "<br><b>Size</b>: " . $fetched['size'];
-
-      echo "<a href=view.php?id=";
-      echo $fetched[id];
-      echo ">";
-      echo "<p>Click to view";
-      echo "</a>";
-
-      echo "<a href=view.php?doom=1&id=";
-      echo $fetched[id];
-      echo ">";
-      echo "<p>Click to delete";
-      echo "</a>";
-
-      echo "</div>";
-    echo "<br>";
-  }
-}
-?>
-
-</div>
-
-
