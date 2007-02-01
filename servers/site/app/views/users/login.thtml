@@ -1,4 +1,4 @@
-<h1>Login</h1>
+<h1>Joey! Login</h1>
 
 <?=$form->create('User', array('action' => 'login')); ?>
 
