@@ -35,7 +35,6 @@
    - ***** END LICENSE BLOCK ***** -->
  
 // SAMPLE Configure File.
-
 <?php 
 $dbname="joey_db";
 $host="localhost";
