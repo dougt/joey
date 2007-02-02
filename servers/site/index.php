@@ -27,6 +27,7 @@
  * @lastmodified	$Date: 2006-06-14 13:02:37 -0500 (Wed, 14 Jun 2006) $
  * @license			http://www.opensource.org/licenses/mit-license.php The MIT License
  */
+
 /**
  *  Get Cake's root directory
  */
