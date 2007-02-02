@@ -1,7 +1,7 @@
 <?php
 /* SVN FILE: $Id: index.php 2958 2006-05-26 05:29:17Z phpnut $ */
 /**
- * PHP versions 4 and 5
+ * PHP versions 4 and 5 
  *
  * CakePHP :  Rapid Development Framework <http://www.cakephp.org/>
  * Copyright (c)	2006, Cake Software Foundation, Inc.
