@@ -1,9 +1,0 @@
-<ul>
-    <?php
-    if (count($results) > 0) {
-        foreach ($results as $result) {
-            echo '<li>'.$result.'</li>';
-        }
-    }
-    ?>
-</ul>
