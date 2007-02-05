@@ -44,7 +44,7 @@
   //connect to db
   include('config.php');
 
-  $query = "SELECT id, owner, title, type, content, thumbnail FROM upload where type='microsummary/xml'";
+  $query = "SELECT id, owner, title, type, content, thumbnail FROM uploads where type='microsummary/xml'";
   $result = mysql_query($query) or die('Error, query failed');
 
   if(mysql_num_rows($result) == 0)
