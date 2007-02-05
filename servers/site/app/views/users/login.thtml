@@ -1,0 +1,25 @@
+<h1>Joey! Login</h1>
+
+<form action="<?=htmlentities($html->url()); ?>" method="post" />
+
+<?php
+if (isset($error) && $error) {
+    echo '<div id="error-message">Could not authenticate.  Please make sure your email address and password are correct and try again.</div>';
+}
+?>
+
+<div>
+<label for="UserEmail">Email Address:</label>
+<?=$html->input('User/email')?>
+</div>
+
+<div>
+<label for="UserPassword">Password:</label>
+<?=$html->password('User/password')?>
+</div>
+
+<div class="button-box">
+    <?=$html->submit(); ?>
+</div>
+
+</form>
