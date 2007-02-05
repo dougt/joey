@@ -1,3 +1,4 @@
+<?
   <!-- ***** BEGIN LICENSE BLOCK *****
    - Version: MPL 1.1/GPL 2.0/LGPL 2.1
    -
@@ -34,8 +35,6 @@
    -
    - ***** END LICENSE BLOCK ***** -->
 
-
-<?
 session_start();
 
 require_once 'XML/RPC/Server.php';
