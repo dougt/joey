@@ -1,12 +1,17 @@
-<h1>Joey! Login</h1>
-
 <form action="<?=htmlentities($html->url()); ?>" method="post" />
 
 <?php
 if (isset($error) && $error) {
     echo '<div id="error-message">Could not authenticate.  Please make sure your email address and password are correct and try again.</div>';
 }
+
+if (! $this->controller->Session->check('User')) {
+
 ?>
+
+<div>
+<label for="LogMeIn">Login</label>
+</div>
 
 <div>
 <label for="UserEmail">Email Address:</label>
@@ -21,5 +26,14 @@ if (isset($error) && $error) {
 <div class="button-box">
     <?=$html->submit(); ?>
 </div>
+
+
+<div>
+<?=$html->link('Register', 'register')?>
+</div>
+
+<?php
+}
+?>
 
 </form>

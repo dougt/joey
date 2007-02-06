@@ -39,24 +39,24 @@
 
 <div id="header">
 
-    <h1>Joey</h1>
+    <h1>Joey!</h1>
     <p>
     <?php
 
-        if ($this->controller->Session->check('User')) {
+        if ($this->controller->Session->check('User'))  {
             $user = $this->controller->Session->read('User');
-            echo $html->link($user['email'], '/users/edit').' ('.$html->link('Logout', '/users/logout').')';
+            echo $user['email'].' ('.$html->link('Logout', '/users/logout').')';
         } else {
-            echo $html->link('Login', '/users/login');
+ //           echo $html->link('Register', '/users/register');
         }
-
+	
     ?>
     </p>
 
 </div>
 
 <?php
-    echo $this->renderElement('navbar');
+/*    echo $this->renderElement('navbar'); */
 ?>
 
 <div id="container">

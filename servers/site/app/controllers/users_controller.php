@@ -40,7 +40,7 @@ class UsersController extends AppController
 {
     var $name = 'Users';
     var $helpers = array('Form','Html');
-    var $scaffold;   
+    // var $scaffold;   
 
     function login() {
 
@@ -54,9 +54,18 @@ class UsersController extends AppController
             if(!empty($someone['User']['id'])) {
                 // @todo bind with ldap and check the password!
 
+                if ($someone['User']['password'] !== md5($this->data['User']['password']))
+		{
+	                echo md5($this->data['User']['password']);
+			
+			// This is a generalized, non-specific error
+        	        $this->set('error', true);
+			return;
+		}
+
                 $this->Session->write('User', $someone['User']);
 
-                $this->redirect('/');
+                $this->redirect('/uploads');
             } else {
 
                 // This is a generalized, non-specific error
@@ -71,6 +80,28 @@ class UsersController extends AppController
         $this->Session->delete('User');
 
         $this->redirect('/');
+    }
+
+    function register() {
+        //Don't show the error message if no data has been submitted.
+        $this->set('error', false);
+        
+        // If a user has submitted form data:
+        if (!empty($this->data)) {
+		
+		$someone = $this->User->findByEmail($this->data['User']['email']);
+		if(!empty($someone['User']['id'])) {
+			$this->set('error', true);
+			return;
+		}
+        	// okay the user is fine. add them
+		$this->data['User']['password'] = md5($this->data['User']['password']);
+        	$this->User->save($this->data);
+
+		$someone = $this->User->findByEmail($this->data['User']['email']);
+		$this->Session->write('User', $someone['User']);
+        	$this->redirect('/uploads');
+        }
     }
 }
 ?>
