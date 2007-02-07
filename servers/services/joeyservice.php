@@ -1,39 +1,4 @@
-<?
-  <!-- ***** BEGIN LICENSE BLOCK *****
-   - Version: MPL 1.1/GPL 2.0/LGPL 2.1
-   -
-   - The contents of this file are subject to the Mozilla Public License Version
-   - 1.1 (the "License"); you may not use this file except in compliance with
-   - the License. You may obtain a copy of the License at
-   - http://www.mozilla.org/MPL/
-   -
-   - Software distributed under the License is distributed on an "AS IS" basis,
-   - WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-   - for the specific language governing rights and limitations under the
-   - License.
-   -
-   - The Original Code is Joey Mozilla Project.
-   -
-   - The Initial Developer of the Original Code is
-   - Doug Turner <dougt@meer.net>.
-   - Portions created by the Initial Developer are Copyright (C) 2007
-   - the Initial Developer. All Rights Reserved.
-   -
-   - Contributor(s):
-   -
-   - Alternatively, the contents of this file may be used under the terms of
-   - either the GNU General Public License Version 2 or later (the "GPL"), or
-   - the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
-   - in which case the provisions of the GPL or the LGPL are applicable instead
-   - of those above. If you wish to allow use of your version of this file only
-   - under the terms of either the GPL or the LGPL, and not to allow others to
-   - use your version of this file under the terms of the MPL, indicate your
-   - decision by deleting the provisions above and replace them with the notice
-   - and other provisions required by the LGPL or the GPL. If you do not delete
-   - the provisions above, a recipient may use your version of this file under
-   - the terms of any one of the MPL, the GPL or the LGPL.
-   -
-   - ***** END LICENSE BLOCK ***** -->
+<?php
 
 session_start();
 
@@ -43,9 +8,12 @@ function ffm_authenticate($params) {
   
     $val = $params->getParam(0);
     $username = $val->getval();
+    $username = mysql_real_escape_string($username);
+    $username = strtolower($username);
 
     $val = $params->getParam(1);
     $password = $val->getval();
+    $password = mysql_real_escape_string($password);
 
     $password=sha1($password);
   
@@ -54,7 +22,7 @@ function ffm_authenticate($params) {
 
     $userid = -1;
 
-    $query="select id from user where uname='$username' and pw='$password' ";
+    $query="select id from users where email='$username' and password='$password' ";
     $result=mysql_query($query);
     if($fetched = mysql_fetch_array($result))
     {
@@ -92,29 +60,37 @@ function ffm_upload($params) {
     {
       return new XML_RPC_Response('', -1, "Not Authenticated");
     }
+
     $userid = $_SESSION['userid'];
 
     $val = $params->getParam(0);
     $name = $val->getval();
+    $name = mysql_real_escape_string($name);
 
     $val = $params->getParam(1);
     $title = $val->getval();
+    $title = mysql_real_escape_string($title);
 
     $val = $params->getParam(2);
     $uri = $val->getval();
+    $uri = mysql_real_escape_string($uri);
 
     $val = $params->getParam(3);
     $data = $val->getval();
+    $data = mysql_real_escape_string($data);
 
     $val = $params->getParam(4);
     $size = $val->getval();
+    $size = mysql_real_escape_string($size);
 
     $val = $params->getParam(5);
     $type = $val->getval();
+    $type = mysql_real_escape_string($type);
 
     // optionally??
     $val = $params->getParam(6);
     $uuid = $val->getval();
+    $uuid = mysql_real_escape_string($uuid);
 
     //connect to db
     include('config.php');
@@ -122,7 +98,7 @@ function ffm_upload($params) {
 
     if (!empty($uuid))
     {
-	$query = "DELETE FROM upload WHERE " .
+	$query = "DELETE FROM uploads WHERE " .
 		 "owner='$userid' AND uuid='$uuid' AND uri='$uri'";
 	mysql_query($query);
     }
@@ -131,7 +107,7 @@ function ffm_upload($params) {
 	$uuid = "";
     }
 
-    $query = "INSERT INTO upload " .
+    $query = "INSERT INTO uploads " .
              "(owner, name, type, uuid, uri, title, size, content, thumbnail, date_created, shared ) ".
              "VALUES " .
              "('$userid', '$name', '$type', '$uuid', '$uri', '$title', '$size', '$data', '', NOW(), 'yes')";
@@ -157,7 +133,7 @@ function ffm_getCount($params) {
     //connect to db
     include('config.php');
 
-    $query = "SELECT COUNT( * ) AS num FROM upload where owner = '$userid' ";
+    $query = "SELECT COUNT( * ) AS num FROM uploads where owner = '$userid' ";
     $result = mysql_query($query) or die('Error, query failed'  . mysql_error());
     $value = mysql_result($result,0,"num");
 
@@ -177,18 +153,20 @@ function ffm_enumerate($params) {
 
     $val = $params->getParam(1);
     $first = $val->getval();
+    $first = mysql_real_escape_string($first);
 
     $val = $params->getParam(2);
     $last = $val->getval();
+    $last = mysql_real_escape_string($last);
 
     $val = $params->getParam(3);
     $sendData = $val->getval();
-
+    
     //connect to db
     include('config.php');
 
     $query = "SELECT owner, id, name, uri, title, date_created, type, content " .
-             "FROM upload " .
+             "FROM uploads " .
              "WHERE owner='$userid'";
     // . "LIMIT '$first' , '$last' ";
 
