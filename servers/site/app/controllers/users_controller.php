@@ -54,10 +54,8 @@ class UsersController extends AppController
             if(!empty($someone['User']['id'])) {
                 // @todo bind with ldap and check the password!
 
-                if ($someone['User']['password'] !== md5($this->data['User']['password']))
+                if ($someone['User']['password'] !== sha1($this->data['User']['password']))
 		{
-	                echo md5($this->data['User']['password']);
-			
 			// This is a generalized, non-specific error
         	        $this->set('error', true);
 			return;
@@ -95,7 +93,7 @@ class UsersController extends AppController
 			return;
 		}
         	// okay the user is fine. add them
-		$this->data['User']['password'] = md5($this->data['User']['password']);
+		$this->data['User']['password'] = sha1($this->data['User']['password']);
         	$this->User->save($this->data);
 
 		$someone = $this->User->findByEmail($this->data['User']['email']);

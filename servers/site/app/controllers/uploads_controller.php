@@ -39,6 +39,48 @@
 class UploadsController extends AppController
 {
     var $name = 'Uploads';
-    var $scaffold;   
+
+    //var $scaffold;   
+
+    function index()
+    {
+	$user = $this->Session->read('User');
+	$this->set('uploads', $this->Upload->findAllByOwner($user['id']));
+    }
+
+    function view()
+    {
+        $this->layout = null;
+	$user = $this->Session->read('User');
+        $this->set('user', $user['id']);
+	
+    }
+
+    function delete($id)
+    {
+        // do we have to verify the users here??
+
+	if(! (isset($id) && is_numeric($id)))
+        {
+           $this->redirect('/uploads');
+	   exit();
+        }
+	
+	$user = $this->Session->read('User');
+	$item = $this->Upload->findById($id);
+
+	if ($item['Upload']['owner'] == $user['id'])
+		$this->Upload->delete($id);
+
+	$this->redirect('/uploads');	
+    }
+
+    function rss()
+    {
+	$this->layout = 'xml'; 
+        $user = $this->Session->read('User');
+	$this->set('uploads', $this->Upload->findAllByOwner($user['id']));
+    }
+
 }
 ?>
