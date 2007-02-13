@@ -35,7 +35,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 
-var moco_joey_url = "http://joey.labs.mozilla.com:80";
+var moco_joey_url = "https://joey.labs.mozilla.com/services/joeyservice.php";
 
 
 function debug(str)
