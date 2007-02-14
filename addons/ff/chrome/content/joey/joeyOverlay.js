@@ -205,7 +205,7 @@ function getImageDataCallback(content_type, data, length)
 
 
 
-function joeyImageStreamListener(aCallbackFunc) {
+function JoeyImageStreamListener(aCallbackFunc) {
   this.mCallbackFunc = aCallbackFunc;
 }
 
