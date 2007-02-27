@@ -48,7 +48,7 @@ class UsersController extends AppController
         $this->set('error', false);
         // If a user has submitted form data:
         if (!empty($this->data)) {
-
+            $this->data['User']['email'] = strtolower ($this->data['User']['email']);
             $someone = $this->User->findByEmail($this->data['User']['email']);
 
             if(!empty($someone['User']['id'])) {
@@ -87,6 +87,7 @@ class UsersController extends AppController
         // If a user has submitted form data:
         if (!empty($this->data)) {
 		
+                $this->data['User']['email'] = strtolower ($this->data['User']['email']);
 		$someone = $this->User->findByEmail($this->data['User']['email']);
 		if(!empty($someone['User']['id'])) {
 			$this->set('error', true);
