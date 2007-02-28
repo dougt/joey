@@ -35,7 +35,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 
-var moco_joey_url = "https://joey.labs.mozilla.com/services/joeyservice.php";
+var moco_joey_url = "https://joey.labs.mozilla.com/services";
 
 
 function debug(str)
@@ -193,7 +193,7 @@ mocoJoey.prototype =
 		{ 
 			if (self.xmlhttp.status==200)
 			{
-				if (self.xmlhttp.responseText.indexOf('fault') == -1)
+                if (self.xmlhttp.responseText.indexOf('-1') == -1)
 				{
 					self.joey_hasLogged = true;
 					
@@ -224,26 +224,21 @@ mocoJoey.prototype =
 		this.xmlhttp = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]
 							.createInstance(Components.interfaces.nsIXMLHttpRequest);
 		
-		this.xmlhttp.open("POST", moco_joey_url+"/upload.php", true);
+
+        var url  = moco_joey_url + "/rest/login.php";
+        var data = "?username=" + this.joey_username + "&password=" + this.joey_password;
+
+		this.xmlhttp.open("POST", url, true);
 		
 		var self = this;
      	this.xmlhttp.onreadystatechange = function() {self.loginCallback(self);}
-     	
-		this.xmlhttp.setRequestHeader("Content-Type", "text/xml");
-		
-		this.xmlhttp.send("<?xml version=\'1.0\'?>\n\n" +
-					 "<methodCall><methodName>ffmobile.authenticate</methodName><params>" +
-					 "<param><value><string>" +
-					 this.joey_username +
-					 "</string></value></param>" +
-					 "<param><value><string>" +
-					 this.joey_password +
-					 "</string></value></param>" +
-					 "</params></methodCall>");
+     	this.xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		this.xmlhttp.send(data);
 	},
     
 	uploadCallback: function(self)
 	{
+        debug (self.xmlhttp.responseText);
 		debug("uploadCallback " + this.xmlhttp.readyState + "(" + self + ")");
 		if (self.xmlhttp.readyState==4)
 		{ 
@@ -251,9 +246,11 @@ mocoJoey.prototype =
 			self.joey_listener = null;
 			self.joey_in_progress = false;
 
+            
+
 			if (self.xmlhttp.status==200)
 			{
-				if (self.xmlhttp.responseText.indexOf('fault') == -1)
+				if (self.xmlhttp.responseText.indexOf('-1') == -1)
 				{
 					if (listener != null)
 						listener.onStatusChange(self.joey_name, self.joey_url, 1);
@@ -271,15 +268,22 @@ mocoJoey.prototype =
 	uploadDataFromGlobals: function ()
 	{
 		this.xmlhttp = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]
-							  .createInstance(Components.interfaces.nsIXMLHttpRequest);
+     							 .createInstance(Components.interfaces.nsIXMLHttpRequest);
 			
-		this.xmlhttp.open("POST", moco_joey_url+"/upload.php", true);
+
+        var url  = moco_joey_url + "/rest/upload.php";
+        var data = "?name=" + this.joey_name + "&title=" + this.joey_title +
+                   "&Uri="  + this.joey_url  + "&size="  + this.joey_data_size +
+                   "&uuid=" + this.joey_uuid + "&type="  + this.joey_content_type +
+                   "&data=" + this.data; 
+
+
+		this.xmlhttp.open("POST", url, true);
 
 		var self = this;
      	this.xmlhttp.onreadystatechange = function() {self.uploadCallback(self);}
-
-
-		this.xmlhttp.setRequestHeader("Content-Type", "text/xml");
+     	this.xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		this.xmlhttp.send(data);
 		
 		//debug("uploadData:");
 		//debug(this.joey_name);
@@ -289,31 +293,6 @@ mocoJoey.prototype =
 		//debug(this.joey_data_size);
 		//debug(this.joey_data);
 		//debug(this.joey_uuid);
-	
-		this.xmlhttp.send("<?xml version=\'1.0\'?>\n\n" +
-					 "<methodCall><methodName>ffmobile.upload</methodName><params>" +
-					 "<param><value><string>" +
-					 this.joey_name +
-					 "</string></value></param>" +
-					 "<param><value><string>" +
-					 this.joey_title +
-					 "</string></value></param>" +
-					 "<param><value><string>" +
-					 this.joey_url +
-					 "</string></value></param>" +
-					 "<param><value><string>" +
-					 this.joey_data +
-					 "</string></value></param>" +
-					 "<param><value><int>" +
-					 this.joey_data_size +
-					 "</int></value></param>" +
-					 "<param><value><string>" +
-					 this.joey_content_type +
-					 "</string></value></param>" +
-					 "<param><value><string>" +
-					 this.joey_uuid +  // XXX Maybe I can optionally send this?
-					 "</string></value></param>" +
-					 "</params></methodCall>");    
 	},
 };
 
