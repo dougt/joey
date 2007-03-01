@@ -33,24 +33,22 @@
       
       if ($fileOps->isFile($fetched['type'])) {
 
-
- 
-        /*
+/*
          header("Content-type: text/plain");
          $filename = $fetched['filename'];
          echo $filename;
-         return;
-        */
+
+         exit;
+*/
+
+        $filename = $fetched['filename'];
 
 		$contenttype = "Content-type: " . $fetched['type'];
         header($contenttype);
-        header('Content-Transfer-Encoding: Binary');
+        header('Content-Length: ' . filesize($filename));
 
-        $filename = $fetched['filename'];
-        $fh = fopen($filename, 'rb') or die("can't open file");
-        $data = fread($fh, filesize($filename));
-        fclose($fh);
-        print($data);
+        $fh = fopen($filename, 'r') or die("can't open file");
+        fpassthru($fh);
 
 		return;
       }
@@ -71,4 +69,3 @@
       }
     }
 ?>
-
