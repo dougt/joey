@@ -1,3 +1,4 @@
+
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -187,7 +188,11 @@ function joey_selected()
 	
 }
 
+function joey_feed(feedLocation) {
 
+	alert("Joey! sync; feed-type [uri,rss/1.0] "+feedLocation);
+
+}
 
 function getImageDataCallback(content_type, data, length)
 {
@@ -339,4 +344,255 @@ function loot_setttings()
 
     joey.setLoginInfo();
 }
+
+
+/* 
+ * This refreshes feed information in the menu. 
+ * The currentBrowser.feeds array is populated from the 
+ * joeyLinkAddedHandler. 
+ */
+
+function joeySetCurrentFeed()
+{
+
+
+	try {
+
+		var currentFeedURI = gBrowser.mCurrentBrowser.feeds;
+
+		if(currentFeedURI ||currentFeedURI.length>0) {
+	
+			document.getElementById("joey_activeRSSLink").setAttribute("hidden","false");
+	
+			document.getElementById("joey_activeRSSLink").setAttribute("oncommand","joey_feed('"+currentFeedURI[0].href+"')");
+		
+	
+		} 
+	
+	} catch(i) {
+
+		document.getElementById("joey_activeRSSLink").setAttribute("oncommand","");
+		document.getElementById("joey_activeRSSLink").setAttribute("hidden","true");
+	} 
+}
+
+
+////
+/// Default initialization code
+//
+
+var gBrowser = null;
+var gJoeyLocalBrowserStatusHandler = null;
+
+function joeyStartup()
+{
+
+
+    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                     .getService(Components.interfaces.nsIWindowMediator);
+
+    gWin = wm.getMostRecentWindow("navigator:browser");
+
+    gBrowser = gWin.gBrowser;
+
+    gBrowser.addEventListener("DOMLinkAdded", joeyLinkAddedHandler, false);
+
+
+    gJoeyLocalBrowserStatusHandler = new joeyBrowserStatusHandler();
+
+
+    gBrowser.addProgressListener( gJoeyLocalBrowserStatusHandler , Components.interfaces.nsIWebProgress.NOTIFY_ALL);
+
+
+}
+
+function joeyLinkAddedHandler(event)
+{
+
+ /* 
+   * Taken from browser.js - yes this should be in tabbrowser
+   */
+  
+  var erel = event.target.rel;
+  var etype = event.target.type;
+  var etitle = event.target.title;
+  var ehref = event.target.href;
+  
+  const alternateRelRegex = /(^|\s)alternate($|\s)/i;
+  const rssTitleRegex = /(^|\s)rss($|\s)/i;
+  
+  if (!alternateRelRegex.test(erel) || !etype) return;
+  
+  etype = etype.replace(/^\s+/, "");
+  etype = etype.replace(/\s+$/, "");
+  etype = etype.replace(/\s*;.*/, "");
+  etype = etype.toLowerCase();
+  
+  if (etype == "application/rss+xml" || etype == "application/atom+xml" || (etype == "text/xml" || etype == "application/xml" || etype == "application/rdf+xml") && rssTitleRegex.test(etitle))
+  {
+    const targetDoc = event.target.ownerDocument;
+    
+    var browsers = gBrowser.browsers;
+    var shellInfo = null;
+    
+    for (var i = 0; i < browsers.length; i++) {
+
+      var shell = findChildShell(targetDoc, browsers[i].docShell, null);
+      if (shell) shellInfo = { shell: shell, browser: browsers[i] };
+    }
+    
+    //var shellInfo = this._getContentShell(targetDoc);
+    
+    var browserForLink = shellInfo.browser;
+    
+    if(!browserForLink) return;
+
+    if(browserForLink.feeds) {
+       joeySetCurrentFeed();
+
+
+	  // We do this now because we dont want to messe up with Existing feeds info in Firefox. 
+
+	  return; 
+    }     
+
+    // Do we really nees this? MArcio, remove the following or review it. 
+
+    var feeds = [];
+    if (browserForLink.feeds != null) feeds = browserForLink.feeds;
+    var wrapper = event.target;
+    feeds.push({ href: wrapper.href, type: etype, title: wrapper.title});
+
+   // marcio 3 
+   // We dont want to add more feed information on it. 
+   // browserForLink.feeds = feeds;
+    
+    if (browserForLink == gBrowser || browserForLink == gBrowser.mCurrentBrowser) {
+
+       joeySetCurrentFeed();
+
+    } 
+
+  }
+}
+
+/* 
+ * We should check this again. Maybe we can reuse this function from the main browser 
+ * ( browser.js ) 
+ */
+
+function findChildShell(aDocument, aDocShell, aSoughtURI) {
+
+const nsIWebNavigation         = Components.interfaces.nsIWebNavigation;
+const nsIInterfaceRequestor    = Components.interfaces.nsIInterfaceRequestor;
+const nsIDOMDocument           = Components.interfaces.nsIDOMDocument;
+const nsIDocShellTreeNode      = Components.interfaces.nsIDocShellTreeNode;
+
+  aDocShell.QueryInterface(nsIWebNavigation);
+  aDocShell.QueryInterface(nsIInterfaceRequestor);
+  var doc = aDocShell.getInterface(nsIDOMDocument);
+  if ((aDocument && doc == aDocument) || 
+      (aSoughtURI && aSoughtURI.spec == aDocShell.currentURI.spec))
+    return aDocShell;
+  
+  var node = aDocShell.QueryInterface(nsIDocShellTreeNode);
+  for (var i = 0; i < node.childCount; ++i) {
+    var docShell = node.getChildAt(i);
+    docShell = findChildShell(aDocument, docShell, aSoughtURI);
+    if (docShell) return docShell;
+  }
+  return null;
+}
+
+
+
+/* 
+ * 
+ * 
+ */
+
+
+function joeyBrowserStatusHandler() {}
+
+joeyBrowserStatusHandler.prototype = 
+{
+
+ QueryInterface : function(aIID)
+  {
+    if (aIID.equals(Components.interfaces.nsIWebProgressListener) ||
+        aIID.equals(Components.interfaces.nsIXULBrowserWindow) ||
+        aIID.equals(Components.interfaces.nsISupportsWeakReference) ||
+        aIID.equals(Components.interfaces.nsISupports))
+    {
+      return this;
+    }
+    throw Components.results.NS_NOINTERFACE;
+  },
+  
+  init : function()
+  {
+
+  },
+  
+  destroy : function()
+  {
+  },
+  
+  onStateChange : function(aWebProgress, aRequest, aStateFlags, aStatus)
+  {
+     
+  },
+  onProgressChange : function(aWebProgress, aRequest, aCurSelfProgress, aMaxSelfProgress, aCurTotalProgress, aMaxTotalProgress)
+  {
+
+  },
+  onLocationChange : function(aWebProgress, aRequest, aLocation)
+  {
+      domWindow = aWebProgress.DOMWindow;
+
+      if (domWindow == domWindow.top) {
+        //this.urlBar.value = aLocation.spec;
+		joeySetCurrentFeed();
+        
+      }
+    
+  },
+  
+  onStatusChange : function(aWebProgress, aRequest, aStatus, aMessage)
+  {
+  },
+  startDocumentLoad : function(aRequest)
+  {alert("start");
+  },
+  endDocumentLoad : function(aRequest, aStatus)
+  {
+  },
+  onSecurityChange : function(aWebProgress, aRequest, aState)
+  {
+  },
+  setJSStatus : function(status)
+  {
+  },
+  setJSDefaultStatus : function(status)
+  {
+  },
+  setDefaultStatus : function(status)
+  {
+  },
+  setOverLink : function(link, b)
+  {
+  }
+
+}
+
+
+
+
+
+/* 
+ *  We track the DOMLinkAdded events in the tabbed browser. 
+ */ 
+
+addEventListener("load", joeyStartup, false);
+
 
