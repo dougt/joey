@@ -1,0 +1,27 @@
+<h1>Joey! Uploads</h1>
+<table>
+    <tr>
+        <th>Id</th>
+        <th>Title</th>
+        <th>URI</th>
+        <th>Size</th>
+        <th>Date Created</th>
+	<th>Action</th>
+    </tr>
+   <!-- Here's where we loop through our $posts array, printing out post info -->
+
+    <?php foreach ($uploads as $upload): ?>
+    <tr>
+        <td><?php echo $upload['Upload']['id']; ?></td>
+        <td>
+            <?php echo $html->link( base64_decode($upload['Upload']['title']), "/uploads/view?id=" . $upload['Upload']['id']) ?>
+        </td>
+	<td><?php echo base64_decode($upload['Upload']['uri']) ?></td>
+	<td><?php echo $upload['Upload']['size'] ?></td>
+	<td><?php echo $upload['Upload']['date_created'] ?></td>
+	<td><?php echo $html->link( "Delete", "/uploads/delete/" . $upload['Upload']['id']) ?> </td>
+    </tr>
+    <?php endforeach; ?>
+
+</table>
+

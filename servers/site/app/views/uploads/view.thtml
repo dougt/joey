@@ -1,0 +1,74 @@
+<?php
+
+        function __autoload($class_name) {
+          require_once $class_name . '.class.php';
+        }
+
+        $id = $_GET['id'];
+	if(! (isset($id) && is_numeric($id)))
+	{
+		exit();
+	}
+
+	$sql = "SELECT filename, type, content FROM uploads WHERE id='$id' and owner='$user'";
+
+
+	$dbname="c_joey";
+	$host="localhost";
+	$user="root";
+	$dbh=mysql_connect ($host,$user,"mozilla") or die ('I cannot connect to the database because: ' . mysql_error(). '');
+	mysql_select_db ("$dbname") or die('I cannot select the database because: ' . mysql_error());
+
+	$result = mysql_query("$sql") or die("Invalid query: " . mysql_error());
+
+	if(mysql_num_rows($result) == 0)
+    {
+      echo "Item does not exist<br>";
+    }
+    else
+    {
+      $fetched= mysql_fetch_array($result);
+      
+      $fileOps = new FileOps ($user);
+      
+      if ($fileOps->isFile($fetched['type'])) {
+
+
+ 
+        /*
+         header("Content-type: text/plain");
+         $filename = $fetched['filename'];
+         echo $filename;
+         return;
+        */
+
+		$contenttype = "Content-type: " . $fetched['type'];
+        header($contenttype);
+        header('Content-Transfer-Encoding: Binary');
+
+        $filename = $fetched['filename'];
+        $fh = fopen($filename, 'rb') or die("can't open file");
+        $data = fread($fh, filesize($filename));
+        fclose($fh);
+        print($data);
+
+		return;
+      }
+      else if ($fetched['type'] == "microsummary/xml")
+      {         
+        header("Content-type: text/plain");
+        echo base64_decode($fetched['content']);
+      }
+      else
+      {
+        $contenttype = "Content-type: " . $fetched['type']; 
+        header($contenttype);
+        
+        if ($use_thumb)
+          echo base64_decode($fetched['thumbnail']);
+        else
+          echo base64_decode($fetched['content']);
+      }
+    }
+?>
+
