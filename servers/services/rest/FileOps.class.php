@@ -1,4 +1,4 @@
-<?php
+|<?php
 
 class FileOps {
     
@@ -65,4 +65,4 @@ class FileOps {
   }
     
 }
-?>    
+?>
