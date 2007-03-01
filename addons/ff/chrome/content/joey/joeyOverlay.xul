@@ -65,6 +65,10 @@
     label="Joey!"
     insertafter="context-stop" oncommand="joey_selected();"/>
     
+  <menuitem id="joey_activeRSSLink" hidden="true"
+    label="Joey! Current Feed"
+    insertafter="context-stop" oncommand="joey_feed();"/>
+    
 </popup>
 
 
