@@ -57,6 +57,7 @@
     if ($fileOps->isFile($type)) {
       // Save the data to file
       $data = base64_decode($data);
+
       $filename = $fileOps->saveFile ($type, $data);
       $thumbnailname = $fileOps->generateThumbnail ();
       

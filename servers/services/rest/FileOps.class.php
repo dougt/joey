@@ -17,7 +17,7 @@ class FileOps {
     
   function FileOps ($userid) {
     $this->randname = uniqid();
-    $this->filedir = 'uploads/' . $userid . '/';
+    $this->filedir = '/data/uploads/' . $userid . '/';
     
     if (!file_exists($this->filedir)) {
       mkdir ($this->filedir);
