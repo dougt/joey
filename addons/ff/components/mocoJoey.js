@@ -238,7 +238,6 @@ mocoJoey.prototype =
     
 	uploadCallback: function(self)
 	{
-        debug (self.xmlhttp.responseText);
 		debug("uploadCallback " + this.xmlhttp.readyState + "(" + self + ")");
 		if (self.xmlhttp.readyState==4)
 		{ 
@@ -273,10 +272,9 @@ mocoJoey.prototype =
 
         var url  = moco_joey_url + "/rest/upload.php";
         var data = "?name=" + this.joey_name + "&title=" + this.joey_title +
-                   "&Uri="  + this.joey_url  + "&size="  + this.joey_data_size +
+                   "&uri="  + this.joey_url  + "&size="  + this.joey_data_size +
                    "&uuid=" + this.joey_uuid + "&type="  + this.joey_content_type +
-                   "&data=" + this.data; 
-
+                   "&data=" + encodeURIComponent(this.joey_data); 
 
 		this.xmlhttp.open("POST", url, true);
 
