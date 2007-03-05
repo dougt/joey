@@ -113,7 +113,7 @@
        
        // notify the user of the change!
        $owner = $fetched['owner'];
-       $emailQuery = "SELECT id, email from user where id='$owner'";
+       $emailQuery = "SELECT id, email from users where id='$owner'";
        $emailResult = mysql_query($emailQuery);
        
        $fetched= @mysql_fetch_array($emailResult);
