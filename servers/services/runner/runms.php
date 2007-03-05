@@ -44,7 +44,7 @@
   //connect to db
   include('config.php');
 
-  $query = "SELECT id, owner, title, type, content, thumbnail FROM uploads where type='microsummary/xml'";
+  $query = "SELECT id, owner, title, type, content, filename FROM uploads where type='microsummary/xml'";
   $result = mysql_query($query) or die('Error, query failed');
 
   if(mysql_num_rows($result) == 0)
@@ -72,51 +72,69 @@
 
      echo "Microsummary Result\n";
      echo $ms->result;
-     echo "\n";
+     echo ".\n";
+     
+     // Read in value, if value doesn't match, write out new value.  end.
 
-     // does the result match?
-    $tn = $fetched['thumbnail']; 
-    if (empty($tn) == true)
-	$lastValue = "";
-     else
-        $lastValue = base64_decode($tn);
- 
+     $filename = $fetched['filename'];
+
+     if ($filename == "")
+     {
+       $filename = '/data/uploads/' . $fetched['owner'] . '/' . uniqid();
+
+       $fh = fopen($filename, 'w') or die("can't open file");
+       fwrite($fh, "");
+       fclose($fh);
+
+       $id = $fetched['id'];
+       $updateQuery = "UPDATE uploads SET filename = '$filename' where id = '$id'";
+       $result = mysql_query($updateQuery) or die('Error, query failed');
+     }
+
+     echo "Transcode file: " . $filename . "\n";
+
+     $lastValue = "";
+     $size = filesize($filename);
+     
+     if ($size > 0)
+     {
+       $fh = fopen($filename, 'r') or die("can't open transcode file");
+       $lastValue = fread($fh, $size);
+       fclose($fh);
+     }
+
      if (strcmp($ms->result, $lastValue) != 0)
      {
+       echo "UPDATING!\n";
 
-	echo "UPDATING!\n";
-
-	// They do not match!
-        $lastvalue = base64_encode($ms->result);
-        $id = $fetched['id'];
-
-        $updateQuery = "UPDATE upload SET thumbnail = '$lastvalue' where id = '$id'";
-        $result = mysql_query($updateQuery) or die('Error, query failed');
-
-        $owner = $fetched['owner'];
-	$emailQuery = "SELECT id, email from user where id='$owner'";
-        $emailResult = mysql_query($emailQuery);
-
-        $fetched= @mysql_fetch_array($emailResult);
-
-
-        if(mysql_num_rows($emailResult) == 0)
-        {
-           echo "no email for user.\n";
-           exit;
-        }
-
-	if (mail($fetched['email'], $ms->result, $ms->result)) 
-	{
-  		echo("Message successfully sent!\n");
- 	} 
-        else
-        {
-  		echo("Message delivery failed...\n");
- 	}
-    }
+       $fh = fopen($filename, 'w') or die("can't open transcode file");
+       fwrite($fh, $ms->result) or die("can't write transcode file");
+       fclose($fh);
+       
+       // notify the user of the change!
+       $owner = $fetched['owner'];
+       $emailQuery = "SELECT id, email from user where id='$owner'";
+       $emailResult = mysql_query($emailQuery);
+       
+       $fetched= @mysql_fetch_array($emailResult);
+       
+       if(mysql_num_rows($emailResult) == 0)
+       {
+         echo "no email for user.\n";
+         exit;
+       }
+       
+       if (mail($fetched['email'], $ms->result, $ms->result)) 
+       {
+         echo("Message successfully sent!\n");
+       } 
+       else
+       {
+         echo("Message delivery failed...\n");
+       }
+     }
   }
- 
+
   echo "done.";
 
 ?>

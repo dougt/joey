@@ -88,7 +88,7 @@ class microsummary {
 
     // load into new dom document
     $d = new DOMDocument();
-    $d->loadHTML($str);
+    @ $d->loadHTML($str);
 
     // execute xsl against it
     $summary = $xslt->transformToXML($d);
