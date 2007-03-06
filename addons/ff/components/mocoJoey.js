@@ -19,7 +19,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- *
+ *    
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
  * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -189,11 +189,20 @@ mocoJoey.prototype =
     
     loginCallback: function (self)
 	{
+		if (self.xmlhttp.readyState==1)
+		{ 
+			debug("Login state = 1, loading... ");
+
+			var listener = self.joey_listener;
+
+			if (listener != null)
+				listener.onStatusChange(self.joey_name, self.joey_url, 3);	// 3 login busy 
+		}
 		if (self.xmlhttp.readyState==4)
 		{ 
 			if (self.xmlhttp.status==200)
 			{
-                if (self.xmlhttp.responseText.indexOf('-1') == -1)
+              	     if (self.xmlhttp.responseText.indexOf('-1') == -1)
 				{
 					self.joey_hasLogged = true;
 					
@@ -226,6 +235,7 @@ mocoJoey.prototype =
 		
 
         var url  = moco_joey_url + "/rest/login.php";
+
         var data = "username=" + this.joey_username + "&password=" + this.joey_password;
 
 		this.xmlhttp.open("POST", url, true);
@@ -239,20 +249,30 @@ mocoJoey.prototype =
 	uploadCallback: function(self)
 	{
 		debug("uploadCallback " + this.xmlhttp.readyState + "(" + self + ")");
+
+		if (self.xmlhttp.readyState==1) {
+
+			debug("Upload status = 1 .. loading response.. ");
+			var listener = self.joey_listener;
+			if (listener != null)
+				listener.onStatusChange(self.joey_name, self.joey_url, 2); // 2 = loading response upload...
+				
+		} 
 		if (self.xmlhttp.readyState==4)
 		{ 
 			var listener = self.joey_listener;
 			self.joey_listener = null;
 			self.joey_in_progress = false;
 
-            
-
 			if (self.xmlhttp.status==200)
 			{
 				if (self.xmlhttp.responseText.indexOf('-1') == -1)
 				{
+
+					debug("Upload status = 1, all good.  ");
+
 					if (listener != null)
-						listener.onStatusChange(self.joey_name, self.joey_url, 1);
+						listener.onStatusChange(self.joey_name, self.joey_url, 1);  // 1 = okay all good. 
 					
 					return;
 				}
@@ -271,7 +291,7 @@ mocoJoey.prototype =
 			
 
         var url  = moco_joey_url + "/rest/upload.php";
-        var data = "name=" + this.joey_name +  "&title=" + this.joey_title +
+        var data = "name=" + this.joey_name + "&title=" + this.joey_title +
                    "&uri="  + this.joey_url  + "&size="  + this.joey_data_size +
                    "&uuid=" + this.joey_uuid + "&type="  + this.joey_content_type +
                    "&data=" + encodeURIComponent(this.joey_data); 
