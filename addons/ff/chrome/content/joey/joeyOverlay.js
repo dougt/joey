@@ -190,7 +190,21 @@ function joey_selected()
 
 function joey_feed(feedLocation) {
 
-	alert("Joey! sync; feed-type [uri,rss/1.0] "+feedLocation);
+    /* We can detect which type of feed and send additional information 
+     * as well, such as the title. On the other hand, the feed title 
+     * may change, so that could be something chechec ( and refreshed ) 
+     * on the server 
+     */
+        
+    g_joey_name = "Untitled";
+    g_joey_data = feedLocation;
+    g_joey_data_size = feedLocation.length;
+    g_joey_binary = false;
+    g_joey_content_type = "text/plain";
+    g_joey_title = "Feed / We can put a title in it with one more client call. ";
+    g_joey_url  = feedLocation;
+    g_joey_uuid = "";    
+    uploadDataFromGlobals();
 
 }
 
