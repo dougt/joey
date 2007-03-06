@@ -1,4 +1,3 @@
-
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -55,14 +54,53 @@ joey_listener.prototype =
 {
     onStatusChange: function (name, uri, status)
     {
-        alert(name + " " + uri + " " + status);
 
-        
+        /* 
+         * Feed the status to the Joey statuspane items   
+         */
+
+        // alert(name + " " + uri + " " + status);
+
+        if (status == 3)
+        {
+
+		// login busy
+            gJoeyStatusUpdateObject.busyMore();
+
+        }
+
+        if (status == 0)
+        {
+
+		// login 0 status worked 
+		// removing the busy load 
+            gJoeyStatusUpdateObject.busyLess();
+
+        }
+
+        if (status == 2)
+        {
+		// files busy
+            gJoeyStatusUpdateObject.busyMore();
+
+		// In the future we may want to track/log information about the elements uploaded
+            // and build/keep some sort of history.
+		gJoeyStatusUpdateObject.inventoryMore();
+
+        }
+
         if (status == 1)
         {
+
+		// files not busy 
+
             var joey = Components.classes["@mozilla.com/joey;1"]
                                     .getService(Components.interfaces.mocoJoey);
             joey.setListener(null);
+
+
+            gJoeyStatusUpdateObject.busyLess();
+
         }
     },
 
@@ -156,6 +194,8 @@ function replaceAll( str, from, to ) {
 
 function joey_selectedText() 
 {    
+
+
     var focusedWindow = document.commandDispatcher.focusedWindow;
     var selection = focusedWindow.getSelection().toString();
     
@@ -205,6 +245,12 @@ function joey_feed(feedLocation) {
     g_joey_url  = feedLocation;
     g_joey_uuid = "";    
     uploadDataFromGlobals();
+}
+
+// Check XUL statusbar item
+function joey_launchPopup() {
+
+  document.getElementById('joeyStatusPopup').showPopup(document.getElementById('joeyStatusButton'),-1,-1,'popup','topright', 'bottomright')
 
 }
 
@@ -212,10 +258,10 @@ function getImageDataCallback(content_type, data, length)
 {
 	if (length>0)
     { 
-       	g_joey_data = data;
+        g_joey_data = data;
         g_joey_data_size = length;
         g_joey_content_type = content_type;
-		uploadDataFromGlobals();
+        uploadDataFromGlobals();
         return;
 	}
     else
@@ -223,9 +269,53 @@ function getImageDataCallback(content_type, data, length)
 }
 
 
+function JoeyStatusUpdateClass() {
+}
 
-function JoeyImageStreamListener(aCallbackFunc) {
+/* 
+ * Probably this shoul work as a stack
+ * Because we may have multiple joey action events 
+ * going on at the same time. We may end up with a stack head counter here.  
+ */
+JoeyStatusUpdateClass.prototype = {
+
+	/* 
+ 	 * We have to separate the login information from the 
+       * loading status processes 
+       */
+	
+	busyCounter:0,
+
+      inventoryCounter:0, // this is very simple for now. IN the future maybe more complex. It represents the local history list.
+
+	busyMore: function () {
+
+		this.busyCounter++;
+		this.busyRefresh();
+	},
+	busyLess: function () {
+
+		this.busyCounter--;
+		this.busyRefresh();
+ 	}, 
+      inventoryMore: function () {
+         this.inventoryCounter++;
+         document.getElementById("joeyInventoryButton").label=this.inventoryCounter;
+	},
+	busyRefresh: function () {
+		if(this.busyCounter>0) {
+			document.getElementById("joeyWorkingButton").setAttribute("collapsed","false");
+		} else {
+			document.getElementById("joeyWorkingButton").setAttribute("collapsed","true");
+
+		}
+	}
+}
+
+
+function JoeyImageStreamListener(aCallbackFunc,aStatusUpdate) {
   this.mCallbackFunc = aCallbackFunc;
+  this.mStatusUpdate = aStatusUpdate;
 }
 
 JoeyImageStreamListener.prototype = {
@@ -243,6 +333,10 @@ JoeyImageStreamListener.prototype = {
     {
 		var http = aRequest.QueryInterface(Components.interfaces.nsIHttpChannel);
 		this.mContentType = http.contentType;
+
+		this.mStatusUpdate.busyMore();		
+
+
 	} catch (ex) { alert(ex); }	
   },
 
@@ -260,10 +354,14 @@ JoeyImageStreamListener.prototype = {
 	if (Components.isSuccessCode(aStatus))
 	{	
 		this.mCallbackFunc(this.mContentType, this.mBytes, this.mCount);
+		this.mStatusUpdate.busyLess();
+
 	} 
 	else {
 		// request failed
 		this.mCallbackFunc(null, null, 0);
+
+
 	}
     
     this.mChannel = null;
@@ -319,15 +417,15 @@ function joey_selectedImage()
     // will be filled in when we have the image data.
     
     
-    // the IO service
+      // the IO service
 	var ioService = Components.classes["@mozilla.org/network/io-service;1"]
                               .getService(Components.interfaces.nsIIOService);
 
-    // create an nsIURI
-    var uri = ioService.newURI(gImageSource, null, null);
+      // create an nsIURI
+      var uri = ioService.newURI(gImageSource, null, null);
 	
 	// get an listener
-	var listener = new JoeyImageStreamListener(getImageDataCallback)
+	var listener = new JoeyImageStreamListener(getImageDataCallback, gJoeyStatusUpdateObject)
 
 	// get a channel for that nsIURI
 	var channel = ioService.newChannelFromURI(uri);
@@ -397,6 +495,7 @@ function joeySetCurrentFeed()
 
 var gBrowser = null;
 var gJoeyLocalBrowserStatusHandler = null;
+var gJoeyStatusUpdateObject = null;
 
 function joeyStartup()
 {
@@ -417,6 +516,8 @@ function joeyStartup()
 
     gBrowser.addProgressListener( gJoeyLocalBrowserStatusHandler , Components.interfaces.nsIWebProgress.NOTIFY_ALL);
 
+
+    gJoeyStatusUpdateObject = new JoeyStatusUpdateClass();
 
 }
 
@@ -566,6 +667,7 @@ joeyBrowserStatusHandler.prototype =
 
       if (domWindow == domWindow.top) {
         //this.urlBar.value = aLocation.spec;
+
 		joeySetCurrentFeed();
         
       }
@@ -576,7 +678,7 @@ joeyBrowserStatusHandler.prototype =
   {
   },
   startDocumentLoad : function(aRequest)
-  {alert("start");
+  {
   },
   endDocumentLoad : function(aRequest, aStatus)
   {
@@ -599,14 +701,8 @@ joeyBrowserStatusHandler.prototype =
 
 }
 
-
-
-
-
 /* 
  *  We track the DOMLinkAdded events in the tabbed browser. 
  */ 
 
 addEventListener("load", joeyStartup, false);
-
-
