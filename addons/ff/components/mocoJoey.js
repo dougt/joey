@@ -226,7 +226,7 @@ mocoJoey.prototype =
 		
 
         var url  = moco_joey_url + "/rest/login.php";
-        var data = "?username=" + this.joey_username + "&password=" + this.joey_password;
+        var data = "username=" + this.joey_username + "&password=" + this.joey_password;
 
 		this.xmlhttp.open("POST", url, true);
 		
@@ -271,7 +271,7 @@ mocoJoey.prototype =
 			
 
         var url  = moco_joey_url + "/rest/upload.php";
-        var data = "?name=" + this.joey_name + "&title=" + this.joey_title +
+        var data = "name=" + this.joey_name +  "&title=" + this.joey_title +
                    "&uri="  + this.joey_url  + "&size="  + this.joey_data_size +
                    "&uuid=" + this.joey_uuid + "&type="  + this.joey_content_type +
                    "&data=" + encodeURIComponent(this.joey_data); 
