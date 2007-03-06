@@ -72,7 +72,7 @@
 </popup>
 
 
-// This is for the Tools menu.
+<!-- tools menu --> 
 
 <menupopup id="menu_ToolsPopup">
 	<menuitem 
@@ -81,5 +81,24 @@
 	    oncommand="loot_setttings();" />	
 </menupopup>
 
-</overlay>
+<!-- status bar static joey presence UI --> 
 
+<statusbar id="status-bar">
+  <statusbarpanel  id="joeyStatusbar" context="barcontext" hidden="false" collapsed="false" type="menu" >
+    <hbox>
+      <toolbarbutton id="joeyStatusButton"
+                     label="joey:"
+                     oncommand="joey_launchPopup()" />
+	<toolbarbutton id="joeyWorkingButton" image="chrome://global/skin/throbber/Throbber-small.gif" collapsed="true" />
+	<toolbarbutton id="joeyInventoryButton" collapsed="false" />
+
+    </hbox>		
+
+   <menupopup id="joeyStatusPopup" >
+    <menuitem label="test" />
+    <menuitem label="test" />
+   </menupopup>
+  </statusbarpanel>
+</statusbar>
+
+</overlay>
