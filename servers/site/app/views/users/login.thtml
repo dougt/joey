@@ -14,8 +14,8 @@ if (! $this->controller->Session->check('User')) {
 </div>
 
 <div>
-<label for="UserEmail">Email Address:</label>
-<?=$html->input('User/email')?>
+<label for="UserEmail">User Name:</label>
+<?=$html->input('User/uname')?>
 </div>
 
 <div>

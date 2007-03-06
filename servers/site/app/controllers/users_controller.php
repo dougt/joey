@@ -38,69 +38,75 @@
 
 class UsersController extends AppController
 {
-    var $name = 'Users';
-    var $helpers = array('Form','Html');
-    // var $scaffold;   
+  var $name = 'Users';
+  var $helpers = array('Form','Html');
+  // var $scaffold;   
+  
+  function login() {
+    
+    //Don't show the error message if no data has been submitted.
+    $this->set('error', false);
 
-    function login() {
-
-        //Don't show the error message if no data has been submitted.
-        $this->set('error', false);
-        // If a user has submitted form data:
-        if (!empty($this->data)) {
-            $this->data['User']['email'] = strtolower ($this->data['User']['email']);
-            $someone = $this->User->findByEmail($this->data['User']['email']);
-
-            if(!empty($someone['User']['id'])) {
-                // @todo bind with ldap and check the password!
-
-                if ($someone['User']['password'] !== sha1($this->data['User']['password']))
-		{
-			// This is a generalized, non-specific error
-        	        $this->set('error', true);
-			return;
-		}
-
-                $this->Session->write('User', $someone['User']);
-
-                $this->redirect('/uploads');
-            } else {
-
-                // This is a generalized, non-specific error
-                $this->set('error', true);
-            }
-        }
-
-    }
-
-    function logout() {
-
-        $this->Session->delete('User');
-
-        $this->redirect('/');
-    }
-
-    function register() {
-        //Don't show the error message if no data has been submitted.
-        $this->set('error', false);
+    // If a user has submitted form data:
+    if (!empty($this->data)) {
+      $this->data['User']['uname'] = strtolower ($this->data['User']['uname']);
+      $someone = $this->User->findByUname($this->data['User']['uname']);
+      
+      if(!empty($someone['User']['id'])) {
+        // @todo bind with ldap and check the password!
         
-        // If a user has submitted form data:
-        if (!empty($this->data)) {
-		
-                $this->data['User']['email'] = strtolower ($this->data['User']['email']);
-		$someone = $this->User->findByEmail($this->data['User']['email']);
-		if(!empty($someone['User']['id'])) {
-			$this->set('error', true);
-			return;
+        if ($someone['User']['password'] !== sha1($this->data['User']['password']))
+		{
+          // This is a generalized, non-specific error
+          $this->set('error', true);
+          return;
 		}
-        	// okay the user is fine. add them
-		$this->data['User']['password'] = sha1($this->data['User']['password']);
-        	$this->User->save($this->data);
-
-		$someone = $this->User->findByEmail($this->data['User']['email']);
-		$this->Session->write('User', $someone['User']);
-        	$this->redirect('/uploads');
-        }
+        
+        $this->Session->write('User', $someone['User']);
+        
+        $this->redirect('/uploads');
+      } else {
+        
+        // This is a generalized, non-specific error
+        $this->set('error', true);
+      }
     }
+    
+  }
+
+  function logout() {
+    
+    $this->Session->delete('User');
+    
+    $this->redirect('/');
+  }
+  
+  function register() {
+    //Don't show the error message if no data has been submitted.
+    $this->set('error', false);
+    
+    // If a user has submitted form data:
+    if (!empty($this->data)) {
+      
+      $this->data['User']['uname'] = strtolower ($this->data['User']['uname']);
+      $someone = $this->User->findByUname($this->data['User']['uname']);
+
+      if(!empty($someone['User']['id'])) {
+        $this->set('error', true);
+        return;
+      }
+
+      // okay the user is fine. add them
+      $this->data['User']['email'] = $this->data['User']['email'];
+      $this->data['User']['password'] = sha1($this->data['User']['password']);
+      $this->data['User']['date_joined'] = date("Y-m-d G:i:s");
+
+      $this->User->save($this->data);
+      
+      $someone = $this->User->findByEmail($this->data['User']['email']);
+      $this->Session->write('User', $someone['User']);
+      $this->redirect('/uploads');
+    }
+  }
 }
 ?>
