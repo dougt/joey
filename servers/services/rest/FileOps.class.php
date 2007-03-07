@@ -7,6 +7,7 @@ class FileOps {
   var $filedir;
   var $filename;
   var $thumbnailname;
+  var $convert = '/usr/bin/convert';
 
   var $fileTypes = array ('image/jpeg' => '.jpg',
                           'image/gif' => '.gif',
@@ -26,10 +27,17 @@ class FileOps {
   
   function saveFile ($type, $data) {
     $this->type = $type;
-    $this->filename = $this->filedir . $this->randname . $this->fileTypes[$this->type];
-    $fh = fopen($this->filename, 'w') or die("can't open file");
+    $orgfilename = $this->filedir . $this->randname . $this->fileTypes[$this->type];
+    $fh = fopen($orgfilename, 'w') or die("can't open file");
     fwrite($fh, $data);
     fclose($fh);
+
+    $this->filename = $this->filedir . $this->randname . '.png';
+    if (strcmp($this->type, 'image/png') != 0) {
+      $command = "$this->convert '$orgfilename' '$this->filename'";
+      exec($command, $returnarray, $returnvalue);
+    }
+
     return $this->filename;
   }
 
@@ -41,18 +49,13 @@ class FileOps {
   }
   
   function generateThumbnail ($type) {
-    $this->thumbnailname = $this->filedir . 'thumbnail-' . $this->randname . $this->fileTypes[$this->type];
-    
-    // Just copy it for now
-    $fh1 = fopen($this->filename, 'r') or die("can't open file");
-    $contents = fread($fh1, filesize($this->filename));
-    fclose($fh1);
-    $fh2 = fopen($this->thumbnailname, 'w') or die("can't open file");
-    fwrite($fh2, $contents);
-    fclose($fh2);
+
+    $this->thumbnailname = $this->filedir . 'thumbnail-' . $this->randname . '.png';
+
+    $command = "$this->convert -geometry '100x100' '$this->filename' '$this->thumbnailname'";
+    exec($command, $returnarray, $returnvalue);
     
     return $this->thumbnailname;
-    
   }
   
   function isFile ($type) {

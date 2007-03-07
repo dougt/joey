@@ -10,7 +10,7 @@ failed.</p>
 
 <form action="../login.php" method="POST" target="status">
 
-Email: <input type="text" name="username" value=""/>
+Username: <input type="text" name="username" value=""/>
 <br/>
 Password: <input type="password" name="password" value=""/>
 <br/>
