@@ -1,17 +1,15 @@
 <?php
+function __autoload($class_name) {
+  require_once $class_name . '.class.php';
+  }
 
-        function __autoload($class_name) {
-          require_once $class_name . '.class.php';
-        }
-
-        $id = $_GET['id'];
-	if(! (isset($id) && is_numeric($id)))
-	{
+    $id = $_GET['id'];
+    if(! (isset($id) && is_numeric($id)))
+    {
 		exit();
 	}
 
-	$sql = "SELECT filename, type, content FROM uploads WHERE id='$id' and owner='$user'";
-
+	$sql = "SELECT thumbnailname, filename, type, content FROM uploads WHERE id='$id' and owner='$user'";
 
 	$dbname="c_joey";
 	$host="localhost";
@@ -33,15 +31,11 @@
       
       if ($fileOps->isFile($fetched['type'])) {
 
-/*
-         header("Content-type: text/plain");
-         $filename = $fetched['filename'];
-         echo $filename;
+        if(isset($_GET["thumb"]))
+          $filename = $fetched['thumbnailname'];
+        else
+          $filename = $fetched['filename'];
 
-         exit;
-*/
-
-        $filename = $fetched['filename'];
 
 		$contenttype = "Content-type: " . $fetched['type'];
         header($contenttype);
@@ -61,11 +55,7 @@
       {
         $contenttype = "Content-type: " . $fetched['type']; 
         header($contenttype);
-        
-        if ($use_thumb)
-          echo base64_decode($fetched['thumbnail']);
-        else
-          echo base64_decode($fetched['content']);
+        echo base64_decode($fetched['content']);
       }
     }
 ?>
