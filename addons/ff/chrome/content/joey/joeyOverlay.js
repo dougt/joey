@@ -68,7 +68,20 @@ joey_listener.prototype =
     onStatusChange: function (name, uri, status)
     {
 
-        g_joey_historyArray.push(name + " " + uri + " " + status);
+        if (status == 4)
+        {
+		// this s when the listener is set ( I believe this may be all the Sending conditions ) 
+		// login busy
+            g_joey_statusUpdateObject.busyMore();
+
+        }
+        if (status == 5)
+        {
+		// this s when the listener is unset  
+		// login busy
+            g_joey_statusUpdateObject.busyLess();
+
+        }
 
         if (status == 3)
         {
@@ -85,7 +98,7 @@ joey_listener.prototype =
 		// removing the busy load 
 
 		g_joey_statusUpdateObject.loginStatus("login");
-
+ 		g_joey_historyArray.push("Login fine.");
             g_joey_statusUpdateObject.busyLess();
 
         }
@@ -103,6 +116,8 @@ joey_listener.prototype =
 
         if (status == 1)
         {
+
+	      g_joey_historyArray.push(name + " " + uri + " " + status);
 
 		// files not busy 
 
