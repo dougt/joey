@@ -46,6 +46,8 @@
         if ($this->controller->Session->check('User'))  {
             $user = $this->controller->Session->read('User');
             echo $user['email'].' ('.$html->link('Logout', '/users/logout').')';
+            echo "<p>";
+            echo $html->link('Download Joey Addon for Firefox', 'https://joey.labs.mozilla.com/joey.xpi');
         } else {
  //           echo $html->link('Register', '/users/register');
         }
