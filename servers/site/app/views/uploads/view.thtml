@@ -49,7 +49,11 @@ function __autoload($class_name) {
       else if ($fetched['type'] == "microsummary/xml")
       {         
         header("Content-type: text/plain");
-        echo base64_decode($fetched['content']);
+        $filename = $fetched['filename'];
+        $fh = fopen($filename, 'r') or die("can't open file");
+        fpassthru($fh);
+
+        return;
       }
       else
       {
