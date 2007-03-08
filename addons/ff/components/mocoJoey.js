@@ -174,7 +174,20 @@ mocoJoey.prototype =
 
     setListener: function(listener)
     {
+
+        // This can be considered the start point for a progress capture. 
+	  if (listener) {
+
+		  // We tell 4 which is: we have setup listener / will send
+		  listener.onStatusChange(null,null, 4);
+	  } else {
+		  // We tell 5 which is: we are disabling the upload.
+		  if(this.joey_listener) 
+			  this.joey_listener.onStatusChange(null,null, 5);
+	  } 
+
         this.joey_listener = listener;
+
     },
 
     QueryInterface: function (iid) {
@@ -223,8 +236,11 @@ mocoJoey.prototype =
 			}
 			
 			self.joey_hasLogged=false;
+
 			self.joey_in_progress = false;
-			self.joey_listener = null;
+
+			self.setListener(null);
+
 		}   
 	},
 
@@ -261,7 +277,9 @@ mocoJoey.prototype =
 		if (self.xmlhttp.readyState==4)
 		{ 
 			var listener = self.joey_listener;
-			self.joey_listener = null;
+
+			self.setListener(null);
+
 			self.joey_in_progress = false;
 
 			if (self.xmlhttp.status==200)
