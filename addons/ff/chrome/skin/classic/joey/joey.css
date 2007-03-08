@@ -1,0 +1,7 @@
+#joeyStatusButton {
+    list-style-image  : url("chrome://joey/skin/mini-icon-16-16-logout.png");
+}
+
+#joeyStatusButton.login {
+    list-style-image  : url("chrome://joey/skin/mini-icon-16-16-login.png");
+}
