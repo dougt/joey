@@ -83,6 +83,9 @@ joey_listener.prototype =
 
 		// login 0 status worked 
 		// removing the busy load 
+
+		g_joey_statusUpdateObject.loginStatus("login");
+
             g_joey_statusUpdateObject.busyLess();
 
         }
@@ -111,6 +114,14 @@ joey_listener.prototype =
             g_joey_statusUpdateObject.busyLess();
 
         }
+
+        if (status == -1 ) {
+
+		g_joey_statusUpdateObject.loginStatus("logout");
+		g_joey_historyArray.push("Login error -1");
+
+        }
+
     },
 
     QueryInterface: function (iid) {
@@ -247,6 +258,7 @@ function joey_selectedText()
     g_joey_title = focusedWindow.document.title;
     g_joey_url  = focusedWindow.location.href;
     g_joey_uuid = "";    
+
     uploadDataFromGlobals();
 }
 
@@ -346,6 +358,17 @@ JoeyStatusUpdateClass.prototype = {
 		} else {
 			document.getElementById("joeyWorkingButton").setAttribute("collapsed","true");
 
+		}
+	},
+	loginStatus: function (aMode) {
+		if(aMode == "logout") {
+			// logout mode.
+			document.getElementById("joeyStatusButton").className="";
+ 			
+		} else { 
+			// login mode.
+			document.getElementById("joeyStatusButton").className="login";
+			
 		}
 	}
 }
