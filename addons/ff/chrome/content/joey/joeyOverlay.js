@@ -45,7 +45,20 @@ var g_joey_binary;
 
 var g_joey_areaWindow = null;
 
-window.onmousedown = joeyOnMouseDown;
+// Recently added by marcio...
+
+var g_joey_gBrowser = null;                // presents the main browser, used by the joey_feed code.
+var g_joey_browserStatusHandler = null;    // to track onloction changes in the above browser ( tab browser ) element.
+var g_joey_statusUpdateObject = null;      // the proxy object to deal with UI 
+var g_joey_historyArray = [];              // This is a very simple version of some sort of history array. So far we put Dougt's alert info in here. 
+/* 
+ * Event listeners associated to the joeyOverlay app 
+ */
+
+window.onmousedown = joeyOnMouseDown; // this may prevent other onmousedown associations. Fixthis
+window.addEventListener("load", joeyStartup, false);
+
+
 var gImageSource;
 
 function joey_listener() {}
@@ -55,17 +68,13 @@ joey_listener.prototype =
     onStatusChange: function (name, uri, status)
     {
 
-        /* 
-         * Feed the status to the Joey statuspane items   
-         */
-
-        // alert(name + " " + uri + " " + status);
+        g_joey_historyArray.push(name + " " + uri + " " + status);
 
         if (status == 3)
         {
 
 		// login busy
-            gJoeyStatusUpdateObject.busyMore();
+            g_joey_statusUpdateObject.busyMore();
 
         }
 
@@ -74,18 +83,18 @@ joey_listener.prototype =
 
 		// login 0 status worked 
 		// removing the busy load 
-            gJoeyStatusUpdateObject.busyLess();
+            g_joey_statusUpdateObject.busyLess();
 
         }
 
         if (status == 2)
         {
 		// files busy
-            gJoeyStatusUpdateObject.busyMore();
+            g_joey_statusUpdateObject.busyMore();
 
 		// In the future we may want to track/log information about the elements uploaded
             // and build/keep some sort of history.
-		gJoeyStatusUpdateObject.inventoryMore();
+		g_joey_statusUpdateObject.inventoryMore();
 
         }
 
@@ -99,7 +108,7 @@ joey_listener.prototype =
             joey.setListener(null);
 
 
-            gJoeyStatusUpdateObject.busyLess();
+            g_joey_statusUpdateObject.busyLess();
 
         }
     },
@@ -190,6 +199,35 @@ function replaceAll( str, from, to ) {
     }
     
     return str;
+}
+
+function joey_buildMenuHistoryContainer() {
+
+  for (var i = 0; i < g_joey_historyArray.length; i++) {
+
+    var labelItem = g_joey_historyArray[i];
+    var menuElement=document.createElement("menuitem");
+    menuElement.setAttribute("label",labelItem);
+    document.getElementById("joeyHistoryMenuContainer").appendChild(menuElement);	
+
+  }
+
+}
+
+function joey_clearMenuHistoryContainer() {
+
+   var menuContainer=document.getElementById("joeyHistoryMenuContainer");
+   while(menuContainer.firstChild) {
+     menuContainer.removeChild(menuContainer.firstChild);
+   }
+
+}
+
+function joey_launchCloudSite() {
+
+	// marcio 1 
+	g_joey_gBrowser.loadURI("https://joey.labs.mozilla.com/site/uploads");
+
 }
 
 function joey_selectedText() 
@@ -425,7 +463,7 @@ function joey_selectedImage()
       var uri = ioService.newURI(gImageSource, null, null);
 	
 	// get an listener
-	var listener = new JoeyImageStreamListener(getImageDataCallback, gJoeyStatusUpdateObject)
+	var listener = new JoeyImageStreamListener(getImageDataCallback, g_joey_statusUpdateObject)
 
 	// get a channel for that nsIURI
 	var channel = ioService.newChannelFromURI(uri);
@@ -470,7 +508,7 @@ function joeySetCurrentFeed()
 
 	try {
 
-		var currentFeedURI = gBrowser.mCurrentBrowser.feeds;
+		var currentFeedURI = g_joey_gBrowser.mCurrentBrowser.feeds;
 
 		if(currentFeedURI ||currentFeedURI.length>0) {
 	
@@ -489,35 +527,24 @@ function joeySetCurrentFeed()
 }
 
 
-////
-/// Default initialization code
-//
-
-var gBrowser = null;
-var gJoeyLocalBrowserStatusHandler = null;
-var gJoeyStatusUpdateObject = null;
 
 function joeyStartup()
 {
-
 
     var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
                      .getService(Components.interfaces.nsIWindowMediator);
 
     gWin = wm.getMostRecentWindow("navigator:browser");
 
-    gBrowser = gWin.gBrowser;
+    g_joey_gBrowser = gWin.gBrowser;
 
-    gBrowser.addEventListener("DOMLinkAdded", joeyLinkAddedHandler, false);
+    g_joey_gBrowser.addEventListener("DOMLinkAdded", joeyLinkAddedHandler, false);
 
+    g_joey_browserStatusHandler = new joeyBrowserStatusHandler();
 
-    gJoeyLocalBrowserStatusHandler = new joeyBrowserStatusHandler();
+    g_joey_gBrowser.addProgressListener( g_joey_browserStatusHandler , Components.interfaces.nsIWebProgress.NOTIFY_ALL);
 
-
-    gBrowser.addProgressListener( gJoeyLocalBrowserStatusHandler , Components.interfaces.nsIWebProgress.NOTIFY_ALL);
-
-
-    gJoeyStatusUpdateObject = new JoeyStatusUpdateClass();
+    g_joey_statusUpdateObject = new JoeyStatusUpdateClass();
 
 }
 
@@ -547,7 +574,7 @@ function joeyLinkAddedHandler(event)
   {
     const targetDoc = event.target.ownerDocument;
     
-    var browsers = gBrowser.browsers;
+    var browsers = g_joey_gBrowser.browsers;
     var shellInfo = null;
     
     for (var i = 0; i < browsers.length; i++) {
@@ -582,12 +609,9 @@ function joeyLinkAddedHandler(event)
    // We dont want to add more feed information on it. 
    // browserForLink.feeds = feeds;
     
-    if (browserForLink == gBrowser || browserForLink == gBrowser.mCurrentBrowser) {
-
+    if (browserForLink == g_joey_gBrowser || browserForLink == g_joey_gBrowser.mCurrentBrowser) {
        joeySetCurrentFeed();
-
     } 
-
   }
 }
 
@@ -619,13 +643,9 @@ const nsIDocShellTreeNode      = Components.interfaces.nsIDocShellTreeNode;
   return null;
 }
 
-
-
 /* 
- * 
- * 
+ *
  */
-
 
 function joeyBrowserStatusHandler() {}
 
@@ -700,9 +720,3 @@ joeyBrowserStatusHandler.prototype =
   }
 
 }
-
-/* 
- *  We track the DOMLinkAdded events in the tabbed browser. 
- */ 
-
-addEventListener("load", joeyStartup, false);
