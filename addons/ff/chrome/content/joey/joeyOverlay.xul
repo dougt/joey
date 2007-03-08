@@ -36,6 +36,8 @@
    -
    - ***** END LICENSE BLOCK ***** -->
 
+<?xml-stylesheet href="chrome://joey/skin/joey.css" type="text/css"?> 
+
 <overlay id="joeyOverlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
@@ -87,7 +89,7 @@
   <statusbarpanel  id="joeyStatusbar" context="barcontext" hidden="false" collapsed="false" type="menu" >
     <hbox>
       <toolbarbutton id="joeyStatusButton"
-                     label="joey:"
+                     
                      oncommand="joey_launchPopup()" />
 	<toolbarbutton id="joeyWorkingButton" image="chrome://global/skin/throbber/Throbber-small.gif" collapsed="true" />
 	<toolbarbutton id="joeyInventoryButton"  collapsed="false" />
