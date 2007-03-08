@@ -90,14 +90,24 @@
                      label="joey:"
                      oncommand="joey_launchPopup()" />
 	<toolbarbutton id="joeyWorkingButton" image="chrome://global/skin/throbber/Throbber-small.gif" collapsed="true" />
-	<toolbarbutton id="joeyInventoryButton" collapsed="false" />
+	<toolbarbutton id="joeyInventoryButton"  collapsed="false" />
 
     </hbox>		
-
    <menupopup id="joeyStatusPopup" >
-    <menuitem label="test" />
-    <menuitem label="test" />
+
+    <menuitem label="My Joey" oncommand="joey_launchCloudSite()" />
+
+    <menu label="History Log">
+   
+	   <menupopup id="joeyHistoryMenuContainer" 
+	              onpopupshown="joey_buildMenuHistoryContainer()"
+                    onpopuphidden="joey_clearMenuHistoryContainer()" >
+	   </menupopup>
+
+    </menu>
+
    </menupopup>
+
   </statusbarpanel>
 </statusbar>
 
