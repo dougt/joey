@@ -305,7 +305,7 @@ function joey_feed(feedLocation) {
     g_joey_data = feedLocation;
     g_joey_data_size = feedLocation.length;
     g_joey_binary = false;
-    g_joey_content_type = "text/plain";
+    g_joey_content_type = "rss-source/text";
     g_joey_title = "Feed / We can put a title in it with one more client call. ";
     g_joey_url  = feedLocation;
     g_joey_uuid = "";    
