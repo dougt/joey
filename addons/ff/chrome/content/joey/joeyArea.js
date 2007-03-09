@@ -113,12 +113,12 @@ function NotifyIfChange()
   //  joey.setListener(new joey_listener());
 
     joey.uploadData("Joey! Area Microsummary",
-                       openerURI,
-                       openerURI,
-                       generator,
-                       generator.length,
-                       "microsummary/xml",
-                       0);
+                    "Microsummary from: " + openerURI,
+                    openerURI,
+                    generator,
+                    generator.length,
+                    "microsummary/xml",
+                    0);
                        
 	alert("uploaded...");
 }	
