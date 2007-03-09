@@ -36,6 +36,7 @@ class FileOps {
     if (strcmp($this->type, 'image/png') != 0) {
       $command = "$this->convert '$orgfilename' '$this->filename'";
       exec($command, $returnarray, $returnvalue);
+      // unlink($orgfilename);
     }
 
     return $this->filename;
