@@ -1,2 +1,1 @@
-
 0,15,30,45 * * * * php /home/dougt/services/runner/runms.php 
