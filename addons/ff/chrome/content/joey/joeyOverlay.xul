@@ -35,81 +35,83 @@
    - the terms of any one of the MPL, the GPL or the LGPL.
    -
    - ***** END LICENSE BLOCK ***** -->
-
+ 
 <?xml-stylesheet href="chrome://joey/skin/joey.css" type="text/css"?> 
-
+ 
 <overlay id="joeyOverlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  
+  // This imports our javascript.
+  
+  <script type="application/x-javascript" src="chrome://joey/content/joeyOverlay.js"> </script>
 
-// This imports our javascript.
-
-<script type="application/x-javascript" src="chrome://joey/content/joeyOverlay.js">
-
-</script>
-
-
-// This is for the right click menu.
-
-<popup id="contentAreaContextMenu">
-  <menuitem id="joey_selectedText"
-    label="Joey! Selected Text"
-    insertafter="context-stop" oncommand="joey_selectedText();"/>
-
-  <menuitem id="joey_selectedImage"
-    label="Joey! Selected Image"
-    insertafter="context-stop" oncommand="joey_selectedImage();"/>
-
-  <menuitem id="joey_selectedArea"
-    label="Joey! Selected Area"
-    insertafter="context-stop" oncommand="joey_selectedArea();"/>
+  // This is for the right click menu.
+  
+  <popup id="contentAreaContextMenu">
+    <menuitem id="joey_selectedText"
+              label="Joey! Selected Text"
+              insertafter="context-stop"
+              oncommand="joey_selectedText();"/>
     
-  <menuitem id="joey_selected"
-    label="Joey!"
-    insertafter="context-stop" oncommand="joey_selected();"/>
+    <menuitem id="joey_selectedImage"
+              label="Joey! Selected Image"
+              insertafter="context-stop"
+              oncommand="joey_selectedImage();"/>
     
-  <menuitem id="joey_activeRSSLink" hidden="true"
-    label="Joey! Current Feed"
-    insertafter="context-stop" oncommand="joey_feed();"/>
+    <menuitem id="joey_selectedArea"
+              label="Joey! Selected Area"
+              insertafter="context-stop"
+              oncommand="joey_selectedArea();"/>
     
-</popup>
+    <menuitem id="joey_selected"
+              label="Joey!"
+              insertafter="context-stop"
+              oncommand="joey_selected();"/>
+    
+    <menuitem id="joey_activeRSSLink"
+              hidden="true"
+              label="Joey! Current Feed"
+              insertafter="context-stop"
+              oncommand="joey_feed();"/>
+  </popup>
 
 
-<!-- tools menu --> 
-
-<menupopup id="menu_ToolsPopup">
+  <!-- tools menu --> 
+  
+  <menupopup id="menu_ToolsPopup">
 	<menuitem 
-        insertafter="devToolsSeparator" 
-        label="Joey! Settings..."
-	    oncommand="loot_setttings();" />	
-</menupopup>
+       insertafter="devToolsSeparator" 
+       label="Joey! Settings..."
+	   oncommand="loot_setttings();" />	
+  </menupopup>
+  
+  <!-- status bar static joey presence UI --> 
+  
+  <statusbar id="status-bar">
+    <statusbarpanel  id="joeyStatusbar" context="barcontext" hidden="false" collapsed="false" type="menu" >
+      <hbox>
+        <toolbarbutton id="joeyStatusButton"
+                       oncommand="joey_launchPopup()" />
 
-<!-- status bar static joey presence UI --> 
+	    <toolbarbutton id="joeyWorkingButton"
+                       image="chrome://global/skin/throbber/Throbber-small.gif" 
+                       collapsed="true" />
 
-<statusbar id="status-bar">
-  <statusbarpanel  id="joeyStatusbar" context="barcontext" hidden="false" collapsed="false" type="menu" >
-    <hbox>
-      <toolbarbutton id="joeyStatusButton"
-                     
-                     oncommand="joey_launchPopup()" />
-	<toolbarbutton id="joeyWorkingButton" image="chrome://global/skin/throbber/Throbber-small.gif" collapsed="true" />
-	<toolbarbutton id="joeyInventoryButton"  collapsed="false" />
+	    <toolbarbutton id="joeyInventoryButton"  collapsed="false" />
 
-    </hbox>		
-   <menupopup id="joeyStatusPopup" >
-
-    <menuitem label="My Joey" oncommand="joey_launchCloudSite()" />
-
-    <menu label="History Log">
-   
-	   <menupopup id="joeyHistoryMenuContainer" 
-	              onpopupshown="joey_buildMenuHistoryContainer()"
-                    onpopuphidden="joey_clearMenuHistoryContainer()" >
-	   </menupopup>
-
-    </menu>
-
-   </menupopup>
-
+      </hbox>
+	  
+      <menupopup id="joeyStatusPopup" >
+        <menuitem label="My Joey" oncommand="joey_launchCloudSite()" />
+        <menuitem id="joeyMediaMenuItem" label="Joey! Media on page" hidden="true" oncommand="joey_uploadFoundMedia()" />
+        
+        <menu label="History Log">
+   	      <menupopup id="joeyHistoryMenuContainer" 
+	                 onpopupshown="joey_buildMenuHistoryContainer()"
+                     onpopuphidden="joey_clearMenuHistoryContainer()" >
+	      </menupopup>
+        </menu>
+      </menupopup>
   </statusbarpanel>
 </statusbar>
 
