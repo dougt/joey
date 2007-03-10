@@ -534,6 +534,40 @@ function loot_setttings()
 }
 
 
+function grabAll(elem)
+{
+    if (elem instanceof Components.interfaces.nsIDOMHTMLEmbedElement)
+    {
+
+        var base = Components.classes["@mozilla.org/network/standard-url;1"]
+                             .createInstance(Components.interfaces.nsIURI);
+
+        base.spec = g_joey_gBrowser.contentDocument.location.href;
+        var url = base.resolve(elem.src)
+
+        alert(url);
+    }
+
+    return NodeFilter.FILTER_ACCEPT;
+}
+
+function doGrab(iterator)
+{
+    for (var i = 0; i < 50; ++i)
+        if (!iterator.nextNode())
+            return;
+    
+    setTimeout(doGrab, 16, iterator);
+}
+
+function joeyCheckForMedia()
+{
+    var doc = g_joey_gBrowser.contentDocument;
+
+    var iterator = doc.createTreeWalker(doc, NodeFilter.SHOW_ELEMENT, grabAll, true);
+    setTimeout(doGrab, 16, iterator);
+}
+
 /* 
  * This refreshes feed information in the menu. 
  * The currentBrowser.feeds array is populated from the 
@@ -721,15 +755,15 @@ joeyBrowserStatusHandler.prototype =
   },
   onLocationChange : function(aWebProgress, aRequest, aLocation)
   {
+      setTimeout(joeyCheckForMedia, 600); // this needs to be called after the page loads! dougt
+
       domWindow = aWebProgress.DOMWindow;
 
       if (domWindow == domWindow.top) {
         //this.urlBar.value = aLocation.spec;
 
-		joeySetCurrentFeed();
-        
-      }
-    
+		joeySetCurrentFeed();        
+      }    
   },
   
   onStatusChange : function(aWebProgress, aRequest, aStatus, aMessage)
