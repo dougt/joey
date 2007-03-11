@@ -36,7 +36,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
  
-  require_once('../../libraries/magpierss/rss_fetch.inc');
+  require_once(dirname(__FILE__) . '/../../libraries/magpierss/rss_fetch.inc');
 
   //connect to db
   include('config.php');

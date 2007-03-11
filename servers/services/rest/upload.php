@@ -1,5 +1,5 @@
 <?php
-    require_once('../../libraries/FileOps.class.php');
+    require_once(dirname(__FILE__) . '/../../libraries/FileOps.class.php');
     
     session_start();
     
