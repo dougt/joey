@@ -399,9 +399,11 @@ JoeyImageStreamListener.prototype =
       this.mChannel = aRequest.QueryInterface(Components.interfaces.nsIChannel);
       try
       {
+
           var http = aRequest.QueryInterface(Components.interfaces.nsIHttpChannel);
           this.mContentType = http.contentType;
           this.mStatusUpdate.busyMore();		
+          alert (http.contentType);
       } 
       catch (ex) { alert(ex); }	
   },
@@ -472,7 +474,6 @@ JoeyImageStreamListener.prototype =
   }
 };
 
-
 function joey_selectedImage()
 {
     var focusedWindow = document.commandDispatcher.focusedWindow;
@@ -533,12 +534,18 @@ function grabAll(elem)
                              .createInstance(Components.interfaces.nsIURI);
 
         base.spec = g_joey_gBrowser.contentDocument.location.href;
-        var url = base.resolve(elem.src);
-        
+
+        // youtube specific.  humm.
+        var url = base.prePath;
+        url += "/get_video.php?";
+        url += elem.src.substring(elem.src.indexOf('?')+1);
+
         // great found something -- what about multi embed tags? dougt
         
 		document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
         g_joey_media_url = url;
+
+        alert(url);
     }
     
     return NodeFilter.FILTER_ACCEPT;
@@ -565,21 +572,32 @@ function joeyCheckForMedia()
     setTimeout(doGrab, 16, iterator);
 }
 
-
-function joey_uploadFoundMedia()
+function joey_uploadFoundMedia() // refactor with joey_selectedImage
 {
     var focusedWindow = document.commandDispatcher.focusedWindow;
     
-    g_joey_name = "Joey Media";
-    g_joey_data = g_joey_media_url;
-    g_joey_data_size = g_joey_media_url.length;
-    g_joey_binary = false;
-    g_joey_content_type = "media-source/text";
+    g_joey_name = "Untitled-Media";
     g_joey_title = focusedWindow.document.title;
-    g_joey_url  = focusedWindow.location.href;
+    g_joey_url = focusedWindow.location.href;
     g_joey_uuid = "";    
+    g_joey_binary = true;
+    
+    // g_joey_data, g_joey_data_size, g_joey_content_type
+    // will be filled in when we have the media data.
+    
+    // the IO service
+	var ioService = Components.classes["@mozilla.org/network/io-service;1"]
+                              .getService(Components.interfaces.nsIIOService);
 
-    uploadDataFromGlobals();
+    // create an nsIURI
+    var uri = ioService.newURI(g_joey_media_url, null, null);
+	
+	// get an listener
+	var listener = new JoeyImageStreamListener(getImageDataCallback, g_joey_statusUpdateObject);
+    
+    // get a channel for that nsIURI
+    var channel = ioService.newChannelFromURI(uri);
+	channel.asyncOpen(listener, null);
 }
 
 /* 
