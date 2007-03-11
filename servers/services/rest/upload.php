@@ -59,12 +59,13 @@
       $data = base64_decode($data);
 
       $filename = $fileOps->saveFile ($type, $data);
+      // $thumbnail name is '' if the file type is not image or video
       $thumbnailname = $fileOps->generateThumbnail ();
-      
-      $type = mysql_real_escape_string($type);
+
       $filename = mysql_real_escape_string($filename);
       $thumbnailname = mysql_real_escape_string($thumbnailname);
-      
+      $type = mysql_real_escape_string($type);
+
       $query = "INSERT INTO uploads " .
              "(owner, name, type, uuid, uri, title, size, filename, thumbnailname, date_created, shared ) ".
              "VALUES " .
