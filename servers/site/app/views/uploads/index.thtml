@@ -1,9 +1,3 @@
-<?php
-require_once(dirname(__FILE__) . '/../../../../libraries/FileOps.class.php');
-$user = $this->controller->Session->read('User');
-$fileOps = new FileOps ($user['id']);
-?>
-
 <h1>Joey! Uploads</h1>
 <table>
   <tr>
@@ -23,8 +17,8 @@ $fileOps = new FileOps ($user['id']);
          if (!strncmp($upload['Upload']['type'], "image", 5))
          {
       ?>
-      <a href="<?=$fileOps->getFilepath()?>/<?=$upload['Upload']['filename']?>">
-       <img src="<?=$fileOps->getFilepath()?>/<?=$upload['Upload']['thumbnailname']?>"/>
+      <a href="view/<?=$upload['Upload']['id']?>">
+        <img src="view/<?=$upload['Upload']['id']?>/?thumb=1"/>
       </a>
       <?php
          }
@@ -32,7 +26,7 @@ $fileOps = new FileOps ($user['id']);
                   !strcmp($upload['Upload']['type'], "text/plain") )
          {
            echo "<iframe height='100' width='100' src=\"";                                      
-           echo "uploads/view?id=" . $upload['Upload']['id'];
+           echo "view/" . $upload['Upload']['id'];
            echo "\"> </iframe>";
          }
          else
@@ -43,7 +37,7 @@ $fileOps = new FileOps ($user['id']);
     </td>
     
     <td>
-      id:    <?php echo $html->link($upload['Upload']['id'], "/uploads/view?id=" . $upload['Upload']['id']) ?>
+      id:    <?php echo $html->link($upload['Upload']['id'], "/uploads/view/" . $upload['Upload']['id']) ?>
 <p>   title: <?php echo $upload['Upload']['title']; ?>
 <p>   uri:   <?php echo $upload['Upload']['uri']; ?>
 <p>	  size:  <?php echo $upload['Upload']['size'] ?>

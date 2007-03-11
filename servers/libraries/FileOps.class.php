@@ -5,7 +5,7 @@ class FileOps {
   var $randname;
   var $type;
   var $filedir;
-  var $filepath;
+  // var $filepath;
   var $filename;
   var $thumbnailname;
   var $convert = '/usr/bin/convert';
@@ -19,17 +19,17 @@ class FileOps {
     
   function FileOps ($userid) {
     $this->randname = uniqid();
-    $this->filedir = '/var/www/html/michaelyuan.com/httpdocs/fxmobile/libraries/data/uploads/' . $userid . '/';
-    $this->filepath = '/fxmobile/libraries/data/uploads/' . $userid . '/';
+    $this->filedir = '/data/uploads/' . $userid . '/';
+    // $this->filepath = '/fxmobile/libraries/data/uploads/' . $userid . '/';
     
     if (!file_exists($this->filedir)) {
       mkdir ($this->filedir);
     }
   }
 
-  function getFilepath () {
-    return $this->filepath;
-  }
+  // function getFilepath () {
+  //   return $this->filepath;
+  // }
   
   function saveFile ($type, $data) {
     $this->type = $type;
@@ -49,13 +49,20 @@ class FileOps {
     return basename($this->filename);
   }
 
-  function getFile ($filename) {
+  function getFile ($basename) {
+    $filename = $this->filedir . $basename;
     $fh = fopen($filename, 'r') or die("can't open file");
     $data = fread($fh, filesize($filename));
     fclose($fh);
     return $data;
   }
   
+  function getFilename ($basename) {
+    $filename = $this->filedir . $basename;
+    return $filename;
+  }
+
+
   // $thumbnail name is '' if the file type is not image or video
   function generateThumbnail () {
     if (strncasecmp($this->type, 'image', 5) == 0) {

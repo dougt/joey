@@ -1,0 +1,10 @@
+<p>
+  <?php
+    if ($this->controller->Session->check('User'))  {
+      $user = $this->controller->Session->read('User');
+      echo $user['uname'].' ('.$html->link('Logout', '/users/logout').')';
+    }
+  ?>
+</p>
+
+<!-- container -->

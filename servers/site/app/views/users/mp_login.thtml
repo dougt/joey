@@ -1,0 +1,32 @@
+<form action="<?=htmlentities($html->url()); ?>" method="post" />
+
+<?php
+if (isset($error) && $error) {
+    echo '<p><font color="red">Could not authenticate.  Please make sure your email address and password are correct and try again.</font></p>';
+}
+
+if (! $this->controller->Session->check('User')) {
+
+?>
+
+<h2>Login</h2>
+
+<p>
+Username:<br/>
+<?=$html->input('User/uname')?>
+</p>
+
+<p>
+Password:<br/>
+<?=$html->input('User/password')?>
+</p>
+
+<p>
+<?=$html->submit(); ?>
+</p>
+
+<?php
+}
+?>
+
+</form>

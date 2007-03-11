@@ -1,64 +1,35 @@
 <?php
-
-    require_once(dirname(__FILE__) . '/../../../../libraries/FileOps.class.php');
-
-    $id = $_GET['id'];
-    if(! (isset($id) && is_numeric($id)))
-    {
-		exit();
-	}
-
-	$sql = "SELECT thumbnailname, filename, type, content FROM uploads WHERE id='$id' and owner='$user'";
-
-	$dbname="c_joey";
-	$host="localhost";
-	$user="root";
-	$dbh=mysql_connect ($host,$user,"mozilla") or die ('I cannot connect to the database because: ' . mysql_error(). '');
-	mysql_select_db ("$dbname") or die('I cannot select the database because: ' . mysql_error());
-
-	$result = mysql_query("$sql") or die("Invalid query: " . mysql_error());
-
-	if(mysql_num_rows($result) == 0)
-    {
-      echo "Item does not exist<br>";
-    }
-    else
-    {
-      $fetched= mysql_fetch_array($result);
+require_once(dirname(__FILE__) . '/../../../../libraries/FileOps.class.php');
       
-      $fileOps = new FileOps ($user);
+$fileOps = new FileOps ($user['id']);
       
-      if ($fileOps->isFile($fetched['type'])) {
+if ($fileOps->isFile($item['type'])) {
 
-        if(isset($_GET["thumb"]))
-          $filename = $fetched['thumbnailname'];
-        else
-          $filename = $fetched['filename'];
+  if(isset($_GET["thumb"]))
+    $basename = $item['thumbnailname'];
+  else
+    $basename = $item['filename'];
 
+  $filename = $fileOps->getFilename ($basename);
+  $contenttype = "Content-type: " . $item['type'];
+  header($contenttype);
+  header('Content-Length: ' . filesize($filename));
 
-		$contenttype = "Content-type: " . $fetched['type'];
-        header($contenttype);
-        header('Content-Length: ' . filesize($filename));
+  $fh = fopen($filename, 'r') or die("can't open file");
+  fpassthru($fh);
 
-        $fh = fopen($filename, 'r') or die("can't open file");
-        fpassthru($fh);
+  return;
+} else if ($item['type'] == "microsummary/xml") {         
+  header("Content-type: text/plain");
+  $basename = $item['filename'];
+  $filename = $fileOps->getFilename ($basename);
+  $fh = fopen($filename, 'r') or die("can't open file");
+  fpassthru($fh);
 
-		return;
-      }
-      else if ($fetched['type'] == "microsummary/xml")
-      {         
-        header("Content-type: text/plain");
-        $filename = $fetched['filename'];
-        $fh = fopen($filename, 'r') or die("can't open file");
-        fpassthru($fh);
-
-        return;
-      }
-      else
-      {
-        $contenttype = "Content-type: " . $fetched['type']; 
-        header($contenttype);
-        echo base64_decode($fetched['content']);
-      }
-    }
+  return;
+} else {
+  $contenttype = "Content-type: " . $item['type']; 
+  header($contenttype);
+  echo $item['content'];
+}
 ?>

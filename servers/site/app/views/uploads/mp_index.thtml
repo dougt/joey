@@ -1,0 +1,26 @@
+<?php 
+foreach ($uploads as $upload): 
+?>
+
+<p>
+<b><?=$upload['Upload']['title']?></b><br/>
+
+<?php 
+  $type = $upload['Upload']['type'];
+  if (!strncasecmp($type, "image", 5)) {
+?>
+<a href="view/<?=$upload['Upload']['id']?>">
+  <img src="view/<?=$upload['Upload']['id']?>/?thumb=1"/>
+</a>
+<?php
+  } elseif (!strcasecmp($type, 'xml/microsummary')) {
+    echo "TODO: display live microsummary<br/>";
+  } else {
+?>
+<a href="view/<?=$upload['Upload']['id']?>">View</a>
+<?php
+  }
+?>
+</p>
+
+<?php endforeach; ?>

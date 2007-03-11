@@ -47,6 +47,8 @@ class UploadsController extends AppController
         include 'BrowserAgent.class.php';
 
 	$user = $this->Session->read('User');
+        $this->set('user', $user);
+
 	$this->set('uploads', $this->Upload->findAllByOwner($user['id']));
 
         if (BrowserAgent::isMobile()) {
@@ -54,11 +56,23 @@ class UploadsController extends AppController
         }
     }
 
-    function view()
+    function view($id)
     {
+       if(! (isset($id) && is_numeric($id)))
+       {
+          $this->redirect('/uploads/index');
+           exit();
+        }
+
         $this->layout = null;
+
 	$user = $this->Session->read('User');
-        $this->set('user', $user['id']);
+        $this->set('user', $user);
+ 
+        $item = $this->Upload->findById($id);
+        if ($item['Upload']['owner'] == $user['id']) {
+	  $this->set('item', $item['Upload']);
+        }
 	
     }
 
@@ -68,7 +82,7 @@ class UploadsController extends AppController
 
 	if(! (isset($id) && is_numeric($id)))
         {
-           $this->redirect('/uploads');
+           $this->redirect('/uploads/index');
 	   exit();
         }
 	
@@ -78,7 +92,7 @@ class UploadsController extends AppController
 	if ($item['Upload']['owner'] == $user['id'])
 		$this->Upload->delete($id);
 
-	$this->redirect('/uploads');	
+	$this->redirect('/uploads/index');	
     }
 
     function rss()

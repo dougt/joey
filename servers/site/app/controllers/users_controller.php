@@ -72,7 +72,7 @@ class UsersController extends AppController
         $this->Session->write('User', $someone['User']);
 
         // The uploads controller will detect the browser 
-        $this->redirect('/uploads');
+        $this->redirect('/uploads/index');
       } else {
         
         // This is a generalized, non-specific error
@@ -117,7 +117,7 @@ class UsersController extends AppController
       
       $someone = $this->User->findByEmail($this->data['User']['email']);
       $this->Session->write('User', $someone['User']);
-      $this->redirect('/uploads');
+      $this->redirect('/uploads/index');
     }
   }
 }
