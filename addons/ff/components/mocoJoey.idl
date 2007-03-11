@@ -44,7 +44,7 @@ interface mocoJoeyListener : nsISupports
                       in long status);
 };
 
-[scriptable, uuid(d8395123-3f49-4fa9-acf0-023b58c061c6)]
+[scriptable, uuid(22258500-4F86-4C4A-9A6D-B01EF98D0265)]
 interface mocoJoey : nsISupports
 {
   
@@ -61,10 +61,17 @@ interface mocoJoey : nsISupports
                   in string uuid);
                   
   void uploadBinaryData(in string name,
-			    in string title,
-			    in string uri,
-			    [array, size_is(size)] in PRInt32 data,
-			    in PRUint32   size,
-			    in string type,
-			    in string uuid);    
+                        in string title,
+                        in string uri,
+                        [array, size_is(size)] in PRInt32 data,
+                        in PRUint32 size,
+                        in string type,
+                        in string uuid);    
+
+  void uploadFile(in string name,
+                  in string title,
+                  in string uri,
+                  in nsIFile file,
+                  in string type,
+                  in string uuid);    
 };

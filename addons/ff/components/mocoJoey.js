@@ -123,32 +123,47 @@ mocoJoey.prototype =
 	{
         var b = new G_Base64();
 		this.uploadDataInternal( name, 
-							b.encodeByteArray(b.arrayifyString(title)),
-							b.encodeByteArray(b.arrayifyString(url)), 
-							b.encodeByteArray(b.arrayifyString(data)),
-							size, 
-							type,
-							uuid);
+                                 b.encodeByteArray(b.arrayifyString(title)),
+                                 b.encodeByteArray(b.arrayifyString(url)), 
+                                 b.encodeByteArray(b.arrayifyString(data)),
+                                 size, 
+                                 type,
+                                 uuid);
 
 	},
 
 	uploadBinaryData: function(name, title, url, data, size, type, uuid)
 	{
-		var b = new G_Base64();
+        var b = new G_Base64();
 		this.uploadDataInternal( name, 
-							b.encodeByteArray(b.arrayifyString(title)),
-							b.encodeByteArray(b.arrayifyString(url)), 
-							b.encodeByteArray(data),
-							size, 
-							type,
-							uuid);
+                                 b.encodeByteArray(b.arrayifyString(title)),
+                                 b.encodeByteArray(b.arrayifyString(url)), 
+                                 b.encodeByteArray(data),
+                                 size, 
+                                 type,
+                                 uuid);
 	},
+
+    uploadFile: function(name, title, url, file, type, uuid)
+    {
+        this.joey_isfile = true;
+
+        var b = new G_Base64();
+		this.uploadDataInternal( name, 
+                                 b.encodeByteArray(b.arrayifyString(title)),
+                                 b.encodeByteArray(b.arrayifyString(url)), 
+                                 data,
+                                 size, 
+                                 type,
+                                 uuid);
+    },
 
     uploadDataInternal: function(name, title, url, data, size, type, uuid)
     {
         if (this.joey_in_progress == true)
             return -1;
-            
+
+        this.joey_in_progress = true;
 
         this.joey_name  = name;
         this.joey_title = title;
@@ -215,7 +230,7 @@ mocoJoey.prototype =
 		{ 
 			if (self.xmlhttp.status==200)
 			{
-              	     if (self.xmlhttp.responseText.indexOf('-1') == -1)
+                if (self.xmlhttp.responseText.indexOf('-1') == -1)
 				{
 					self.joey_hasLogged = true;
 					
@@ -304,31 +319,76 @@ mocoJoey.prototype =
 
 	uploadDataFromGlobals: function ()
 	{
+        const BOUNDARY="111222111";
+        
+        var mis=Components.classes["@mozilla.org/io/multiplex-input-stream;1"]
+                          .createInstance(Components.interfaces.nsIMultiplexInputStream);
+
+        var buf = null;
+
+        if (this.joey_isfile == true)
+        {
+            var fin=Components.classes["@mozilla.org/network/file-input-stream;1"]
+                              .createInstance(Components.interfaces.nsIFileInputStream);
+
+            fin.init(this.joey_data, 0x1, 0, 0);
+
+            buf=Components.classes["@mozilla.org/network/buffered-input-stream;1"]
+                          .createInstance(Components.interfaces.nsIBufferedInputStream);
+            buf.init(fin, 4096);
+        }
+
+        var preamble = Components.classes["@mozilla.org/io/string-input-stream;1"]
+                                 .createInstance(Components.interfaces.nsIStringInputStream);
+
+        function createParam( name , value )
+        {
+            return "--"+BOUNDARY+"\r\n" + 
+                   "Content-disposition: form-data;name=\"" + name + "\"\r\n\r\n" +
+                   value + "\r\n";
+        }
+
+        var start = createParam("name", this.joey_name) +
+                    createParam("title", this.joey_title) +
+                    createParam("uri",   this.joey_url) +
+                    createParam("size", this.joey_data_size) +
+                    createParam("uuid", this.joey_uuid) +
+                    createParam("type", this.joey_content_type);
+
+        if (buf == null)
+        {
+            start += createParam("data", this.joey_data);
+        }
+
+        preamble.setData(start, start.length);
+
+        debug(start);
+
+        var postamble = Components.classes["@mozilla.org/io/string-input-stream;1"]
+                                 .createInstance(Components.interfaces.nsIStringInputStream);
+
+        var endstring = "\r\n--"+BOUNDARY+"--\r\n";
+        postamble.setData(endstring, endstring.length);
+
+
+        mis.appendStream(preamble);
+
+        if (buf != null)
+            mis.appendStream(buf);
+
+        mis.appendStream(postamble);
+
 		this.xmlhttp = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]
-     							 .createInstance(Components.interfaces.nsIXMLHttpRequest);
-			
-
+                                 .createInstance(Components.interfaces.nsIXMLHttpRequest);
+		
         var url  = moco_joey_url + "/rest/upload.php";
-        var data = "name=" + this.joey_name + "&title=" + this.joey_title +
-                   "&uri="  + this.joey_url  + "&size="  + this.joey_data_size +
-                   "&uuid=" + this.joey_uuid + "&type="  + this.joey_content_type +
-                   "&data=" + encodeURIComponent(this.joey_data); 
-
-		this.xmlhttp.open("POST", url, true);
+        this.xmlhttp.open("POST", url, true);
+        this.xmlhttp.setRequestHeader("Content-Length", mis.available());
+        this.xmlhttp.setRequestHeader("Content-Type","multipart/form-data, boundary="+BOUNDARY);
 
 		var self = this;
-     	this.xmlhttp.onreadystatechange = function() {self.uploadCallback(self);}
-     	this.xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-		this.xmlhttp.send(data);
-		
-		//debug("uploadData:");
-		//debug(this.joey_name);
-		//debug(this.joey_title);
-		//debug(this.joey_url);
-		//debug(this.joey_content_type);
-		//debug(this.joey_data_size);
-		//debug(this.joey_data);
-		//debug(this.joey_uuid);
+     	this.xmlhttp.onreadystatechange = function() {self.uploadCallback(self);};
+        this.xmlhttp.send(mis);
 	},
 };
 
