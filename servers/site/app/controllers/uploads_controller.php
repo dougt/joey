@@ -44,8 +44,14 @@ class UploadsController extends AppController
 
     function index()
     {
+        include 'BrowserAgent.class.php';
+
 	$user = $this->Session->read('User');
 	$this->set('uploads', $this->Upload->findAllByOwner($user['id']));
+
+        if (BrowserAgent::isMobile()) {
+          $this->render ('mp_index', 'mp');
+        }
     }
 
     function view()

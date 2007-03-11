@@ -1,3 +1,9 @@
+<?php
+require_once(dirname(__FILE__) . '/../../../../libraries/FileOps.class.php');
+$user = $this->controller->Session->read('User');
+$fileOps = new FileOps ($user['id']);
+?>
+
 <h1>Joey! Uploads</h1>
 <table>
   <tr>
@@ -16,7 +22,11 @@
       <?php 
          if (!strncmp($upload['Upload']['type'], "image", 5))
          {
-           echo $html->image("../uploads/view?id=" . $upload['Upload']['id'] . "&thumb=1");
+      ?>
+      <a href="<?=$fileOps->getFilepath()?>/<?=$upload['Upload']['filename']?>">
+       <img src="<?=$fileOps->getFilepath()?>/<?=$upload['Upload']['thumbnailname']?>"/>
+      </a>
+      <?php
          }
          else if (!strcmp($upload['Upload']['type'], "microsummary/xml") ||
                   !strcmp($upload['Upload']['type'], "text/plain") )
@@ -34,8 +44,8 @@
     
     <td>
       id:    <?php echo $html->link($upload['Upload']['id'], "/uploads/view?id=" . $upload['Upload']['id']) ?>
-<p>   title: <?php echo base64_decode($upload['Upload']['title']); ?>
-<p>   uri:   <?php echo base64_decode($upload['Upload']['uri']) ?>
+<p>   title: <?php echo $upload['Upload']['title']; ?>
+<p>   uri:   <?php echo $upload['Upload']['uri']; ?>
 <p>	  size:  <?php echo $upload['Upload']['size'] ?>
 <p>	  date:  <?php echo $upload['Upload']['date_created'] ?></td>
 

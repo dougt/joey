@@ -44,6 +44,10 @@ class UsersController extends AppController
   
   function login() {
     
+    include 'BrowserAgent.class.php';
+
+    $this->pageTitle = 'Login';
+
     //Don't show the error message if no data has been submitted.
     $this->set('error', false);
 
@@ -59,11 +63,15 @@ class UsersController extends AppController
 		{
           // This is a generalized, non-specific error
           $this->set('error', true);
+          if (BrowserAgent::isMobile()) {
+            $this->render ('mp_login', 'mp');
+          }
           return;
 		}
         
         $this->Session->write('User', $someone['User']);
-        
+
+        // The uploads controller will detect the browser 
         $this->redirect('/uploads');
       } else {
         
@@ -71,7 +79,11 @@ class UsersController extends AppController
         $this->set('error', true);
       }
     }
-    
+
+    if (BrowserAgent::isMobile()) {
+      $this->render ('mp_login', 'mp');
+    }
+ 
   }
 
   function logout() {

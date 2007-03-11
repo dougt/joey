@@ -5,6 +5,7 @@ class FileOps {
   var $randname;
   var $type;
   var $filedir;
+  var $filepath;
   var $filename;
   var $thumbnailname;
   var $convert = '/usr/bin/convert';
@@ -18,11 +19,16 @@ class FileOps {
     
   function FileOps ($userid) {
     $this->randname = uniqid();
-    $this->filedir = '/data/uploads/' . $userid . '/';
+    $this->filedir = '/var/www/html/michaelyuan.com/httpdocs/fxmobile/libraries/data/uploads/' . $userid . '/';
+    $this->filepath = '/fxmobile/libraries/data/uploads/' . $userid . '/';
     
     if (!file_exists($this->filedir)) {
       mkdir ($this->filedir);
     }
+  }
+
+  function getFilepath () {
+    return $this->filepath;
   }
   
   function saveFile ($type, $data) {
@@ -40,7 +46,7 @@ class FileOps {
       // unlink($orgfilename);
     }
 
-    return $this->filename;
+    return basename($this->filename);
   }
 
   function getFile ($filename) {
@@ -58,7 +64,7 @@ class FileOps {
       $command = "$this->convert -geometry '100x100' '$this->filename' '$this->thumbnailname'";
       exec($command, $returnarray, $returnvalue);
     
-      return $this->thumbnailname;
+      return basename($this->thumbnailname);
     } elseif (strncasecmp($this->type, 'video', 5) == 0) {
       // TODO: add video support
       return '';
