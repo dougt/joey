@@ -1,4 +1,5 @@
 <?php
+
     require_once(dirname(__FILE__) . '/../../libraries/FileOps.class.php');
     
     session_start();
@@ -50,12 +51,27 @@
     
     $type = $_POST['type'];
     $type = strtolower($type);
-    $data = $_POST['data'];
-    if ($fileOps->isFile($type)) {
-      // Save the data to file
-      $data = base64_decode($data);
 
-      $filename = $fileOps->saveFile ($type, $data);
+    if (isset($_POST['data']))
+      $data = $_POST['data'];
+    else
+      $data = "not set";
+
+     if ($fileOps->isFile($type)) {
+      
+      $filename = "";
+
+      if (isset($_POST['data']))
+      {
+        // Save the data to file
+        $data = base64_decode($data);
+        $filename = $fileOps->saveFile ($type, $data);
+      }
+      else
+      {
+        $filename = $fileOps->moveFile ($type, $_FILES['joeyfile']['tmp_name']);
+      }
+
       // $thumbnail name is '' if the file type is not image or video
       $thumbnailname = $fileOps->generateThumbnail ();
 
