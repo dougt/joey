@@ -14,7 +14,8 @@ class FileOps {
                           'image/gif' => '.gif',
                           'image/png' => '.png',
                           'video/mpeg' => '.mpg',
-                          'audio/mpeg' => '.mp3',
+                          'video/flv' => '.flv',
+                            'audio/mpeg' => '.mp3',
                           'audio/x-wav' => '.wav');
     
   function FileOps ($userid) {
@@ -31,6 +32,30 @@ class FileOps {
   //   return $this->filepath;
   // }
   
+
+  function moveFile ($type, $file) {
+    
+    $this->type = $type;
+    $this->filename = $this->filedir . $this->randname . $this->fileTypes[$this->type];
+    
+    if(!move_uploaded_file($file, $this->filename))
+    {
+      echo "There was a problem when uploding!";
+      print_r($_FILES);
+      die("can't open file");
+    }
+    
+    if ((strcasecmp($this->type, 'image/png') != 0) && (strncasecmp($this->type, 'image', 5) == 0)) {
+      $orgfilename = $this->filename;
+      $this->filename = $this->filedir . $this->randname . '.png';
+      $command = "$this->convert '$orgfilename' '$this->filename'";
+      exec($command, $returnarray, $returnvalue);
+      // unlink($orgfilename);
+    }
+    
+    return basename($this->filename);
+  }
+
   function saveFile ($type, $data) {
     $this->type = $type;
     $this->filename = $this->filedir . $this->randname . $this->fileTypes[$this->type];
