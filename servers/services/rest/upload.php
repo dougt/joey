@@ -80,18 +80,18 @@
       $type = mysql_real_escape_string($type);
 
       $query = "INSERT INTO uploads " .
-             "(owner, name, type, uuid, uri, title, size, filename, thumbnailname, date_created, shared ) ".
+             "(owner, name, type, uuid, uri, title, size, filename, thumbnailname, created, modified, shared ) ".
              "VALUES " .
-             "('$userid', '$name', '$type', '$uuid', '$uri', '$title', '$size', '$filename', '$thumbnailname', NOW(), 'yes')";
+             "('$userid', '$name', '$type', '$uuid', '$uri', '$title', '$size', '$filename', '$thumbnailname', NOW(), NOW(), 'yes')";
       
     } else {
       
       $type = mysql_real_escape_string($type);
       $data = mysql_real_escape_string($data);
       $query = "INSERT INTO uploads " .
-             "(owner, name, type, uuid, uri, title, size, content, date_created, shared ) ".
+             "(owner, name, type, uuid, uri, title, size, content, created, modified, shared ) ".
              "VALUES " .
-             "('$userid', '$name', '$type', '$uuid', '$uri', '$title', '$size', '$data', NOW(), 'yes')";
+             "('$userid', '$name', '$type', '$uuid', '$uri', '$title', '$size', '$data', NOW(), NOW(), 'yes')";
     }
 
     $result = mysql_query($query);
