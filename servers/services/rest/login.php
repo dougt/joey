@@ -15,7 +15,7 @@
 
     $userid = -1;
 
-    $query="select id from users where uname='$username' and password='$password' ";
+    $query="select id from users where username='$username' and password='$password' ";
     $result=mysql_query($query);
     
     if ($fetched = mysql_fetch_array($result)) {
