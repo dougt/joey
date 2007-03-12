@@ -1,4 +1,3 @@
-<form action="<?=htmlentities($html->url()); ?>" method="post" />
 
 <?php
 if (isset($error) && $error) {
@@ -9,23 +8,23 @@ if (! $this->controller->Session->check('User')) {
 
 ?>
 
-<div>
-<label for="LogMeIn">Login</label>
-</div>
+<h2>Login</h2>
 
-<div>
-<label for="UserEmail">User Name:</label>
-<?=$html->input('User/uname')?>
-</div>
+<form action="<?=htmlentities($html->url()); ?>" method="post" />
+    <div>
+    <label class="joey-label-large" for="UserUsername">User Name:</label>
+    <?=$html->input('User/username')?>
+    </div>
 
-<div>
-<label for="UserPassword">Password:</label>
-<?=$html->password('User/password')?>
-</div>
+    <div>
+    <label class="joey-label-large" for="UserPassword">Password:</label>
+    <?=$html->password('User/password')?>
+    </div>
 
-<div class="button-box">
-    <?=$html->submit(); ?>
-</div>
+    <div class="button-box">
+        <?=$html->submit('Login', array('class' => 'joey-submit')); ?>
+    </div>
+</form>
 
 
 <div>
@@ -36,4 +35,3 @@ if (! $this->controller->Session->check('User')) {
 }
 ?>
 
-</form>

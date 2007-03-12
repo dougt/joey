@@ -4,7 +4,7 @@ padding:0;
 }
 
 body{
-font-family:"frutiger linotype","lucida grande",helvetica,arial,sans-serif;
+font-family: sans-serif;
 text-align:center;
 color:#333;
 font-size: 76%;
@@ -35,7 +35,7 @@ font-size: 180%;
 }
 
 h2{
-color:#c6c65b;
+color:#86863b;
 padding-top: 1em;
 margin:0.3em 0;
 font-size: 180%;
@@ -176,6 +176,7 @@ background-color: #ddd;
 
 /* forms */
 
+/*
 form {
 margin-top: 2em;
 }
@@ -221,6 +222,7 @@ input[type=submit] {
 display: inline;
 vertical-align: bottom;
 }
+*/
 .required{
 clear: both;
 color:#222;

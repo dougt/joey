@@ -49,11 +49,9 @@ class User extends AppModel
                         );
 
     var $validate = array(
-                            'uname'     => VALID_NOT_EMPTY,
+                            'username'  => VALID_NOT_EMPTY,
                             'email'     => VALID_NOT_EMPTY,
-                            'password'  => VALID_NOT_EMPTY,
-                            'disabled'  => VALID_NOT_EMPTY,
-                            'date_joined'  => VALID_NOT_EMPTY
+                            'password'  => VALID_NOT_EMPTY
                          );
 
 }

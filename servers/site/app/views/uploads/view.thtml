@@ -1,35 +1,8 @@
 <?php
-require_once(dirname(__FILE__) . '/../../../../libraries/FileOps.class.php');
-      
-$fileOps = new FileOps ($user['id']);
-      
-if ($fileOps->isFile($item['type'])) {
+    header("Content-type: {$content_type}");
+    if (isset($content_length)) {
+        header("Content-Length: {$content_length}");
+    }
 
-  if(isset($_GET["thumb"]))
-    $basename = $item['thumbnailname'];
-  else
-    $basename = $item['filename'];
-
-  $filename = $fileOps->getFilename ($basename);
-  $contenttype = "Content-type: " . $item['type'];
-  header($contenttype);
-  header('Content-Length: ' . filesize($filename));
-
-  $fh = fopen($filename, 'r') or die("can't open file");
-  fpassthru($fh);
-
-  return;
-} else if ($item['type'] == "microsummary/xml") {         
-  header("Content-type: text/plain");
-  $basename = $item['filename'];
-  $filename = $fileOps->getFilename ($basename);
-  $fh = fopen($filename, 'r') or die("can't open file");
-  fpassthru($fh);
-
-  return;
-} else {
-  $contenttype = "Content-type: " . $item['type']; 
-  header($contenttype);
-  echo $item['content'];
-}
+    echo $content;
 ?>

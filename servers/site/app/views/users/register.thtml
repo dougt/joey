@@ -1,7 +1,9 @@
-<form action="<?=htmlentities($html->url()); ?>" method="post" />
+
+
+<form action="" method="post" class="joey-form" />
 
 <?php
-if (isset($error) && $error) {
+if (isset($error) && !empty($error)) {
     echo '<div id="error-message">Registeration error.</div>';
 }
 
@@ -9,27 +11,25 @@ if (! $this->controller->Session->check('User')) {
 
 ?>
 
-<div>
-<label for="Register">Register</label>
-</div>
+<h2>Register</h2>
 
 <div>
-<label for="UserEmail">Email Address:</label>
+<label class="joey-label-large" for="UserEmail">Email Address:</label>
 <?=$html->input('User/email')?>
 </div>
 
 <div>
-<label for="UserName">Please Choose a User Name:</label>
-<?=$html->input('User/uname')?>
+<label class="joey-label-large" for="UserUsername">Please Choose a User Name:</label>
+<?=$html->input('User/username')?>
 </div>
 
 <div>
-<label for="UserPassword">Password:</label>
+<label class="joey-label-large" for="UserPassword">Password:</label>
 <?=$html->password('User/password')?>
 </div>
 
 <div class="button-box">
-    <?=$html->submit(); ?>
+    <?=$html->submit('Register',array('class' => 'joey-submit')); ?>
 </div>
 
 

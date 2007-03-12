@@ -42,5 +42,5 @@
  * Then we connect url '/test' to our test controller. This is helpfull in
  * developement.
  */
-	$Route->connect('/tests', array('controller' => 'tests', 'action' => 'index'));
+	//$Route->connect('/tests', array('controller' => 'tests', 'action' => 'index'));
 ?>

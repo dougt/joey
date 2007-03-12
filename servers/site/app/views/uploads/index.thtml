@@ -1,51 +1,28 @@
 <h1>Joey! Uploads</h1>
-<table>
-  <tr>
-    <th>Thumbnail</th>
 
-    <th>Info</th>
+<div class="joey-upload">
+<?php foreach ($uploads as $upload): ?>
 
-	<th>Action</th>
-  </tr>
-  <!-- Here's where we loop through our $posts array, printing out post info -->
-  
-  <?php foreach ($uploads as $upload): ?>
-  <tr>
+    <div class="joey-upload-preview">
+        <?php if (!strncmp($upload['Upload']['type'], "image", 5)) : ?>
+            <a href="view/<?=$upload['Upload']['id']?>"><img src="view/<?=$upload['Upload']['id']?>/thumbnail"/></a>
+        <?php elseif (!strcmp($upload['Upload']['type'], "microsummary/xml") ||
+                    !strcmp($upload['Upload']['type'], "text/plain") ): ?>
+            <iframe height='100' width='100' src="view/<?=$upload['Upload']['id']?>"> </iframe>
+        <?php else: ?>
+            <?php echo $html->image('na.png'); ?>
+        <?php endif; ?>
+    </div>
 
-    <td>
-      <?php 
-         if (!strncmp($upload['Upload']['type'], "image", 5))
-         {
-      ?>
-      <a href="view/<?=$upload['Upload']['id']?>">
-        <img src="view/<?=$upload['Upload']['id']?>/?thumb=1"/>
-      </a>
-      <?php
-         }
-         else if (!strcmp($upload['Upload']['type'], "microsummary/xml") ||
-                  !strcmp($upload['Upload']['type'], "text/plain") )
-         {
-           echo "<iframe height='100' width='100' src=\"";                                      
-           echo "view/" . $upload['Upload']['id'];
-           echo "\"> </iframe>";
-         }
-         else
-         {
-           echo "n/a";
-         }
-      ?>
-    </td>
-    
-    <td>
-      id:    <?php echo $html->link($upload['Upload']['id'], "/uploads/view/" . $upload['Upload']['id']) ?>
-<p>   title: <?php echo $upload['Upload']['title']; ?>
-<p>   uri:   <?php echo $upload['Upload']['uri']; ?>
-<p>	  size:  <?php echo $upload['Upload']['size'] ?>
-<p>	  date:  <?php echo $upload['Upload']['date_created'] ?></td>
+    <h3><?php echo $html->link($upload['Upload']['title'], $upload['Upload']['uri']) ?></h3>
+        <ul>
+            <li>size:  <?php echo $upload['Upload']['size'] ?></li>
+            <li>date:  <?php echo $upload['Upload']['created'] ?></li>
+            <li><?php echo $html->link( "Delete", "/uploads/delete/" . $upload['Upload']['id']) ?></li>
+        </ul>
 
-	<td><?php echo $html->link( "Delete", "/uploads/delete/" . $upload['Upload']['id']) ?> </td>
-  </tr>
-  <?php endforeach; ?>
-  
-</table>
+
+    <div class="clearboth"></div>
+<?php endforeach; ?>
+</div>
 

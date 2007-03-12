@@ -13,7 +13,7 @@ if (! $this->controller->Session->check('User')) {
 
 <p>
 Username:<br/>
-<?=$html->input('User/uname')?>
+<?=$html->input('User/username')?>
 </p>
 
 <p>

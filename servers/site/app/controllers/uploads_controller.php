@@ -36,70 +36,115 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+// This is outside of cake :-/
+require_once dirname(__FILE__) . '/../../../libraries/FileOps.class.php';
+
+vendor('BrowserAgent.class');
+
 class UploadsController extends AppController
 {
     var $name = 'Uploads';
 
-    //var $scaffold;   
+    var $fallback_image = '';
+
+    function __construct() {
+        parent::__construct();
+
+        // The content-type for this is hardcoded below
+        $this->fallback_image = WWW_ROOT.'img'.DS.'na.png';
+    }
 
     function index()
     {
-        include 'BrowserAgent.class.php';
-
-	$user = $this->Session->read('User');
+        $user = $this->Session->read('User');
         $this->set('user', $user);
 
-	$this->set('uploads', $this->Upload->findAllByOwner($user['id']));
+        $this->set('uploads', $this->Upload->findAllByOwner($user['id']));
 
         if (BrowserAgent::isMobile()) {
-          $this->render ('mp_index', 'mp');
+            $this->render('mp_index', 'mp');
+        } else {
+            $this->render('index');
         }
     }
 
     function view($id)
     {
-       if(! (isset($id) && is_numeric($id)))
-       {
-          $this->redirect('/uploads/index');
-           exit();
+        if(! (isset($id) && is_numeric($id))) {
+            $this->redirect('/uploads/index');
+            exit;
+        }
+
+        $user = $this->Session->read('User');
+
+        $item = $this->Upload->findById($id);
+
+        if ($item['Upload']['owner'] != $user['id']) {
+            $this->redirect('/uploads/index');
+            exit;
         }
 
         $this->layout = null;
 
-	$user = $this->Session->read('User');
-        $this->set('user', $user);
- 
-        $item = $this->Upload->findById($id);
-        if ($item['Upload']['owner'] == $user['id']) {
-	  $this->set('item', $item['Upload']);
+        if (array_key_exists(1,$this->params['pass']) && $this->params['pass'][1] == 'thumbnail') {
+            $_thumbnail = true;
+        } else {
+            $_thumbnail = false;
         }
-	
+
+        $fileOps = new FileOps ($user['id']);
+
+        if($_thumbnail && !empty($item['Upload']['thumbnailname'])) {
+            $basename = $item['Upload']['thumbnailname'];
+        } else {
+            $basename = $item['Upload']['filename'];
+        }
+
+        $filename = $fileOps->getFilename($basename);
+
+        if (is_readable($filename) && is_file($filename)) {
+            // SpecialCase++ @todo
+            if ($item['Upload']['type'] == "microsummary/xml") {         
+                $this->set('content_type', 'text/plain');
+            } else {
+                $this->set('content_type', $item['Upload']['type']);
+            }
+
+        } else {
+            // We can't read their file - fallback
+            $filename = $this->fallback_image;
+            $this->set('content_type', 'image/png'); //hardcoded :-/
+        }
+
+        $this->set('content_length', filesize($filename));
+        $this->set('content', file_get_contents($filename));
+
     }
 
     function delete($id)
     {
-        // do we have to verify the users here??
-
-	if(! (isset($id) && is_numeric($id)))
+        if(! (isset($id) && is_numeric($id)))
         {
-           $this->redirect('/uploads/index');
-	   exit();
+            $this->redirect('/uploads/index');
+            exit;
         }
-	
-	$user = $this->Session->read('User');
-	$item = $this->Upload->findById($id);
 
-	if ($item['Upload']['owner'] == $user['id'])
-		$this->Upload->delete($id);
+        $user = $this->Session->read('User');
 
-	$this->redirect('/uploads/index');	
+        $item = $this->Upload->findById($id);
+
+        if ($item['Upload']['owner'] == $user['id']) {
+            $this->Upload->delete($id);
+        }
+
+        $this->redirect('/uploads/index');	
     }
 
     function rss()
     {
-	$this->layout = 'xml'; 
+        $this->layout = 'xml'; 
         $user = $this->Session->read('User');
-	$this->set('uploads', $this->Upload->findAllByOwner($user['id']));
+        $this->set('uploads', $this->Upload->findAllByOwner($user['id']));
     }
 
 }

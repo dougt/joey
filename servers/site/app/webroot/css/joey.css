@@ -1,0 +1,80 @@
+
+
+div#container {
+    padding-left:1em;
+}
+
+.joey-form div {
+    margin: 1em 0;
+}
+
+.joey-submit {
+    background-color: #eee;
+    border: 2px #999 outset;
+}
+
+.joey-submit:hover {
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.joey-cancel {
+}
+
+.joey-label-large, .joey-label-medium, .joey-label-small {
+    border-bottom: 1px dashed #eee;
+    float: left;
+}
+
+.joey-label-large {
+    width: 14em;
+}
+
+.joey-label-medium {
+    width: 10em;
+}
+
+.joey-label-small {
+    width: 8em;
+}
+
+.joey-label-xsmall {
+    width: 6em;
+}
+
+.joey-form-error {
+    background-color: #eee;
+    border: 1px dashed #c66;
+    color: #c00;
+    margin: 5px 0;
+    padding: .5em;
+}
+
+.joey-form div.error_message {
+    color: #c00;
+    display: block;
+    margin: 0;
+    padding-bottom: 1em;
+}
+
+
+
+
+.clearboth {
+    clear:both;
+}
+
+
+.joey-upload {
+}
+
+.joey-upload h3{
+    font-size:1em;
+}
+
+
+.joey-upload-preview {
+    float:left;
+    width:100px;
+    height:100px;
+}

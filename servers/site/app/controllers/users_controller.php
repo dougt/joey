@@ -36,89 +36,81 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+vendor('BrowserAgent.class');
+
 class UsersController extends AppController
 {
-  var $name = 'Users';
-  var $helpers = array('Form','Html');
-  // var $scaffold;   
-  
-  function login() {
-    
-    include 'BrowserAgent.class.php';
+    var $name = 'Users';
+    var $helpers = array('Form','Html');
 
-    $this->pageTitle = 'Login';
+    function login() {
 
-    //Don't show the error message if no data has been submitted.
-    $this->set('error', false);
 
-    // If a user has submitted form data:
-    if (!empty($this->data)) {
-      $this->data['User']['uname'] = strtolower ($this->data['User']['uname']);
-      $someone = $this->User->findByUname($this->data['User']['uname']);
-      
-      if(!empty($someone['User']['id'])) {
-        // @todo bind with ldap and check the password!
-        
-        if ($someone['User']['password'] !== sha1($this->data['User']['password']))
-		{
-          // This is a generalized, non-specific error
-          $this->set('error', true);
-          if (BrowserAgent::isMobile()) {
+        $this->pageTitle = 'Login';
+
+        // If a user has submitted form data:
+        if (!empty($this->data)) {
+            $this->data['User']['username'] = strtolower ($this->data['User']['username']);
+
+            $someone = $this->User->findByUsername($this->data['User']['username']);
+
+            if(!empty($someone['User']['id'])) {
+                // @todo bind with ldap and check the password!
+                if ($someone['User']['password'] == sha1($this->data['User']['password']))
+                {
+                    $this->Session->write('User', $someone['User']);
+
+                    // The uploads controller will detect the browser 
+                    $this->redirect('/uploads/index');
+                }
+            }
+
+            // This is a generalized, non-specific error
+            $this->set('error', true);
+        }
+
+        if (BrowserAgent::isMobile()) {
             $this->render ('mp_login', 'mp');
-          }
-          return;
-		}
-        
-        $this->Session->write('User', $someone['User']);
+        } else {
+            $this->render ('login');
+        }
 
-        // The uploads controller will detect the browser 
-        $this->redirect('/uploads/index');
-      } else {
-        
-        // This is a generalized, non-specific error
-        $this->set('error', true);
-      }
     }
 
-    if (BrowserAgent::isMobile()) {
-      $this->render ('mp_login', 'mp');
+    function logout() {
+
+        $this->Session->delete('User');
+
+        $this->redirect('/');
     }
- 
-  }
 
-  function logout() {
-    
-    $this->Session->delete('User');
-    
-    $this->redirect('/');
-  }
-  
-  function register() {
-    //Don't show the error message if no data has been submitted.
-    $this->set('error', false);
-    
-    // If a user has submitted form data:
-    if (!empty($this->data)) {
-      
-      $this->data['User']['uname'] = strtolower ($this->data['User']['uname']);
-      $someone = $this->User->findByUname($this->data['User']['uname']);
+    function register() {
 
-      if(!empty($someone['User']['id'])) {
-        $this->set('error', true);
-        return;
-      }
+        // If a user has submitted form data:
+        if (!empty($this->data)) {
 
-      // okay the user is fine. add them
-      $this->data['User']['email'] = $this->data['User']['email'];
-      $this->data['User']['password'] = sha1($this->data['User']['password']);
-      $this->data['User']['date_joined'] = date("Y-m-d G:i:s");
+            $this->data['User']['username'] = strtolower ($this->data['User']['username']);
 
-      $this->User->save($this->data);
-      
-      $someone = $this->User->findByEmail($this->data['User']['email']);
-      $this->Session->write('User', $someone['User']);
-      $this->redirect('/uploads/index');
+            $someone = $this->User->findByUsername($this->data['User']['username']);
+
+            if(empty($someone['User']['id'])) {
+
+                // Encrypt the database
+                $this->data['User']['password'] = sha1($this->data['User']['password']);
+
+                if ($this->User->save($this->data)) {
+                    $someone = $this->User->findByEmail($this->data['User']['email']);
+
+                    $this->Session->write('User', $someone['User']);
+
+                    $this->redirect('/uploads/index');
+                }
+            }
+
+            $this->set('error', true);
+
+        }
     }
-  }
+
 }
 ?>
