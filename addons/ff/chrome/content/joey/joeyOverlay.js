@@ -41,7 +41,7 @@ var g_joey_content_type;
 var g_joey_title;
 var g_joey_url;
 var g_joey_uuid;
-var g_joey_binary;
+var g_joey_isfile;
 
 var g_joey_media_url = null;
 
@@ -142,15 +142,14 @@ function uploadDataFromGlobals()
     
     joey.setListener(new joey_listener());
     
-	if (g_joey_binary)
+	if (g_joey_isfile)
 	{
-		joey.uploadBinaryData(g_joey_name,
-                              g_joey_title,
-                              g_joey_url,
-                              g_joey_data,
-                              g_joey_data_size,
-                              g_joey_content_type,
-                              g_joey_uuid);
+		joey.uploadFile(g_joey_name,
+                        g_joey_title,
+                        g_joey_url,
+                        g_joey_file,
+                        g_joey_content_type,
+                        g_joey_uuid);
 	}
 	else
 	{
@@ -253,7 +252,7 @@ function joey_selectedText()
     g_joey_name = "Untitled";
     g_joey_data = selection;
     g_joey_data_size = selection.length;
-    g_joey_binary = false;
+    g_joey_isfile = false;
     g_joey_content_type = "text/plain";
     g_joey_title = focusedWindow.document.title;
     g_joey_url  = focusedWindow.location.href;
@@ -288,7 +287,7 @@ function joey_feed(feedLocation)
     g_joey_name = "Untitled";
     g_joey_data = feedLocation;
     g_joey_data_size = feedLocation.length;
-    g_joey_binary = false;
+    g_joey_isfile = false;
     g_joey_content_type = "rss-source/text";
     g_joey_title = "Feed / We can put a title in it with one more client call. ";
     g_joey_url  = feedLocation;
@@ -302,18 +301,17 @@ function joey_launchPopup()
   document.getElementById('joeyStatusPopup').showPopup(document.getElementById('joeyStatusButton'),-1,-1,'popup','topright', 'bottomright')
 }
 
-function getImageDataCallback(content_type, data, length)
+function getMediaCallback(content_type, file)
 {
 	if (length>0)
     { 
-        g_joey_data = data;
-        g_joey_data_size = length;
+        g_joey_file = file;
         g_joey_content_type = content_type;
         uploadDataFromGlobals();
         return;
 	}
     else
-        alert("Problem uploading image to joey!\n");
+        alert("Problem uploading media to joey!\n");
 }
 
 
@@ -378,50 +376,69 @@ JoeyStatusUpdateClass.prototype =
 }
 
 
-function JoeyImageStreamListener(aCallbackFunc,aStatusUpdate)
+function JoeyMediaFetcherStreamListener(aCallbackFunc,aStatusUpdate)
 {
   this.mCallbackFunc = aCallbackFunc;
   this.mStatusUpdate = aStatusUpdate;
 }
 
-JoeyImageStreamListener.prototype = 
+JoeyMediaFetcherStreamListener.prototype = 
 {
   mBytes: [],
   mStream: null,
   mCount: 0,
-  mChannel : null,
   mContentType : null,
   
   // nsIStreamListener
   onStartRequest: function (aRequest, aContext) 
   {
-      this.mStream = Components.classes['@mozilla.org/binaryinputstream;1'].createInstance(Components.interfaces.nsIBinaryInputStream);
-      this.mChannel = aRequest.QueryInterface(Components.interfaces.nsIChannel);
+
+      this.file = Components.classes["@mozilla.org/file/directory_service;1"]
+                            .getService(Components.interfaces.nsIProperties)
+                            .get("TmpD", Components.interfaces.nsIFile);
+
+      this.file.append("joeymedia.tmp");
+
+      this.file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0664);
+
+      var fos = Components.classes["@mozilla.org/network/file-output-stream;1"]
+                          .createInstance(Components.interfaces.nsIFileOutputStream);
+
+      fos.init(this.file, 0x02 | 0x08 | 0x20, 0644, 0);
+      
+      this.mstream = Components.classes["@mozilla.org/binaryoutputstream;1"].createInstance(Components.interfaces.nsIBinaryOutputStream);
+      this.mstream.setOutputStream(fos);
+
       try
       {
-
           var http = aRequest.QueryInterface(Components.interfaces.nsIHttpChannel);
           this.mContentType = http.contentType;
           this.mStatusUpdate.busyMore();		
-          alert (http.contentType);
       } 
       catch (ex) { alert(ex); }	
   },
 
   onDataAvailable: function (aRequest, aContext, aStream, aSourceOffset, aLength)
   {
-      this.mStream.setInputStream(aStream);
+      var bis = Components.classes["@mozilla.org/binaryinputstream;1"]
+                          .createInstance(Components.interfaces.nsIBinaryInputStream);
+      bis.setInputStream(aStream);
       
-      var chunk = this.mStream.readByteArray(aLength);
-      this.mBytes = this.mBytes.concat(chunk);
-      this.mCount += aLength;
+      var n=0;
+      while(n<aLength) {
+          var data = bis.readByteArray( bis.available() );
+          this.mstream.writeByteArray( data, data.length );
+          n += data.length;
+      }
   },
 
   onStopRequest: function (aRequest, aContext, aStatus)
   {
       if (Components.isSuccessCode(aStatus))
       {	
-          this.mCallbackFunc(this.mContentType, this.mBytes, this.mCount);
+          this.mstream.close(); 
+
+          this.mCallbackFunc(this.mContentType, this.file);
           this.mStatusUpdate.busyLess();
       } 
       else
@@ -429,14 +446,11 @@ JoeyImageStreamListener.prototype =
           // request failed
           this.mCallbackFunc(null, null, 0);
       }
-      
-      this.mChannel = null;
   },
 
   // nsIChannelEventSink
   onChannelRedirect: function (aOldChannel, aNewChannel, aFlags) 
   {
-      this.mChannel = aNewChannel;
   },
   
   // nsIInterfaceRequestor
@@ -482,7 +496,7 @@ function joey_selectedImage()
     g_joey_title = focusedWindow.document.title;
     g_joey_url = focusedWindow.location.href;
     g_joey_uuid = "";    
-    g_joey_binary = true;
+    g_joey_isfile = true;
     
     // g_joey_data, g_joey_data_size, g_joey_content_type
     // will be filled in when we have the image data.
@@ -495,7 +509,7 @@ function joey_selectedImage()
     var uri = ioService.newURI(gImageSource, null, null);
 	
 	// get an listener
-	var listener = new JoeyImageStreamListener(getImageDataCallback, g_joey_statusUpdateObject);
+	var listener = new JoeyMediaFetcherStreamListener(getMediaCallback, g_joey_statusUpdateObject);
     
     // get a channel for that nsIURI
     var channel = ioService.newChannelFromURI(uri);
@@ -545,7 +559,7 @@ function grabAll(elem)
 		document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
         g_joey_media_url = url;
 
-        alert(url);
+        //        alert(url);
     }
     
     return NodeFilter.FILTER_ACCEPT;
@@ -580,7 +594,7 @@ function joey_uploadFoundMedia() // refactor with joey_selectedImage
     g_joey_title = focusedWindow.document.title;
     g_joey_url = focusedWindow.location.href;
     g_joey_uuid = "";    
-    g_joey_binary = true;
+    g_joey_isfile = true;
     
     // g_joey_data, g_joey_data_size, g_joey_content_type
     // will be filled in when we have the media data.
@@ -593,7 +607,7 @@ function joey_uploadFoundMedia() // refactor with joey_selectedImage
     var uri = ioService.newURI(g_joey_media_url, null, null);
 	
 	// get an listener
-	var listener = new JoeyImageStreamListener(getImageDataCallback, g_joey_statusUpdateObject);
+	var listener = new JoeyMediaFetcherStreamListener(getMediaCallback, g_joey_statusUpdateObject);
     
     // get a channel for that nsIURI
     var channel = ioService.newChannelFromURI(uri);

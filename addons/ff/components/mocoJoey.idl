@@ -35,6 +35,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 #include "nsISupports.idl"
+#include "nsIFile.idl"
 
 [scriptable, uuid(d8395123-3f49-4fa9-acf0-023b58c061c7)]
 interface mocoJoeyListener : nsISupports

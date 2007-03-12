@@ -121,11 +121,10 @@ mocoJoey.prototype =
     
 	uploadData: function(name, title, url, data, size, type, uuid)
 	{
-        var b = new G_Base64();
 		this.uploadDataInternal( name, 
-                                 b.encodeByteArray(b.arrayifyString(title)),
-                                 b.encodeByteArray(b.arrayifyString(url)), 
-                                 b.encodeByteArray(b.arrayifyString(data)),
+                                 title,
+                                 url, 
+                                 data,
                                  size, 
                                  type,
                                  uuid);
@@ -136,8 +135,8 @@ mocoJoey.prototype =
 	{
         var b = new G_Base64();
 		this.uploadDataInternal( name, 
-                                 b.encodeByteArray(b.arrayifyString(title)),
-                                 b.encodeByteArray(b.arrayifyString(url)), 
+                                 title,
+                                 url, 
                                  b.encodeByteArray(data),
                                  size, 
                                  type,
@@ -148,12 +147,11 @@ mocoJoey.prototype =
     {
         this.joey_isfile = true;
 
-        var b = new G_Base64();
 		this.uploadDataInternal( name, 
-                                 b.encodeByteArray(b.arrayifyString(title)),
-                                 b.encodeByteArray(b.arrayifyString(url)), 
-                                 data,
-                                 size, 
+                                 title,
+                                 url, 
+                                 file,
+                                 -1, 
                                  type,
                                  uuid);
     },
@@ -324,18 +322,20 @@ mocoJoey.prototype =
         var mis=Components.classes["@mozilla.org/io/multiplex-input-stream;1"]
                           .createInstance(Components.interfaces.nsIMultiplexInputStream);
 
-        var buf = null;
+        var fileBuffer = null;
 
         if (this.joey_isfile == true)
         {
+            debug (this.joey_data.path);
+
             var fin=Components.classes["@mozilla.org/network/file-input-stream;1"]
                               .createInstance(Components.interfaces.nsIFileInputStream);
 
             fin.init(this.joey_data, 0x1, 0, 0);
 
-            buf=Components.classes["@mozilla.org/network/buffered-input-stream;1"]
+            fileBuffer=Components.classes["@mozilla.org/network/buffered-input-stream;1"]
                           .createInstance(Components.interfaces.nsIBufferedInputStream);
-            buf.init(fin, 4096);
+            fileBuffer.init(fin, 4096);
         }
 
         var preamble = Components.classes["@mozilla.org/io/string-input-stream;1"]
@@ -355,26 +355,38 @@ mocoJoey.prototype =
                     createParam("uuid", this.joey_uuid) +
                     createParam("type", this.joey_content_type);
 
-        if (buf == null)
+        if (fileBuffer == null)
         {
             start += createParam("data", this.joey_data);
         }
 
         preamble.setData(start, start.length);
 
-        debug(start);
+        //debug(start);
 
         var postamble = Components.classes["@mozilla.org/io/string-input-stream;1"]
-                                 .createInstance(Components.interfaces.nsIStringInputStream);
+                                  .createInstance(Components.interfaces.nsIStringInputStream);
 
         var endstring = "\r\n--"+BOUNDARY+"--\r\n";
         postamble.setData(endstring, endstring.length);
 
-
         mis.appendStream(preamble);
 
-        if (buf != null)
-            mis.appendStream(buf);
+        if (fileBuffer != null)
+        {
+            var filePreamble = Components.classes["@mozilla.org/io/string-input-stream;1"]
+                                         .createInstance(Components.interfaces.nsIStringInputStream);
+            
+            var filePreambleString =  "--"+BOUNDARY+"\r\n" + 
+                "Content-disposition: form-data;name=\"joeyfile\";filename=\"joeyfile\"\r\n" +
+                "Content-Type: application/octet-stream\r\n" +
+                "Content-Length: " + this.joey_data.fileSize + "\r\n\r\n";
+            
+            filePreamble.setData(filePreambleString, filePreambleString.length);
+            
+            mis.appendStream(filePreamble);
+            mis.appendStream(fileBuffer);
+        }
 
         mis.appendStream(postamble);
 
