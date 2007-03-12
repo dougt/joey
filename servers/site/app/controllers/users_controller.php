@@ -45,6 +45,8 @@ class UsersController extends AppController
 
     function login() {
 
+        // Remove their old session
+        $this->Session->delete('User');
 
         $this->pageTitle = 'Login';
 
