@@ -45,6 +45,8 @@ class UploadsController extends AppController
 {
     var $name = 'Uploads';
 
+    var $helpers = array('Number','Time');
+
     var $fallback_image = '';
 
     function __construct() {
@@ -100,24 +102,31 @@ class UploadsController extends AppController
             $basename = $item['Upload']['filename'];
         }
 
+        // SpecialCase++ @todo
+        if ($item['Upload']['type'] == "microsummary/xml") {         
+            $this->set('content_type', 'text/plain');
+        } else {
+            $this->set('content_type', $item['Upload']['type']);
+        }
+
         $filename = $fileOps->getFilename($basename);
 
         if (is_readable($filename) && is_file($filename)) {
-            // SpecialCase++ @todo
-            if ($item['Upload']['type'] == "microsummary/xml") {         
-                $this->set('content_type', 'text/plain');
-            } else {
-                $this->set('content_type', $item['Upload']['type']);
-            }
-
+            // It's a file, grab the info
+            $this->set('content_length', filesize($filename));
+            $this->set('content', file_get_contents($filename));
+        } elseif (!empty($item['Upload']['content'])) {
+            // It's coming out of the database
+            $this->set('content_type', $item['Upload']['type']);
+            $this->set('content', $item['Upload']['content']);
         } else {
             // We can't read their file - fallback
             $filename = $this->fallback_image;
             $this->set('content_type', 'image/png'); //hardcoded :-/
+            $this->set('content_length', filesize($filename));
+            $this->set('content', file_get_contents($filename));
         }
 
-        $this->set('content_length', filesize($filename));
-        $this->set('content', file_get_contents($filename));
 
     }
 

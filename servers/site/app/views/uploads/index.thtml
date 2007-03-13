@@ -16,8 +16,8 @@
 
     <h3><?php echo $html->link($upload['Upload']['title'], $upload['Upload']['uri']) ?></h3>
         <ul>
-            <li>size:  <?php echo $upload['Upload']['size'] ?></li>
-            <li>date:  <?php echo $upload['Upload']['created'] ?></li>
+            <li>size:  <?php echo $number->toReadableSize($upload['Upload']['size']); ?></li>
+            <li>date:  <?php echo $time->niceShort($upload['Upload']['created']); ?></li>
             <li><?php echo $html->link( "Delete", "/uploads/delete/" . $upload['Upload']['id']) ?></li>
         </ul>
 
