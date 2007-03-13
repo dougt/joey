@@ -54,7 +54,7 @@
   {
      echo "processing...\n";
      
-     $rss_source = base64_decode($fetched['content']);
+     $rss_source = $fetched['content'];
 
      echo "go fetch rss feed:  " . $rss_source . "\n";
      

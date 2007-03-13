@@ -57,7 +57,7 @@
   {
      echo "processing...\n";
      
-     $ms_generator = base64_decode($fetched['content']);
+     $ms_generator = $fetched['content'];
      $tmpfname = tempnam ("/tmp", "microsummary");
      $fh = fopen($tmpfname, 'w') or die("can't open file");
      fwrite($fh, $ms_generator);
@@ -68,7 +68,7 @@
      $ms = new microsummary();
      $ms->load($tmpfname);
 
-     $ms->execute(base64_decode($fetched['title']));
+     $ms->execute($fetched['title']);
 
      echo "Microsummary Result\n";
      echo $ms->result;
