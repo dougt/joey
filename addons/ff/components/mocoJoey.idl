@@ -37,20 +37,16 @@
 #include "nsISupports.idl"
 #include "nsIFile.idl"
 
-[scriptable, uuid(d8395123-3f49-4fa9-acf0-023b58c061c7)]
+[scriptable, uuid(D7C72F59-62D1-470D-9754-26B26F95EF8B)]
 interface mocoJoeyListener : nsISupports
 {
-  void onStatusChange(in string name, 
-                      in string uri,
-                      in long status);
+  void onStatusChange(in string action, in long status);
+  void onProgressChange(in PRUint32 current, in PRUint32 total);
 };
 
-[scriptable, uuid(22258500-4F86-4C4A-9A6D-B01EF98D0265)]
+[scriptable, uuid(B8910A41-DF41-4006-8EFC-32752B32F4FD)]
 interface mocoJoey : nsISupports
 {
-  
-  void setLoginInfo();
-
   void setListener(in mocoJoeyListener listener);
 
   void uploadData(in string name,

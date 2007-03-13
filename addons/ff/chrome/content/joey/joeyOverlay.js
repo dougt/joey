@@ -384,9 +384,7 @@ function JoeyMediaFetcherStreamListener(aCallbackFunc,aStatusUpdate)
 
 JoeyMediaFetcherStreamListener.prototype = 
 {
-  mBytes: [],
   mStream: null,
-  mCount: 0,
   mContentType : null,
   
   // nsIStreamListener

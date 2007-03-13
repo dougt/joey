@@ -56,6 +56,82 @@ function debug(str)
    console.logStringMessage("Joey!: "+ str);
 }
 
+
+
+function JoeyStreamListener(self, aCallbackFunc, aListener)
+{
+    this.mOwner = self;
+    this.mCallbackFunc = aCallbackFunc;
+}
+
+JoeyStreamListener.prototype = 
+{
+  mBytes: [],
+  mStream: null,
+  mCount: 0,
+  mOwner: null,
+  
+  // nsIStreamListener
+  onStartRequest: function (aRequest, aContext) 
+  {
+      this.mStream = Components.classes['@mozilla.org/binaryinputstream;1']
+                               .createInstance(Components.interfaces.nsIBinaryInputStream);
+  },
+
+  onDataAvailable: function (aRequest, aContext, aStream, aSourceOffset, aCount)
+  {
+      this.mStream.setInputStream(aStream);
+      var chunk = this.mStream.readByteArray(aCount);
+      this.mBytes = this.mBytes.concat(chunk);
+      this.mCountRead += aCount;
+      
+      // do the notification here.
+  },
+
+  onStopRequest: function (aRequest, aContext, aStatus)
+  {
+      this.mCallbackFunc(this.mOwner, aStatus, this.mBytes);
+  },
+
+  // nsIChannelEventSink
+  onChannelRedirect: function (aOldChannel, aNewChannel, aFlags) 
+  {
+  },
+  
+  // nsIInterfaceRequestor
+  getInterface: function (aIID)
+  {
+      return this.QueryInterface(aIID);
+  },
+
+  // nsIProgressEventSink
+  onProgress : function (aRequest, aContext, aProgress, aProgressMax) 
+  { 
+      if (self.joey_listener != null)
+          self.joey_listener.onProgressChange(aProgress, aProgressMax);
+  },
+
+  onStatus : function (aRequest, aContext, aStatus, aStatusArg) { },
+  
+  // nsIHttpEventSink (not implementing will cause annoying exceptions)
+  onRedirect : function (aOldChannel, aNewChannel) { },
+  
+  // we are faking an XPCOM interface, so we need to implement QI
+  QueryInterface : function(aIID) 
+  {
+      if (aIID.equals(Components.interfaces.nsISupports) ||
+          aIID.equals(Components.interfaces.nsIInterfaceRequestor) ||
+          aIID.equals(Components.interfaces.nsIChannelEventSink) || 
+          aIID.equals(Components.interfaces.nsIProgressEventSink) ||
+          aIID.equals(Components.interfaces.nsIHttpEventSink) ||
+          aIID.equals(Components.interfaces.nsIStreamListener))
+          return this;
+      
+      throw Components.results.NS_NOINTERFACE;
+  }
+};
+
+
 function mocoJoey() {}
 
 mocoJoey.prototype = 
@@ -202,20 +278,7 @@ mocoJoey.prototype =
 
     setListener: function(listener)
     {
-
-        // This can be considered the start point for a progress capture. 
-	  if (listener) {
-
-		  // We tell 4 which is: we have setup listener / will send
-		  listener.onStatusChange(null,null, 4);
-	  } else {
-		  // We tell 5 which is: we are disabling the upload.
-		  if(this.joey_listener) 
-			  this.joey_listener.onStatusChange(null,null, 5);
-	  } 
-
         this.joey_listener = listener;
-
     },
 
     QueryInterface: function (iid) {
@@ -228,105 +291,85 @@ mocoJoey.prototype =
     },
     
     
-    loginCallback: function (self)
+    loginCallback: function (self, status, bytes)
 	{
-		if (self.xmlhttp.readyState==1)
-		{ 
-			debug("Login state = 1, loading... ");
-
-			var listener = self.joey_listener;
-
-			if (listener != null)
-				listener.onStatusChange(self.joey_name, self.joey_url, 3);	// 3 login busy 
-		}
-		if (self.xmlhttp.readyState==4)
-		{ 
-			if (self.xmlhttp.status==200)
-			{
-                if (self.xmlhttp.responseText.indexOf('-1') == -1)
-				{
-					self.joey_hasLogged = true;
-					
-					if (self.joey_listener != null)
-						self.joey_listener.onStatusChange(self.joey_name, self.joey_url, 0);
-					
-					// continue going.
-					self.uploadDataFromGlobals();
-					return;
-				}
-			}
+        debug (bytes);
+        
+        if (bytes.indexOf('-1') == -1)
+        {
+            self.joey_hasLogged = true;
 			
-			debug("problem logging in... " + self.joey_listener);
-			
-			if (self.joey_listener != null)
-			{
-				self.joey_listener.onStatusChange(self.joey_name, self.joey_url, -1);
-			}
-			
-			self.joey_hasLogged=false;
-
-			self.joey_in_progress = false;
-
-			self.setListener(null);
-
-		}   
+            if (self.joey_listener != null)
+                self.joey_listener.onStatusChange("login", 0);
+            
+            // continue going.
+            self.uploadDataFromGlobals();
+            return;
+        }
+        
+        debug("problem logging in... " + self.joey_listener);
+		
+        if (self.joey_listener != null)
+        {
+            self.joey_listener.onStatusChange("login", -1);
+        }
+        self.joey_hasLogged=false;
+        self.joey_in_progress = false;
+        self.setListener(null);
 	},
 
 	loginToService: function()
 	{
-		this.xmlhttp = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]
-							.createInstance(Components.interfaces.nsIXMLHttpRequest);
-		
+        // get an listener
+        var listener = new JoeyStreamListener(this, this.loginCallback, null);
 
-        var url  = getJoeyURL() + "/rest/login.php";
+        // the IO service
+        var ioService = Components.classes["@mozilla.org/network/io-service;1"]
+                                  .getService(Components.interfaces.nsIIOService);
 
-        var data = "username=" + this.joey_username + "&password=" + this.joey_password;
+        // create an nsIURI
+        var urlstring  = getJoeyURL() + "/rest/login.php";
+        var uri = ioService.newURI(urlstring, null, null);
+	
+        // get a channel for that nsIURI
+        var channel = ioService.newChannelFromURI(uri);
 
-		this.xmlhttp.open("POST", url, true);
-		
-		var self = this;
-     	this.xmlhttp.onreadystatechange = function() {self.loginCallback(self);}
-     	this.xmlhttp.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-		this.xmlhttp.send(data);
+        // Create an input stream with the right data.
+        var postData = "username=" + this.joey_username + "&password=" + this.joey_password;
+        var inputStream = Components.classes["@mozilla.org/io/string-input-stream;1"]
+                                    .createInstance(Components.interfaces.nsIStringInputStream);
+        inputStream.setData(postData, postData.length);
+
+        // set the input stream on the channel.
+        var uploadChannel = channel.QueryInterface(Components.interfaces.nsIUploadChannel);
+        uploadChannel.setUploadStream(inputStream, "application/x-www-form-urlencoded", -1);
+        var httpChannel = channel.QueryInterface(Components.interfaces.nsIHttpChannel);
+        httpChannel.requestMethod = "POST";         // order important - setUploadStream resets to PUT
+
+        debug ("sending : " + postData);
+
+        channel.notificationCallbacks = listener;
+        channel.asyncOpen(listener, null);
 	},
     
-	uploadCallback: function(self)
+	uploadCallback: function (self, status, bytes)
 	{
-		debug("uploadCallback " + this.xmlhttp.readyState + "(" + self + ")");
+        var listener = self.joey_listener;
+        self.setListener(null);
+        self.joey_in_progress = false;
+        
+        if (bytes.indexOf('-1') == -1)
+        {
+            if (listener != null)
+                listener.onStatusChange("upload", 1);  // 1 = okay all good. 
+            
+            return;
+        }
 
-		if (self.xmlhttp.readyState==1) {
-
-			debug("Upload status = 1 .. loading response.. ");
-			var listener = self.joey_listener;
-			if (listener != null)
-				listener.onStatusChange(self.joey_name, self.joey_url, 2); // 2 = loading response upload...
-				
-		} 
-		if (self.xmlhttp.readyState==4)
-		{ 
-			var listener = self.joey_listener;
-
-			self.setListener(null);
-
-			self.joey_in_progress = false;
-
-			if (self.xmlhttp.status==200)
-			{
-				if (self.xmlhttp.responseText.indexOf('-1') == -1)
-				{
-
-					debug("Upload status = 1, all good.  ");
-
-					if (listener != null)
-						listener.onStatusChange(self.joey_name, self.joey_url, 1);  // 1 = okay all good. 
-					
-					return;
-				}
-			}
-			
-			if (listener != null)
-				listener.onStatusChange(self.joey_name, self.joey_url, -2);
-		}
+        if (listener != null)
+            listener.onStatusChange("upload", -1);
+        
+        debug ('upload failed');
 	},
 
 
@@ -405,17 +448,28 @@ mocoJoey.prototype =
 
         mis.appendStream(postamble);
 
-		this.xmlhttp = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]
-                                 .createInstance(Components.interfaces.nsIXMLHttpRequest);
-		
-        var url  = getJoeyURL() + "/rest/upload.php";
-        this.xmlhttp.open("POST", url, true);
-        this.xmlhttp.setRequestHeader("Content-Length", mis.available());
-        this.xmlhttp.setRequestHeader("Content-Type","multipart/form-data, boundary="+BOUNDARY);
+        // get an listener
+        var listener = new JoeyStreamListener(this, this.uploadCallback, null);
 
-		var self = this;
-     	this.xmlhttp.onreadystatechange = function() {self.uploadCallback(self);};
-        this.xmlhttp.send(mis);
+        // the IO service
+        var ioService = Components.classes["@mozilla.org/network/io-service;1"]
+                                  .getService(Components.interfaces.nsIIOService);
+
+        // create an nsIURI
+        var urlstring  = getJoeyURL() + "/rest/upload.php";
+        var uri = ioService.newURI(urlstring, null, null);
+	
+        // get a channel for that nsIURI
+        var channel = ioService.newChannelFromURI(uri);
+
+        // set the input stream on the channel.
+        var uploadChannel = channel.QueryInterface(Components.interfaces.nsIUploadChannel);
+        uploadChannel.setUploadStream(mis, "multipart/form-data, boundary="+BOUNDARY, mis.available());
+        var httpChannel = channel.QueryInterface(Components.interfaces.nsIHttpChannel);
+        httpChannel.requestMethod = "POST";         // order important - setUploadStream resets to PUT
+
+        channel.notificationCallbacks = listener;
+        channel.asyncOpen(listener, null);
         
         debug (" request sent!! " );
 	},
