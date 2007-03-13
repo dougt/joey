@@ -121,6 +121,8 @@ mocoJoey.prototype =
     
 	uploadData: function(name, title, url, data, size, type, uuid)
 	{
+        this.joey_isfile = false;
+
 		this.uploadDataInternal( name, 
                                  title,
                                  url, 
@@ -133,6 +135,8 @@ mocoJoey.prototype =
 
 	uploadBinaryData: function(name, title, url, data, size, type, uuid)
 	{
+        this.joey_isfile = false;
+
         var b = new G_Base64();
 		this.uploadDataInternal( name, 
                                  title,
@@ -362,7 +366,7 @@ mocoJoey.prototype =
 
         preamble.setData(start, start.length);
 
-        //debug(start);
+        debug(start);
 
         var postamble = Components.classes["@mozilla.org/io/string-input-stream;1"]
                                   .createInstance(Components.interfaces.nsIStringInputStream);
@@ -401,6 +405,8 @@ mocoJoey.prototype =
 		var self = this;
      	this.xmlhttp.onreadystatechange = function() {self.uploadCallback(self);};
         this.xmlhttp.send(mis);
+        
+        debug (" request sent!! " );
 	},
 };
 
