@@ -75,7 +75,7 @@ alert(lastResults[0]);
 	var html = lastResults[0].innerHTML;
 	
     var joey = Components.classes["@mozilla.com/joey;1"]
-                            .getService(Components.interfaces.mocoJoey);
+                            .createInstance(Components.interfaces.mocoJoey);
 
   //  joey.setListener(new joey_listener());
 
@@ -108,7 +108,7 @@ function NotifyIfChange()
     generator += xpath + "\"/></template></transform></template></generator>";
 
     var joey = Components.classes["@mozilla.com/joey;1"]
-                            .getService(Components.interfaces.mocoJoey);
+                            .createInstance(Components.interfaces.mocoJoey);
 
   //  joey.setListener(new joey_listener());
 

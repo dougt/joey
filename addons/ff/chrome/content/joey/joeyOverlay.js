@@ -67,60 +67,38 @@ function joey_listener() {}
 
 joey_listener.prototype =
 {
-    onStatusChange: function (name, uri, status)
+    onProgressChange: function (current, total)
     {
-        if (status == 4)
-        {
-            // this s when the listener is set ( I believe this may be all the Sending conditions ) 
-            // login busy
-            g_joey_statusUpdateObject.busyMore();
-        }
-        else if (status == 5)
-        {
-            // this s when the listener is unset  
-            // login busy
-            g_joey_statusUpdateObject.busyLess();
+    },
 
-        }
-        else if (status == 3)
-        {
-            // login busy
-            g_joey_statusUpdateObject.busyMore();
-        }
-        else if (status == 0)
-        {
-            // login 0 status worked 
-            // removing the busy load 
-            g_joey_statusUpdateObject.loginStatus("login");
-            g_joey_historyArray.push("Login fine.");
-            g_joey_statusUpdateObject.busyLess();
-        }
-        else if (status == 2)
-        {
-            // files busy
-            g_joey_statusUpdateObject.busyMore();
-            
-            // In the future we may want to track/log information about the elements uploaded
-            // and build/keep some sort of history.
-            g_joey_statusUpdateObject.inventoryMore();
-        }
-        else if (status == 1)
-        {
-            g_joey_historyArray.push(name + " " + uri + " " + status);
-            
-            // files not busy 
-            
-            var joey = Components.classes["@mozilla.com/joey;1"]
-                                 .getService(Components.interfaces.mocoJoey);
+    onStatusChange: function (action, status)
+    {
 
-            joey.setListener(null);
-            g_joey_statusUpdateObject.busyLess();
-        }
-        else if (status == -1 )
+        if (action == "login")
         {
-            g_joey_statusUpdateObject.loginStatus("logout");
-            g_joey_historyArray.push("Login error -1");
+            if (status == 0)
+            {
+                g_joey_historyArray.push("Login fine.");
+            }
+            else if (status == -1 )
+            {
+                g_joey_historyArray.push("Login error -1");
+            }
+
+            return;
         }
+
+        if (action == "upload")
+        {
+            if (status == 0)
+                //upload complete
+                ;
+            else
+                //upload failed
+                ;
+            return;
+        }
+        
     },
 
     QueryInterface: function (iid)
@@ -138,7 +116,7 @@ joey_listener.prototype =
 function uploadDataFromGlobals()
 {
     var joey = Components.classes["@mozilla.com/joey;1"]
-                         .getService(Components.interfaces.mocoJoey);
+                         .createInstance(Components.interfaces.mocoJoey);
     
     joey.setListener(new joey_listener());
     
@@ -533,7 +511,7 @@ function joey_selectedArea()
 function loot_setttings()
 {
     var joey = Components.classes["@mozilla.com/joey;1"]
-                         .getService(Components.interfaces.mocoJoey);
+                         .createInstance(Components.interfaces.mocoJoey);
     joey.setLoginInfo();
 }
 
