@@ -37,6 +37,17 @@
 
 var moco_joey_url = "https://joey.labs.mozilla.com/services";
 
+function getJoeyURL()
+{
+    var psvc = Components.classes["@mozilla.org/preferences-service;1"]
+                         .getService(Components.interfaces.nsIPrefBranch);
+
+    var url = moco_joey_url;
+    if (psvc.prefHasUserValue("joey.service_url"))
+        url = psvc.getCharPref("joey.service_url");
+
+    return url;
+}
 
 function debug(str)
 {
@@ -79,7 +90,7 @@ mocoJoey.prototype =
             {
                 var pass = e.getNext().QueryInterface(Components.interfaces.nsIPassword);
                 
-                if (pass.host == moco_joey_url) {
+                if (pass.host == getJoeyURL()) {
                     this.joey_username = pass.user;
                     this.joey_password = pass.password;
                     return;
@@ -113,7 +124,7 @@ mocoJoey.prototype =
         // password.value, and check.value are set if OK was pressed.
         
         if (check.value)
-            passwordManager.addUser(moco_joey_url, u.value, u.value);
+            passwordManager.addUser(getJoeyURL(), u.value, u.value);
         
         this.joey_username = u.value;
         this.joey_password = p.value;
@@ -267,7 +278,7 @@ mocoJoey.prototype =
 							.createInstance(Components.interfaces.nsIXMLHttpRequest);
 		
 
-        var url  = moco_joey_url + "/rest/login.php";
+        var url  = getJoeyURL() + "/rest/login.php";
 
         var data = "username=" + this.joey_username + "&password=" + this.joey_password;
 
@@ -397,7 +408,7 @@ mocoJoey.prototype =
 		this.xmlhttp = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]
                                  .createInstance(Components.interfaces.nsIXMLHttpRequest);
 		
-        var url  = moco_joey_url + "/rest/upload.php";
+        var url  = getJoeyURL() + "/rest/upload.php";
         this.xmlhttp.open("POST", url, true);
         this.xmlhttp.setRequestHeader("Content-Length", mis.available());
         this.xmlhttp.setRequestHeader("Content-Type","multipart/form-data, boundary="+BOUNDARY);
