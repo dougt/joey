@@ -107,7 +107,7 @@ JoeyStreamListener.prototype =
   // nsIProgressEventSink
   onProgress : function (aRequest, aContext, aProgress, aProgressMax) 
   { 
-      if (this.mOwner.joey_listener != null)
+      if (this.mOwner != null && this.mOwner.joey_listener != null)
           this.mOwner.joey_listener.onProgressChange(aProgress, aProgressMax);
   },
 

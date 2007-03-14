@@ -6,6 +6,8 @@
     <div class="joey-upload-preview">
         <?php if (!strncmp($upload['Upload']['type'], "image", 5)) : ?>
             <a href="view/<?=$upload['Upload']['id']?>"><img src="view/<?=$upload['Upload']['id']?>/thumbnail"/></a>
+        <?php elseif (!strncmp($upload['Upload']['type'], "video", 5)) : ?>
+            <a href="view/<?=$upload['Upload']['id']?>"><img src="view/<?=$upload['Upload']['id']?>/thumbnail"/></a>
         <?php elseif (!strcmp($upload['Upload']['type'], "microsummary/xml") ||
                     !strcmp($upload['Upload']['type'], "text/plain") ): ?>
             <iframe height='100' width='100' src="view/<?=$upload['Upload']['id']?>"> </iframe>

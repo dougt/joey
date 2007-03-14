@@ -9,13 +9,14 @@ class FileOps {
   var $filename;
   var $thumbnailname;
   var $convert = '/usr/bin/convert';
+  var $ffmpeg = '/home/dougt/ffmpeg/ffmpeg/ffmpeg';
 
   var $fileTypes = array ('image/jpeg' => '.jpg',
                           'image/gif' => '.gif',
                           'image/png' => '.png',
                           'video/mpeg' => '.mpg',
                           'video/flv' => '.flv',
-                            'audio/mpeg' => '.mp3',
+                          'audio/mpeg' => '.mp3',
                           'audio/x-wav' => '.wav');
     
   function FileOps ($userid) {
@@ -32,7 +33,6 @@ class FileOps {
   //   return $this->filepath;
   // }
   
-
   function moveFile ($type, $file) {
     
     $this->type = $type;
@@ -51,6 +51,23 @@ class FileOps {
       $command = "$this->convert '$orgfilename' '$this->filename'";
       exec($command, $returnarray, $returnvalue);
       // unlink($orgfilename);
+    }
+
+
+    if (! strcasecmp($this->type, 'video/flv'))
+    {
+      $orgfilename = $this->filename;
+      $this->filename = $this->filedir . $this->randname . '.3gp';
+
+      // we need to figure out the right values here.  This sorta works, but it not optimal.
+      // ffmpeg -i video.flv -ab 32 -ac 1 -ar 8000 -vcodec h263 -s qcif -r 10 video.3gp
+
+      $command = "$this->ffmpeg -y -i " . $orgfilename ." -ab 32 -ac 1 -ar 8000 -vcodec h263 -s qcif -r 10 " . $this->filename;
+
+      exec($command, $returnarray, $returnvalue);
+
+
+      // unlink ($orgfilename);
     }
     
     return basename($this->filename);
@@ -97,10 +114,18 @@ class FileOps {
       exec($command, $returnarray, $returnvalue);
     
       return basename($this->thumbnailname);
-    } elseif (strncasecmp($this->type, 'video', 5) == 0) {
-      // TODO: add video support
-      return '';
-    } else {
+    } 
+    elseif (strncasecmp($this->type, 'video', 5) == 0) 
+    {
+      $this->thumbnailname = $this->filedir . 'thumbnail-' . $this->randname . '.png';
+
+      $command = "$this->ffmpeg -i " . $this->filename ." -ss 5 -s 100x100 -vframes 1 -f mjpeg " . $this->thumbnailname;
+
+      exec($command, $returnarray, $returnvalue);
+    
+      return basename($this->thumbnailname);
+    } 
+    else {
       return '';
     }
   }

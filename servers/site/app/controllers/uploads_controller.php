@@ -111,6 +111,29 @@ class UploadsController extends AppController
 
         $filename = $fileOps->getFilename($basename);
 
+        // the default is, well the default.
+        $this->set('content_type', $item['Upload']['type']);
+        
+        if (is_readable($filename) && is_file($filename)) {
+            // SpecialCase++ @todo
+            if ($item['Upload']['type'] == "microsummary/xml") {         
+                $this->set('content_type', 'text/plain');
+            } else if ($item['Upload']['type'] == "video/flv" && $_thumbnail == true) {
+              // video uploads uses a png a the thumbnail.
+              $this->set('content_type', 'image/png');
+            }
+        } else {
+            // We can't read their file - fallback
+            $filename = $this->fallback_image;
+            $this->set('content_type', 'image/png'); //hardcoded :-/
+        }
+
+        $this->set('content_length', filesize($filename));
+        $this->set('content', file_get_contents($filename));
+
+        /*  
+         This looks cleaner, but it doesn't do the right stuff.  
+         XXXX FIX - dougt
         if (is_readable($filename) && is_file($filename)) {
             // It's a file, grab the info
             $this->set('content_length', filesize($filename));
@@ -126,6 +149,7 @@ class UploadsController extends AppController
             $this->set('content_length', filesize($filename));
             $this->set('content', file_get_contents($filename));
         }
+        */
 
 
     }
