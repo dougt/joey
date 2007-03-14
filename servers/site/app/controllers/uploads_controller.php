@@ -118,9 +118,17 @@ class UploadsController extends AppController
             // SpecialCase++ @todo
             if ($item['Upload']['type'] == "microsummary/xml") {         
                 $this->set('content_type', 'text/plain');
-            } else if ($item['Upload']['type'] == "video/flv" && $_thumbnail == true) {
-              // video uploads uses a png a the thumbnail.
-              $this->set('content_type', 'image/png');
+            } else if ($item['Upload']['type'] == "video/flv") {
+              if ($_thumbnail == true)
+              {
+                // video uploads uses a png a the thumbnail.
+                $this->set('content_type', 'image/png');
+              }
+              else
+              {
+                // video uploads uses a 3gp to download to phones
+                $this->set('content_type', 'video/3gp');
+              }
             }
         } else {
             // We can't read their file - fallback
