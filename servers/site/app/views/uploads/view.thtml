@@ -4,5 +4,9 @@
         header("Content-Length: {$content_length}");
     }
 
+    if (isset($content_disposition)) {
+        header("Content-Disposition: {$content_disposition}");
+    }
+
     echo $content;
 ?>

@@ -127,7 +127,8 @@ class UploadsController extends AppController
               else
               {
                 // video uploads uses a 3gp to download to phones
-                $this->set('content_type', 'video/3gp');
+                $this->set('content_disposition', 'filename=' . basename($filename));
+                $this->set('content_type', 'video/avi');  // This is all fucked up.  For windows you have to lie.  We need to store this "hack" mime type in a table.
               }
             }
         } else {
