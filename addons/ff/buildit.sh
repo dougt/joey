@@ -9,6 +9,7 @@ rm -rf work
 mkdir work
 
 cp -R chrome work/
+cp -R defaults work/
 cp -R components work/
 cp chrome.manifest work/
 cp install.js work/
