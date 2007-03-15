@@ -4,7 +4,7 @@
 
 <?php
 if (isset($error) && !empty($error)) {
-    echo '<div id="error-message">Registeration error.</div>';
+    echo '<div id="error-message">' . $error_mesg . '</div>';
 }
 
 if (! $this->controller->Session->check('User')) {

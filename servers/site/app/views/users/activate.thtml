@@ -1,0 +1,19 @@
+
+<?php
+if (isset($error) && $error) {
+    echo '<div id="error-message">' . $error_mesg . '</div>';
+}
+?>
+
+<h2>Activate Your Account</h2>
+
+<form action="<?=htmlentities($html->url()); ?>" method="post" />
+    <div>
+    <label class="joey-label-large" for="ConfirmationCode">Confirmation Code:</label>
+    <input type=text name="code"/>
+    </div>
+
+    <div class="button-box">
+        <?=$html->submit('Activate', array('class' => 'joey-submit')); ?>
+    </div>
+</form>

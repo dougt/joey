@@ -41,7 +41,7 @@ class AppController extends Controller
     function beforeFilter() {
 
         if (array_key_exists('controller', $this->params) && array_key_exists('action', $this->params)) {
-            if (! ($this->params['controller'] == 'users' && ($this->params['action'] == 'register' || $this->params['action'] == 'login'))) {
+            if (! ($this->params['controller'] == 'users' && ($this->params['action'] == 'register' || $this->params['action'] == 'login' || $this->params['action'] == 'activate'))) {
 
                 $this->checkSession();
 

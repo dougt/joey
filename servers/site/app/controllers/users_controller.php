@@ -58,17 +58,24 @@ class UsersController extends AppController
 
             if(!empty($someone['User']['id'])) {
                 // @todo bind with ldap and check the password!
+              if (empty($someone['User']['confirmationcode'])) {
                 if ($someone['User']['password'] == sha1($this->data['User']['password']))
                 {
                     $this->Session->write('User', $someone['User']);
 
                     // The uploads controller will detect the browser 
                     $this->redirect('/uploads/index');
+                    exit ();
                 }
+              } else {
+                $this->set('error', true);
+                $this->set('error_mesg', 'Sorry, your account has not been activated');
+              }
+            } else {
+              // This is a generalized, non-specific error
+              $this->set('error', true);
+              $this->set('error_mesg', 'Sorry cannot login, please check your username or password');
             }
-
-            // This is a generalized, non-specific error
-            $this->set('error', true);
         }
 
         if (BrowserAgent::isMobile()) {
@@ -86,6 +93,31 @@ class UsersController extends AppController
         $this->redirect('/');
     }
 
+    function activate () {
+      if (isset($_POST['code'])) {
+        $confirmationcode = $_POST['code'];
+      } elseif (isset($_GET['code'])) {
+        $confirmationcode = $_GET['code'];
+      } else {
+        $this->render('activate');
+        exit ();
+      }
+
+      $test = $this->User->findByConfirmationcode($confirmationcode); 
+      if(!empty($test['User']['id'])) {
+        $this->User->id = $test['User']['id'];
+        $this->User->saveField('confirmationcode', null);
+
+        $this->set('error', true);
+        $this->set('error_mesg', 'Account activated, please login');
+        $this->redirect('/users/login');
+        exit ();
+      } else {
+        $this->set('error', true);
+        $this->set('error_mesg', 'Wrong activation code!');
+      }
+    }
+
     function register() {
 
         // If a user has submitted form data:
@@ -93,24 +125,47 @@ class UsersController extends AppController
 
             $this->data['User']['username'] = strtolower ($this->data['User']['username']);
 
-            $someone = $this->User->findByUsername($this->data['User']['username']);
+            $test1 = $this->User->findByUsername($this->data['User']['username']);
+            $test2 = $this->User->findByEmail($this->data['User']['email']);
 
-            if(empty($someone['User']['id'])) {
+            if(empty($test1['User']['id']) && empty($test2['User']['id'])) {
 
                 // Encrypt the database
                 $this->data['User']['password'] = sha1($this->data['User']['password']);
 
-                if ($this->User->save($this->data)) {
-                    $someone = $this->User->findByEmail($this->data['User']['email']);
+                $confirmationcode = uniqid();
+                $this->data['User']['confirmationcode'] = $confirmationcode;
+                $mesg = 'Please click on the following link or use the code '. $confirmationcode .' to activate your registration.  http://joey.labs.mozilla.org/users/activate?code='. $confirmationcode .' ';
 
-                    $this->Session->write('User', $someone['User']);
+                if (mail($this->data['User']['email'], 'Welcome to Joey', $mesg)) {
+
+                  if ($this->User->save($this->data)) {
+                    $newuser = $this->User->findByEmail($this->data['User']['email']);
+
+                    $this->Session->write('User', $newuser['User']);
 
                     $this->redirect('/uploads/index');
+                  } else {
+                    // database error 
+                    $this->set('error', true);
+                    $this->set('error_mesg', 'There is an unexpected server error, please try again later!');
+                    $this->render('register');
+                    exit ();
+                  }
+                } else {
+                  // email error 
+                  $this->set('error', true);
+                  $this->set('error_mesg', 'An error has occured while we try to send you email, please double check your email address!');
+                  $this->render('register');
+                  exit ();
                 }
+            } else {
+                // username already exists
+                $this->set('error', true);
+                $this->set('error_mesg', 'Your username or email is already used by someoneelse, please choose a different username!');
+                $this->render('register');
+                exit ();
             }
-
-            $this->set('error', true);
-
         }
     }
 

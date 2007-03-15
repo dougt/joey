@@ -1,7 +1,7 @@
 
 <?php
 if (isset($error) && $error) {
-    echo '<div id="error-message">Could not authenticate.  Please make sure your email address and password are correct and try again.</div>';
+    echo '<div id="error-message">' . $error_mesg . '</div>';
 }
 
 if (! $this->controller->Session->check('User')) {
