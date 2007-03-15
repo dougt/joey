@@ -1,19 +1,6 @@
--- MySQL dump 10.10
---
--- Host: localhost    Database: c_joey
--- ------------------------------------------------------
--- Server version	5.0.18
+-- MySQL Code for Joey
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+SET FOREIGN_KEY_CHECKS = 0;
 
 --
 -- Table structure for table `cake_sessions`
@@ -28,11 +15,11 @@ CREATE TABLE `cake_sessions` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
--- Table structure for table `contentsource`
+-- Table structure for table `contentsources`
 --
 
-DROP TABLE IF EXISTS `contentsource`;
-CREATE TABLE `contentsource` (
+DROP TABLE IF EXISTS `contentsources`;
+CREATE TABLE `contentsources` (
   `id` int(11) unsigned NOT NULL auto_increment,
   `upload_id` int(11) unsigned NOT NULL,
   `source` text,
@@ -41,17 +28,16 @@ CREATE TABLE `contentsource` (
   `modified` datetime NOT NULL,
   PRIMARY KEY  (`id`),
   KEY `upload_id` (`upload_id`),
-  KEY `contentsource_ibfk_2` (`contentsourcetype_id`),
-  CONSTRAINT `contentsource_ibfk_2` FOREIGN KEY (`contentsourcetype_id`) REFERENCES `contentsourcetype` (`id`),
-  CONSTRAINT `contentsource_ibfk_1` FOREIGN KEY (`upload_id`) REFERENCES `files` (`id`)
+  KEY `contentsourcetype_id` (`contentsourcetype_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+
 --
--- Table structure for table `contentsourcetype`
+-- Table structure for table `contentsourcetypes`
 --
 
-DROP TABLE IF EXISTS `contentsourcetype`;
-CREATE TABLE `contentsourcetype` (
+DROP TABLE IF EXISTS `contentsourcetypes`;
+CREATE TABLE `contentsourcetypes` (
   `id` int(11) unsigned NOT NULL auto_increment,
   `name` varchar(255) NOT NULL default '',
   `created` datetime NOT NULL,
@@ -74,8 +60,7 @@ CREATE TABLE `files` (
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL,
   PRIMARY KEY  (`id`),
-  KEY `upload_id` (`upload_id`),
-  CONSTRAINT `files_ibfk_1` FOREIGN KEY (`upload_id`) REFERENCES `files` (`id`)
+  KEY `upload_id` (`upload_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -118,8 +103,7 @@ CREATE TABLE `uploads` (
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL,
   PRIMARY KEY  (`id`),
-  KEY `user_id` (`user_id`),
-  CONSTRAINT `uploads_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+  KEY `user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -142,18 +126,29 @@ CREATE TABLE `users` (
   `modified` datetime NOT NULL,
   PRIMARY KEY  (`id`),
   UNIQUE KEY `username` (`username`),
-  KEY `users_ibfk_1` (`phone_id`),
-  KEY `users_ibfk_2` (`operator_id`),
-  CONSTRAINT `users_ibfk_1` FOREIGN KEY (`phone_id`) REFERENCES `phones` (`id`),
-  CONSTRAINT `users_ibfk_2` FOREIGN KEY (`operator_id`) REFERENCES `operators` (`id`)
+  KEY `phone_id` (`phone_id`),
+  KEY `operator_id` (`operator_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
+-- CONSTRAINTS
+
+ALTER TABLE `contentsources`
+  ADD CONSTRAINT `contentsources_ibfk_1` FOREIGN KEY (`upload_id`) REFERENCES `uploads` (`id`),
+  ADD CONSTRAINT `contentsources_ibfk_2` FOREIGN KEY (`contentsourcetype_id`) REFERENCES `contentsourcetypes` (`id`);
+
+ALTER TABLE `files`
+  ADD CONSTRAINT `files_ibfk_1` FOREIGN KEY (`upload_id`) REFERENCES `uploads` (`id`);
+
+ALTER TABLE `uploads`
+  ADD CONSTRAINT `uploads_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+ALTER TABLE `users`
+  ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`phone_id`) REFERENCES `phones` (`id`),
+  ADD CONSTRAINT `users_ibfk_2` FOREIGN KEY (`operator_id`) REFERENCES `operators` (`id`);
+
+
+
+
+
+SET FOREIGN_KEY_CHECKS = 1;
