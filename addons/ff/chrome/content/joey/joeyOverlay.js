@@ -69,6 +69,10 @@ joey_listener.prototype =
 {
     onProgressChange: function (current, total)
     {
+
+	g_joey_statusUpdateObject.tellStatus(current,total);
+
+
     },
 
     onStatusChange: function (action, status)
@@ -78,11 +82,17 @@ joey_listener.prototype =
         {
             if (status == 0)
             {
-                g_joey_historyArray.push("Login fine.");
+		
+                g_joey_historyArray.push("#login");
+		    g_joey_statusUpdateObject.loginStatus("login");
+
             }
             else if (status == -1 )
             {
-                g_joey_historyArray.push("Login error -1");
+
+                g_joey_historyArray.push("#login&-1");
+
+
             }
 
             return;
@@ -350,7 +360,12 @@ JoeyStatusUpdateClass.prototype =
 			// login mode.
 			document.getElementById("joeyStatusButton").className="login";
 		}
-	}
+	},
+      tellStatus:function(from,to) 
+      {
+		document.getElementById("joeyStatusTeller").value=from+"/"+to;
+      }
+
 }
 
 
