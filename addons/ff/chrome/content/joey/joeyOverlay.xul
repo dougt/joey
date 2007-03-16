@@ -89,7 +89,9 @@
   
   <statusbar id="status-bar">
     <statusbarpanel  id="joeyStatusbar" context="barcontext" hidden="false" collapsed="false" type="menu" >
-      <hbox>
+    
+  <hbox>
+	  <label id="joeyStatusTeller"  value="" />
         <toolbarbutton id="joeyStatusButton"
                        oncommand="joey_launchPopup()" />
 
@@ -102,6 +104,9 @@
       </hbox>
 	  
       <menupopup id="joeyStatusPopup" >
+
+        <menuitem label="Status" hidden="true" id="" oncommand="" />
+
         <menuitem label="My Joey" oncommand="joey_launchCloudSite()" />
         <menuitem id="joeyMediaMenuItem" label="Joey! Media on page" hidden="true" oncommand="joey_uploadFoundMedia()" />
         
