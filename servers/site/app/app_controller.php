@@ -51,7 +51,7 @@ class AppController extends Controller
         // non-browser client to access the site.  This will change the information
         // we return.
         if (array_key_exists('rest',$_POST)) {
-            $this->nbClient == true;
+            $this->nbClient = true;
         }
     }
 
