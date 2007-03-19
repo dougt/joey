@@ -40,18 +40,30 @@ class User extends AppModel
 {
     var $name = 'User';
 
+    var $belongsTo = array('Operator' =>
+                           array('className'  => 'Operator',
+                                 'conditions' => '',
+                                 'order'      => ''
+                                ),
+                           'Phone' =>
+                           array('className'  => 'Phone',
+                                 'conditions' => '',
+                                 'order'      => ''
+                                )
+                         );
+
     var $hasMany = array('Upload' =>
                            array('className'  => 'Upload',
                                  'conditions' => '',
-                                 'order'      => '',
-                                 'foreignKey' => 'owner'
+                                 'order'      => ''
                                 )
                         );
 
     var $validate = array(
-                            'username'  => VALID_NOT_EMPTY,
-                            'email'     => VALID_NOT_EMPTY,
-                            'password'  => VALID_NOT_EMPTY
+                            'username'    => VALID_NOT_EMPTY,
+                            'password'    => VALID_NOT_EMPTY,
+                            'phonenumber' => VALID_NOT_EMPTY,
+                            'email'       => VALID_EMAIL
                          );
 
 }

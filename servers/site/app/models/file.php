@@ -36,32 +36,20 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-class Upload extends AppModel
+class File extends AppModel
 {
-    var $name = 'Upload';
+    var $name = 'File';
 
-    var $belongsTo = array('User' =>
-                           array('className'  => 'User',
+    var $belongsTo = array('Upload' =>
+                           array('className'  => 'Upload',
                                  'conditions' => '',
                                  'order'      => ''
                                 )
                           );
 
-    var $hasMany = array('File' =>
-                           array('className'  => 'File',
-                                 'conditions' => '',
-                                 'order'      => ''
-                                ),
-                         'Contentsource' =>
-                           array('className'  => 'Contentsource',
-                                 'conditions' => '',
-                                 'order'      => ''
-                                )
-                        );
-
     var $validate = array(
-                            'title'    => VALID_NOT_EMPTY,
-                            'referrer' => VALID_NOT_EMPTY
+                            'name'  => VALID_NOT_EMPTY,
+                            'type'  => VALID_NOT_EMPTY
                          );
 
 }
