@@ -101,7 +101,11 @@ JoeyStreamListener.prototype =
   // nsIInterfaceRequestor
   getInterface: function (aIID)
   {
-      return this.QueryInterface(aIID);
+      try {
+          return this.QueryInterface(aIID);
+      }
+      catch(ex)
+      {}
   },
 
   // nsIProgressEventSink
@@ -263,7 +267,7 @@ mocoJoey.prototype =
         this.joey_type = type;
         this.joey_uuid = uuid;
 
-        debug("XXXXXXXXXXXXXXXX  The uuid for this upload is: " + uuid + " " + this.joey_uuid);
+        // debug("XXXXXXXXXXXXXXXX  The uuid for this upload is: " + uuid + " " + this.joey_uuid);
 
         // kick off the action
         if (this.joey_hasLogged == false)
@@ -293,8 +297,6 @@ mocoJoey.prototype =
     
     loginCallback: function (self, status, bytes)
 	{
-        debug (bytes);
-        
         if (bytes.indexOf('-1') == -1)
         {
             self.joey_hasLogged = true;
@@ -346,9 +348,7 @@ mocoJoey.prototype =
         var httpChannel = channel.QueryInterface(Components.interfaces.nsIHttpChannel);
         httpChannel.requestMethod = "POST";         // order important - setUploadStream resets to PUT
 
-        debug ("sending : " + postData);
-
-        channel.notificationCallbacks = listener;
+        //channel.notificationCallbacks = listener;
         channel.asyncOpen(listener, null);
 	},
     
@@ -384,8 +384,6 @@ mocoJoey.prototype =
 
         if (this.joey_isfile == true)
         {
-            debug (this.joey_data.path);
-
             var fin=Components.classes["@mozilla.org/network/file-input-stream;1"]
                               .createInstance(Components.interfaces.nsIFileInputStream);
 
@@ -420,7 +418,7 @@ mocoJoey.prototype =
 
         preamble.setData(start, start.length);
 
-        debug(start);
+        //        debug(start);
 
         var postamble = Components.classes["@mozilla.org/io/string-input-stream;1"]
                                   .createInstance(Components.interfaces.nsIStringInputStream);
@@ -471,7 +469,7 @@ mocoJoey.prototype =
         channel.notificationCallbacks = listener;
         channel.asyncOpen(listener, null);
         
-        debug (" request sent!! " );
+        //        debug (" request sent!! " );
 	},
 };
 

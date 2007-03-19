@@ -69,30 +69,21 @@ joey_listener.prototype =
 {
     onProgressChange: function (current, total)
     {
-
-	g_joey_statusUpdateObject.tellStatus(current,total);
-
-
+        g_joey_statusUpdateObject.tellStatus("upload", current, total);
     },
 
     onStatusChange: function (action, status)
     {
-
         if (action == "login")
         {
             if (status == 0)
             {
-		
                 g_joey_historyArray.push("#login");
-		    g_joey_statusUpdateObject.loginStatus("login");
-
+                g_joey_statusUpdateObject.loginStatus("login");
             }
             else if (status == -1 )
             {
-
                 g_joey_historyArray.push("#login&-1");
-
-
             }
 
             return;
@@ -100,15 +91,14 @@ joey_listener.prototype =
 
         if (action == "upload")
         {
-            if (status == 0)
-                //upload complete
-                ;
+            if (status == 1)
+                document.getElementById("joeyStatusTeller").value="Upload Complete.";
             else
-                //upload failed
-                ;
+                document.getElementById("joeyStatusTeller").value="Upload Failed :-(";
+
+            setTimeout("document.getElementById('joeyStatusTeller').value=''", 600);
             return;
         }
-        
     },
 
     QueryInterface: function (iid)
@@ -348,7 +338,8 @@ JoeyStatusUpdateClass.prototype =
 			document.getElementById("joeyWorkingButton").setAttribute("collapsed","true");
 		}
 	},
-	loginStatus: function (aMode)
+	
+    loginStatus: function (aMode)
     {
 		if(aMode == "logout")
         {
@@ -361,18 +352,30 @@ JoeyStatusUpdateClass.prototype =
 			document.getElementById("joeyStatusButton").className="login";
 		}
 	},
-      tellStatus:function(from,to) 
-      {
-		document.getElementById("joeyStatusTeller").value=from+"/"+to;
-      }
+    
+    tellStatus:function(verb,from,to) 
+    {
+        var value;
+        if (verb == "upload")
+            value = "Uploading... ("+from+"/"+to+")";
+        else
+        {
+            if (from==to)
+                // this might not be entirely true... basically, at ths point we are waiting to upload...
+                value = "Logging in..."; 
+            else
+                value = "Downloading... ("+from+"/"+to+")";
 
+        }   
+		document.getElementById("joeyStatusTeller").value=value;
+    }
+    
 }
 
 
-function JoeyMediaFetcherStreamListener(aCallbackFunc,aStatusUpdate)
+function JoeyMediaFetcherStreamListener(aCallbackFunc)
 {
   this.mCallbackFunc = aCallbackFunc;
-  this.mStatusUpdate = aStatusUpdate;
 }
 
 JoeyMediaFetcherStreamListener.prototype = 
@@ -383,7 +386,6 @@ JoeyMediaFetcherStreamListener.prototype =
   // nsIStreamListener
   onStartRequest: function (aRequest, aContext) 
   {
-
       this.file = Components.classes["@mozilla.org/file/directory_service;1"]
                             .getService(Components.interfaces.nsIProperties)
                             .get("TmpD", Components.interfaces.nsIFile);
@@ -404,7 +406,6 @@ JoeyMediaFetcherStreamListener.prototype =
       {
           var http = aRequest.QueryInterface(Components.interfaces.nsIHttpChannel);
           this.mContentType = http.contentType;
-          this.mStatusUpdate.busyMore();		
       } 
       catch (ex) { alert(ex); }	
   },
@@ -428,9 +429,7 @@ JoeyMediaFetcherStreamListener.prototype =
       if (Components.isSuccessCode(aStatus))
       {	
           this.mstream.close(); 
-
           this.mCallbackFunc(this.mContentType, this.file);
-          this.mStatusUpdate.busyLess();
       } 
       else
       {
@@ -451,14 +450,15 @@ JoeyMediaFetcherStreamListener.prototype =
       {
           return this.QueryInterface(aIID);
       } 
-      catch (e)
-      {
-          throw Components.results.NS_NOINTERFACE;
-      }
+      catch (e) {}
   },
 
   // nsIProgressEventSink (not implementing will cause annoying exceptions)
-  onProgress : function (aRequest, aContext, aProgress, aProgressMax) { },
+  onProgress : function (aRequest, aContext, aProgress, aProgressMax) 
+  { 
+      g_joey_statusUpdateObject.tellStatus("download", aProgress, aProgressMax);
+  },
+
   onStatus : function (aRequest, aContext, aStatus, aStatusArg) { },
   
   // nsIHttpEventSink (not implementing will cause annoying exceptions)
@@ -500,11 +500,12 @@ function joey_selectedImage()
     var uri = ioService.newURI(gImageSource, null, null);
 	
 	// get an listener
-	var listener = new JoeyMediaFetcherStreamListener(getMediaCallback, g_joey_statusUpdateObject);
+	var listener = new JoeyMediaFetcherStreamListener(getMediaCallback);
     
     // get a channel for that nsIURI
     var channel = ioService.newChannelFromURI(uri);
-	channel.asyncOpen(listener, null);
+    channel.notificationCallbacks = listener;
+    channel.asyncOpen(listener, null);
 }
 
 function joey_selectedArea()
@@ -533,6 +534,9 @@ function loot_setttings()
 
 function grabAll(elem)
 {
+
+    dump(elem);
+
     if (elem instanceof Components.interfaces.nsIDOMHTMLEmbedElement)
     {
         var base = Components.classes["@mozilla.org/network/standard-url;1"]
@@ -567,6 +571,8 @@ function doGrab(iterator)
 
 function joeyCheckForMedia()
 {
+    debug("in!");
+
     // reset these on new page load.  should probably move this somewhere else.
     document.getElementById("joeyMediaMenuItem").setAttribute("hidden","true");
     g_joey_media_url = null;
@@ -581,7 +587,7 @@ function joey_uploadFoundMedia() // refactor with joey_selectedImage
 {
     var focusedWindow = document.commandDispatcher.focusedWindow;
     
-    g_joey_name = "Untitled-Media";
+    g_joey_name = focusedWindow.document.title; // xxx
     g_joey_title = focusedWindow.document.title;
     g_joey_url = focusedWindow.location.href;
     g_joey_uuid = "";    
@@ -598,10 +604,11 @@ function joey_uploadFoundMedia() // refactor with joey_selectedImage
     var uri = ioService.newURI(g_joey_media_url, null, null);
 	
 	// get an listener
-	var listener = new JoeyMediaFetcherStreamListener(getMediaCallback, g_joey_statusUpdateObject);
+	var listener = new JoeyMediaFetcherStreamListener(getMediaCallback);
     
     // get a channel for that nsIURI
     var channel = ioService.newChannelFromURI(uri);
+    channel.notificationCallbacks = listener;
 	channel.asyncOpen(listener, null);
 }
 
@@ -643,7 +650,7 @@ function joeyStartup()
 
     g_joey_browserStatusHandler = new joeyBrowserStatusHandler();
 
-    g_joey_gBrowser.addProgressListener( g_joey_browserStatusHandler , Components.interfaces.nsIWebProgress.NOTIFY_ALL);
+    g_joey_gBrowser.addProgressListener( g_joey_browserStatusHandler , Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
 
     g_joey_statusUpdateObject = new JoeyStatusUpdateClass();
 
@@ -778,19 +785,12 @@ joeyBrowserStatusHandler.prototype =
 
     onProgressChange : function(aWebProgress, aRequest, aCurSelfProgress, aMaxSelfProgress, aCurTotalProgress, aMaxTotalProgress)
     {
-        
     },
 
     onLocationChange : function(aWebProgress, aRequest, aLocation)
     {
+        setTimeout(joeySetCurrentFeed, 600);        
         setTimeout(joeyCheckForMedia, 600); // this needs to be called after the page loads! dougt
-        
-        domWindow = aWebProgress.DOMWindow;
-        
-        if (domWindow == domWindow.top) {
-            //this.urlBar.value = aLocation.spec;
-            joeySetCurrentFeed();        
-        }    
     },
     
     onStatusChange : function(aWebProgress, aRequest, aStatus, aMessage)
