@@ -19,7 +19,7 @@ You have no uploads yet. You should <?php echo $html->link('add one', '/uploads/
         <?php endif; ?>
     </div>
 
-    <h3><?php echo $upload['Upload']['title']; ?></h3>
+    <h3><?php echo $html->link( $upload['Upload']['title'], $upload['Upload']['referrer']) ?></h3>
         <ul>
             <?php if (array_key_exists(0,$upload['File']) && !empty($upload['File'][0]['size'])) : ?>
                 <li>Size:  <?php echo $number->toReadableSize($upload['File'][0]['size']); ?></li>
