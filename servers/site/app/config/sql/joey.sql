@@ -150,5 +150,6 @@ ALTER TABLE `users`
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- DEFAULT DATA
+INSERT INTO `contentsourcetypes` VALUES (1,'application/atom+xml','2007-03-18 09:45:49','2007-03-18 09:45:49');
 INSERT INTO `operators` VALUES (1,'T-Mobile','tmomail.net','2007-03-18 09:19:04','0000-00-00 00:00:00');
 INSERT INTO `phones` VALUES (1,'Generic','2007-03-15 14:27:14','0000-00-00 00:00:00');
