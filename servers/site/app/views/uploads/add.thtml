@@ -1,0 +1,45 @@
+
+<h2>Upload new data</h2>
+
+<?php if (isset($error_mesg)) : ?>
+    <div class="error_message"><?=$error_mesg?></div>
+<?php endif; ?>
+
+<form action="" method="post" enctype="multipart/form-data" class="joey-form" />
+
+<div>
+    <label class="joey-label-large" for="UploadTitle">Title:</label>
+    <?=$html->input('Upload/title')?>
+    <?=$html->tagErrorMsg('Upload/title', 'A title is required.')?>
+</div>
+
+<div>
+    <label class="joey-label-large" for="UploadReferrer">Referrer:</label>
+    <?=$html->input('Upload/referrer')?>
+    <?=$html->tagErrorMsg('Upload/referrer', 'A referrer is required.')?>
+</div>
+
+<hr />
+<div>
+    <label class="joey-label-large" for="FileUpload">File to Upload:</label>
+    <?=$html->file('File/Upload')?>
+    <?=$html->tagErrorMsg('File/Upload', isset($error_fileupload) ? $error_fileupload : 'A file is required.')?>
+</div>
+<hr />
+<div>
+    <label class="joey-label-large" for="ContentsourceSource">Source:</label>
+    <?=$html->input('Contentsource/source')?>
+    <?=$html->tagErrorMsg('Contentsource/source', 'A source is required.')?>
+</div>
+<div>
+    <label class="joey-label-large" for="ContentsourcetypeName">What is the content source type?</label>
+    <?=$html->selectTag('Contentsourcetype/name', $contentsourcetypes)?>
+    <?=$html->tagErrorMsg('Contentsourcetype/name', 'A content source type is required.')?>
+</div>
+<hr />
+
+<div class="button-box">
+    <?=$html->submit('Upload',array('class' => 'joey-submit')); ?>
+</div>
+
+</form>

@@ -1,24 +1,19 @@
 
-<?php
-if (isset($error) && $error) {
-    echo '<div id="error-message">' . $error_mesg . '</div>';
-}
-
-if (! $this->controller->Session->check('User')) {
-
-?>
+<?php if (isset($error_mesg)) : ?>
+    <div class="error_message"><?=$error_mesg?></div>
+<?php endif; ?>
 
 <h2>Login</h2>
 
-<form action="<?=htmlentities($html->url()); ?>" method="post" />
+<form action="" method="post" class="joey-form" />
     <div>
-    <label class="joey-label-large" for="UserUsername">User Name:</label>
-    <?=$html->input('User/username')?>
+        <label class="joey-label-large" for="UserUsername">User Name:</label>
+        <?=$html->input('User/username')?>
     </div>
 
     <div>
-    <label class="joey-label-large" for="UserPassword">Password:</label>
-    <?=$html->password('User/password')?>
+        <label class="joey-label-large" for="UserPassword">Password:</label>
+        <?=$html->password('User/password')?>
     </div>
 
     <div class="button-box">
@@ -30,8 +25,3 @@ if (! $this->controller->Session->check('User')) {
 <div>
 <?=$html->link('Register', 'register')?>
 </div>
-
-<?php
-}
-?>
-

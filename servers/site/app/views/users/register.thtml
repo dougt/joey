@@ -1,40 +1,52 @@
 
+<h2>Register</h2>
+<p>All fields are required.</p>
 
 <form action="" method="post" class="joey-form" />
 
-<?php
-if (isset($error) && !empty($error)) {
-    echo '<div id="error-message">' . $error_mesg . '</div>';
-}
-
-if (! $this->controller->Session->check('User')) {
-
-?>
-
-<h2>Register</h2>
-
 <div>
-<label class="joey-label-large" for="UserEmail">Email Address:</label>
-<?=$html->input('User/email')?>
+    <label class="joey-label-large" for="UserUsername">User Name:</label>
+    <?=$html->input('User/username')?>
+    <?=$html->tagErrorMsg('User/username', isset($error_username) ? $error_username : 'A username is required.')?>
 </div>
 
 <div>
-<label class="joey-label-large" for="UserUsername">Please Choose a User Name:</label>
-<?=$html->input('User/username')?>
+    <label class="joey-label-large" for="UserEmail">Email Address:</label>
+    <?=$html->input('User/email')?>
+    <?=$html->tagErrorMsg('User/email', isset($error_email) ?  $error_email : 'An email address is required.')?>
 </div>
 
 <div>
-<label class="joey-label-large" for="UserPassword">Password:</label>
-<?=$html->password('User/password')?>
+    <label class="joey-label-large" for="UserPassword">Password:</label>
+    <?=$html->password('User/password')?>
+    <?=$html->tagErrorMsg('User/password', 'A password is required.')?>
+</div>
+
+<div>
+    <label class="joey-label-large" for="UserPassword">Confirm Password:</label>
+    <?=$html->password('User/confirmpassword')?>
+    <?=$html->tagErrorMsg('User/confirmpassword', 'Your passwords don\'t match.')?>
+</div>
+<div>
+    <label class="joey-label-large" for="UserPhonenumber">Phone number:</label>
+    <?=$html->input('User/phonenumber')?>
+    <?=$html->tagErrorMsg('User/phonenumber', 'A phone number is required.')?>
+</div>
+
+<div>
+    <label class="joey-label-large" for="PhoneName">What type of phone do you have?</label>
+    <?=$html->selectTag('Phone/name', $phones)?>
+    <?=$html->tagErrorMsg('Phone/name', 'A phone name is required.')?>
+</div>
+
+<div>
+    <label class="joey-label-large" for="OperatorProvider">Who is your provider?</label>
+    <?=$html->selectTag('Operator/provider', $operators)?>
+    <?=$html->tagErrorMsg('Operator/provider', 'A provider is required.')?>
 </div>
 
 <div class="button-box">
     <?=$html->submit('Register',array('class' => 'joey-submit')); ?>
 </div>
-
-
-<?php
-}
-?>
 
 </form>
