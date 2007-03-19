@@ -117,8 +117,8 @@ CREATE TABLE `users` (
   `password` varchar(255) NOT NULL default '',
   `email` varchar(255) NOT NULL default '',
   `confirmationcode` varchar(255) default NULL,
-  `phone_id` int(11) unsigned NOT NULL default '0',
-  `operator_id` int(11) unsigned NOT NULL default '0',
+  `phone_id` int(11) unsigned default NULL,
+  `operator_id` int(11) unsigned default NULL,
   `phonenumber` varchar(255) NOT NULL default '',
   `notes` text,
   `disabled` int(1) NOT NULL default '0',
@@ -138,7 +138,7 @@ ALTER TABLE `contentsources`
   ADD CONSTRAINT `contentsources_ibfk_2` FOREIGN KEY (`contentsourcetype_id`) REFERENCES `contentsourcetypes` (`id`);
 
 ALTER TABLE `files`
-  ADD CONSTRAINT `files_ibfk_1` FOREIGN KEY (`upload_id`) REFERENCES `uploads` (`id`);
+  ADD CONSTRAINT `files_ibfk_1` FOREIGN KEY (`upload_id`) REFERENCES `uploads` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
 
 ALTER TABLE `uploads`
   ADD CONSTRAINT `uploads_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
@@ -147,8 +147,8 @@ ALTER TABLE `users`
   ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`phone_id`) REFERENCES `phones` (`id`),
   ADD CONSTRAINT `users_ibfk_2` FOREIGN KEY (`operator_id`) REFERENCES `operators` (`id`);
 
-
-
-
-
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- DEFAULT DATA
+INSERT INTO `operators` VALUES (1,'T-Mobile','tmomail.net','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `phones` VALUES (1,'Generic','2007-03-15 14:27:14','0000-00-00 00:00:00');
