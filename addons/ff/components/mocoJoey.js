@@ -35,7 +35,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 
-var moco_joey_url = "https://joey.labs.mozilla.com/services";
+var moco_joey_url = "https://joey.labs.mozilla.com/site";
 
 function getJoeyURL()
 {
@@ -330,14 +330,14 @@ mocoJoey.prototype =
                                   .getService(Components.interfaces.nsIIOService);
 
         // create an nsIURI
-        var urlstring  = getJoeyURL() + "/rest/login.php";
+        var urlstring  = getJoeyURL() + "/users/login";
         var uri = ioService.newURI(urlstring, null, null);
 	
         // get a channel for that nsIURI
         var channel = ioService.newChannelFromURI(uri);
 
         // Create an input stream with the right data.
-        var postData = "username=" + this.joey_username + "&password=" + this.joey_password;
+        var postData = "rest=1&data[User][username]=" + this.joey_username + "&data[User][password]=" + this.joey_password;
         var inputStream = Components.classes["@mozilla.org/io/string-input-stream;1"]
                                     .createInstance(Components.interfaces.nsIStringInputStream);
         inputStream.setData(postData, postData.length);
@@ -404,16 +404,15 @@ mocoJoey.prototype =
                    value + "\r\n";
         }
 
-        var start = createParam("name", this.joey_name) +
-                    createParam("title", this.joey_title) +
-                    createParam("uri",   this.joey_url) +
-                    createParam("size", this.joey_data_size) +
-                    createParam("uuid", this.joey_uuid) +
-                    createParam("type", this.joey_content_type);
+        var start = createParam("rest", "1") +
+                    createParam("data[Upload][title]", this.joey_title) +
+                    createParam("data[Upload][referrer]",   this.joey_url) +
+                    createParam("data[Contentsource][source]",   this.joey_url) +
+                    createParam("data[Contentsourcetype][name]", this.joey_content_type);
 
         if (fileBuffer == null)
         {
-            start += createParam("data", this.joey_data);
+            start += createParam("data[Contentsource][source]", this.joey_data);
         }
 
         preamble.setData(start, start.length);
@@ -434,8 +433,8 @@ mocoJoey.prototype =
                                          .createInstance(Components.interfaces.nsIStringInputStream);
             
             var filePreambleString =  "--"+BOUNDARY+"\r\n" + 
-                "Content-disposition: form-data;name=\"joeyfile\";filename=\"joeyfile\"\r\n" +
-                "Content-Type: application/octet-stream\r\n" +
+                "Content-disposition: form-data;name=\"data[File][Upload]\";filename=\"data[File][Upload]\"\r\n" +
+                "Content-Type: " + this.joey_content_type + "\r\n" +
                 "Content-Length: " + this.joey_data.fileSize + "\r\n\r\n";
             
             filePreamble.setData(filePreambleString, filePreambleString.length);
@@ -454,7 +453,7 @@ mocoJoey.prototype =
                                   .getService(Components.interfaces.nsIIOService);
 
         // create an nsIURI
-        var urlstring  = getJoeyURL() + "/rest/upload.php";
+        var urlstring  = getJoeyURL() + "/uploads/add";
         var uri = ioService.newURI(urlstring, null, null);
 	
         // get a channel for that nsIURI
