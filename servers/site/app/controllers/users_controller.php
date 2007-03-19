@@ -41,40 +41,81 @@ vendor('BrowserAgent.class');
 class UsersController extends AppController
 {
     var $name = 'Users';
+    var $uses = array('Operator', 'Phone', 'User');
     var $helpers = array('Form','Html');
 
+    /**
+     *
+     */
+    function activate () {
+
+        // They clicked on the link
+        if (array_key_exists('pass', $this->params) && array_key_exists(0, $this->params['pass'])) {
+            $_confirmationcode = $this->params['pass'][0];
+        }
+
+        // They hit submit on the form
+        if (isset($this->data) && array_key_exists('User', $this->data) && array_key_exists('Confirmationcode', $this->data['User'])) {
+            $_confirmationcode = $this->data['User']['Confirmationcode'];
+        }
+
+        // Why are they here?
+        if (!isset($_confirmationcode) || empty($_confirmationcode)) {
+            $this->redirect('/');
+            exit;
+        }
+
+        $_someone = $this->User->findByConfirmationcode($_confirmationcode); 
+
+        if(!empty($_someone['User']['id'])) {
+            $this->User->id = $_someone['User']['id'];
+            $this->User->saveField('confirmationcode', null);
+
+            // Send them on
+            $this->flash('Account activated, please login', '/users/login', 2);
+
+        } else {
+            // Invalid code, give them an error.
+            $this->set('error_mesg', 'Wrong activation code!');
+        }
+    }
+
+    /**
+     *
+     */
     function login() {
+
+        $this->pageTitle = 'Login';
 
         // Remove their old session
         $this->Session->delete('User');
 
-        $this->pageTitle = 'Login';
 
         // If a user has submitted form data:
         if (!empty($this->data)) {
-            $this->data['User']['username'] = strtolower ($this->data['User']['username']);
 
-            $someone = $this->User->findByUsername($this->data['User']['username']);
+            $this->data['User']['username'] = strtolower($this->data['User']['username']);
 
-            if(!empty($someone['User']['id'])) {
-                // @todo bind with ldap and check the password!
-              if (empty($someone['User']['confirmationcode'])) {
-                if ($someone['User']['password'] == sha1($this->data['User']['password']))
-                {
-                    $this->Session->write('User', $someone['User']);
+            $_someone = $this->User->findByUsername($this->data['User']['username']);
 
-                    // The uploads controller will detect the browser 
-                    $this->redirect('/uploads/index');
-                    exit ();
+            // They're in the database
+            if(!empty($_someone['User']['id'])) {
+
+                if (empty($_someone['User']['confirmationcode'])) {
+                    if ($_someone['User']['password'] == sha1($this->data['User']['password']))
+                    {
+                        $this->Session->write('User', $_someone['User']);
+
+                        // The uploads controller will detect the browser 
+                        $this->redirect('/uploads/index');
+                        exit ();
+                    }
+                } else {
+                    $this->set('error_mesg', 'Sorry, your account has not been activated. Please check your email.');
                 }
-              } else {
-                $this->set('error', true);
-                $this->set('error_mesg', 'Sorry, your account has not been activated');
-              }
             } else {
-              // This is a generalized, non-specific error
-              $this->set('error', true);
-              $this->set('error_mesg', 'Sorry cannot login, please check your username or password');
+                // This is a generalized, non-specific error
+                $this->set('error_mesg', 'Sorry cannot login. please check your username or password.');
             }
         }
 
@@ -86,39 +127,27 @@ class UsersController extends AppController
 
     }
 
+    /**
+     *
+     */
     function logout() {
 
         $this->Session->delete('User');
 
         $this->redirect('/');
+
+        exit;
     }
 
-    function activate () {
-      if (isset($_POST['code'])) {
-        $confirmationcode = $_POST['code'];
-      } elseif (isset($_GET['code'])) {
-        $confirmationcode = $_GET['code'];
-      } else {
-        $this->render('activate');
-        exit ();
-      }
-
-      $test = $this->User->findByConfirmationcode($confirmationcode); 
-      if(!empty($test['User']['id'])) {
-        $this->User->id = $test['User']['id'];
-        $this->User->saveField('confirmationcode', null);
-
-        $this->set('error', true);
-        $this->set('error_mesg', 'Account activated, please login');
-        $this->redirect('/users/login');
-        exit ();
-      } else {
-        $this->set('error', true);
-        $this->set('error_mesg', 'Wrong activation code!');
-      }
-    }
-
+    /**
+     *
+     */
     function register() {
+
+        $this->pageTitle = 'Register';
+
+        $this->set('phones', $this->Phone->generateList(null,null,null,'{n}.Phone.id','{n}.Phone.name'));
+        $this->set('operators', $this->Operator->generateList(null,null,null,'{n}.Operator.id','{n}.Operator.provider'));
 
         // If a user has submitted form data:
         if (!empty($this->data)) {
@@ -128,43 +157,86 @@ class UsersController extends AppController
             $test1 = $this->User->findByUsername($this->data['User']['username']);
             $test2 = $this->User->findByEmail($this->data['User']['email']);
 
-            if(empty($test1['User']['id']) && empty($test2['User']['id'])) {
+            // Do some special validation
+                // The username is already in use
+                if (!empty($test1['User']['id'])) {
+                    $this->User->invalidate('username');
+                    $this->set('error_username', 'Your username is already in use, please choose a different username.');
+                }
+                // The email address is already in use
+                if (!empty($test2['User']['id'])) {
+                    $this->User->invalidate('email');
+                    $this->set('error_email', 'Your email address is already in use, please choose a different email address.');
+                }
+                // The passwords don't match
+                if ($this->data['User']['password'] != $this->data['User']['confirmpassword']) {
+                    $this->User->invalidate('confirmpassword');
+                }
 
-                // Encrypt the database
+            // If all our data validates
+            if ($this->User->validates($this->data) && $this->Phone->validates($this->data) && $this->Operator->validates($this->data)) {
+
+                // Encrypt the password
                 $this->data['User']['password'] = sha1($this->data['User']['password']);
 
-                $confirmationcode = uniqid();
-                $this->data['User']['confirmationcode'] = $confirmationcode;
-                $mesg = 'Please click on the following link or use the code '. $confirmationcode .' to activate your registration.  http://joey.labs.mozilla.org/users/activate?code='. $confirmationcode .' ';
+                // Assign a unique confirmation code
+                $this->data['User']['confirmationcode'] = uniqid();
 
-                if (mail($this->data['User']['email'], 'Welcome to Joey', $mesg)) {
+                // Fill in the FKs.  Shouldn't cake do this for me?
+                $this->data['User']['phone_id']         = $this->data['Phone']['name'];
+                $this->data['User']['operator_id'] = $this->data['Operator']['provider'];
 
-                  if ($this->User->save($this->data)) {
-                    $newuser = $this->User->findByEmail($this->data['User']['email']);
+                // Save the info.  We already validated it, so this should never
+                // fail.  If it does fail, I'm betting someone messed with the form
+                // data manually and an FK isn't lining up...that's a shame.
+                if ($this->User->save($this->data)) {
 
-                    $this->Session->write('User', $newuser['User']);
+                    $_user_id = $this->User->id;
 
-                    $this->redirect('/uploads/index');
-                  } else {
-                    // database error 
-                    $this->set('error', true);
-                    $this->set('error_mesg', 'There is an unexpected server error, please try again later!');
-                    $this->render('register');
-                    exit ();
-                  }
+                    // Create directories on the disk for the user to store their uploads
+                    if (! (mkdir(UPLOAD_DIR."/{$_user_id}") && mkdir(UPLOAD_DIR."/{$_user_id}/previews"))) {
+                        // I sincerely hope it's a rare case that this fails.  At
+                        // this point, the user is in the database, but we can't
+                        // create directories for them to put their stuff. We can't
+                        // use a transaction here, because we wouldn't have the
+                        // user's id (since it comes from the database), so we can't
+                        // rollback our changes.  Instead, we'll make a last ditch
+                        // effort to whack the user, and then set an error message.
+
+                        $this->User->del($_user_id);
+
+                        $this->set('error_mesg', 'Registration failed.  Please try again.');
+                    } else {
+                        // Make an email message.  @todo This should really be
+                        // in a config var, or a view somewhere.
+                        // @todo site is hardcoded here to the base URL.  This will
+                        // work for production but needs to be fixed for other URLs
+                        $_message = "Please click on the following link or use the code {$this->data['User']['confirmationcode']} to activate your registration.  ".FULL_BASE_URL."/users/activate/{$this->data['User']['confirmationcode']} .";
+
+                        // Send a mail to the user
+                        mail($this->data['User']['email'], 'Welcome to Joey', $_message);
+
+                        // Grab their information from the database, and store in the session
+                        $_newuser = $this->User->findByEmail($this->data['User']['email']);
+                        $this->Session->write('User', $_newuser['User']);
+
+                        // They're outta here
+                        $this->flash('Registration successful.  Please check your email.', '/uploads/index', 2);
+                    }
                 } else {
-                  // email error 
-                  $this->set('error', true);
-                  $this->set('error_mesg', 'An error has occured while we try to send you email, please double check your email address!');
-                  $this->render('register');
-                  exit ();
+                    $this->set('error_mesg', 'Registration failed.  Please try again.');
                 }
             } else {
-                // username already exists
-                $this->set('error', true);
-                $this->set('error_mesg', 'Your username or email is already used by someoneelse, please choose a different username!');
-                $this->render('register');
-                exit ();
+                // Since we're using &&'s in the if() statement above, there is a
+                // chance some of these didn't run.  If we run them all manually, we
+                // can provide a complete set of error messages to the user all in
+                // one go.
+                    $this->User->validates($this->data);
+                    $this->Phone->validates($this->data);
+                    $this->Operator->validates($this->data);
+
+                // Send the errors to the form 
+                $this->validateErrors($this->User, $this->Phone, $this->Operator);
             }
         }
     }
