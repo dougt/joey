@@ -50,9 +50,15 @@ div#container {
     padding: .5em;
 }
 
-.joey-form div.error_message {
+.form_error {
+    background-color: #ecc;
     color: #c00;
-    display: block;
+    margin: 5px 0;
+    padding: .5em;
+}
+
+div.error_message {
+    color: #c00;
     margin: 0;
     padding-bottom: 1em;
 }

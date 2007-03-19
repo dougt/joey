@@ -40,14 +40,30 @@ class AppController extends Controller
 {
     function beforeFilter() {
 
+
+        // By default, we're going to secure all pages, and redirect users to the
+        // login page if they aren't authenticated.  This array holds the controllers
+        // and actions that shouldn't be checked, in the form:
+        //      array(controller=>array(action,...))
+        $_no_session_check = array(
+                                    'users' => array('activate', 'login', 'register')
+                                   );
+                                        
+        $_skip_check = false;
+
         if (array_key_exists('controller', $this->params) && array_key_exists('action', $this->params)) {
-            if (! ($this->params['controller'] == 'users' && ($this->params['action'] == 'register' || $this->params['action'] == 'login' || $this->params['action'] == 'activate'))) {
-
-                $this->checkSession();
-
+            foreach ($_no_session_check as $_controller => $_actions) {
+                foreach ($_actions as $_action) {
+                    if ( ($this->params['controller'] == $_controller) && ($this->params['action'] == $_action) ) {
+                        $_skip_check = true;
+                    }
+                }
             }
         }
 
+        if ($_skip_check !== true) {
+            $this->checkSession();
+        }
     }
 
 

@@ -42,7 +42,7 @@ font-size: 180%;
 }
 
 h3{
-color:#c6c65b;
+color:#771;
 padding-top:2em;
 font-size: 140%;
 }
@@ -149,7 +149,6 @@ vertical-align:top;
 
 #flashMessage, .error, .error_message {
 color:#900;
-font-size: 16px;
 background-color: #fff;
 margin: 8px 0px;
 font-weight: bold;
