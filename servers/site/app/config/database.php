@@ -57,18 +57,11 @@ class DATABASE_CONFIG
 {
 	var $default = array('driver' => 'mysql',
 								'connect' => 'mysql_connect',
-								'host' => 'localhost',
-								'login' => 'user',
-								'password' => 'password',
-								'database' => 'project_name',
+								'host' => DB_HOST,
+								'login' => DB_USER,
+								'password' => DB_PASS,
+								'database' => DB_NAME,
 								'prefix' => '');
 
-	var $test = array('driver' => 'mysql',
-							'connect' => 'mysql_connect',
-							'host' => 'localhost',
-							'login' => 'user',
-							'password' => 'password',
-							'database' => 'project_name-test',
-							'prefix' => '');
 }
 ?>

@@ -43,4 +43,6 @@
  *
  */
 //EOF
+
+require_once ROOT.DS.APP_DIR.DS.'config'.DS.'config.php';
 ?>
