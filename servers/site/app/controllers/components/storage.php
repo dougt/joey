@@ -75,7 +75,7 @@ class StorageComponent extends Object
 
         } else if (strncasecmp($filetype, 'video', 5) == 0) {
 
-            $_cmd = FFMPEG_CMD."-y -i {$_filename} -ab 32 -ac 1 -ar 8000 -vcodec h263 -s qcif -r 10 {$_previewname}";
+            $_cmd = FFMPEG_CMD . " -i {$_filename} -ss 5 -s '100x100' -vframes 1 -f mjpeg {$_previewname}";
 
             exec($_cmd, $_out, $_ret);
 
