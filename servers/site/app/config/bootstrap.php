@@ -45,4 +45,11 @@
 //EOF
 
 require_once ROOT.DS.APP_DIR.DS.'config'.DS.'config.php';
+
+/**
+ * Define non-browser errors.  These strings are echoed on the page when a request
+ * fails.
+ */
+define('NB_CLIENT_ERROR_UPLOAD_FAIL', '-1');
+
 ?>

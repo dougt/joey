@@ -106,9 +106,12 @@ class UsersController extends AppController
                     {
                         $this->Session->write('User', $_someone['User']);
 
-                        // The uploads controller will detect the browser 
-                        $this->redirect('/uploads/index');
-                        exit ();
+                        if ($this->nbClient) {
+                            $this->nbFlash($_someone['User']['id']);
+                        } else {
+                            $this->redirect('/uploads/index');
+                            exit ();
+                        }
                     }
                 } else {
                     $this->set('error_mesg', 'Sorry, your account has not been activated. Please check your email.');

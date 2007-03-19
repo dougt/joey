@@ -38,6 +38,23 @@
 
 class AppController extends Controller
 {
+    /**
+     * Is the request coming from a non-browser client? Set in the constructor.
+     */
+    var $nbClient = false;
+
+    function __construct() {
+
+        parent::__construct();
+
+        // Check the POST for this special key.  If it exists, the person is using a
+        // non-browser client to access the site.  This will change the information
+        // we return.
+        if (array_key_exists('rest',$_POST)) {
+            $this->nbClient == true;
+        }
+    }
+
     function beforeFilter() {
 
 
@@ -76,6 +93,20 @@ class AppController extends Controller
             $this->redirect('/users/login');
             exit;
         }
+    }
+
+    /**
+     * If the user is using a non-browser client to access the pages, we use this
+     * method to print error/success information on the page.  We're not overriding
+     * flash() because we usually need to send different data.
+     *
+     * @param string  Message to print on page
+     */
+    function nbFlash($message)
+    {
+        $this->set('message', $message);
+
+        $this->render(null, false, VIEWS.'layouts'.DS.'nbflash.thtml');
     }
 
 }

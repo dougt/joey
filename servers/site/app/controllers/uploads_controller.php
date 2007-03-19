@@ -93,7 +93,7 @@ class UploadsController extends AppController
 
             // We've got two use cases.  First, let's check if they've uploaded a
             // file successfully.
-            if ( $this->data['File']['Upload']['error'] == 0 ) {
+            if ( !empty($this->data['File']) && $this->data['File']['Upload']['error'] == 0 ) {
 
                 if (!is_uploaded_file($this->data['File']['Upload']['tmp_name'])) {
                     $this->File->invalidate('Upload');
@@ -146,7 +146,11 @@ class UploadsController extends AppController
 
                             if ($this->File->save($this->data)) {
                                 $this->Upload->commit();
-                                $this->flash('Upload saved.', '/uploads/index');
+                                if ($this->nbClient) {
+                                    $this->nbFlash($this->Upload->id);
+                                } else {
+                                    $this->flash('Upload saved.', '/uploads/index');
+                                }
                             } else {
                                 $this->Upload->rollback();
                                 $this->set('error_mesg', 'Could not save your file.');
@@ -185,7 +189,12 @@ class UploadsController extends AppController
 
                         if ($this->Contentsource->save($this->data)) {
                             $this->Upload->commit();
-                            $this->flash('Upload saved.', '/uploads/index');
+
+                            if ($this->nbClient) {
+                                $this->nbFlash($this->Upload->id);
+                            } else {
+                                $this->flash('Upload saved.', '/uploads/index');
+                            }
 
                         } else {
                             $this->Upload->rollback();
@@ -215,6 +224,10 @@ class UploadsController extends AppController
 
             // Send the errors to the form 
             $this->validateErrors($this->Upload, $this->File);
+
+            if ($this->nbClient) {
+                $this->nbFlash(NB_CLIENT_ERROR_UPLOAD_FAIL);
+            }
 
         }
     }
