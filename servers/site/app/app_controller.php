@@ -106,6 +106,8 @@ class AppController extends Controller
     {
         $this->set('message', $message);
 
+        $this->layout = null;
+
         $this->render(null, false, VIEWS.'layouts'.DS.'nbflash.thtml');
     }
 
