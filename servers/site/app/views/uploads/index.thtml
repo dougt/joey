@@ -12,10 +12,14 @@ You have no uploads yet. You should <?php echo $html->link('add one', '/uploads/
 <?php foreach ($uploads as $upload): ?>
 
     <div class="joey-upload-preview">
-        <?php if (array_key_exists(0,$upload['File']) && !empty($upload['File'][0]['preview'])) : ?>
-            <?=$html->link( '<img src="'.$html->url("/files/view/{$upload['File'][0]['id']}/preview").'" height="100" width="100" />', "/files/view/{$upload['File'][0]['id']}",false,false,false ) ?>
+        <?php if (array_key_exists(0,$upload['File'])) : ?>
+            <?php if (!empty($upload['File'][0]['preview'])) : ?>
+                <?=$html->link( '<img src="'.$html->url("/files/view/{$upload['File'][0]['id']}/preview").'" height="100" width="100" />', "/files/view/{$upload['File'][0]['id']}",false,false,false ) ?>
+            <?php else : ?>
+                <?=$html->link($html->image('na.png'), "/files/view/{$upload['File'][0]['id']}", false, false, false); ?>
+            <?php endif; ?>
         <?php else : ?>
-            <?php echo $html->image('na.png'); ?>
+            <?=$html->image('na.png'); ?>
         <?php endif; ?>
     </div>
 
