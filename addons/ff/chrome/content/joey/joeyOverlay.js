@@ -34,13 +34,10 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-var g_joey_name;
 var g_joey_data;
-var g_joey_data_size;
 var g_joey_content_type;
 var g_joey_title;
 var g_joey_url;
-var g_joey_uuid;
 var g_joey_isfile;
 
 var g_joey_media_url = null;
@@ -122,22 +119,17 @@ function uploadDataFromGlobals()
     
 	if (g_joey_isfile)
 	{
-		joey.uploadFile(g_joey_name,
-                        g_joey_title,
+		joey.uploadFile(g_joey_title,
                         g_joey_url,
                         g_joey_file,
-                        g_joey_content_type,
-                        g_joey_uuid);
+                        g_joey_content_type);
 	}
 	else
 	{
-	    joey.uploadData(g_joey_name,
-                        g_joey_title,
+	    joey.uploadData(g_joey_title,
                         g_joey_url,
                         g_joey_data,
-                        g_joey_data_size,
-                        g_joey_content_type,
-                        g_joey_uuid);
+                        g_joey_content_type);
 	}
 }
 
@@ -227,14 +219,26 @@ function joey_selectedText()
     
     selection = replaceAll(selection, "\t", "\r\n");
     
-    g_joey_name = "Untitled";
-    g_joey_data = selection;
-    g_joey_data_size = selection.length;
-    g_joey_isfile = false;
+    var file = Components.classes["@mozilla.org/file/directory_service;1"]
+                         .getService(Components.interfaces.nsIProperties)
+                         .get("TmpD", Components.interfaces.nsIFile);
+    file.append("joey-selected-text.tmp");
+    file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0664);
+
+    // file is nsIFile, data is a string
+    var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"]
+                             .createInstance(Components.interfaces.nsIFileOutputStream);
+
+    // use 0x02 | 0x10 to open file for appending.
+    foStream.init(file, 0x02 | 0x08 | 0x20, 0664, 0); // write, create, truncate
+    foStream.write(selection, selection.length);
+    foStream.close();
+
+    g_joey_file = file;
+    g_joey_isfile = true;
     g_joey_content_type = "text/plain";
     g_joey_title = focusedWindow.document.title;
     g_joey_url  = focusedWindow.location.href;
-    g_joey_uuid = "";    
 
     uploadDataFromGlobals();
 }
@@ -262,14 +266,11 @@ function joey_feed(feedLocation)
      * on the server 
      */
     
-    g_joey_name = "Untitled";
     g_joey_data = feedLocation;
-    g_joey_data_size = feedLocation.length;
     g_joey_isfile = false;
     g_joey_content_type = "rss-source/text";
     g_joey_title = "Feed / We can put a title in it with one more client call. ";
     g_joey_url  = feedLocation;
-    g_joey_uuid = "";    
     uploadDataFromGlobals();
 }
 
@@ -483,13 +484,11 @@ function joey_selectedImage()
 {
     var focusedWindow = document.commandDispatcher.focusedWindow;
     
-    g_joey_name = "Untitled-image";
     g_joey_title = focusedWindow.document.title;
     g_joey_url = focusedWindow.location.href;
-    g_joey_uuid = "";    
     g_joey_isfile = true;
     
-    // g_joey_data, g_joey_data_size, g_joey_content_type
+    // g_joey_data, g_joey_content_type
     // will be filled in when we have the image data.
     
     // the IO service
@@ -571,7 +570,8 @@ function doGrab(iterator)
 
 function joeyCheckForMedia()
 {
-    debug("in!");
+
+    //    alert('in');
 
     // reset these on new page load.  should probably move this somewhere else.
     document.getElementById("joeyMediaMenuItem").setAttribute("hidden","true");
@@ -587,13 +587,11 @@ function joey_uploadFoundMedia() // refactor with joey_selectedImage
 {
     var focusedWindow = document.commandDispatcher.focusedWindow;
     
-    g_joey_name = focusedWindow.document.title; // xxx
     g_joey_title = focusedWindow.document.title;
     g_joey_url = focusedWindow.location.href;
-    g_joey_uuid = "";    
     g_joey_isfile = true;
     
-    // g_joey_data, g_joey_data_size, g_joey_content_type
+    // g_joey_data, g_joey_content_type
     // will be filled in when we have the media data.
     
     // the IO service

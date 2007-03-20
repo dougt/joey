@@ -99,9 +99,7 @@
            </vbox>
         </groupbox>
         
-        <button oncommand="joeyAreaNotify();" label="Upload"/>
-        <checkbox id="notifyChange" label="Notify me of changes" hidden="false"/>
-        
+        <button oncommand="joeyAreaNotify();" label="Notify Changes"/>
 
   </vbox>
 

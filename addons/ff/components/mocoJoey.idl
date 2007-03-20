@@ -44,31 +44,18 @@ interface mocoJoeyListener : nsISupports
   void onProgressChange(in PRUint32 current, in PRUint32 total);
 };
 
-[scriptable, uuid(B8910A41-DF41-4006-8EFC-32752B32F4FD)]
+[scriptable, uuid(46746F62-39D1-4A35-9F60-AF7297AC0251)]
 interface mocoJoey : nsISupports
 {
   void setListener(in mocoJoeyListener listener);
 
-  void uploadData(in string name,
-                  in string title,
+  void uploadData(in string title,
                   in string uri,
                   in string data,
-                  in PRUint32 size,
-                  in string type,
-                  in string uuid);
+                  in string type);
                   
-  void uploadBinaryData(in string name,
-                        in string title,
-                        in string uri,
-                        [array, size_is(size)] in PRInt32 data,
-                        in PRUint32 size,
-                        in string type,
-                        in string uuid);    
-
-  void uploadFile(in string name,
-                  in string title,
+  void uploadFile(in string title,
                   in string uri,
                   in nsIFile file,
-                  in string type,
-                  in string uuid);    
+                  in string type);    
 };

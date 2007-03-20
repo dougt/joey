@@ -145,13 +145,10 @@ mocoJoey.prototype =
 	joey_listener: null,                     
 	joey_username: "",
 	joey_password: "",
-	joey_name: "",
 	joey_data: "",
-	joey_data_size: 0,
 	joey_content_type: "",
 	joey_title: "",
 	joey_url: "",
-	joey_uuid: "",
 	xmlhttp: null,
 
     setLoginInfo: function()
@@ -210,64 +207,38 @@ mocoJoey.prototype =
         this.joey_password = p.value;
     },
     
-	uploadData: function(name, title, url, data, size, type, uuid)
+	uploadData: function(title, url, data, type)
 	{
         this.joey_isfile = false;
 
-		this.uploadDataInternal( name, 
-                                 title,
+		this.uploadDataInternal( title,
                                  url, 
                                  data,
-                                 size, 
-                                 type,
-                                 uuid);
+                                 type);
 
 	},
 
-	uploadBinaryData: function(name, title, url, data, size, type, uuid)
-	{
-        this.joey_isfile = false;
-
-        var b = new G_Base64();
-		this.uploadDataInternal( name, 
-                                 title,
-                                 url, 
-                                 b.encodeByteArray(data),
-                                 size, 
-                                 type,
-                                 uuid);
-	},
-
-    uploadFile: function(name, title, url, file, type, uuid)
+    uploadFile: function(title, url, file, type)
     {
         this.joey_isfile = true;
 
-		this.uploadDataInternal( name, 
-                                 title,
+		this.uploadDataInternal( title,
                                  url, 
                                  file,
-                                 -1, 
-                                 type,
-                                 uuid);
+                                 type);
     },
 
-    uploadDataInternal: function(name, title, url, data, size, type, uuid)
+    uploadDataInternal: function(title, url, data, type)
     {
         if (this.joey_in_progress == true)
             return -1;
 
         this.joey_in_progress = true;
 
-        this.joey_name  = name;
         this.joey_title = title;
         this.joey_url = url;
         this.joey_content_type = type;
         this.joey_data = data;
-        this.joey_data_size = size;
-        this.joey_type = type;
-        this.joey_uuid = uuid;
-
-        // debug("XXXXXXXXXXXXXXXX  The uuid for this upload is: " + uuid + " " + this.joey_uuid);
 
         // kick off the action
         if (this.joey_hasLogged == false)
@@ -406,13 +377,12 @@ mocoJoey.prototype =
 
         var start = createParam("rest", "1") +
                     createParam("data[Upload][title]", this.joey_title) +
-                    createParam("data[Upload][referrer]",   this.joey_url) +
-                    createParam("data[Contentsource][source]",   this.joey_url) +
-                    createParam("data[Contentsourcetype][name]", this.joey_content_type);
+                    createParam("data[Upload][referrer]", this.joey_url);
 
         if (fileBuffer == null)
         {
-            start += createParam("data[Contentsource][source]", this.joey_data);
+            start += createParam("data[Contentsource][source]", this.joey_data) +
+                     createParam("data[Contentsourcetype][name]", this.joey_content_type)
         }
 
         preamble.setData(start, start.length);
@@ -527,181 +497,3 @@ function NSGetModule(compMgr, fileSpec)
     return myModule;
 }
 
-
-// btoa: From 
-//       http://lxr.mozilla.org/mozilla1.8/source/toolkit/components/url-classifier/content/moz/base64.js
-
-/**
- * Base64 en/decoder. Useful in contexts that don't have atob/btoa, or
- * when you need a custom encoding function (e.g., websafe base64).
- *
- * @constructor
- */
-function G_Base64() {
-  this.byteToCharMap_ = {};
-  this.charToByteMap_ = {};
-  this.byteToCharMapWebSafe_ = {};
-  this.charToByteMapWebSafe_ = {};
-  this.init_();
-}
-
-/**
- * Our default alphabet. Value 64 (=) is special; it means "nothing."
- */ 
-G_Base64.ENCODED_VALS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-                        "abcdefghijklmnopqrstuvwxyz" +
-                        "0123456789+/=";
-
-/**
- * Our websafe alphabet. Value 64 (=) is special; it means "nothing."
- */ 
-G_Base64.ENCODED_VALS_WEBSAFE = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-                                "abcdefghijklmnopqrstuvwxyz" +
-                                "0123456789-_=";
-
-/**
- * We want quick mappings back and forth, so we precompute two maps.
- */
-G_Base64.prototype.init_ = function() {
-  for (var i = 0; i < G_Base64.ENCODED_VALS.length; i++) {
-    this.byteToCharMap_[i] = G_Base64.ENCODED_VALS.charAt(i);
-    this.charToByteMap_[this.byteToCharMap_[i]] = i;
-    this.byteToCharMapWebSafe_[i] = G_Base64.ENCODED_VALS_WEBSAFE.charAt(i);
-    this.charToByteMapWebSafe_[this.byteToCharMapWebSafe_[i]] = i;
-  }
-}
-
-/**
- * Base64-encode an array of bytes.
- *
- * @param input An array of bytes (numbers with value in [0, 255]) to encode
- *
- * @param opt_webSafe Boolean indicating we should use the alternative alphabet 
- *
- * @returns String containing the base64 encoding
- */
-G_Base64.prototype.encodeByteArray = function(input, opt_webSafe) {
-
-//  if (!(input instanceof Array))
-//    throw new Error("encodeByteArray takes an array as a parameter");
-
-  var byteToCharMap = opt_webSafe ? 
-                      this.byteToCharMapWebSafe_ :
-                      this.byteToCharMap_;
-
-  var output = [];
-
-  var i = 0;
-  while (i < input.length) {
-
-    var byte1 = input[i];
-    var haveByte2 = i + 1 < input.length;
-    var byte2 = haveByte2 ? input[i + 1] : 0;
-    var haveByte3 = i + 2 < input.length;
-    var byte3 = haveByte3 ? input[i + 2] : 0;
-
-    var outByte1 = byte1 >> 2;
-    var outByte2 = ((byte1 & 0x03) << 4) | (byte2 >> 4);
-    var outByte3 = ((byte2 & 0x0F) << 2) | (byte3 >> 6);
-    var outByte4 = byte3 & 0x3F;
-
-    if (!haveByte3) {
-      outByte4 = 64;
-      
-      if (!haveByte2)
-        outByte3 = 64;
-    }
-    
-    output.push(byteToCharMap[outByte1]);
-    output.push(byteToCharMap[outByte2]);
-    output.push(byteToCharMap[outByte3]);
-    output.push(byteToCharMap[outByte4]);
-
-    i += 3;
-  }
-
-  return output.join("");
-}
-
-/**
- * Base64-decode a string.
- *
- * @param input String to decode
- *
- * @param opt_webSafe Boolean indicating we should use the alternative alphabet 
- * 
- * @returns Array of bytes representing the decoded value.
- */
-G_Base64.prototype.decodeString = function(input, opt_webSafe) {
-
-  if (input.length % 4)
-    throw new Error("Length of b64-encoded data must be zero mod four");
-
-  var charToByteMap = opt_webSafe ? 
-                      this.charToByteMapWebSafe_ :
-                      this.charToByteMap_;
-
-  var output = [];
-
-  var i = 0;
-  while (i < input.length) {
-
-    var byte1 = charToByteMap[input.charAt(i)];
-    var byte2 = charToByteMap[input.charAt(i + 1)];
-    var byte3 = charToByteMap[input.charAt(i + 2)];
-    var byte4 = charToByteMap[input.charAt(i + 3)];
-
-    if (byte1 === undefined || byte2 === undefined ||
-        byte3 === undefined || byte4 === undefined)
-      throw new Error("String contains characters not in our alphabet: " +
-                      input);
-
-    var outByte1 = (byte1 << 2) | (byte2 >> 4);
-    output.push(outByte1);
-    
-    if (byte3 != 64) {
-      var outByte2 = ((byte2 << 4) & 0xF0) | (byte3 >> 2);
-      output.push(outByte2);
-      
-      if (byte4 != 64) {
-        var outByte3 = ((byte3 << 6) & 0xC0) | byte4;
-        output.push(outByte3);
-      }
-    }
-
-    i += 4;
-  }
-
-  return output;
-}
-
-/**
- * Helper function that turns a string into an array of numbers. 
- *
- * @param str String to arrify
- *
- * @returns Array holding numbers corresponding to the UCS character codes
- *          of each character in str
- */
-G_Base64.prototype.arrayifyString = function(str) {
-  var output = [];
-  for (var i = 0; i < str.length; i++)
-    output.push(str.charCodeAt(i));
-  return output;
-}
-
-/**
- * Helper function that turns an array of numbers into the string
- * given by the concatenation of the characters to which the numbesr
- * correspond (got that?).
- *
- * @param array Array of numbers representing characters
- *
- * @returns Stringification of the array
- */ 
-G_Base64.prototype.stringifyArray = function(array) {
-  var output = [];
-  for (var i = 0; i < array.length; i++)
-    output[i] = String.fromCharCode(array[i]);
-  return output.join("");
-}

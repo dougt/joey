@@ -69,34 +69,6 @@ function down()
 
 function joeyAreaNotify()
 {
-
-alert(lastResults[0]);
-
-	var html = lastResults[0].innerHTML;
-	
-    var joey = Components.classes["@mozilla.com/joey;1"]
-                            .createInstance(Components.interfaces.mocoJoey);
-
-  //  joey.setListener(new joey_listener());
-
-    joey.uploadData("Joey! Area Summary",
-                       openerURI,
-                       openerURI,
-                       html,
-                       html.length,
-                       "text/plain",
-                       0);
-   
-   if (document.getElementById("notifyChange").checked)
-   {
-   		NotifyIfChange()
-   }
-
-}
-
-
-function NotifyIfChange()
-{
 	var xpath = document.getElementById("xpath").value;
 	
 	var generator =
@@ -112,13 +84,10 @@ function NotifyIfChange()
 
   //  joey.setListener(new joey_listener());
 
-    joey.uploadData("Joey! Area Microsummary",
-                    "Microsummary from: " + openerURI,
+    joey.uploadData("Microsummary from: " + openerURI,
                     openerURI,
                     generator,
-                    generator.length,
-                    "microsummary/xml",
-                    0);
+                    "microsummary/xml");
                        
 	alert("uploaded...");
 }	
