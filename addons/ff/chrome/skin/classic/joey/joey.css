@@ -5,3 +5,15 @@
 #joeyStatusButton.login {
     list-style-image  : url("chrome://joey/skin/mini-icon-16-16-login.png");
 }
+
+#joeyStatusTeller  {
+ margin:0px;
+ padding:0px;
+
+}
+
+#joeyProgressLayer{
+  background-color:blue;
+  -moz-opacity:.5;
+}
+
