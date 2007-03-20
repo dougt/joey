@@ -32,9 +32,9 @@
     <?=$html->tagErrorMsg('Contentsource/source', 'A source is required.')?>
 </div>
 <div>
-    <label class="joey-label-large" for="ContentsourcetypeName">What is the content source type?</label>
-    <?=$html->selectTag('Contentsourcetype/name', $contentsourcetypes)?>
-    <?=$html->tagErrorMsg('Contentsourcetype/name', 'A content source type is required.')?>
+    <label class="joey-label-large" for="ContentsourcetypeId">What is the content source type?</label>
+    <?=$html->selectTag('Contentsourcetype/id', $contentsourcetypes)?>
+    <?=$html->tagErrorMsg('Contentsourcetype/id', 'A content source type is required.')?>
 </div>
 <hr />
 

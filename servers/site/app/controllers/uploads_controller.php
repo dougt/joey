@@ -189,7 +189,7 @@ class UploadsController extends AppController
                     // This shouldn't ever fail, since we validated it
                     if ($this->Upload->save($this->data)) {
                         // gg cake
-                        $this->data['Contentsource']['contentsourcetype_id'] = $this->data['Contentsourcetype']['name'];
+                        $this->data['Contentsource']['contentsourcetype_id'] = $this->data['Contentsourcetype']['id'];
                         $this->data['Contentsource']['upload_id']            = $this->Upload->id;
 
                         if ($this->Contentsource->save($this->data)) {

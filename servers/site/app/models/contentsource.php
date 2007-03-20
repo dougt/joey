@@ -48,8 +48,8 @@ class Contentsource extends AppModel
                           );
 
     var $validate = array(
-                            'source' => VALID_NOT_EMPTY,
-                            'type'   => VALID_NOT_EMPTY
+                            'source'               => VALID_NOT_EMPTY,
+                            'contentsourcetype_id' => VALID_NOT_EMPTY
                          );
 
 }
