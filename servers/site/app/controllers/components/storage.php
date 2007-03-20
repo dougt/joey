@@ -89,8 +89,52 @@ class StorageComponent extends Object
 
         // We don't support generating a preview on whatever filetype they gave us
         return false;
-
     }
+
+
+  function translateFile($filename, $filetype) {
+      // Dunno what they gave us, but it's not useful to us
+      if (! (is_readable($filename) && is_file($filename)) ) {
+        return "";
+      }
+      
+      if (strcasecmp($filetype, 'video/flv') == 0) {
+        
+        // High-end
+        //$command = "$this->ffmpeg -y -i " . $orgfilename ." -ab 32 -ac 1 -ar 8000 -vcodec h263 -s qcif -r 12 " . $this->filename;
+        
+        // lowend
+        //$command = "$this->ffmpeg -y -i " . $orgfilename ." -ab 32 -b 15000 -ac 1 -ar 8000 -vcodec h263 -s qcif -r 12 " . $this->filename;
+        
+        $tempfile = $filename . ".orig";
+        
+        rename ($filename, $tempfile);
+        
+        $origname = $filename;
+        $filename = $origname . ".3gp";
+        
+        $_cmd = FFMPEG_CMD . " -y -i {$tempfile} -ab 32 -b 15000 -ac 1 -ar 8000 -vcodec h263 -s qcif -r 12 {$filename}";
+        
+        exec($_cmd, $_out, $_ret);
+        
+        rename ($filename, $origname);
+        
+        // Leave around for debugging.
+        //unlink($tempfile);
+        
+        if ($_ret !== 0) {
+          
+          // bad things happened.  @todo, log $_out to a file.
+          return "";
+        }
+        
+        return "video/3gp";
+      }
+      
+      return "";
+  }
+
+
 
     /**
      * Will create a unique empty file in a users upload directory.

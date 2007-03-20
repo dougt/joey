@@ -141,6 +141,11 @@ class UploadsController extends AppController
                                 // file here.
                             }
 
+                            $_newtype = $this->Storage->translateFile($_filename, $this->data['File']['Upload']['type']);
+                            if ($_newtype != "") {
+                              $this->data['File']['type'] = $_newtype;
+                            }
+
                             // This doesn't really matter anymore, but might as well whack it
                             unset($this->data['File']['Upload']);
 
