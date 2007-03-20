@@ -277,7 +277,10 @@ class UploadsController extends AppController
         $this->set('uploads', $this->Upload->findAllByUserId($this->_user['id']));
 
         if (BrowserAgent::isMobile()) {
-            $this->render('mp_index', 'mp');
+            // We're not using render here, because it would conflict with nbFlash()
+            // above (it would render both, instead of just one)
+            $this->action = 'mp_index';
+            $this->layout = 'mp';
         } else {
             $this->render('index');
         }

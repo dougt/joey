@@ -110,7 +110,7 @@ class UsersController extends AppController
                             $this->nbFlash($_someone['User']['id']);
                         } else {
                             $this->redirect('/uploads/index');
-                            exit ();
+                            exit;
                         }
                     }
                 } else {
@@ -123,10 +123,14 @@ class UsersController extends AppController
         }
 
         if (BrowserAgent::isMobile()) {
-            $this->render ('mp_login', 'mp');
+            // We're not using $this->render() here, because it would conflict with nbFlash()
+            // above (it would render both, instead of just one)
+            $this->action = 'mp_login';
+            $this->layout = 'mp';
         } else {
-            $this->render ('login');
+            $this->action = 'login';
         }
+
 
     }
 
