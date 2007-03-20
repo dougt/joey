@@ -21,6 +21,7 @@
    - the Initial Developer. All Rights Reserved.
    -
    - Contributor(s):
+   -   Marcio Galli
    -
    - Alternatively, the contents of this file may be used under the terms of
    - either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -88,18 +89,27 @@
   <!-- status bar static joey presence UI --> 
   
   <statusbar id="status-bar">
+
     <statusbarpanel  id="joeyStatusbar" context="barcontext" hidden="false" collapsed="false" type="menu" >
     
-  <hbox>
-	  <label id="joeyStatusTeller"  value="" />
+      <hbox style="padding:0px;margin:0px">
+
+
         <toolbarbutton id="joeyStatusButton"
                        oncommand="joey_launchPopup()" />
 
-	    <toolbarbutton id="joeyWorkingButton"
-                       image="chrome://global/skin/throbber/Throbber-small.gif" 
-                       collapsed="true" />
+        <!-- This gives us the DIV layer capability so we can stack a text
+             on top of the background boxes -->
 
-	    <toolbarbutton id="joeyInventoryButton"  collapsed="false" />
+        <stack id="joeyStatusPanel" style="margin:4px;margin-left:0px" > 
+
+         <box id="joeyBackgrondProgressLayers">
+           <box id="joeyProgressLayer" width="0"/>
+         </box>
+
+         <label id="joeyStatusTeller" />
+
+        </stack>
 
       </hbox>
 	  
