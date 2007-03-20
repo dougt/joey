@@ -180,6 +180,24 @@ class UploadsController extends AppController
                 $this->Upload->settings['throw_error'] = true;
                 $this->Contentsource->settings['throw_error'] = true;
 
+                // Remote clients don't know the ID's ahead of time, so they will
+                // submit the type as a string.  Here we look for that, and look up
+                // the matching id.
+                if (array_key_exists('name', $this->data['Contentsourcetype']) && !empty ($this->data['Contentsourcetype']['name'])) {
+                    $_contentsource = $this->Contentsourcetype->findByName($this->data['Contentsourcetype']['name'], array('id'), null, 0);
+
+                    // We found an ID that matched - Substitute that into the
+                    // request, and move on.  If we don't find one that matches,
+                    // they're trying to submit a type that we currently don't
+                    // support.  In that case, invalidate.
+                    if (array_key_exists('id', $_contentsource['Contentsourcetype']) && is_numeric($_contentsource['Contentsourcetype']['id'])) {
+                        $this->data['Contentsourcetype']['id'] = $_contentsource['Contentsourcetype']['id'];
+                        unset($_contentsource, $this->data['Contentsourcetype']['name']);
+                    } else {
+                        $this->Contentsource->invalidate('name');
+                    }
+                }
+
                 if ($this->Upload->validates($this->data) && $this->Contentsource->validates($this->data) && $this->Contentsourcetype->validates($this->data)) {
 
                     // Start our transaction.  It doesn't matter what model we start

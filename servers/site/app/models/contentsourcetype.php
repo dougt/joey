@@ -40,7 +40,7 @@ class Contentsourcetype extends AppModel
 {
     var $name = 'Contentsourcetype';
 
-    var $belongsTo = array('Contentsource' =>
+    var $hasMany = array('Contentsource' =>
                            array('className'  => 'Contentsource',
                                  'conditions' => '',
                                  'order'      => ''
