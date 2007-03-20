@@ -21,9 +21,6 @@ Password:<br/>
 <?=$html->submit(); ?>
 </p>
 
-<?php
-}
-?>
 
 </form>
 
