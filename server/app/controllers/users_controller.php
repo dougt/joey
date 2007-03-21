@@ -221,7 +221,7 @@ class UsersController extends AppController
                         $_message = "Please click on the following link or use the code {$this->data['User']['confirmationcode']} to activate your registration.  ".FULL_BASE_URL."/users/activate/{$this->data['User']['confirmationcode']} .";
 
                         // Send a mail to the user
-                        mail($this->data['User']['email'], 'Welcome to Joey', $_message);
+                        mail($this->data['User']['email'], 'Welcome to Joey', $_message, "From: joey@labs.mozilla.com\r\n");
 
                         // Grab their information from the database, and store in the session
                         $_newuser = $this->User->findByEmail($this->data['User']['email']);
