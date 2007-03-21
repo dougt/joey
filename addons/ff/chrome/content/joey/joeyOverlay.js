@@ -19,6 +19,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
+ * Marcio Galli 
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -294,7 +295,17 @@ function getMediaCallback(content_type, file)
 }
 
 
-function JoeyStatusUpdateClass() {}
+function JoeyStatusUpdateClass() {
+
+  /* We have now the XUL stack with elements in it. 
+   * A background Layer and the top layer for 
+   * the label. 
+   */
+ 
+  this.progressElement   = document.getElementById("joeyProgressLayer");
+  this.progressBoxObject = document.getBoxObjectFor(document.getElementById("joeyStatusTeller"));  
+
+}
 
 /* 
  * Probably this shoul work as a stack
@@ -356,19 +367,41 @@ JoeyStatusUpdateClass.prototype =
     
     tellStatus:function(verb,from,to) 
     {
-        var value;
-        if (verb == "upload")
-            value = "Uploading... ("+from+"/"+to+")";
+        var value; 
+        var percentage = parseInt((from/to)*parseInt(this.progressBoxObject.width));
+
+        if (verb == "upload") {
+
+            // value = "Uploading... ("+from+"/"+to+")";
+            value = "Uploading... ("+percentage+"%)";
+	  }
         else
         {
             if (from==to)
+
                 // this might not be entirely true... basically, at ths point we are waiting to upload...
                 value = "Logging in..."; 
-            else
-                value = "Downloading... ("+from+"/"+to+")";
+
+            else {
+
+                // value = "Downloading... ("+from+"/"+to+")";
+                value = "Downloading... ("+percentage+"%)";
+
+		} 
 
         }   
-		document.getElementById("joeyStatusTeller").value=value;
+
+        if(verb =="upload") {
+              this.progressElement.width=percentage;
+        } else {
+              if(verb =="download") {
+                percentage = this.progressBoxObject.width - percentage;
+                this.progressElement.width=percentage;
+              } else {
+                this.progressElement.width=0;
+              }
+        } 
+        document.getElementById("joeyStatusTeller").value=value;
     }
     
 }
