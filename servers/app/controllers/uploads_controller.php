@@ -213,7 +213,7 @@ class UploadsController extends AppController
                         if ($this->Contentsource->save($this->data)) {
                             $this->Upload->commit();
 
-                            $this->Storage->updateFileById($this->Upload->id);
+                            $this->Storage->updateFileByUploadId($this->Upload->id);
 
                             if ($this->nbClient) {
                                 $this->nbFlash($this->Upload->id);
@@ -300,6 +300,8 @@ class UploadsController extends AppController
 
         // Send all the upload data to the view
         $this->set('uploads', $this->Upload->findAllByUserId($this->_user['id']));
+
+        $this->Storage->updateFileByUploadId(6);
 
         if (BrowserAgent::isMobile()) {
             // We're not using render here, because it would conflict with nbFlash()

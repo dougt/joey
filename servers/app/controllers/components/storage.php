@@ -45,6 +45,10 @@ vendor('microsummary');
  */
 class StorageComponent extends Object
 {
+    /**
+     * Save a reference to the controller on startup
+     * @param object &$controller the controller using this component
+     */
     function startup(&$controller) {
         $this->controller =& $controller;
     }
@@ -99,9 +103,19 @@ class StorageComponent extends Object
     }
 
 
-    function updateFileById($id)
+    /**
+     * Given a file id, this will update the file from it's associated content
+     * source.  (Obviously, this only works if there is a contentsource for the
+     * upload).
+     *
+     * @param int ID of the Upload that is associated with the file to update
+     * @return boolean true on success, false on failure
+     */
+    function updateFileByUploadId($id)
     {
+
       $_upload = $this->controller->Upload->FindById($id);
+
       if (empty($_upload['File']))
       {
         // Create a unique file for our new upload
@@ -113,19 +127,18 @@ class StorageComponent extends Object
           $_file->set('upload_id', $id);
           $_file->set('size', 0);
           $_file->set('type', "text/plain");
-          if (!$_file->save())
-          {
-            echo "Save failed!";
+          if (!$_file->save()) {
             return false;
           }
           
-          // this not should not fail since we just saved it.
+          // this not should not fail since we just saved it.  Since this is the same
+          // query that we did at the beginning, the built in cake-cache will give us
+          // the same results unless we temporarily disable the cache.
           $this->controller->Upload->cacheQueries = false;
           $_upload = $this->controller->Upload->FindById($id);
           $this->controller->Upload->cacheQueries = true;
-        }
-        else
-        {
+
+        } else {
           // bad things happened.  @todo, log $_out to a file.
           return false;
         }
@@ -133,38 +146,53 @@ class StorageComponent extends Object
       
       // This is the file to operate on:
       $_filename = UPLOAD_DIR."/{$_upload['User']['id']}/{$_upload['File'][0]['name']}";
-      
-      // Lets find out what kind of update this is.
+
+      // Make sure our file exists, and we can write to it
+      if (! (is_writable($_filename) && is_file($_filename)) ) {
+          return false;
+      }
+
+      // Lets find out what kind of update this is. if findBy___() had more
+      // recursion, we wouldn't need this extra query.
       $_contentsourcetype = $this->controller->Contentsourcetype->FindById($_upload['Contentsource'][0]['contentsourcetype_id']);
-      $type = $_contentsourcetype['Contentsourcetype']['name'];
+
+        // Depending on the type, update the file
+      switch ($_contentsourcetype['Contentsourcetype']['name']) {
+
+          case 'rss-source/text':
+              // @todo this
+              return false;
+              break;
+
+          case 'microsummary/xml':
+              // @todo remove the need for the temp buffer. bug 374698
+              $tmpfname = tempnam ("/tmp", "microsummary");
+              $fh = fopen($tmpfname, 'w') or die("can't open file");
+              fwrite($fh, $_upload['Contentsource'][0]['source']);
+              fclose($fh);
+
+              $ms = new microsummary();
+              $ms->load($tmpfname);
+              $ms->execute($_upload['Upload']['referrer']);
+
+              unlink($tmpfname);
+
+              // write the file.
+              $fh = fopen($_filename, 'w') or die("can't open transcode file");
+              fwrite($fh, $ms->result) or die("can't write transcode file");
+              fclose($fh);
+
+              // need to update the size in the db.
+              $this->controller->File->id = $id;
+              $this->controller->File->saveField('size',filesize($_filename));
+              break;
+
+              // We don't support whatever they're trying to update.  :(
+          default:
+              return false;
+      }
       
-      if (strcasecmp($type, 'rss-source/text') == 0) {
- 
-       }
-       else if (strcasecmp($type, 'microsummary/xml') == 0) {
-         
-         // remove the need for the temp buffer. bug 374698
-         $tmpfname = tempnam ("/tmp", "microsummary");
-         $fh = fopen($tmpfname, 'w') or die("can't open file");
-         fwrite($fh, $_upload['Contentsource'][0]['source']);
-         fclose($fh);
-         
-         $ms = new microsummary();
-         $ms->load($tmpfname);
-         $ms->execute($_upload['Upload']['referrer']);
-         
-         unlink($tmpfname);
-         
-         // write the file.
-         $fh = fopen($_filename, 'w') or die("can't open transcode file");
-         fwrite($fh, $ms->result) or die("can't write transcode file");
-         fclose($fh);
-         
-         // need to update the size in the db.
-         $this->controller->File->id = $id;
-         $this->controller->File->saveField('size',filesize($_filename));
-       }
-      
+      // If we've made it this far without failing, we're good
       return true;
     }
  

@@ -122,7 +122,7 @@ class FilesController extends AppController
             $this->set('content_type', 'video/avi');
         }
         
-        $this->Storage->updateFileById($_item['File']['upload_id']);
+        $this->Storage->updateFileByUploadId($_item['File']['upload_id']);
     }
 
 }
