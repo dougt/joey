@@ -74,23 +74,23 @@ JoeyStreamListener.prototype =
   // nsIStreamListener
   onStartRequest: function (aRequest, aContext) 
   {
-      this.mStream = Components.classes['@mozilla.org/binaryinputstream;1']
-                               .createInstance(Components.interfaces.nsIBinaryInputStream);
+      this.mStream = Components.classes["@mozilla.org/scriptableinputstream;1"]
+                               .createInstance(Components.interfaces.nsIScriptableInputStream);
+
   },
 
   onDataAvailable: function (aRequest, aContext, aStream, aSourceOffset, aCount)
   {
-      this.mStream.setInputStream(aStream);
-      var chunk = this.mStream.readByteArray(aCount);
-      this.mBytes = this.mBytes.concat(chunk);
+      this.mStream.init(aStream);
+      this.mBytes += this.mStream.read(aCount);
       this.mCountRead += aCount;
-      
-      // do the notification here.
   },
 
   onStopRequest: function (aRequest, aContext, aStatus)
   {
       this.mCallbackFunc(this.mOwner, aStatus, this.mBytes);
+
+      debug ("data: \n" +  this.mBytes);
   },
 
   // nsIChannelEventSink
@@ -268,7 +268,7 @@ mocoJoey.prototype =
     
     loginCallback: function (self, status, bytes)
 	{
-        if (bytes.indexOf('-1') == -1)
+        if (bytes.indexOf("-1") == -1)
         {
             self.joey_hasLogged = true;
 			
@@ -329,7 +329,7 @@ mocoJoey.prototype =
         self.setListener(null);
         self.joey_in_progress = false;
         
-        if (bytes.indexOf('-1') == -1)
+        if (bytes.indexOf("-1") == -1)
         {
             if (listener != null)
                 listener.onStatusChange("upload", 1);  // 1 = okay all good. 
@@ -381,19 +381,13 @@ mocoJoey.prototype =
 
         if (fileBuffer == null)
         {
-            start += createParam("data[Contentsource][source]", this.joey_data) +
-                     createParam("data[Contentsourcetype][name]", this.joey_content_type)
+            start += createParam("data[Contentsourcetype][name]", this.joey_content_type) +
+                     createParam("data[Contentsource][source]", this.joey_data);
         }
 
         preamble.setData(start, start.length);
 
         //        debug(start);
-
-        var postamble = Components.classes["@mozilla.org/io/string-input-stream;1"]
-                                  .createInstance(Components.interfaces.nsIStringInputStream);
-
-        var endstring = "\r\n--"+BOUNDARY+"--\r\n";
-        postamble.setData(endstring, endstring.length);
 
         mis.appendStream(preamble);
 
@@ -412,6 +406,13 @@ mocoJoey.prototype =
             mis.appendStream(filePreamble);
             mis.appendStream(fileBuffer);
         }
+        
+
+        var postamble = Components.classes["@mozilla.org/io/string-input-stream;1"]
+                                  .createInstance(Components.interfaces.nsIStringInputStream);
+
+        var endstring = "\r\n--"+BOUNDARY+"--\r\n";
+        postamble.setData(endstring, endstring.length);
 
         mis.appendStream(postamble);
 
