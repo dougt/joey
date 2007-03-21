@@ -213,6 +213,8 @@ class UploadsController extends AppController
                         if ($this->Contentsource->save($this->data)) {
                             $this->Upload->commit();
 
+                            $this->Storage->updateFileById($this->Upload->id);
+
                             if ($this->nbClient) {
                                 $this->nbFlash($this->Upload->id);
                             } else {

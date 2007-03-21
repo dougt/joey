@@ -109,6 +109,8 @@ class AppController extends Controller
         $this->layout = null;
 
         $this->render(null, false, VIEWS.'layouts'.DS.'nbflash.thtml');
+
+        exit(); // wil, this is what is needed otherwise i see a trailing -1 after the upload_id during a successful upload.
     }
 
 }

@@ -35,12 +35,19 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+
+//vendor('magpierss/rss_fetch.inc');
+vendor('microsummary');
+
 /**
  * Some mildly associated functions for storing files on the disk.  Maybe there is a
  * better place for this?
  */
 class StorageComponent extends Object
 {
+    function startup(&$controller) {
+        $this->controller =& $controller;
+    }
 
     /**
      * Will create a preview file on disk.  I'm not sure if this is really the best
@@ -85,14 +92,91 @@ class StorageComponent extends Object
             }
 
             return basename($filename.'.png');
-        }
 
+        } 
         // We don't support generating a preview on whatever filetype they gave us
         return false;
     }
 
 
-  function translateFile($filename, $filetype) {
+    function updateFileById($id)
+    {
+      $_upload = $this->controller->Upload->FindById($id);
+      if (empty($_upload['File']))
+      {
+        // Create a unique file for our new upload
+        $_filename = $this->uniqueFilenameForUser($_upload['Upload']['user_id']);
+        
+        if ($_filename !== false) {
+          $_file = new File();
+          $_file->set('name', basename($_filename));
+          $_file->set('upload_id', $id);
+          $_file->set('size', 0);
+          $_file->set('type', "text/plain");
+          if (!$_file->save())
+          {
+            echo "Save failed!";
+            return false;
+          }
+          
+          // this not should not fail since we just saved it.
+          $this->controller->Upload->cacheQueries = false;
+          $_upload = $this->controller->Upload->FindById($id);
+          $this->controller->Upload->cacheQueries = true;
+        }
+        else
+        {
+          // bad things happened.  @todo, log $_out to a file.
+          return false;
+        }
+      }
+      
+      // This is the file to operate on:
+      $_filename = UPLOAD_DIR."/{$_upload['User']['id']}/{$_upload['File'][0]['name']}";
+      
+      // Lets find out what kind of update this is.
+      $_contentsourcetype = $this->controller->Contentsourcetype->FindById($_upload['Contentsource'][0]['contentsourcetype_id']);
+      $type = $_contentsourcetype['Contentsourcetype']['name'];
+      
+      if (strcasecmp($type, 'rss-source/text') == 0) {
+ 
+       }
+       else if (strcasecmp($type, 'microsummary/xml') == 0) {
+         
+         // remove the need for the temp buffer. bug 374698
+         $tmpfname = tempnam ("/tmp", "microsummary");
+         $fh = fopen($tmpfname, 'w') or die("can't open file");
+         fwrite($fh, $_upload['Contentsource'][0]['source']);
+         fclose($fh);
+         
+         $ms = new microsummary();
+         $ms->load($tmpfname);
+         $ms->execute($_upload['Upload']['referrer']);
+         
+         unlink($tmpfname);
+         
+         // write the file.
+         $fh = fopen($_filename, 'w') or die("can't open transcode file");
+         fwrite($fh, $ms->result) or die("can't write transcode file");
+         fclose($fh);
+         
+         // need to update the size in the db.
+         $this->controller->File->id = $id;
+         $this->controller->File->saveField('size',filesize($_filename));
+       }
+      
+      return true;
+    }
+ 
+
+    /*
+     * translateFile
+     *
+     * This function translates files based on their file
+     * type. This allows us to store files of a given type
+     * in a canonical form.
+     */
+    function translateFile($filename, $filetype) {
       // Dunno what they gave us, but it's not useful to us
       if (! (is_readable($filename) && is_file($filename)) ) {
         return "";
