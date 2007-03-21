@@ -40,8 +40,14 @@ class Contentsource extends AppModel
 {
     var $name = 'Contentsource';
 
-    var $belongsTo = array('Upload' =>
+    var $belongsTo = array(
+                        'Upload' =>
                            array('className'  => 'Upload',
+                                 'conditions' => '',
+                                 'order'      => ''
+                                ),
+                        'Contentsourcetype' =>
+                           array('className'  => 'Contentsourcetype',
                                  'conditions' => '',
                                  'order'      => ''
                                 )
