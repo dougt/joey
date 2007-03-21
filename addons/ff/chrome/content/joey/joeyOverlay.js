@@ -46,6 +46,7 @@ var g_joey_media_url = null;
 var g_joey_areaWindow = null;
 
 // Recently added by marcio...
+var g_joey_serverURL = "https://joey.labs.mozilla.com/site"; // 
 
 var g_joey_gBrowser = null;                // presents the main browser, used by the joey_feed code.
 var g_joey_browserStatusHandler = null;    // to track onloction changes in the above browser ( tab browser ) element.
@@ -209,8 +210,7 @@ function joey_clearMenuHistoryContainer()
 
 function joey_launchCloudSite() 
 {
-	// marcio 1 
-	g_joey_gBrowser.loadURI("https://joey.labs.mozilla.com/site/uploads");
+	g_joey_gBrowser.loadURI(g_joey_serverURL+"/uploads");
 }
 
 function joey_selectedText() 
@@ -682,6 +682,19 @@ function joeyStartup()
     g_joey_browserStatusHandler = new joeyBrowserStatusHandler();
 
     g_joey_gBrowser.addProgressListener( g_joey_browserStatusHandler , Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
+
+
+    var psvc = Components.classes["@mozilla.org/preferences-service;1"]
+                         .getService(Components.interfaces.nsIPrefBranch);
+
+    try {   
+
+     if (psvc.prefHasUserValue("joey.service_url"))
+        url = psvc.getCharPref("joey.service_url");
+ 
+     g_joey_serverURL=url;
+ 	
+    } catch (i) { alert(i) } 
 
     g_joey_statusUpdateObject = new JoeyStatusUpdateClass();
 
