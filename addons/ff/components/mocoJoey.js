@@ -35,7 +35,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 
-var moco_joey_url = "https://joey.labs.mozilla.com/site";
+var moco_joey_url = "https://joey.labs.mozilla.com";
 
 function getJoeyURL()
 {
