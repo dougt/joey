@@ -49,7 +49,7 @@ class microsummary {
   function load($generator) {
   
     $this->msdoc = new DOMDocument();
-    $this->msdoc->load($generator);
+    $this->msdoc->loadXML($generator);
 
     // get pages
     $xpath = new DOMXPath($this->msdoc);
