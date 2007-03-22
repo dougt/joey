@@ -46,7 +46,7 @@ var g_joey_media_url = null;
 var g_joey_areaWindow = null;
 
 // Recently added by marcio...
-var g_joey_serverURL = "https://joey.labs.mozilla.com/site"; // 
+var g_joey_serverURL = "https://joey.labs.mozilla.com"; // 
 
 var g_joey_gBrowser = null;                // presents the main browser, used by the joey_feed code.
 var g_joey_browserStatusHandler = null;    // to track onloction changes in the above browser ( tab browser ) element.
