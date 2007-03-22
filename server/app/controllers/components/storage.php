@@ -153,7 +153,8 @@ class StorageComponent extends Object
       }
 
       // Lets find out what kind of update this is. if findBy___() had more
-      // recursion, we wouldn't need this extra query.
+      // recursion, we wouldn't need this extra query, but then we get a lot more
+      // info back than we need.
       $_contentsourcetype = $this->controller->Contentsourcetype->FindById($_upload['Contentsource'][0]['contentsourcetype_id']);
 
         // Depending on the type, update the file
