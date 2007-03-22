@@ -41,18 +41,18 @@
 //ini_set('display_errors', true);
 
 class microsummary {
-  var $doc; // microsummary dom document
+  var $msdoc; // microsummary dom document
   var $xsldoc; // dom document of stylesheet embedded in the generator
   var $result;
 
   // load and parse a microsummary generator file
-  function load($uri) {
+  function load($generator) {
   
-    $this->doc = new DOMDocument();
-    $this->doc->load($uri);
+    $this->msdoc = new DOMDocument();
+    $this->msdoc->load($generator);
 
     // get pages
-    $xpath = new DOMXPath($this->doc);
+    $xpath = new DOMXPath($this->msdoc);
     // register default ns
     $namespace = $xpath->evaluate('namespace-uri(//*)'); // returns the namespace uri
     $xpath->registerNamespace('ms', $namespace); // sets the prefix "ms" for the default namespace
@@ -64,12 +64,12 @@ class microsummary {
     $templateNode = $xpath->query('/ms:generator/ms:template/xsl:transform')->item(0);
 
     // import stylesheet
-    $this->xsldoc = DOMDocument::loadXML($this->doc->saveXML($templateNode));
+    $this->xsldoc = DOMDocument::loadXML($this->msdoc->saveXML($templateNode));
   }
 
   function execute($applyTo) {
 
-    $xpath = new DOMXPath($this->doc);
+    $xpath = new DOMXPath($this->msdoc);
 
     // register default ns
     $namespace = $xpath->evaluate('namespace-uri(//*)'); // returns the namespace uri
@@ -84,7 +84,7 @@ class microsummary {
 
     // fetch
     if (!$str = fetch($applyTo))
-       die("unable to fetch $uri");
+       die("unable to fetch $applyTo");
 
     // load into new dom document
     $d = new DOMDocument();

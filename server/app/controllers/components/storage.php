@@ -166,26 +166,28 @@ class StorageComponent extends Object
               break;
 
           case 'microsummary/xml':
-              // @todo remove the need for the temp buffer. bug 374698
-              $tmpfname = tempnam ("/tmp", "microsummary");
-              $fh = fopen($tmpfname, 'w') or die("can't open file");
-              fwrite($fh, $_upload['Contentsource'][0]['source']);
-              fclose($fh);
 
               $ms = new microsummary();
-              $ms->load($tmpfname);
+              $ms->load($_upload['Contentsource'][0]['source']);
               $ms->execute($_upload['Upload']['referrer']);
 
-              unlink($tmpfname);
+
+              // PHP5 and Firefox don't seam to be
+              // compatible all of the time.  We need to
+              // investigate this a bit.
+              if (empty($ms->result))
+                die("microsummary does not exist for this page");
 
               // write the file.
               $fh = fopen($_filename, 'w') or die("can't open transcode file");
               fwrite($fh, $ms->result) or die("can't write transcode file");
               fclose($fh);
 
-              // need to update the size in the db.
+              // need to update the size and date in the db.
               $this->controller->File->id = $id;
               $this->controller->File->saveField('size',filesize($_filename));
+              // what is the date function here?  $this->controller->File->saveField('modified',NOW());
+
               break;
 
               // We don't support whatever they're trying to update.  :(

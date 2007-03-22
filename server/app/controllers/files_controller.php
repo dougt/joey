@@ -117,9 +117,9 @@ class FilesController extends AppController
         $this->set('content', file_get_contents($_filename));
 
         // @todo decide what we need to do about cheesy hacks like this
-        if ($_filetype == 'video/flv') {
-            $this->set('content_disposition', 'filename=' . basename($_filename));
-            $this->set('content_type', 'video/avi');
+        if ($_filetype == 'video/3gp') {
+            $this->set('content_disposition', 'filename=' . basename($_filename) . ".3gp");
+            $this->set('content_type', 'video/3gp');
         }
         
         $this->Storage->updateFileByUploadId($_item['File']['upload_id']);
