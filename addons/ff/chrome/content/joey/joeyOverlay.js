@@ -688,13 +688,14 @@ function joeyStartup()
                          .getService(Components.interfaces.nsIPrefBranch);
 
     try {   
-
-     if (psvc.prefHasUserValue("joey.service_url"))
-        url = psvc.getCharPref("joey.service_url");
- 
-     g_joey_serverURL=url;
- 	
-    } catch (i) { alert(i) } 
+        var url = g_joey_serverURL;
+        
+        if (psvc.prefHasUserValue("joey.service_url"))
+            url = psvc.getCharPref("joey.service_url");
+        
+        g_joey_serverURL=url;
+        
+    } catch (i) { alert(i); } 
 
     g_joey_statusUpdateObject = new JoeyStatusUpdateClass();
 
