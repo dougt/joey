@@ -79,6 +79,10 @@ class FilesController extends AppController
 
     function view($id)
     {
+
+        // before doing anything, see if we have to update the content.
+        $this->Storage->updateFileByUploadId($id);
+
         $this->layout = null;
 
         // Double check this person is editing something they own
@@ -121,8 +125,6 @@ class FilesController extends AppController
             $this->set('content_disposition', 'filename=' . basename($_filename) . ".3gp");
             $this->set('content_type', 'video/3gp');
         }
-        
-        $this->Storage->updateFileByUploadId($_item['File']['upload_id']);
     }
 
 }

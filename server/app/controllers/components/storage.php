@@ -206,9 +206,13 @@ class StorageComponent extends Object
               // need to update the size and date in the db.
               $this->controller->File->id = $id;
               $this->controller->File->saveField('size',filesize($_filename));
-              // what is the date function here?  $this->controller->File->saveField('modified',NOW());
+              // what is the date function here?  $this->controller->File->saveField('modified', date("Y-m-d H:i:s"));
 
               break;
+
+
+
+
 
               // We don't support whatever they're trying to update.  :(
           default:

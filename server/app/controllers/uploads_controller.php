@@ -42,11 +42,11 @@ class UploadsController extends AppController
 {
     var $name = 'Uploads';
 
-    var $components = array('Session','Storage');
+    var $components = array('Session','Storage', 'Pagination');
 
     var $uses = array('Contentsource', 'Contentsourcetype', 'File', 'Upload');
 
-    var $helpers = array('Number','Time');
+    var $helpers = array('Number','Time', 'Pagination');
 
     /**
      * Set in the constructor.  This is just a friendlier way to say "no preview
@@ -298,8 +298,11 @@ class UploadsController extends AppController
     {
         $this->pageTitle = 'Uploads';
 
-        // Send all the upload data to the view
-        $this->set('uploads', $this->Upload->findAllByUserId($this->_user['id']));
+        $criteria="user_id=".$this->_user['id'];
+        list($order,$limit,$page) = $this->Pagination->init($criteria); // Added
+        $data = $this->Upload->findAll($criteria, NULL, $order, $limit, $page); // Extra parameters added
+        
+        $this->set('uploads', $data);
 
         if (BrowserAgent::isMobile()) {
             // We're not using render here, because it would conflict with nbFlash()
