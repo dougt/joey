@@ -296,22 +296,104 @@ class UploadsController extends AppController
 
     function index()
     {
-        $this->pageTitle = 'Uploads';
-
-        $criteria="user_id=".$this->_user['id'];
-        list($order,$limit,$page) = $this->Pagination->init($criteria); // Added
-        $data = $this->Upload->findAll($criteria, NULL, $order, $limit, $page); // Extra parameters added
+        if ($this->nbClient) {
+            // We are dealing with a J2ME client here
+            if (array_key_exists('limit',$_POST)) {
+                $limit = $_POST['limit'];
+            } else {
+                $limit = 100000;
+            }
+            if (array_key_exists('start',$_POST)) {
+                $start = $_POST['start'];
+            } else {
+                $start = 0;
+            }
+            
+            $criteria="user_id=".$this->_user['id'];
+            $data = $this->Upload->findAll($criteria, NULL, NULL, $limit, $start, 3);
+            $count = 0;
+            foreach ($data as $row) {
+                if (empty($row['File'][0]['preview'])) {
+                    $data[$count]['preview'] = '';
+                } else {
+                    $preview_data = file_get_contents (UPLOAD_DIR."/{$this->_user['id']}/previews/{$row['File'][0]['preview']}");
+                    $data[$count]['preview'] = base64_encode($preview_data);
+                }
+                
+                if (array_key_exists(0,$row['Contentsource'])) {
+                    $data[$count]['type'] = $row['Contentsource'][0]['Contentsourcetype']['name'];
+                } else {
+                    $data[$count]['type'] = $row['File'][0]['type'];
+                }
+                
+                $count = $count + 1;
+            }
+            
+            $this->set('uploads', $data);
+            $this->set('count', $count);
+            $this->layout = NULL;
+            $this->action = 'j2me_index';
         
-        $this->set('uploads', $data);
-
-        if (BrowserAgent::isMobile()) {
-            // We're not using render here, because it would conflict with nbFlash()
-            // above (it would render both, instead of just one)
-            $this->action = 'mp_index';
-            $this->layout = 'mp';
         } else {
-            $this->render('index');
+            // Render a page for the browser client
+            
+            $this->pageTitle = 'Uploads';
+
+            $criteria="user_id=".$this->_user['id'];
+            list($order,$limit,$page) = $this->Pagination->init($criteria); // Added
+            $data = $this->Upload->findAll($criteria, NULL, $order, $limit, $page); // Extra parameters added
+        
+            $this->set('uploads', $data);
+ 
+            if (BrowserAgent::isMobile()) {
+                // We're not using render here, because it would conflict with nbFlash()
+                // above (it would render both, instead of just one)
+                $this->action = 'mp_index';
+                $this->layout = 'mp';
+            } else {
+                $this->render('index');
+            }
         }
+    }
+    
+    function j2me_index()
+    {
+            // We are dealing with a J2ME client here
+            if (array_key_exists('limit',$_POST)) {
+                $limit = $_POST['limit'];
+            } else {
+                $limit = 100000;
+            }
+            if (array_key_exists('start',$_POST)) {
+                $start = $_POST['start'];
+            } else {
+                $start = 0;
+            }
+            
+            $criteria="user_id=".$this->_user['id'];
+            $data = $this->Upload->findAll($criteria, NULL, NULL, $limit, $start, 3);
+            $count = 0;
+            foreach ($data as $row) {
+                if (empty($row['File'][0]['preview'])) {
+                    $data[$count]['preview'] = '';
+                } else {
+                    $preview_data = file_get_contents (UPLOAD_DIR."/{$this->_user['id']}/previews/{$row['File'][0]['preview']}");
+                    $data[$count]['preview'] = base64_encode($preview_data);
+                }
+                
+                if (array_key_exists(0,$row['Contentsource'])) {
+                    $data[$count]['type'] = $row['Contentsource'][0]['Contentsourcetype']['name'];
+                } else {
+                    $data[$count]['type'] = $row['File'][0]['type'];
+                }
+                
+                $count = $count + 1;
+            }
+            
+            $this->set('uploads', $data);
+            $this->set('count', $count);
+            $this->layout = NULL;
+            $this->action = 'j2me_index';
     }
 
 }

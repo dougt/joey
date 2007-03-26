@@ -1,0 +1,22 @@
+total=<?php echo $count;?>
+
+<?php
+$i = 1;
+foreach ($uploads as $upload) {
+?>
+title.<?php echo $i;?>=<?php echo $upload['Upload']['title'];?>
+
+referrer.<?php echo $i;?>=<?php echo $upload['Upload']['referrer'];?>
+
+modified.<?php echo $i;?>=<?php echo $upload['Upload']['modified'];?>
+
+id.<?php echo $i;?>=<?php echo $upload['Upload']['id'];?>
+ 
+type.<?php echo $i;?>=<?php echo $upload['type'];?>
+
+preview.<?php echo $i;?>=<?php echo $upload['preview'];?>
+
+<?php
+$i = $i + 1;
+}
+?>
