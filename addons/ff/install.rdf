@@ -5,7 +5,7 @@
 	<Description about="urn:mozilla:install-manifest">
 		<em:id>joey@mozilla.corporation</em:id>
 		<em:name>Joey</em:name>
-		<em:version>0.2</em:version>
+		<em:version>0.2.0.2</em:version>
 		<em:description>Joey! allows you to pass data from your Firefox browser to cell phone.</em:description>
 		<em:creator>Doug Turner</em:creator>
 		<em:homepageURL>http://joey.labs.mozilla.com/</em:homepageURL>
@@ -15,8 +15,8 @@
 		<em:targetApplication>
 			<Description>
 				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
-				<em:minVersion>0.1</em:minVersion>
-				<em:maxVersion>4.0</em:maxVersion>
+				<em:minVersion>0.8</em:minVersion>
+				<em:maxVersion>3.0</em:maxVersion>
 			</Description>
 		</em:targetApplication>
 	</Description>
