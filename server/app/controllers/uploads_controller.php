@@ -276,13 +276,15 @@ class UploadsController extends AppController
             // Delete the files if they exist
             if (array_key_exists(0,$_item['File'])) {
                 if (!unlink(UPLOAD_DIR."/{$this->_user['id']}/{$_item['File'][0]['name']}")) {
-                    $this->Upload->rollback();
-                    $this->flash('Delete failed', '/uploads/index',2);
+                  // Don't make this fatal.  If we couldn't unlink, it is a warning
+                  //$this->Upload->rollback();
+                  //$this->flash('Delete failed', '/uploads/index',2);
                 }
                 if (!empty($_item['File'][0]['preview'])) {
                     if (!unlink(UPLOAD_DIR."/{$this->_user['id']}/previews/{$_item['File'][0]['preview']}")) {
-                        $this->Upload->rollback();
-                        $this->flash('Delete failed', '/uploads/index',2);
+                      // Don't make this fatal.  If we couldn't unlink, it is a warning
+                      //$this->Upload->rollback();
+                      //$this->flash('Delete failed', '/uploads/index',2);
                     }
                 }
             }
