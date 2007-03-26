@@ -257,6 +257,22 @@ class UploadsController extends AppController
         }
     }
 
+    function deleteAll()
+    {
+      $data = $this->Upload->findAllByUser_id($this->_user['id']);
+      $count = 0;
+
+      foreach ($data as $row) {
+        
+        $id = $data[$count]['Upload']['id'];
+        $this->delete($id);
+
+        $this->flash('Deleting ' . $id, '/uploads/index',2);
+        
+        $count = $count + 1;
+      }
+    }
+
     function delete($id)
     {
         if (!is_numeric($id)) {

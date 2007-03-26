@@ -6,6 +6,11 @@
 You have no uploads yet. You should <?php echo $html->link('add one', '/uploads/add/'); ?>.
 </div>
 
+<?php else: ?>
+<div>
+<?php echo $html->link( "Delete All", "/uploads/deleteAll"); ?>
+</div>
+
 <?php endif; ?>
 
 <div class="joey-upload">
@@ -14,6 +19,7 @@ You have no uploads yet. You should <?php echo $html->link('add one', '/uploads/
 <?php
    $pagination->setPaging($paging); // Initialize the pagination variables
 ?>
+
 
 <?php foreach ($uploads as $upload): ?>
 
