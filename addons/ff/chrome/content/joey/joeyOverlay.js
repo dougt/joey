@@ -870,3 +870,153 @@ joeyBrowserStatusHandler.prototype =
     {
     }
 }
+
+/* 
+ * 
+ */
+function joey_enableSelection() {
+
+alert(1);
+    g_joeySelectorService.enable();
+alert(2);
+
+}
+
+/* 
+ * Joey Element Selection Service Singleton
+ * ----------------------------------------
+ * This implementation is to be moved outside
+ * this JS file. 
+ *
+ * Uses / Depends  : 
+ *
+ *  g_joey_statusUpdateObject / for UI Feedback
+ *  
+ * Functions: 
+ *
+ * + can be enabled from the context menu; 
+ * + TODO should be disabled from the context menu;
+ * + TODO should be disabled when the user moves between Tabs ( location changes ? );
+ * + TODO synchronizes with the Selected Area Joey upload;
+ * + TODO CSS polish - dots or squares 
+ */
+var g_joeySelectorService = {
+
+    currentEvent         :null,
+    previousTargetElement:null,
+    
+    runningState         :false,
+    currentElementLeft   :null,
+    currentElementTop    :null,
+    currentElementRight  :null,
+    currentElementBottom :null,
+    
+    enable: function () {
+        thisInstance = this;
+        var sigmaCall = function(e) { thisInstance.mouseMoveListener(e) };
+        
+    	g_joey_gBrowser.selectedBrowser
+    	               .contentDocument
+    	               .addEventListener("mousemove"
+    	                                 ,sigmaCall
+    	                                 ,false);
+            
+	    this.runtimer();    // timer-based refresh function..
+    },
+    
+    disable: function () {
+    },
+    
+    mouseMoveListener: function (e) {
+    
+  		//g_joey_statusUpdateObject.debugPaxy(e.pageX,e.pageY);
+
+		if (this.previousTargetElement != e.target) {
+			this.currentEvent = e;
+			this.previousTargetElement = e.target;
+		}
+    	                                 
+    },
+    
+    runtimer: function() {
+        
+        var documentBody = null;
+        try {
+            documentBody = g_joey_gBrowser.selectedBrowser.contentDocument.body;
+        } catch (ignore) {
+            alert(ignore);
+            return;  
+        }
+        
+        if (this.currentEvent) {
+
+            var boxObject = g_joey_gBrowser.selectedBrowser
+                                           .contentDocument
+                                           .getBoxObjectFor(this.currentEvent.target);
+                                           
+            const borderSize=4;
+
+            boxObjectX = boxObject.x - borderSize;
+            boxObjectY = boxObject.y - borderSize;
+            boxObjectWidth  = boxObject.width  + borderSize * 2;
+            boxObjectHeight = boxObject.height + borderSize * 2;
+
+            if (!this.runningState) {
+	
+                this.runningState=true;
+    	
+                var newDiv= document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+                newDiv.style.position="absolute";
+                newDiv.style.border="1px solid blue";
+                
+                this.currentElementTop=newDiv;
+                                   	
+                var newDiv= document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+                newDiv.style.position="absolute";
+                newDiv.style.border="1px solid blue";               	
+
+                this.currentElementBottom=newDiv;
+                this.currentElementTop.appendChild(this.currentElementBottom);
+    	
+                var newDiv= document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+                newDiv.style.position="absolute";
+                newDiv.style.border="1px solid blue";
+                
+                this.currentElementLeft=newDiv;
+                this.currentElementTop.appendChild(this.currentElementLeft);
+    	
+                var newDiv = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
+                newDiv.style.position="absolute";
+                newDiv.style.border="1px solid blue";
+                
+                this.currentElementRight=newDiv;
+                this.currentElementTop.appendChild(this.currentElementRight);
+                
+                documentBody.appendChild(this.currentElementTop);
+                
+            }
+            if (this.runningState) {
+		        this.currentElementTop.style.top=boxObjectY+"px";
+		        this.currentElementTop.style.left=boxObjectX+"px";
+		        this.currentElementTop.style.width=boxObjectWidth+"px";
+		        this.currentElementTop.style.height="0px";
+    	
+		        this.currentElementBottom.style.top=boxObjectHeight+"px";
+		        this.currentElementBottom.style.left="0px";
+		        this.currentElementBottom.style.width=boxObjectWidth+"px";
+		        this.currentElementBottom.style.height="0px";
+            	
+		        this.currentElementLeft.style.top="0px";
+		        this.currentElementLeft.style.left="-1px";
+		        this.currentElementLeft.style.width="0px";
+		        this.currentElementLeft.style.height=boxObjectHeight+"px";
+        	
+		        this.currentElementRight.style.top="0px";
+		        this.currentElementRight.style.left=boxObjectWidth+"px";
+		        this.currentElementRight.style.width="0px";
+		        this.currentElementRight.style.height=boxObjectHeight+"px";
+            }
+        }
+        setTimeout("g_joeySelectorService.runtimer()",150);
+    }
+}
