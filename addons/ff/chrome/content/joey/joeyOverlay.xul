@@ -64,6 +64,11 @@
               insertafter="context-stop"
               oncommand="joey_selectedArea();"/>
     
+    <menuitem id="joey_selectContextual"
+              label="Joey! Pick Selection"
+              insertafter="context-stop"
+              oncommand="joey_enableSelection();"/>
+
     <menuitem id="joey_selected"
               label="Joey!"
               insertafter="context-stop"
