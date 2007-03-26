@@ -42,7 +42,7 @@
 
 <!-- start #footer -->
 <div id="footer">
-
+<?=$html->link('Legal','/terms')?>
 </div>
 <!-- end #footer -->
 

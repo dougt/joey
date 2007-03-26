@@ -45,6 +45,14 @@
     <?=$html->tagErrorMsg('Operator/provider', 'A provider is required.')?>
 </div>
 
+<div>
+<label class="joey-label-large" for="Terms">Terms of Service</label>
+<textarea>
+
+
+</textarea>
+</div>
+
 <div class="button-box">
     <?=$html->submit('Register',array('class' => 'joey-submit')); ?>
 </div>
