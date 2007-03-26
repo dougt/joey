@@ -47,9 +47,10 @@ class File extends AppModel
                                 )
                           );
 
+    /* name and type should not have line feeds.  Bug 375350. */
     var $validate = array(
-                            'name'  => VALID_NOT_EMPTY,
-                            'type'  => VALID_NOT_EMPTY
+                            'name'  => '/^.+$/',
+                            'type'  => '/^.+$/'
                          );
 
 }

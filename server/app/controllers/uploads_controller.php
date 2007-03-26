@@ -272,6 +272,15 @@ class UploadsController extends AppController
 
         $this->Upload->begin();
 
+        // If this is a content source upload, kill that too.
+        if (!empty( $_item['Contentsource'] ))
+        {
+          $csid = $_item['Contentsource'][0]['id'];
+
+          if (! $this->Contentsource->delete($csid))
+            $this->flash('Content Source Delete Failed', '/uploads/index',2);
+        }
+
         if ($this->Upload->delete($id)) {
             // Delete the files if they exist
             if (array_key_exists(0,$_item['File'])) {

@@ -59,9 +59,10 @@ class Upload extends AppModel
                                 )
                         );
 
+    /* title and referrer should not have line feeds.  Bug 375350. */
     var $validate = array(
-                            'title'    => VALID_NOT_EMPTY,
-                            'referrer' => VALID_NOT_EMPTY
+                            'title'    => '/^.+$/',
+                            'referrer' => '/^.+$/'
                          );
 
 }
