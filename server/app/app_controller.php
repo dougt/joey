@@ -47,10 +47,12 @@ class AppController extends Controller
 
         parent::__construct();
 
-        // Check the POST for this special key.  If it exists, the person is using a
-        // non-browser client to access the site.  This will change the information
-        // we return.
-        if (array_key_exists('rest',$_POST)) {
+        // Check both the POST and GET for this special key.
+        // If it exists, the person is using a non-browser
+        // client to access the site.  This will change the
+        // information we return.
+
+        if (array_key_exists('rest',$_POST) || array_key_exists('rest',$_GET)) {
             $this->nbClient = true;
         }
     }
