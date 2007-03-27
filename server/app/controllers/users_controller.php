@@ -146,6 +146,41 @@ class UsersController extends AppController
         exit;
     }
 
+    function resetpassword()
+    {
+      // If a user has submitted form data:
+      if (!empty($this->data)) {
+       
+        $_someone = $this->User->findByUsername(strtolower($this->data['User']['username']));
+
+        // They're in the database
+        if(!empty($_someone['User']['id'])) {
+          
+          $pw = uniqid();
+
+          $this->User->id = $_someone['User']['id'];
+          $this->User->saveField('confirmationcode', null);
+          $this->User->saveField('password', sha1($pw));
+
+          // Make an email message.  @todo This should really be
+          // in a config var, or a view somewhere.
+          // @todo site is hardcoded here to the base URL.  This will
+          // work for production but needs to be fixed for other URLs
+          $_message = "Your password has been reset to:\n\n".$pw."\n";
+
+          // Send a mail to the user
+          mail($_someone['User']['email'], 'Joey password reset', $_message, "From: joey@labs.mozilla.com\r\n");
+
+          $this->flash('Password has been reset.  Please check your email.', '/', 2);
+          exit;
+        }
+        else
+        {
+          $this->set('error_mesg', 'Sorry. Your username does not exist.');
+        }
+      }
+    }
+
     /**
      *
      */

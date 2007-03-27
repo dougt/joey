@@ -25,3 +25,7 @@
 <div>
 <?=$html->link('Register', 'register')?>
 </div>
+
+<div>
+<?=$html->link('Forgot Password?', 'resetpassword')?>
+</div>
