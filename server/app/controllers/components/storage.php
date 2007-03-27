@@ -144,7 +144,7 @@ class StorageComponent extends Object
       }
       
       // check to see if we should do anything
-      if (true || $forceUpdate == false)
+      if ($forceUpdate == false)
       {
         $expiry = strtotime($_upload['File'][0]['modified'] . " + " . CONTENTSOURCE_REFRESH_TIME . " minutes");
         $nowstamp = strtotime("now");
