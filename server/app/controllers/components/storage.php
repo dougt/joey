@@ -111,9 +111,8 @@ class StorageComponent extends Object
      * @param int ID of the Upload that is associated with the file to update
      * @return boolean true on success, false on failure
      */
-    function updateFileByUploadId($id)
+    function updateFileByUploadId($id, $forceUpdate)
     {
-
       $_upload = $this->controller->Upload->FindById($id);
 
       if (empty($_upload['File']))
@@ -144,6 +143,20 @@ class StorageComponent extends Object
         }
       }
       
+      // check to see if we should do anything
+      if (true || $forceUpdate == false)
+      {
+        $expiry = strtotime($_upload['File'][0]['modified'] . " + " . CONTENTSOURCE_REFRESH_TIME . " minutes");
+        $nowstamp = strtotime("now");
+
+        //echo "this is the intial: " . date('l dS \o\f F Y h:i:s A', strtotime($_upload['File'][0]['modified'])) . "<p>";        
+        //echo "this is the expiry: " . date('l dS \o\f F Y h:i:s A', $expiry) . "<p>";
+        //echo "this is the now stamp " . date('l dS \o\f F Y h:i:s A', $nowstamp);
+        
+        if ($expiry > $nowstamp)
+          return true; //  don't process anything just yet.
+      }
+
       // This is the file to operate on:
       $_filename = UPLOAD_DIR."/{$_upload['User']['id']}/{$_upload['File'][0]['name']}";
 
@@ -182,7 +195,6 @@ class StorageComponent extends Object
             // need to update the size and date in the db.
             $this->controller->File->id = $id;
             $this->controller->File->saveField('size',filesize($_filename));
-            // what is the date function here?  $this->controller->File->saveField('modified',NOW());
             
             break;
 
@@ -206,13 +218,8 @@ class StorageComponent extends Object
               // need to update the size and date in the db.
               $this->controller->File->id = $id;
               $this->controller->File->saveField('size',filesize($_filename));
-              // what is the date function here?  $this->controller->File->saveField('modified', date("Y-m-d H:i:s"));
 
               break;
-
-
-
-
 
               // We don't support whatever they're trying to update.  :(
           default:

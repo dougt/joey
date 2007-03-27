@@ -81,7 +81,7 @@ class FilesController extends AppController
     {
 
         // before doing anything, see if we have to update the content.
-        $this->Storage->updateFileByUploadId($id);
+        $this->Storage->updateFileByUploadId($id, false);
 
         $this->layout = null;
 

@@ -56,6 +56,12 @@ define('FFMPEG_CMD', '');
  */
 define('UPLOAD_DIR', '');
 
+/**
+ * Default time to wait before updating content source uploads in
+ * minutes.
+ */
+define('CONTENTSOURCE_REFRESH_TIME', 15);
+
 /** 
  * Database Configuration
  */
