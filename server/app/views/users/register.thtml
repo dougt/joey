@@ -48,9 +48,12 @@
 <div>
 <label class="joey-label-large" for="Terms">Terms of Service</label>
 <textarea>
-
-
+<?php echo $legal ?>
 </textarea>
+</div>
+
+<div>
+Clicking the button below means that you agree to the above Terms.
 </div>
 
 <div class="button-box">

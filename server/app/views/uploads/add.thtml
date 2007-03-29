@@ -28,7 +28,7 @@
 <hr />
 <div>
     <label class="joey-label-large" for="ContentsourceSource">Source:</label>
-    <?=$html->input('Contentsource/source')?>
+    <?=$html->textarea('Contentsource/source')?>
     <?=$html->tagErrorMsg('Contentsource/source', 'A source is required.')?>
 </div>
 <div>
