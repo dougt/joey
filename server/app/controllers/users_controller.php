@@ -118,7 +118,7 @@ class UsersController extends AppController
                 }
             } else {
                 // This is a generalized, non-specific error
-                $this->set('error_mesg', 'Sorry cannot login. please check your username or password.');
+                $this->set('error_mesg', 'Sorry, cannot login. Please check your username or password.');
             }
         }
 
@@ -176,7 +176,7 @@ class UsersController extends AppController
         }
         else
         {
-          $this->set('error_mesg', 'Sorry. Your username does not exist.');
+          $this->set('error_mesg', 'Sorry, cannot reset password.');
         }
       }
     }

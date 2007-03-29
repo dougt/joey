@@ -265,12 +265,14 @@ class UploadsController extends AppController
       foreach ($data as $row) {
         
         $id = $data[$count]['Upload']['id'];
-        $this->delete($id);
-
-        $this->flash('Deleting ' . $id, '/uploads/index',2);
-        
-        $count = $count + 1;
+        if ($this->delete($id) == false) {
+            // @todo log an error
+        } else {
+            $count = $count + 1;
+        }
       }
+
+      $this->flash("{$count} items deleted", '/uploads/index', 2);
     }
 
     function delete($id)
@@ -293,8 +295,10 @@ class UploadsController extends AppController
         {
           $csid = $_item['Contentsource'][0]['id'];
 
-          if (! $this->Contentsource->delete($csid))
-            $this->flash('Content Source Delete Failed', '/uploads/index',2);
+          if (! $this->Contentsource->delete($csid)) {
+              $this->Upload->rollback();
+              $this->flash('Content Source Delete Failed', '/uploads/index',2);
+          }
         }
 
         if ($this->Upload->delete($id)) {
@@ -336,7 +340,7 @@ class UploadsController extends AppController
                 $start = 0;
             }
             
-            $criteria="user_id=".$this->_user['id'];
+            $criteria=array('user_id' => $this->_user['id']);
             $data = $this->Upload->findAll($criteria, NULL, NULL, $limit, $start, 3);
             $count = 0;
             foreach ($data as $row) {
@@ -366,7 +370,7 @@ class UploadsController extends AppController
             
             $this->pageTitle = 'Uploads';
 
-            $criteria="user_id=".$this->_user['id'];
+            $criteria=array('user_id' => $this->_user['id']);
             list($order,$limit,$page) = $this->Pagination->init($criteria); // Added
             $data = $this->Upload->findAll($criteria, NULL, $order, $limit, $page); // Extra parameters added
         
@@ -397,7 +401,7 @@ class UploadsController extends AppController
                 $start = 0;
             }
             
-            $criteria="user_id=".$this->_user['id'];
+            $criteria=array('user_id' => $this->_user['id']);
             $data = $this->Upload->findAll($criteria, NULL, NULL, $limit, $start, 3);
             $count = 0;
             foreach ($data as $row) {

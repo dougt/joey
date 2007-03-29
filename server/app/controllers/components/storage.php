@@ -152,8 +152,9 @@ class StorageComponent extends Object
         //echo "this is the intial: " . date('l dS \o\f F Y h:i:s A', strtotime($_upload['File'][0]['modified'])) . "<p>";        
         //echo "this is the expiry: " . date('l dS \o\f F Y h:i:s A', $expiry) . "<p>";
         //echo "this is the now stamp " . date('l dS \o\f F Y h:i:s A', $nowstamp);
+
         
-        if ($expiry > $nowstamp)
+        if (($expiry == false) || $expiry > $nowstamp)
           return true; //  don't process anything just yet.
       }
 
@@ -177,8 +178,9 @@ class StorageComponent extends Object
 
             // Go get the rss feed.
             $rss = fetch_rss( $_upload['Contentsource'][0]['source'] );
-            if (empty($rss))
-              die("rss fetch failed.");
+            if (empty($rss)) {
+                return false;
+            }
             
             $rss_result = "Channel Title: " . $rss->channel['title'] . "\n";
             foreach ($rss->items as $item) {
@@ -188,9 +190,9 @@ class StorageComponent extends Object
             }
             
             // write the file.
-            $fh = fopen($_filename, 'w') or die("can't open transcode file");
-            fwrite($fh, $rss_result) or die("can't write transcode file");
-            fclose($fh);
+            if (!file_put_contents($_filename, $rss_result)) {
+                return false;
+            }
             
             // need to update the size and date in the db.
             $this->controller->File->id = $id;
@@ -204,16 +206,17 @@ class StorageComponent extends Object
               $ms->load($_upload['Contentsource'][0]['source']);
               $ms->execute($_upload['Upload']['referrer']);
 
-              // PHP5 and Firefox don't seam to be
+              // @todo PHP5 and Firefox don't seam to be
               // compatible all of the time.  We need to
               // investigate this a bit.
-              if (empty($ms->result))
-                die("microsummary does not exist for this page");
+              if (empty($ms->result)) {
+                  return false;
+              }
 
-             // write the file.
-              $fh = fopen($_filename, 'w') or die("can't open transcode file");
-              fwrite($fh, $ms->result) or die("can't write transcode file");
-              fclose($fh);
+              // write the file.
+              if (!file_put_contents($_filename, $ms->result)) {
+                  return false;
+              }
 
               // need to update the size and date in the db.
               $this->controller->File->id = $id;
@@ -259,13 +262,17 @@ class StorageComponent extends Object
         $origname = $filename;
         $filename = $origname . ".3gp";
         
-        $_cmd = FFMPEG_CMD . " -y -i {$tempfile} -ab 32 -b 15000 -ac 1 -ar 8000 -vcodec h263 -s qcif -r 12 {$filename}";
+        $_tempfile = escapeshellarg($tempfile);
+        $_filename = escapeshellarg($filename);
+        $_cmd = FFMPEG_CMD . " -y -i {$_tempfile} -ab 32 -b 15000 -ac 1 -ar 8000 -vcodec h263 -s qcif -r 12 {$_filename}";
         
         exec($_cmd, $_out, $_ret);
         
         rename ($filename, $origname);
-        
+
         // Leave around for debugging.
+        // @todo - If you're going to leave this code here, it should key off DEBUG
+        // being set
         //unlink($tempfile);
         
         if ($_ret !== 0) {
