@@ -540,22 +540,6 @@ function joey_selectedImage()
     channel.asyncOpen(listener, null);
 }
 
-function joey_selectedArea()
-{
-	if(g_joey_areaWindow==null || g_joey_areaWindow.closed) 
-	{
-        xpathTarget = gContextMenu.target
-            g_joey_areaWindow = window.open("chrome://joey/content/joeyArea.xul",
-                                            "xpathchecker", 
-                                            "chrome,resizable=yes");
-    }
-    else 
-    {
-        g_joey_areaWindow.loadXPathForNode(gContextMenu.target);
-    }
-}
-
-
 function loot_setttings()
 {
     var joey = Components.classes["@mozilla.com/joey;1"]

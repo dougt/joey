@@ -62,7 +62,7 @@
     <menuitem id="joey_selectedArea"
               label="Joey! Selected Area"
               insertafter="context-stop"
-              oncommand="joey_selectedArea();"/>
+              oncommand=""/>
     
     <menuitem id="joey_selectContextual"
               label="Joey! Pick Selection"
