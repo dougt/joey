@@ -1058,16 +1058,14 @@ var g_joeySelectorService = {
 
 function joey_selectedTarget(targetElement)
 {
-
-    obj = uSummaryGen_xPathInit(content.document,targetElement);
-
-    g_joey_title = "MicroSummary from : " + obj.xpinclude;
-    g_joey_url = obj.xpinclude;
-   
+    var obj = uSummaryGen_xPathInit(content.document,targetElement);
     g_joey_data = obj.generatorText;
     
+    var focusedWindow = document.commandDispatcher.focusedWindow;
+    g_joey_url  = focusedWindow.location.href;
+    g_joey_title = "Microsummary from : " + focusedWindow.location.href; 
     g_joey_content_type = "microsummary/xml";
-    
+
     uploadDataFromGlobals();
 	
 }

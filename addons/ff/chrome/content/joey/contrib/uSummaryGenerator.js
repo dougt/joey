@@ -210,7 +210,8 @@ var uSummaryGen_XPathBuilder = {
 	},
 	getXpath: function() {
 		var xpath = this.toString();
-		return "normalize-space(string(" + xpath + "))";
+        //		return "normalize-space(string(" + xpath + "))";
+        return xpath;
 	},
 	testXPath: function(mode) {
 		var res;
