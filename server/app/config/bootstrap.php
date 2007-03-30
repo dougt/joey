@@ -51,5 +51,6 @@ require_once ROOT.DS.APP_DIR.DS.'config'.DS.'config.php';
  * fails.
  */
 define('NB_CLIENT_ERROR_UPLOAD_FAIL', '-1');
+define('NB_CLIENT_ERROR_OUT_OF_SPACE', '-2');
 
 ?>

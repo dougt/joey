@@ -109,6 +109,20 @@ class UploadsController extends AppController
 
                     if ($_filename !== false) {
 
+                        // Check to see if the user has any additonal space.
+                        $filesize = filesize($this->data['File']['Upload']['tmp_name']);
+                        if ($this->Storage->hasAvailableSpace($this->_user['id'], $filesize) == false) {
+                          if ($this->nbClient) {
+                            $this->nbFlash(NB_CLIENT_ERROR_OUT_OF_SPACE);
+                          } else {
+                            $this->File->invalidate('Upload');
+                            $this->set('error_fileupload', 'Out of space.');
+                          }
+                          unlink($_filename);
+                          // Go ahead and just bail.
+                          return;
+                        }
+
                         // Put our file away.  This better not ever fail, but on the
                         // off chance it does, we'll invalidate the file upload.
                         // This will make the save below fail, so the db won't get
@@ -267,9 +281,9 @@ class UploadsController extends AppController
         $id = $data[$count]['Upload']['id'];
         if ($this->delete($id) == false) {
             // @todo log an error
-        } else {
-            $count = $count + 1;
-        }
+        } 
+        
+        $count = $count + 1;
       }
 
       $this->flash("{$count} items deleted", '/uploads/index', 2);

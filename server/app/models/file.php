@@ -53,5 +53,15 @@ class File extends AppModel
                             'type'  => '/^.+$/'
                          );
 
+    function totalSpaceUsed($user_id)
+    {
+      $query = "select sum(files.size) from files where files.upload_id in (select uploads.id from uploads where uploads.user_id=" .
+               $user_id . ")"; 
+
+      $ret = $this->query($query);
+      
+      return $ret[0][0]["sum(files.size)"];
+    }
+
 }
 ?>

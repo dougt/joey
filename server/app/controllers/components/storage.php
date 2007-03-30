@@ -54,6 +54,22 @@ class StorageComponent extends Object
     }
 
     /**
+     * Check to see if the user has available space for the
+     * additional content.
+     */
+
+    function hasAvailableSpace($userid, $additional) {
+      
+      $totalused = $this->controller->File->totalSpaceUsed($userid);
+      // $filesize and $totalused is in bytes, MAX_DISK_USAGE is in MB
+      if ( ($filesize + $totalused) > (MAX_DISK_USAGE * 1024 * 1024)) {
+        return false;
+      }
+      
+      return true;
+    }
+
+    /**
      * Will create a preview file on disk.  I'm not sure if this is really the best
      * place for this code, but it'll work for now.
      *
@@ -188,7 +204,16 @@ class StorageComponent extends Object
               $title = $item['title'];
               $rss_result = $rss_result . $title . "\n";
             }
-            
+
+            // does the user have enough space to proceed
+            if ($this->Storage->hasAvailableSpace($_upload['User']['id'],
+                                                  strlen($rss_result) - filesize($_filename)) == false) 
+            {
+              // @todo we should log this and maybe change
+              // the file content to indicate the error.
+              break;
+            }
+
             // write the file.
             if (!file_put_contents($_filename, $rss_result)) {
                 return false;
@@ -197,6 +222,7 @@ class StorageComponent extends Object
             // need to update the size and date in the db.
             $this->controller->File->id = $id;
             $this->controller->File->saveField('size',filesize($_filename));
+            
             
             break;
 
@@ -211,6 +237,14 @@ class StorageComponent extends Object
               // investigate this a bit.
               if (empty($ms->result)) {
                   return false;
+              }
+
+              // does the user have enough space to proceed
+              if ($this->Storage->hasAvailableSpace($_upload['User']['id'],
+                                                    strlen($ms->result) - filesize($_filename)) == false) {
+                // @todo we should log this and maybe change
+                // the file content to indicate the error.
+                break;
               }
 
               // write the file.
