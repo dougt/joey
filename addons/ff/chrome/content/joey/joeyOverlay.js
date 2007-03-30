@@ -856,34 +856,19 @@ joeyBrowserStatusHandler.prototype =
 }
 
 /* 
- * 
- */
-function joey_enableSelection() {
-
-alert(1);
-    g_joeySelectorService.enable();
-alert(2);
-
-}
-
-/* 
  * Joey Element Selection Service Singleton
  * ----------------------------------------
  * This implementation is to be moved outside
- * this JS file. 
- *
- * Uses / Depends  : 
- *
- *  g_joey_statusUpdateObject / for UI Feedback
- *  
- * Functions: 
- *
- * + can be enabled from the context menu; 
- * + TODO should be disabled from the context menu;
- * + TODO should be disabled when the user moves between Tabs ( location changes ? );
- * + TODO synchronizes with the Selected Area Joey upload;
- * + TODO CSS polish - dots or squares 
+ * this JS file. This uses the /contrib/uSummaryGenerator.js
+ * This is the UI contextual function that allows and end-user 
+ * to pick an area and then the uSummaryGenerator service is 
+ * called so that we can wrap the generator XML info and  
+ * upload it to Joey!. 
  */
+
+var sigmaCall = null;
+var omegaCall = null;
+
 var g_joeySelectorService = {
 
     currentEvent         :null,
@@ -894,36 +879,64 @@ var g_joeySelectorService = {
     currentElementTop    :null,
     currentElementRight  :null,
     currentElementBottom :null,
+    stop:false,
     
     enable: function () {
+
+	   this.stop=false;
         thisInstance = this;
-        var sigmaCall = function(e) { thisInstance.mouseMoveListener(e) };
+
+        sigmaCall = function(e) { thisInstance.mouseMoveListener(e) };
         
     	g_joey_gBrowser.selectedBrowser
     	               .contentDocument
     	               .addEventListener("mousemove"
     	                                 ,sigmaCall
     	                                 ,false);
-            
+
+        omegaCall = function(e) { thisInstance.mouseClickListener(e) };
+        
+    	g_joey_gBrowser.selectedBrowser
+    	               .contentDocument
+    	               .addEventListener("mousedown"
+    	                                 ,omegaCall 
+    	                                 ,false);
+    
 	    this.runtimer();    // timer-based refresh function..
     },
     
     disable: function () {
-    },
     
-    mouseMoveListener: function (e) {
-    
-  		//g_joey_statusUpdateObject.debugPaxy(e.pageX,e.pageY);
+    	this.runningState = false;
+    	this.stop=true;
+    	g_joey_gBrowser.selectedBrowser
+    	               .contentDocument
+    	               .removeEventListener("mousemove"
+    	                                 ,sigmaCall
+    	                                 ,false);        
+    	g_joey_gBrowser.selectedBrowser
+    	               .contentDocument
+    	               .removeEventListener("mousedown"
+    	                                 ,omegaCall 
+    	                                 ,false);
+               
 
+    },
+    mouseMoveListener: function (e) {
 		if (this.previousTargetElement != e.target) {
 			this.currentEvent = e;
 			this.previousTargetElement = e.target;
-		}
-    	                                 
+		}                                 
     },
     
-    runtimer: function() {
+    mouseClickListener: function (e) {
+    
+	this.disable();
+
+	joey_selectedTarget(this.currentEvent.target);
         
+    },
+    runtimer: function() {
         var documentBody = null;
         try {
             documentBody = g_joey_gBrowser.selectedBrowser.contentDocument.body;
@@ -932,6 +945,39 @@ var g_joeySelectorService = {
             return;  
         }
         
+	  if(this.stop) {
+
+                /*
+	                this.currentElementTop.getParentNode().removeChild(this.currentElementTop);
+	                this.currentElementLeft.getParentNode().removeChild(this.currentElementLeft);
+	                this.currentElementBottom.getParentNode().removeChild(this.currentElementBottom);
+	                this.currentElementRight.getParentNode().removeChild(this.currentElementRight);
+                */
+
+		        this.currentElementTop.style.top="-100px";
+		        this.currentElementTop.style.left="-100px";
+		        this.currentElementTop.style.width="0px";
+		        this.currentElementTop.style.height="0px";
+    	
+		        this.currentElementBottom.style.top="-100px";
+		        this.currentElementBottom.style.left="-100px";
+		        this.currentElementBottom.style.width="0px";
+		        this.currentElementBottom.style.height="0px";
+            	
+		        this.currentElementLeft.style.top="-100px";
+		        this.currentElementLeft.style.left="-100px";
+		        this.currentElementLeft.style.width="0px";
+		        this.currentElementLeft.style.height="0px";
+        	
+		        this.currentElementRight.style.top="-100px";
+		        this.currentElementRight.style.left="-100px";
+		        this.currentElementRight.style.width="0px";
+		        this.currentElementRight.style.height="0px";
+
+
+
+        } else {
+
         if (this.currentEvent) {
 
             var boxObject = g_joey_gBrowser.selectedBrowser
@@ -1002,5 +1048,49 @@ var g_joeySelectorService = {
             }
         }
         setTimeout("g_joeySelectorService.runtimer()",150);
+
+	  }
     }
+}
+
+function joey_selectedTarget(targetElement)
+{
+
+    obj = uSummaryGen_xPathInit(content.document,targetElement);
+
+    g_joey_title = "MicroSummary from : " + obj.xpinclude;
+    g_joey_url = obj.xpinclude;
+   
+    g_joey_data = obj.generatorText;
+    g_joey_content_type = "microsummary/xml";
+    
+    uploadDataFromGlobals();
+	
+}
+
+function joey_selectedTarget_old(targetElement)
+{
+	if(g_joey_areaWindow==null || g_joey_areaWindow.closed) 
+	{
+        g_xpathTarget = targetElement;
+
+            g_joey_areaWindow = window.open("chrome://joey/content/joeyArea.xul",
+                                            "xpathchecker", 
+                                            "chrome,resizable=yes");
+    }
+    else 
+    {
+ 	  g_xpathTarget;
+        g_joey_areaWindow.loadXPathForNode(targetElement);
+    }
+}
+
+
+/* 
+ * 
+ */
+function joey_enableSelection() {
+
+    g_joeySelectorService.enable();
+
 }
