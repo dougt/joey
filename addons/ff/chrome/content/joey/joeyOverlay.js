@@ -45,8 +45,7 @@ var g_joey_media_url = null;
 
 var g_joey_areaWindow = null;
 
-// Recently added by marcio...
-var g_joey_serverURL = "https://joey.labs.mozilla.com"; // 
+var g_joey_serverURL = "https://joey.labs.mozilla.com"; 
 
 var g_joey_gBrowser = null;                // presents the main browser, used by the joey_feed code.
 var g_joey_browserStatusHandler = null;    // to track onloction changes in the above browser ( tab browser ) element.
@@ -56,9 +55,7 @@ var g_joey_historyArray = [];              // This is a very simple version of s
  * Event listeners associated to the joeyOverlay app 
  */
 
-window.onmousedown = joeyOnMouseDown; // this may prevent other onmousedown associations. Fixthis
 window.addEventListener("load", joeyStartup, false);
-
 
 var gImageSource;
 
@@ -140,6 +137,7 @@ function joeyOnMouseDown(e)
 {
 	if (e.which == 3) 
 	{
+
 		var target = e.target;
 		var classname = e.target.toString();
 		if (classname.match(/ImageElement/))
@@ -168,7 +166,7 @@ function setImageSource(imageElement)
     
     try 
     {    
-    	var menuItem = document.getElementById('g_joey_selectedImage');
+    	var menuItem = document.getElementById('joey_selectedImage');
 	    menuItem.setAttribute("hidden", gImageSource == null ? "true" : "false");
     } 
     catch (e) {}
@@ -683,6 +681,12 @@ function joeyStartup()
 
     g_joey_statusUpdateObject = new JoeyStatusUpdateClass();
 
+    /* 
+     * Joey Event Listeners 
+     */
+
+    window.addEventListener("mousedown",joeyOnMouseDown,false); 
+
 }
 
 function joeyLinkAddedHandler(event)
@@ -742,8 +746,7 @@ function joeyLinkAddedHandler(event)
         if (browserForLink.feeds != null) feeds = browserForLink.feeds;
         var wrapper = event.target;
         feeds.push({ href: wrapper.href, type: etype, title: wrapper.title});
-        
-        // marcio 3 
+
         // We dont want to add more feed information on it. 
         // browserForLink.feeds = feeds;
         
@@ -1062,29 +1065,12 @@ function joey_selectedTarget(targetElement)
     g_joey_url = obj.xpinclude;
    
     g_joey_data = obj.generatorText;
+    
     g_joey_content_type = "microsummary/xml";
     
     uploadDataFromGlobals();
 	
 }
-
-function joey_selectedTarget_old(targetElement)
-{
-	if(g_joey_areaWindow==null || g_joey_areaWindow.closed) 
-	{
-        g_xpathTarget = targetElement;
-
-            g_joey_areaWindow = window.open("chrome://joey/content/joeyArea.xul",
-                                            "xpathchecker", 
-                                            "chrome,resizable=yes");
-    }
-    else 
-    {
- 	  g_xpathTarget;
-        g_joey_areaWindow.loadXPathForNode(targetElement);
-    }
-}
-
 
 /* 
  * 
