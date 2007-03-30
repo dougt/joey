@@ -109,12 +109,14 @@ function fetch($url) {
   $ch = curl_init();
   curl_setopt($ch, CURLOPT_URL, $url);
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+  curl_setopt($ch, CURLOPT_TIMEOUT, 5);
   $result = curl_exec($ch);
   if (curl_errno($ch)) {
     print curl_error($ch);
     return false;
   }
   curl_close($ch);
+
   return $result;
 }
 

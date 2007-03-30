@@ -236,7 +236,7 @@ class StorageComponent extends Object
               // compatible all of the time.  We need to
               // investigate this a bit.
               if (empty($ms->result)) {
-                  return false;
+                  $ms->result = "XPATH is broken..  this feature doesn't work for the content you have selected. ";
               }
 
               // does the user have enough space to proceed
