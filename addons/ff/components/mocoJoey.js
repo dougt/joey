@@ -37,6 +37,9 @@
 
 var moco_joey_url = "https://joey.labs.mozilla.com";
 
+var g_joey_hasLogged = false;
+var g_joey_in_progress = false;
+
 function getJoeyURL()
 {
     var psvc = Components.classes["@mozilla.org/preferences-service;1"]
@@ -120,7 +123,6 @@ JoeyStreamListener.prototype =
   // nsIHttpEventSink (not implementing will cause annoying exceptions)
   onRedirect : function (aOldChannel, aNewChannel) { },
   
-  // we are faking an XPCOM interface, so we need to implement QI
   QueryInterface : function(aIID) 
   {
       if (aIID.equals(Components.interfaces.nsISupports) ||
@@ -140,8 +142,6 @@ function mocoJoey() {}
 
 mocoJoey.prototype = 
 {	
-	joey_hasLogged: false,
-	joey_in_progress: false,
 	joey_listener: null,                     
 	joey_username: "",
 	joey_password: "",
@@ -230,10 +230,10 @@ mocoJoey.prototype =
 
     uploadDataInternal: function(title, url, data, type)
     {
-        if (this.joey_in_progress == true)
+        if (g_joey_in_progress == true)
             return -1;
 
-        this.joey_in_progress = true;
+        g_joey_in_progress = true;
 
         this.joey_title = title;
         this.joey_url = url;
@@ -241,7 +241,7 @@ mocoJoey.prototype =
         this.joey_data = data;
 
         // kick off the action
-        if (this.joey_hasLogged == false)
+        if (g_joey_hasLogged == false)
         {
             this.setLoginInfo();
             this.loginToService();
@@ -270,7 +270,7 @@ mocoJoey.prototype =
 	{
         if (bytes.indexOf("-1") == -1)
         {
-            self.joey_hasLogged = true;
+            g_joey_hasLogged = true;
 			
             if (self.joey_listener != null)
                 self.joey_listener.onStatusChange("login", 0);
@@ -286,8 +286,8 @@ mocoJoey.prototype =
         {
             self.joey_listener.onStatusChange("login", -1);
         }
-        self.joey_hasLogged=false;
-        self.joey_in_progress = false;
+        g_joey_hasLogged=false;
+        g_joey_in_progress = false;
         self.setListener(null);
 	},
 
@@ -327,7 +327,7 @@ mocoJoey.prototype =
 	{
         var listener = self.joey_listener;
         self.setListener(null);
-        self.joey_in_progress = false;
+        g_joey_in_progress = false;
         
         if (bytes.indexOf("-1") == -1)
         {
