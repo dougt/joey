@@ -41,13 +41,14 @@
  
 <overlay id="joeyOverlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  
+
   // This imports our javascript.
-  
+
   <script type="application/x-javascript" src="chrome://joey/content/joeyOverlay.js"> </script>
+  <script type="application/x-javascript" src="chrome://joey/content/contrib/uSummaryGenerator.js"> </script>
 
   // This is for the right click menu.
-  
+
   <popup id="contentAreaContextMenu">
     <menuitem id="joey_selectedText"
               label="Joey! Selected Text"
