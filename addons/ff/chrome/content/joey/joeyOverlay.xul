@@ -61,7 +61,7 @@
               oncommand="joey_selectedImage();"/>
 
     <menuitem id="joey_selectContextual"
-              label="Joey! Pick Selection"
+              label="Joey! Summary Selector"
               insertafter="context-stop"
               oncommand="joey_enableSelection();"/>
 
