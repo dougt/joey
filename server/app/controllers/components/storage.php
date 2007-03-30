@@ -61,8 +61,8 @@ class StorageComponent extends Object
     function hasAvailableSpace($userid, $additional) {
       
       $totalused = $this->controller->File->totalSpaceUsed($userid);
-      // $filesize and $totalused is in bytes, MAX_DISK_USAGE is in MB
-      if ( ($filesize + $totalused) > (MAX_DISK_USAGE * 1024 * 1024)) {
+      // $additional and $totalused is in bytes, MAX_DISK_USAGE is in MB
+      if ( ($additional + $totalused) > (MAX_DISK_USAGE * 1024 * 1024)) {
         return false;
       }
       
@@ -160,7 +160,7 @@ class StorageComponent extends Object
       }
       
       // check to see if we should do anything
-      if ($forceUpdate == false)
+      if (false && $forceUpdate == false)
       {
         $expiry = strtotime($_upload['File'][0]['modified'] . " + " . CONTENTSOURCE_REFRESH_TIME . " minutes");
         $nowstamp = strtotime("now");
@@ -206,8 +206,8 @@ class StorageComponent extends Object
             }
 
             // does the user have enough space to proceed
-            if ($this->Storage->hasAvailableSpace($_upload['User']['id'],
-                                                  strlen($rss_result) - filesize($_filename)) == false) 
+            if ($this->controller->Storage->hasAvailableSpace($_upload['User']['id'],
+                                                              strlen($rss_result) - filesize($_filename)) == false) 
             {
               // @todo we should log this and maybe change
               // the file content to indicate the error.
@@ -240,8 +240,8 @@ class StorageComponent extends Object
               }
 
               // does the user have enough space to proceed
-              if ($this->Storage->hasAvailableSpace($_upload['User']['id'],
-                                                    strlen($ms->result) - filesize($_filename)) == false) {
+              if ($this->controller->Storage->hasAvailableSpace($_upload['User']['id'],
+                                                                strlen($ms->result) - filesize($_filename)) == false) {
                 // @todo we should log this and maybe change
                 // the file content to indicate the error.
                 break;
