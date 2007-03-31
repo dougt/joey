@@ -989,10 +989,10 @@ var g_joeySelectorService = {
                                            
             const borderSize=4;
 
-            boxObjectX = boxObject.x - borderSize;
-            boxObjectY = boxObject.y - borderSize;
-            boxObjectWidth  = boxObject.width  + borderSize * 2;
-            boxObjectHeight = boxObject.height + borderSize * 2;
+            var boxObjectX = boxObject.x - borderSize;
+            var boxObjectY = boxObject.y - borderSize;
+            var boxObjectWidth  = boxObject.width  + borderSize * 2;
+            var boxObjectHeight = boxObject.height + borderSize * 2;
 
             if (!this.runningState) {
 	
@@ -1000,27 +1000,30 @@ var g_joeySelectorService = {
     	
                 var newDiv= document.createElementNS("http://www.w3.org/1999/xhtml", "div");
                 newDiv.style.position="absolute";
-                newDiv.style.border="1px solid blue";
-                
+                newDiv.style.background="url(chrome://joey/skin/selector-tile.png)";
+                newDiv.style.border="0px solid blue";
                 this.currentElementTop=newDiv;
                                    	
                 var newDiv= document.createElementNS("http://www.w3.org/1999/xhtml", "div");
                 newDiv.style.position="absolute";
-                newDiv.style.border="1px solid blue";               	
+                newDiv.style.background="url(chrome://joey/skin/selector-tile.png)";
+                newDiv.style.border="0px solid blue";               	
 
                 this.currentElementBottom=newDiv;
                 this.currentElementTop.appendChild(this.currentElementBottom);
     	
                 var newDiv= document.createElementNS("http://www.w3.org/1999/xhtml", "div");
                 newDiv.style.position="absolute";
-                newDiv.style.border="1px solid blue";
+                newDiv.style.background="url(chrome://joey/skin/selector-tile.png)";
+                newDiv.style.border="0px solid blue";
                 
                 this.currentElementLeft=newDiv;
                 this.currentElementTop.appendChild(this.currentElementLeft);
     	
                 var newDiv = document.createElementNS("http://www.w3.org/1999/xhtml", "div");
                 newDiv.style.position="absolute";
-                newDiv.style.border="1px solid blue";
+                newDiv.style.background="url(chrome://joey/skin/selector-tile.png)";
+                newDiv.style.border="0px solid blue";
                 
                 this.currentElementRight=newDiv;
                 this.currentElementTop.appendChild(this.currentElementRight);
@@ -1032,21 +1035,21 @@ var g_joeySelectorService = {
 		        this.currentElementTop.style.top=boxObjectY+"px";
 		        this.currentElementTop.style.left=boxObjectX+"px";
 		        this.currentElementTop.style.width=boxObjectWidth+"px";
-		        this.currentElementTop.style.height="0px";
+		        this.currentElementTop.style.height="4px";
     	
 		        this.currentElementBottom.style.top=boxObjectHeight+"px";
 		        this.currentElementBottom.style.left="0px";
 		        this.currentElementBottom.style.width=boxObjectWidth+"px";
-		        this.currentElementBottom.style.height="0px";
+		        this.currentElementBottom.style.height="4px";
             	
 		        this.currentElementLeft.style.top="0px";
 		        this.currentElementLeft.style.left="-1px";
-		        this.currentElementLeft.style.width="0px";
+		        this.currentElementLeft.style.width="4px";
 		        this.currentElementLeft.style.height=boxObjectHeight+"px";
         	
 		        this.currentElementRight.style.top="0px";
 		        this.currentElementRight.style.left=boxObjectWidth+"px";
-		        this.currentElementRight.style.width="0px";
+		        this.currentElementRight.style.width="4px";
 		        this.currentElementRight.style.height=boxObjectHeight+"px";
             }
         }
