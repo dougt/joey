@@ -27,5 +27,5 @@
 </div>
 
 <div>
-<?=$html->link('Forgot Password?', 'resetpassword')?>
+<?=$html->link('Forgot Password?', 'resetpasswordemail')?>
 </div>

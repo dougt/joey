@@ -146,37 +146,92 @@ class UsersController extends AppController
         exit;
     }
 
+    // When the user clicks on the reset password email link ...
     function resetpassword()
+    {
+        // They clicked on the link
+        if (array_key_exists('pass', $this->params) && array_key_exists(0, $this->params['pass']) && array_key_exists(1, $this->params['pass'])) {
+            $_username = $this->params['pass'][0];
+            $_epw = $this->params['pass'][1];
+            $this->set("username", $_username);
+            $this->set("epw", $_epw);
+        }
+
+        // They hit submit on the form
+        if (isset($this->data)) {
+            // $_username = $_POST['username'];
+            // $_epw = $_POST['epw'];
+            $_newpass = $this->data['User']['newpass'];
+            $_newpass2 = $this->data['User']['newpass2'];
+        }
+
+        // Why are they here?
+        if (!isset($_username) || empty($_username) || !isset($_epw) || empty($_epw)) {
+            $this->redirect('/');
+            exit;
+        } else {
+          // Find the user by username
+          $_someone = $this->User->findByUsername(strtolower($_username));
+          if(!empty($_someone['User']['id'])) {
+            if ($_epw == md5($_someone['User']['password'])) {
+              // if the password is set
+              if (!empty($_newpass)) {
+                if ($_newpass == $_newpass2) {
+                  // do the reset
+                  $this->User->id = $_someone['User']['id'];
+                  $this->User->saveField('password', sha1($_newpass));
+                  $this->redirect('/');
+                } else {
+                  // Display Form with error
+                  $this->set('error_mesg', 'The password and confirmation do not match!');
+                }
+              }
+            } else {
+              // The epw does not match the username. Possible spoof. Fail
+              $this->redirect('/');
+              exit;
+            }
+          } else {
+            // The username does not exist. Possible spoof. Fail
+            $this->redirect('/');
+            exit;
+          }
+        }
+
+    }
+
+    // Ask the username / email to reset password
+    function resetpasswordemail()
     {
       // If a user has submitted form data:
       if (!empty($this->data)) {
        
+        // Find the user by username
         $_someone = $this->User->findByUsername(strtolower($this->data['User']['username']));
+        // If not, find her by email address
+        if(empty($_someone['User']['id'])) {
+          $_someone = $this->User->findByEmail(strtolower($this->data['User']['email']));
+        }
 
         // They're in the database
         if(!empty($_someone['User']['id'])) {
           
-          $pw = uniqid();
+          $epw = md5($_someone['User']['password']);
 
           $this->User->id = $_someone['User']['id'];
           $this->User->saveField('confirmationcode', null);
-          $this->User->saveField('password', sha1($pw));
 
           // Make an email message.  @todo This should really be
           // in a config var, or a view somewhere.
           // @todo site is hardcoded here to the base URL.  This will
           // work for production but needs to be fixed for other URLs
-          $_message = "Your password has been reset to:\n\n".$pw."\n";
+          $_message = "Please click on the following link to reset your password:\n\n http://joey.labs.mozilla.com/users/resetpassword/".$_someone['User']['username']."/".$epw." \n";
 
           // Send a mail to the user
           mail($_someone['User']['email'], 'Joey password reset', $_message, "From: joey@labs.mozilla.com\r\n");
 
-          $this->flash('Password has been reset.  Please check your email.', '/', 2);
+          $this->flash('Please check your email to reset password.', '/', 2);
           exit;
-        }
-        else
-        {
-          $this->set('error_mesg', 'Sorry, cannot reset password.');
         }
       }
     }

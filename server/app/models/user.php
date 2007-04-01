@@ -60,7 +60,7 @@ class User extends AppModel
                         );
 
     var $validate = array(
-                            'username'    => VALID_NOT_EMPTY,
+                            'username'    => '/^\w+$/',
                             'password'    => VALID_NOT_EMPTY,
                             'phonenumber' => VALID_NOT_EMPTY,
                             'email'       => VALID_EMAIL
