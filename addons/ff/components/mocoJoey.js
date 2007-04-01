@@ -170,7 +170,7 @@ mocoJoey.prototype =
                 if (pass.host == getJoeyURL()) {
                     this.joey_username = pass.user;
                     this.joey_password = pass.password;
-                    return;
+                    return true;
                 }
             } 
             catch (ex) {}
@@ -194,7 +194,7 @@ mocoJoey.prototype =
         if (!result)
         {
             // cancel was pressed.
-            return;
+            return false;
         }
 
         // result is true if OK was pressed, false if cancel was pressed. username.value,
@@ -205,6 +205,7 @@ mocoJoey.prototype =
         
         this.joey_username = u.value;
         this.joey_password = p.value;
+        return true;
     },
     
 	uploadData: function(title, url, data, type)
@@ -243,7 +244,15 @@ mocoJoey.prototype =
         // kick off the action
         if (g_joey_hasLogged == false)
         {
-            this.setLoginInfo();
+            if (this.setLoginInfo() == false)
+            {
+                g_joey_in_progress = false;
+                this.joey_title = null;
+                this.joey_url = null;
+                this.joey_content_type = null;
+                this.joey_data = null;
+                return -1;
+            }
             this.loginToService();
         }
         else
