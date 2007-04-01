@@ -338,18 +338,24 @@ mocoJoey.prototype =
         self.setListener(null);
         g_joey_in_progress = false;
         
-        if (bytes.indexOf("-1") == -1)
+        if (bytes.indexOf("-1") != -1)
         {
+            // General error
             if (listener != null)
-                listener.onStatusChange("upload", 1);  // 1 = okay all good. 
-            
+                listener.onStatusChange("upload", -1);
+            return;
+        }
+        
+        if (bytes.indexOf("-2") != -1)
+        {
+            // Not enough space left for user
+            if (listener != null)
+                listener.onStatusChange("upload", -2);
             return;
         }
 
         if (listener != null)
-            listener.onStatusChange("upload", -1);
-        
-        debug ('upload failed');
+            listener.onStatusChange("upload", 1);  // 1 = okay all good. 
 	},
 
 
