@@ -40,9 +40,8 @@ var g_joey_content_type;
 var g_joey_title;
 var g_joey_url;
 var g_joey_isfile;
-
-var g_joey_media_url = null;
-
+var g_joey_consoleService    = null;
+var g_joey_media_url  = null;
 var g_joey_areaWindow = null;
 
 var g_joey_serverURL = "https://joey.labs.mozilla.com"; 
@@ -368,6 +367,8 @@ JoeyStatusUpdateClass.prototype =
        
         var previousClassName = document.getElementById("joeyStatusButton").className;
         
+        document.getElementById("joey_selectContextual").disabled=true;
+        
         document.getElementById("joeyStatusButton").className=previousClassName + " capture"; 
     
        } 
@@ -375,6 +376,8 @@ JoeyStatusUpdateClass.prototype =
        if(aMode.indexOf("capture.remove") > -1 ) {
        
         var previousClassName = document.getElementById("joeyStatusButton").className;
+
+        document.getElementById("joey_selectContextual").disabled=false;
         
         document.getElementById("joeyStatusButton").className=previousClassName.split("capture")[0]; 
     
@@ -457,7 +460,7 @@ JoeyMediaFetcherStreamListener.prototype =
           var http = aRequest.QueryInterface(Components.interfaces.nsIHttpChannel);
           this.mContentType = http.contentType;
       } 
-      catch (ex) { alert(ex); }	
+      catch (ex) { g_joey_console(ex); }	
   },
 
   onDataAvailable: function (aRequest, aContext, aStream, aSourceOffset, aLength)
@@ -695,7 +698,7 @@ function joeyStartup()
         
         g_joey_serverURL=url;
         
-    } catch (i) { alert(i); } 
+    } catch (i) { g_joey_console(i); } 
 
     g_joey_statusUpdateObject = new JoeyStatusUpdateClass();
 
@@ -704,6 +707,23 @@ function joeyStartup()
      */
 
     window.addEventListener("mousedown",joeyOnMouseDown,false); 
+
+    /* 
+     * Console Service 
+     */
+     
+    g_joey_consoleService = Components.classes["@mozilla.org/consoleservice;1"]
+                               .getService(Components.interfaces.nsIConsoleService);
+
+
+    g_joey_console("Console on!");
+
+
+}
+
+function g_joey_console(aMessage) {
+
+      g_joey_consoleService.logStringMessage("joey: " + aMessage);
 
 }
 
@@ -894,7 +914,7 @@ var g_joeySelectorService = {
 
     currentEvent         :null,
     previousTargetElement:null,
-    
+    associatedDocument   :null,
     runningState         :0,
     currentElementLeft   :null,
     currentElementTop    :null,
@@ -904,14 +924,14 @@ var g_joeySelectorService = {
     
     enable: function () {
 
-        this.stop=false;
-        
-        if(this.runningState == 2) {
-            this.runningState = 1;
-        } 
+	    g_joey_statusUpdateObject.tellMode("capture.add"); // we will need also to lock the menu...
+	    
+        this.associatedDocument = g_joey_gBrowser.selectedBrowser.contentDocument;
+
+        this.createBox();
         
         thisInstance = this;
-
+        
         sigmaCall = function(e) { thisInstance.mouseMoveListener(e) };
         
     	g_joey_gBrowser.selectedBrowser
@@ -929,15 +949,12 @@ var g_joeySelectorService = {
     	                                 ,false);
     
 	    this.runtimer();    // timer-based refresh function..
-	    
-	    g_joey_statusUpdateObject.tellMode("capture.add");
-	    
+
 	    
     },
     
     disable: function () {
     
-    	this.runningState = 2;
     	
     	g_joey_gBrowser.selectedBrowser
     	               .contentDocument
@@ -949,7 +966,10 @@ var g_joeySelectorService = {
     	               .removeEventListener("mousedown"
     	                                 ,omegaCall 
     	                                 ,false);
-               
+           
+        this.removeBox();
+        this.associatedDocument = null;   
+           
         g_joey_statusUpdateObject.tellMode("capture.remove");
 
 
@@ -963,55 +983,84 @@ var g_joeySelectorService = {
     
     mouseClickListener: function (e) {
     
-	this.disable();
+	    this.disable();
+        if(e.button == 0) {
+	        joey_selectedTarget(this.currentEvent.target);
+        }     
+            
+    },
+    createBox: function () {
 
-	joey_selectedTarget(this.currentEvent.target);
+                var newDiv= this.associatedDocument.createElementNS("http://www.w3.org/1999/xhtml", "div");
+                newDiv.style.position="absolute";
+                newDiv.style.background="url(chrome://joey/skin/selector-tile.png)";
+                newDiv.style.border="0px";
+                newDiv.style.height="4px";
+
+                this.currentElementTop=newDiv;
+                                   	
+                var newDiv= this.associatedDocument.createElementNS("http://www.w3.org/1999/xhtml", "div");
+                newDiv.style.position="absolute";
+                newDiv.style.background="url(chrome://joey/skin/selector-tile.png)";
+                newDiv.style.left="0px";          	
+                newDiv.style.border="0px";          	
+                newDiv.style.height="4px";
+
+                this.currentElementBottom=newDiv;
+                this.currentElementTop.appendChild(this.currentElementBottom);
+    	
+                var newDiv= this.associatedDocument.createElementNS("http://www.w3.org/1999/xhtml", "div");
+                newDiv.style.position="absolute";
+                newDiv.style.top="0px";
+                newDiv.style.left="-1px";
+                newDiv.style.width="4px";
+                newDiv.style.background="url(chrome://joey/skin/selector-tile.png)";
+                newDiv.style.border="0px";
+                
+                this.currentElementLeft=newDiv;
+                this.currentElementTop.appendChild(this.currentElementLeft);
+    	
+                var newDiv = this.associatedDocument.createElementNS("http://www.w3.org/1999/xhtml", "div");
+                newDiv.style.position="absolute";
+                newDiv.style.top="0px";
+                newDiv.style.width="4px";
+                newDiv.style.background="url(chrome://joey/skin/selector-tile.png)";
+                newDiv.style.border="0px";
+                
+                this.currentElementRight=newDiv;
+                this.currentElementTop.appendChild(this.currentElementRight);
+                
+                try {
+                    this.associatedDocument.body.appendChild(this.currentElementTop);
+                } catch (ignore) {
+                    g_joey_console(ignore);
+                }
+                
+            
+    }, 
+    removeBox: function () {
+    
+        try {
         
+            if(this.currentElementTop.parentNode) {
+                this.currentElementTop.parentNode.removeChild(this.currentElementTop);
+        	}        	 
+        	
+        } catch (i) { g_joey_console(i) } 
+         	        	
     },
     runtimer: function() {
         
-        if (this.currentEvent && ! this.stop) {
+        /* 
+         * We want UI to be smooth so we keep this at 150 miliseconds. 
+         * Otherwise the Contextual Box moves too much in the screen for every little DOM node.
+         *
+         */ 
+        if (this.currentEvent && this.associatedDocument) {
         
-            var remoteDocument = null;
-            
-            try {
-            
-                // maybe the correct thing is not to refresh this document..
-                remoteDocument = g_joey_gBrowser.selectedBrowser.contentDocument;
-        
-            } catch (i) {
-                alert("  We want to catch exceptions for this selection mode ... " + i);
-            } 
-            
-            if (this.runningState == 2) { // hide and stop mode...
-
-		        this.currentElementTop.style.top="-100px";
-		        this.currentElementTop.style.left="-100px";
-		        this.currentElementTop.style.width="0px";
-		        this.currentElementTop.style.height="0px";
-    	
-		        this.currentElementBottom.style.top="-100px";
-		        this.currentElementBottom.style.left="-100px";
-		        this.currentElementBottom.style.width="0px";
-		        this.currentElementBottom.style.height="0px";
-            	
-		        this.currentElementLeft.style.top="-100px";
-		        this.currentElementLeft.style.left="-100px";
-		        this.currentElementLeft.style.width="0px";
-		        this.currentElementLeft.style.height="0px";
-        	
-		        this.currentElementRight.style.top="-100px";
-		        this.currentElementRight.style.left="-100px";
-		        this.currentElementRight.style.width="0px";
-		        this.currentElementRight.style.height="0px";
-
-                this.stop = true; // stop this timer cycle...
-
-                return; 
-                
-            }
-        
-            var boxObject = remoteDocument.getBoxObjectFor(this.currentEvent.target);
+            var currentDocument = this.associatedDocument;
+           
+            var boxObject = currentDocument.getBoxObjectFor(this.currentEvent.target);
                                            
             const borderSize=4;
 
@@ -1020,76 +1069,21 @@ var g_joeySelectorService = {
             var boxObjectWidth  = boxObject.width  + borderSize * 2;
             var boxObjectHeight = boxObject.height + borderSize * 2;
 
-            if (this.runningState == 0) { // creation mode..
-	
-                this.runningState=1;
-    	
-                var newDiv= remoteDocument.createElementNS("http://www.w3.org/1999/xhtml", "div");
-                newDiv.style.position="absolute";
-                newDiv.style.background="url(chrome://joey/skin/selector-tile.png)";
-                newDiv.style.border="0px solid blue";
-                this.currentElementTop=newDiv;
-                                   	
-                var newDiv= remoteDocument.createElementNS("http://www.w3.org/1999/xhtml", "div");
-                newDiv.style.position="absolute";
-                newDiv.style.background="url(chrome://joey/skin/selector-tile.png)";
-                newDiv.style.border="0px solid blue";               	
+            this.currentElementTop.style.top=boxObjectY+"px";
+            this.currentElementTop.style.left=boxObjectX+"px";
+            this.currentElementTop.style.width=boxObjectWidth+"px";
+            this.currentElementBottom.style.top=boxObjectHeight+"px";
+            this.currentElementBottom.style.width=boxObjectWidth+"px";
+            this.currentElementLeft.style.height=boxObjectHeight+"px";
+            this.currentElementRight.style.left=boxObjectWidth+"px";
+            this.currentElementRight.style.height=boxObjectHeight+"px";
 
-                this.currentElementBottom=newDiv;
-                this.currentElementTop.appendChild(this.currentElementBottom);
-    	
-                var newDiv= remoteDocument.createElementNS("http://www.w3.org/1999/xhtml", "div");
-                newDiv.style.position="absolute";
-                newDiv.style.background="url(chrome://joey/skin/selector-tile.png)";
-                newDiv.style.border="0px solid blue";
-                
-                this.currentElementLeft=newDiv;
-                this.currentElementTop.appendChild(this.currentElementLeft);
-    	
-                var newDiv = remoteDocument.createElementNS("http://www.w3.org/1999/xhtml", "div");
-                newDiv.style.position="absolute";
-                newDiv.style.background="url(chrome://joey/skin/selector-tile.png)";
-                newDiv.style.border="0px solid blue";
-                
-                this.currentElementRight=newDiv;
-                this.currentElementTop.appendChild(this.currentElementRight);
-                
-                try {
-                    remoteDocument.body.appendChild(this.currentElementTop);
-                } catch (ignore) {
-                    alert(ignore);
-                    return;  
-                }
-                
-            }
-            
-            if (this.runningState == 1) { // update mode...
-            
-		        this.currentElementTop.style.top=boxObjectY+"px";
-		        this.currentElementTop.style.left=boxObjectX+"px";
-		        this.currentElementTop.style.width=boxObjectWidth+"px";
-		        this.currentElementTop.style.height="4px";
-    	
-		        this.currentElementBottom.style.top=boxObjectHeight+"px";
-		        this.currentElementBottom.style.left="0px";
-		        this.currentElementBottom.style.width=boxObjectWidth+"px";
-		        this.currentElementBottom.style.height="4px";
-            	
-		        this.currentElementLeft.style.top="0px";
-		        this.currentElementLeft.style.left="-1px";
-		        this.currentElementLeft.style.width="4px";
-		        this.currentElementLeft.style.height=boxObjectHeight+"px";
-        	
-		        this.currentElementRight.style.top="0px";
-		        this.currentElementRight.style.left=boxObjectWidth+"px";
-		        this.currentElementRight.style.width="4px";
-		        this.currentElementRight.style.height=boxObjectHeight+"px";
-            }
-    
         } // end of current event...
         
-        setTimeout("g_joeySelectorService.runtimer()",150);
-	
+        if (this.associatedDocument) {
+            setTimeout("g_joeySelectorService.runtimer()",150);
+        }	
+        
     } // end of runtimer  
     
 }
