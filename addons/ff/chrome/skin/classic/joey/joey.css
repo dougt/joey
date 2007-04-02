@@ -6,6 +6,14 @@
     list-style-image  : url("chrome://joey/skin/mini-icon-16-16-login.png");
 }
 
+#joeyStatusButton.capture {
+    list-style-image  : url("chrome://joey/skin/mini-icon-16-16-capture.png");
+}
+
+#joeyStatusButton.alert {
+    list-style-image  : url("chrome://joey/skin/mini-icon-16-16-alert.png");
+}
+
 #joeyStatusTeller  {
  margin:0px;
  padding:0px;
@@ -16,4 +24,3 @@
   background-color:blue;
   -moz-opacity:.5;
 }
-
