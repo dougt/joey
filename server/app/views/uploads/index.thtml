@@ -3,7 +3,7 @@
 <?php if (empty($uploads)) : ?>
 
 <div>
-You have no uploads yet. You should <?php echo $html->link('add one', '/uploads/add/'); ?>.
+You have no uploads yet.
 </div>
 
 <?php else: ?>

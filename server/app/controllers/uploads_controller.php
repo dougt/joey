@@ -339,6 +339,16 @@ class UploadsController extends AppController
         }
     }
 
+    function rss()
+    {
+      $this->layout = 'xml';
+      
+      $criteria=array('user_id' => $this->_user['id']);
+      $data = $this->Upload->findAll($criteria, NULL, "Upload.modified DESC", 15);
+      $this->set('uploads', $data);
+
+    }
+
     function index()
     {
         if ($this->nbClient) {
