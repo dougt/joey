@@ -70,11 +70,7 @@
               insertafter="context-stop"
               oncommand="joey_selected();"/>
     
-    <menuitem id="joey_activeRSSLink"
-              hidden="true"
-              label="Joey! Current Feed"
-              insertafter="context-stop"
-              oncommand="joey_feed();"/>
+
   </popup>
 
 
@@ -85,6 +81,8 @@
        insertafter="devToolsSeparator" 
        label="Joey! Settings..."
 	   oncommand="loot_setttings();" />	
+    
+  
   </menupopup>
   
   <!-- status bar static joey presence UI --> 
@@ -120,6 +118,12 @@
 
         <menuitem label="My Joey" oncommand="joey_launchCloudSite()" />
         <menuitem id="joeyMediaMenuItem" label="Joey! Media on page" hidden="true" oncommand="joey_uploadFoundMedia()" />
+
+        <menuitem id="joey_activeRSSLink"
+          hidden="true"
+          label="Joey! Current Feed"
+          insertafter="context-stop"
+          oncommand="joey_feed();"/>
         
         <menu label="History Log">
    	      <menupopup id="joeyHistoryMenuContainer" 
