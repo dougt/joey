@@ -11,6 +11,7 @@
 		<em:homepageURL>http://joey.labs.mozilla.com/</em:homepageURL>
 		<em:iconURL>chrome://joey/skin/joey.png</em:iconURL>
 		<em:aboutURL>chrome://joey/content/about.xul</em:aboutURL>
+		<em:optionsURL>chrome://joey/content/joeyOptions.xul"></em:optionsURL>
 		<em:updateURL>http://joey.labs.mozilla.com/update.rdf</em:updateURL>
 		<em:targetApplication>
 			<Description>
