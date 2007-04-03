@@ -2,7 +2,9 @@
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
      xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 
-	<Description about="urn:mozilla:install-manifest">
+	<Description about="urn:mozilla:install-manifest"
+                   em:optionsURL="chrome://joey/content/joeyOptions.xul"
+               >
 		<em:id>joey@mozilla.corporation</em:id>
 		<em:name>Joey</em:name>
 		<em:version>0.2.0.2</em:version>
@@ -11,7 +13,6 @@
 		<em:homepageURL>http://joey.labs.mozilla.com/</em:homepageURL>
 		<em:iconURL>chrome://joey/skin/joey.png</em:iconURL>
 		<em:aboutURL>chrome://joey/content/about.xul</em:aboutURL>
-		<em:optionsURL>chrome://joey/content/joeyOptions.xul"></em:optionsURL>
 		<em:updateURL>http://joey.labs.mozilla.com/update.rdf</em:updateURL>
 		<em:targetApplication>
 			<Description>
