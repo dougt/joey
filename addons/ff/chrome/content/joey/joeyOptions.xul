@@ -1,5 +1,4 @@
 <?xml version="1.0"?>
-
 <!-- ***** BEGIN LICENSE BLOCK *****
    - Version: MPL 1.1/GPL 2.0/LGPL 2.1
    -
@@ -44,7 +43,6 @@
 	windowtype="window:prefwindow"
 	title="Joey Options"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-	xmlns:html="http://www.w3.org/1999/xhtml"
 	>
 
 <prefpane id="joeyOptions" label="Joey! Options" >
@@ -60,17 +58,14 @@
 
 	<hbox flex="1">
 	      <checkbox id="enableLogging" label="Enable Logging in Error Console" 
-                preference="joey.enable_logging"/>
+                preference="joey.enable_logging" />
 
 
 	</hbox>
 
-	<!-- password login logout username service functio here --> 
-
 	<hbox flex="1">
 		<label value="Joey Web Service URL:" />
-	      <textbox id="serviceUrl" 
-	                preference="joey.service_url"/>
+    <textbox id="serviceUrl" preference="joey.service_url" />
 
 	</hbox>
 
