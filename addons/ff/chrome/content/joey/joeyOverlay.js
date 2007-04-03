@@ -704,10 +704,13 @@ function joeyStartup()
                                .getService(Components.interfaces.nsIConsoleService);
 
     
-    if (psvc.prefHasUserValue("joey.enable_logging")) {    
+    try {   
             if(psvc.getBoolPref("joey.enable_logging")) {
                 g_joey_console = joeyDumpToConsole;
+                g_joey_console("Console Logging enabled!");
             }
+    } catch (i) {
+        alert(i);
     }
 
     try {   
@@ -731,12 +734,19 @@ function joeyStartup()
 
     window.addEventListener("mousedown",joeyOnMouseDown,false); 
 
+    /* 
+     * First Run function..
+     */ 
 
-
-    g_joey_console("Console on!");
-
-
-
+    try {
+       if(psvc.getBoolPref("joey.firstRun")) {
+            /* 
+            * TODO - bug 373137 
+            * We should launch the Joey Options Dialog for this first time. 
+            */
+            psvc.setBoolPref("joey.firstRun",false);          
+       }
+    } catch(i) { g_joey_console(i) } 
 
 }
 
