@@ -24,3 +24,8 @@
   background-color:blue;
   -moz-opacity:.5;
 }
+
+#joey_activeRSSLink {
+   -moz-image-region: rect(0px, 36px, 18px, 18px);
+   list-style-image: url("chrome://browser/skin/livemark-item.png");
+}
