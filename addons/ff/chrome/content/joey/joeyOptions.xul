@@ -45,11 +45,11 @@
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
 	>
 
-<prefpane id="joeyOptions" label="Joey! Options" >
+<prefpane id="joeyPrefPane" label="Joey! Options" >
 
 	<preferences>
-		<preference id="joey.enable_logging" name="joey.enable_logging" type="boolean"/>
-		<preference id="joey.service_url"    name="joey.service_url"    type="string"/>
+		<preference id="joey.enable_logging" name="joey.enable_logging" type="boolean" />
+		<preference id="joey.service_url"    name="joey.service_url"    type="string" />
 	</preferences>
 
 <groupbox  align="left" style="" >
