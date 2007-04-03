@@ -72,18 +72,6 @@
     
 
   </popup>
-
-
-  <!-- tools menu --> 
-  
-  <menupopup id="menu_ToolsPopup">
-	<menuitem 
-       insertafter="devToolsSeparator" 
-       label="Joey! Settings..."
-	   oncommand="loot_setttings();" />	
-    
-  
-  </menupopup>
   
   <!-- status bar static joey presence UI --> 
   
