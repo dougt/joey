@@ -40,9 +40,11 @@ var g_joey_content_type;
 var g_joey_title;
 var g_joey_url;
 var g_joey_isfile;
-var g_joey_consoleService    = null;
 var g_joey_media_url  = null;
 var g_joey_areaWindow = null;
+
+var g_joey_consoleService    = null;
+var g_joey_console = joeyDumpToNull; // default is a function that does nothing.
 
 var g_joey_serverURL = "https://joey.labs.mozilla.com"; 
 
@@ -677,6 +679,9 @@ function joeyStartup()
                       .getService(Components.interfaces.nsIWindowMediator);
     
     gWin = wm.getMostRecentWindow("navigator:browser");
+
+
+
     
     g_joey_gBrowser = gWin.gBrowser;
     
@@ -690,6 +695,21 @@ function joeyStartup()
     var psvc = Components.classes["@mozilla.org/preferences-service;1"]
                          .getService(Components.interfaces.nsIPrefBranch);
 
+
+    /* 
+     * Console Service 
+     */
+     
+    g_joey_consoleService = Components.classes["@mozilla.org/consoleservice;1"]
+                               .getService(Components.interfaces.nsIConsoleService);
+
+    
+    if (psvc.prefHasUserValue("joey.enable_logging")) {    
+            if(psvc.getBoolPref("joey.enable_logging")) {
+                g_joey_console = joeyDumpToConsole;
+            }
+    }
+
     try {   
         var url = g_joey_serverURL;
         
@@ -700,6 +720,9 @@ function joeyStartup()
         
     } catch (i) { g_joey_console(i); } 
 
+
+
+
     g_joey_statusUpdateObject = new JoeyStatusUpdateClass();
 
     /* 
@@ -708,25 +731,36 @@ function joeyStartup()
 
     window.addEventListener("mousedown",joeyOnMouseDown,false); 
 
-    /* 
-     * Console Service 
-     */
-     
-    g_joey_consoleService = Components.classes["@mozilla.org/consoleservice;1"]
-                               .getService(Components.interfaces.nsIConsoleService);
 
 
     g_joey_console("Console on!");
 
 
+
+
 }
 
-function g_joey_console(aMessage) {
+/* 
+ * Console Logging Service / See joeyStartup code... 
+ * The global function name is g_joey_console = joeyDumpToNull. 
+ * If the Pref joey.enable_logging = true, then g_joey_console = joeyDumpToConsole 
+ * 
+ */
+
+function joeyDumpToNull(aMessage) {
+    // Does nothing.
+}
+
+function joeyDumpToConsole(aMessage) {
 
       g_joey_consoleService.logStringMessage("joey: " + aMessage);
 
 }
 
+/* 
+ * From FF. We may be able to use a detection service instead this copied code. 
+ */ 
+ 
 function joeyLinkAddedHandler(event)
 {
     
