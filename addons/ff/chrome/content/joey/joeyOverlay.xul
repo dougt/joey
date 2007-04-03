@@ -119,7 +119,7 @@
         <menuitem label="My Joey" oncommand="joey_launchCloudSite()" />
         <menuitem id="joeyMediaMenuItem" label="Joey! Media on page" hidden="true" oncommand="joey_uploadFoundMedia()" />
 
-        <menuitem id="joey_activeRSSLink"
+        <menuitem id="joey_activeRSSLink" class="menuitem-iconic" 
           hidden="true"
           label="Joey! Current Feed"
           insertafter="context-stop"
