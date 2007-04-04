@@ -740,11 +740,15 @@ function joeyStartup()
 
     try {
        if(psvc.getBoolPref("joey.firstRun")) {
-            /* 
-            * TODO - bug 373137 
-            * We should launch the Joey Options Dialog for this first time. 
-            */
-            psvc.setBoolPref("joey.firstRun",false);          
+
+
+            psvc.setBoolPref("joey.firstRun",false);     
+
+            window.open("chrome://joey/content/joeyOptions.xul",
+                                            "welcome", 
+                                            "chrome,resizable=yes");
+            
+                 
        }
     } catch(i) { g_joey_console(i) } 
 
