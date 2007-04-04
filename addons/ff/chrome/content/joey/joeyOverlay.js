@@ -737,18 +737,10 @@ function joeyStartup()
     /* 
      * First Run function..
      */ 
-
     try {
        if(psvc.getBoolPref("joey.firstRun")) {
-
-
             psvc.setBoolPref("joey.firstRun",false);     
-
-            window.open("chrome://joey/content/joeyOptions.xul",
-                                            "welcome", 
-                                            "chrome,resizable=yes");
-            
-                 
+            joeyLaunchPreferences();        
        }
     } catch(i) { g_joey_console(i) } 
 
@@ -764,13 +756,19 @@ function joeyStartup()
 function joeyDumpToNull(aMessage) {
     // Does nothing.
 }
-
 function joeyDumpToConsole(aMessage) {
-
       g_joey_consoleService.logStringMessage("joey: " + aMessage);
-
 }
 
+/* 
+ * Prefs launcher 
+ */
+function joeyLaunchPreferences() {
+        window.open("chrome://joey/content/joeyOptions.xul",
+                    "welcome", 
+                    "chrome,resizable=yes");
+}
+                                            
 /* 
  * From FF. We may be able to use a detection service instead this copied code. 
  */ 

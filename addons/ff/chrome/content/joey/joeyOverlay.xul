@@ -112,13 +112,19 @@
           label="Joey! Current Feed"
           insertafter="context-stop"
           oncommand="joey_feed();"/>
-        
-        <menu label="History Log">
+
+        <menuitem id="joey_configurePreferences" 
+          label="Preferences.."
+          insertafter="context-stop"
+          oncommand="joeyLaunchPreferences();"/>
+
+        <menu label="History Log" hidden="true">
    	      <menupopup id="joeyHistoryMenuContainer" 
 	                 onpopupshown="joey_buildMenuHistoryContainer()"
                      onpopuphidden="joey_clearMenuHistoryContainer()" >
 	      </menupopup>
         </menu>
+        
       </menupopup>
   </statusbarpanel>
 </statusbar>
