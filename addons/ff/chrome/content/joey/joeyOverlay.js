@@ -141,6 +141,7 @@ function joeyOnMouseDown(e)
 
 		var target = e.target;
 		var classname = e.target.toString();
+
 		if (classname.match(/ImageElement/))
         {
 			// Simpler, but probably less efficient syntax: target.src;
@@ -155,6 +156,14 @@ function joeyOnMouseDown(e)
         {
             setImageSource(null);
         }
+        
+        var selectedRange=g_joey_gBrowser.selectedBrowser.contentDocument.getSelection();
+        if( selectedRange && selectedRange.toString() ) {
+           document.getElementById("joey_selectedText").hidden=false;
+        } else {
+          document.getElementById("joey_selectedText").hidden=true;
+        }
+
     }
 }
 
