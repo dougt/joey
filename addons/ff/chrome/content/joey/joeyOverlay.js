@@ -1040,6 +1040,12 @@ var g_joeySelectorService = {
     
 	    this.disable();
         if(e.button == 0) {
+            /* 
+             * We may revisit this to elect target elements 
+             * if they make sense. For example I assume we dont want to elect 
+             * the hole page. .. or not :) 
+             */
+             
 	        joey_selectedTarget(this.currentEvent.target);
         }     
             
@@ -1048,6 +1054,7 @@ var g_joeySelectorService = {
 
                 var newDiv= this.associatedDocument.createElementNS("http://www.w3.org/1999/xhtml", "div");
                 newDiv.style.position="absolute";
+                newDiv.style.zIndex="1000";
                 newDiv.style.background="url(chrome://joey/skin/selector-tile.png)";
                 newDiv.style.border="0px";
                 newDiv.style.height="4px";
@@ -1056,6 +1063,7 @@ var g_joeySelectorService = {
                                    	
                 var newDiv= this.associatedDocument.createElementNS("http://www.w3.org/1999/xhtml", "div");
                 newDiv.style.position="absolute";
+                newDiv.style.zIndex="1000";
                 newDiv.style.background="url(chrome://joey/skin/selector-tile.png)";
                 newDiv.style.left="0px";          	
                 newDiv.style.border="0px";          	
@@ -1066,8 +1074,9 @@ var g_joeySelectorService = {
     	
                 var newDiv= this.associatedDocument.createElementNS("http://www.w3.org/1999/xhtml", "div");
                 newDiv.style.position="absolute";
+                newDiv.style.zIndex="1000";
                 newDiv.style.top="0px";
-                newDiv.style.left="-1px";
+                newDiv.style.left="0px";
                 newDiv.style.width="4px";
                 newDiv.style.background="url(chrome://joey/skin/selector-tile.png)";
                 newDiv.style.border="0px";
@@ -1077,6 +1086,7 @@ var g_joeySelectorService = {
     	
                 var newDiv = this.associatedDocument.createElementNS("http://www.w3.org/1999/xhtml", "div");
                 newDiv.style.position="absolute";
+                newDiv.style.zIndex="1000";
                 newDiv.style.top="0px";
                 newDiv.style.width="4px";
                 newDiv.style.background="url(chrome://joey/skin/selector-tile.png)";
@@ -1121,22 +1131,44 @@ var g_joeySelectorService = {
 
             var boxObjectX = boxObject.x - borderSize;
             var boxObjectY = boxObject.y - borderSize;
-            var boxObjectWidth  = boxObject.width  + borderSize * 2;
-            var boxObjectHeight = boxObject.height + borderSize * 2;
+            var rawWidth = boxObject.width;
+            var rawHeight = boxObject.height;
 
+            var restWidth = rawWidth % 4;
+            var restHeight = rawHeight % 4;
+            
+            var boxCounterWidth = (rawWidth - restWidth)/4 + 1; 
+            var boxCounterHeight = (rawHeight- restHeight)/4 + 1; 
+
+            var boxObjectWidth  = ( rawWidth - restWidth )  + ( borderSize * 2 );
+            var boxObjectHeight = ( rawHeight - restHeight )  + ( borderSize * 2 ) ;
+            
+            var modOddWidth = boxCounterWidth % 2;
+            var modOddHeight = boxCounterHeight % 2;            
+            
+            if( parseInt(modOddWidth) == 0) {
+                boxObjectWidth+=4;
+                boxObjectX-=4;
+            }
+            
+            if( parseInt(modOddHeight) == 0) {
+                boxObjectHeight+=4;
+                boxObjectY-=4;
+            }
+            
             this.currentElementTop.style.top=boxObjectY+"px";
             this.currentElementTop.style.left=boxObjectX+"px";
             this.currentElementTop.style.width=boxObjectWidth+"px";
             this.currentElementBottom.style.top=boxObjectHeight+"px";
-            this.currentElementBottom.style.width=boxObjectWidth+"px";
+            this.currentElementBottom.style.width=boxObjectWidth+4+"px";
             this.currentElementLeft.style.height=boxObjectHeight+"px";
             this.currentElementRight.style.left=boxObjectWidth+"px";
-            this.currentElementRight.style.height=boxObjectHeight+"px";
+            this.currentElementRight.style.height=boxObjectHeight+4+"px";
 
         } // end of current event...
         
         if (this.associatedDocument) {
-            setTimeout("g_joeySelectorService.runtimer()",150);
+            setTimeout("g_joeySelectorService.runtimer()",155);
         }	
         
     } // end of runtimer  
