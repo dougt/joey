@@ -246,21 +246,6 @@ class UsersController extends AppController
         $this->set('phones', $this->Phone->generateList(null,null,null,'{n}.Phone.id','{n}.Phone.name'));
         $this->set('operators', $this->Operator->generateList(null,null,null,'{n}.Operator.id','{n}.Operator.provider'));
 
-        // need to grab legal text
-        $legalstuff = "";
-        $legalstufflocation = ROOT . DS . APP_DIR . DS . WEBROOT_DIR . DS . "terms" . DS . "termsofservcie";
-
-        if (file_exists( $legalstufflocation )) {
-          $fp = fopen($legalstufflocation, 'r');
-          if ($fp ) {
-            if ($filesize = filesize($legalstufflocation) ) {
-              $legalstuff = fread( $fp, filesize($legalstufflocation) );
-            }
-          }
-        }        
-
-        $this->set('legal', $legalstuff);
-
         // If a user has submitted form data:
         if (!empty($this->data)) {
 
