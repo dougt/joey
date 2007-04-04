@@ -64,11 +64,6 @@
               label="Joey! Summary Selector"
               insertafter="context-stop"
               oncommand="joey_enableSelection();"/>
-
-    <menuitem id="joey_selected"
-              label="Joey!"
-              insertafter="context-stop"
-              oncommand="joey_selected();"/>
     
 
   </popup>
