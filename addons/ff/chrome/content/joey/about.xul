@@ -22,6 +22,8 @@
    -
    - Contributor(s):
    -
+   - Marcio Galli <mgalli@mgalli.com>
+   -
    - Alternatively, the contents of this file may be used under the terms of
    - either the GNU General Public License Version 2 or later (the "GPL"), or
    - the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
@@ -46,17 +48,17 @@
 
 <!-- Original template by Jed Brown -->
 
-<groupbox align="center" orient="horizontal">
+<groupbox align="center" orient="horizontal" style="background-color:white">
 <vbox>
   <text value="Joey" style="font-weight: bold; font-size: x-large;"/>
-  <text value="ver. 0.1"/>
+  <text value="version 0.2"/>
   <separator class="thin"/>
   <text value="Created By:" style="font-weight: bold;"/>
-  <text value="Doug Turner" class="url"
-        onclick="window.open('http://www.meer.net/~dougt/'); window.close();"/>
+  <text value="Mozilla Corporation" class="url"
+        onclick="window.open('https://joey.labs.mozilla.com/'); window.close();"/>
   <separator class="thin"/>
     <text value="Home Page:" style="font-weight: bold;"/>
-    <text value="http://www.meer.net/~dougt/"
+    <text value="https://joey.labs.mozilla.com/"
           class="url"
         onclick="window.open('http://www.meer.net/~dougt/'); window.close();"/>
   <separator class="thin"/>
