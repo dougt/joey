@@ -46,18 +46,20 @@
 </div>
 
 <div>
-<label class="joey-label-large" for="Terms">Terms of Service</label>
-<textarea>
-<?php echo $legal ?>
-</textarea>
+        <label class="joey-label-large" for="LegalStuff">Important Legal Stuff.</label>
+<br>
+<br>    <a href='https://dougt.joey.labs.mozilla.com/terms/termsofservice'> Terms of Use </a>
+<br>    <a href='https://dougt.joey.labs.mozilla.com/terms/EULA'> End User License Agreement </a>
+<br>    <a href='https://dougt.joey.labs.mozilla.com/terms/privacypolicy'> Privacy Policy </a>
+
 </div>
 
 <div>
-Clicking the button below means that you agree to the above Terms.
+By clicking to accept this Agreement or by downloading the associated software, you acknowledge and agree that use of a Beta Release may exhibit sporadic disruptions that have the potential to disrupt your use of the Software and potential to affect the handset operations in general. You also acknowledge and agree that a Beta Release may not protect the you in blocking unacceptable digital content, meaning digital content showing profanity in word or symbol format.  You further acknowledge and agree that the Beta Release will send information to your telecommunications device and that Mozilla is unable to guarantee that information you send to your telecommunications device will be secure or private.  Mozilla specifically disclaims all damages resulting from your use of the beta Release.
 </div>
 
 <div class="button-box">
-    <?=$html->submit('Register',array('class' => 'joey-submit')); ?>
+    <?=$html->submit('Accept and Register',array('class' => 'joey-submit')); ?>
 </div>
 
 </form>
