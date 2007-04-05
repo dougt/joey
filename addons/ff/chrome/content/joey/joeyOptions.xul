@@ -62,7 +62,7 @@
   <caption label="Joey! Password Manager" />
 
   <hbox flex="1">
-    <checkbox id="enableUsername" label="Remember username and password" 
+    <checkbox id="checkbox_joey.remember_username" label="Remember username and password" 
             preference="joey.remember_username" />
 
   </hbox>
@@ -88,7 +88,7 @@
     <caption label="Joey! Extra" />
 
     <hbox flex="1">
-      <checkbox id="enableLogging" label="Enable Logging in Error Console" 
+      <checkbox id="checkbox_joey.enable_logging" label="Enable Logging in Error Console" 
               preference="joey.enable_logging" />
 
     </hbox>
