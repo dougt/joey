@@ -43,9 +43,13 @@
 	windowtype="window:prefwindow"
 	title="Joey Options"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-	>
+  onload="init()"
+  ondialogaccept="return doOkay();" 
+  >
 
-<prefpane id="joeyPrefPane" label="Joey! Options" >
+  <script type="application/x-javascript" src="chrome://joey/content/joeyOptions.js" />
+
+  <prefpane id="joeyPrefPane" label="Joey! Options" >
 
 	<preferences>
     <preference id="joey.enable_logging" name="joey.enable_logging" type="boolean" />
