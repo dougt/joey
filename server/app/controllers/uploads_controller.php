@@ -79,6 +79,12 @@ class UploadsController extends AppController
         $this->fallback_image = WWW_ROOT.'img'.DS.'na.png';
     }
 
+    /**
+     * After add(), the UPLOADDIR has the following files:
+     *   random.orig.sfx: The original uploaded file. The .sfx indicates the file type. This file name and file type are saved in db ONLY IF there is no transcoded file for this upload.
+     *   random.png OR random.3gp: The transcoded file for image or video. The name and type are saved in the db.
+     *   previews/random.png: The preview. File name saved in db.
+     */
     function add()
     {
         $this->pageTitle = 'Add an upload';

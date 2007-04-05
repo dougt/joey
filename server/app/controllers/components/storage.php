@@ -58,7 +58,9 @@ class StorageComponent extends Object
                          "mov" => "video/quicktime", "video/quicktime" => "mov",
                          "wav" => "audio/x-wav", "audio/x-wav" => "wav",
                          "mp3" => "audio/mpeg", "audio/mpeg" => "mp3",
-                         "mid" => "audio/mid", "audio/mid" => "mid");
+                         "mid" => "audio/mid", "audio/mid" => "mid",
+                         "rss" => "rss-source/text", "rss-source/text" => "rss",
+                         "mcs" => "microsummary/xml", "microsummary/xml" => "mcs");
 
     /**
      * Save a reference to the controller on startup
@@ -153,7 +155,7 @@ class StorageComponent extends Object
       if (empty($_upload['File']))
       {
         // Create a unique file for our new upload
-        $_filename = $this->uniqueFilenameForUser($_upload['Upload']['user_id']);
+        $_filename = $this->uniqueFilenameForUserType($_upload['Upload']['user_id']);
         
         if ($_filename !== false) {
           $_file = new File();
