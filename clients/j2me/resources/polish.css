@@ -1,0 +1,126 @@
+/*
+ * colors that are being reused.
+ */
+colors {
+	titleColor: #002bc6;
+	bgColorFocused: #fabd23;
+	borderColorFocused: black;
+	
+	bgColorInput: white;
+	borderColorInput: gray;
+	bgColorInputFocused: bgColorFocused;
+	borderColorInputFocused: black;
+	
+	textColor: black;
+	
+	textColorInput: gray;
+	textColorInputFocused: black;
+	
+	activeTabColor: #002bc6; 
+	inactiveTabColor: silver;
+	
+	darkpink:  rgb(185,26,138);
+}
+
+.inputScreen {
+	padding: 5;
+}
+
+.loginScreen extends inputScreen {
+}
+
+.mainmenuScreen extends inputScreen {
+}
+
+.snapshotScreen extends inputScreen {
+}
+
+.uploadScreen extends inputScreen {
+}
+
+.input {
+	padding: 2;
+	background {
+		color: bgColorInput;
+		border-color: borderColorInput;
+	}
+	font-color: textColorInput;
+	layout: expand;
+}
+
+.checkbox {
+	/*
+	checkbox-s0lected: url( choice-checked.png );
+	checkbox-plain: url( choice-unchecked.png );
+	*/
+}
+
+.checkbutton {
+	padding: 2;	
+}
+
+.radiobox {
+	view-type: exclusive-single-line;
+	/*
+	exclusiveview-left-arrow: url( arrowLeftS.png );
+	exclusiveview-right-arrow: url( arrowRightS.png );
+	*/
+	exclusiveview-roundtrip: true;
+	/* label-style: .radioboxLabel; */
+	/* include-label: true; */
+	exclusiveview-expand-background: true;
+	/*
+	//#if !polish.ScreenWidth:defined
+		min-width: 60;
+	//#else
+		min-width: ${polish.ScreenWidth} * 2 / 3 - 30;
+	//#endif
+	*/
+	layout: expand;
+}
+
+/*
+.radioboxLabel {
+	padding: 2;
+	layout: newline-after;
+}
+*/
+
+.radiobutton {
+	padding: 2;
+	layout: center;
+}
+
+menu {
+	margin-left: 2;
+	padding: 2;
+	background {
+		type: round-rect;
+		color: white;
+		border-width: 2;
+		border-color: yellow;
+	}
+	focused-style: .menuentryFocused;
+	menubar-color: darkpink;
+	font-color: white;
+	font-style: bold;
+}
+
+.menuentry {
+	margin-top: 2;
+	padding: 2;
+	padding-left: 5;
+	layout: left;
+	focused-style: menuentryFocused;
+	font {
+		color: black;
+		size: medium;
+		style: bold;
+	}
+}
+
+.menuentryFocused extends menuentry {
+	background-color: black;
+	font-color: white;
+}
+

@@ -1,0 +1,356 @@
+<!-- This file controls the build process.                    -->
+<!-- The most important target is the j2mepolish target,      -->
+<!-- which controls for what devices the application should   -->
+<!-- be created.                                              -->
+<!--                                                          -->
+<!-- Important: when you have no Wireless Toolkit installed   -->
+<!-- you need to define the "preverify"-attribute             -->
+<!-- of the <build>-element of the J2ME Polish task.          -->
+<!--                                                          -->
+<!-- When you call Ant from the command-line, you can         -->
+<!-- call "ant test j2mepolish" to skip the obfuscation       -->
+<!-- and to build the example for fewer handsets.             -->
+<!-- The default target builds and obfuscates the example.    -->
+<!--                                                          -->
+<!-- The full documentation can be found at                   -->
+<!-- http://www.j2mepolish.org                                -->
+<!--                                                          -->
+<!-- Have fun!                                                -->
+
+<project 
+	name="mozilla-joey-j2me" 
+	default="j2mepolish">
+	
+	
+<property file="${user.name}.properties" />
+<property file="midlet.properties" />
+	
+<!-- The polish.home property should point to the directory   -->
+<!-- containing the J2ME Polish installation.                 -->
+
+<property name="polish.home" value="/home/mkoch/local/J2ME-Polish-2.0-beta2" />
+<property file="${polish.home}/global.properties" />
+
+<!-- The wtk.home property should point to the directory      -->
+<!-- containing the Wireless Toolkit.                         -->
+
+
+<property name="wtk.home" value="/home/mkoch/local/WTK2.2" />
+
+
+<!-- The siemens.home, nokia.home and motorola.home-          -->
+<!-- properties can be necessary when their emulators         -->
+<!-- should be started.                                       -->
+<!-- The directory which contains the Siemens-SMTK
+	<property name="siemens.home" value="C:\siemens" />
+-->
+<!-- The directory which contains the Nokia-emulators
+	<property name="nokia.home" value="C:\Nokia" />
+-->
+<!-- The path to the Sony-Ericsson SDK
+	<property name="sony-ericsson.home" value="C:\SonyEricsson\J2ME_SDK" />
+-->
+<!-- The directory which contains the Motorola-emulators
+	<property name="motorola.home" value="C:\Program Files\Motorola\SDK v4.3 for J2ME" />
+-->
+
+<property name="nokia.home" value="/home/mkoch/local/Nokia" />
+
+<property name="sony-ericsson.home" value="/" />
+	
+<property name="motorola.home" value="/" />
+	
+	
+<property name="siemens.home" value="/" />
+	
+	
+<!-- Definition of the J2ME Polish task:                      -->
+
+<taskdef name="j2mepolish" 
+	classname="de.enough.polish.ant.PolishTask" 
+	classpath="${polish.home}/lib/enough-j2mepolish-build.jar:${polish.home}/bin/classes:${polish.home}/lib/jdom.jar"/>
+
+	
+<!-- build targets, each target can be called via "ant [name]", 
+	 e.g. "ant clean", "ant test j2mepolish" or just "ant" for calling the default target -->
+
+<target name="setdeploy" 
+	description="Call this target first to set the OTA download-URL, e.g. ant setdeploy j2mepolish"
+	>
+	<property name="deploy-url" value="http://www.company.com/download/" />
+</target>
+	
+<target name="test" 
+	description="Call this target first to skip the obfuscation step, e.g. ant test j2mepolish"
+	>
+	<property name="test" value="true" />
+	<property name="dir.work" value="build/test" />
+</target>
+		
+<target name="init">
+  	<property name="test" value="false" />
+	<property name="dir.work" value="build/real" />
+	<property name="deploy-url" value="" />
+</target>
+ 
+<!-- In this target the J2ME Polish task is used.             -->
+<!-- It has 3 sections:                                       -->
+<!--    1. The info-section defines some general information  -->
+<!--    2. The deviceRequirements-section chooses the devices -->
+<!--       for which the application is optimized.            -->
+<!--    3. The build-section controls the actual build        -->
+<!--       process.                                           -->	
+<target name="j2mepolish" 
+		depends="init"
+		description="This is the controller for the J2ME build process." 
+		>
+	<j2mepolish>
+	    <!-- general settings, these settings basically form the JAD-attributes. -->
+	    <!-- Have a look at the <jad>-section for setting specialised attributes.
+	         You can also define localized attributes in the resources/messages.txt files -->
+		<info
+			license="GPL"
+			name="Joey"
+			version="2.0"
+			description=""
+			vendorName="Enough Software"
+			infoUrl="http://www.j2mepolish.org"
+			icon="dot.png"
+			jarName="${polish.vendor}-${polish.name}-${polish.locale}-joey.jar" 
+			jarUrl="${deploy-url}${polish.jarName}"
+			copyright="Copyright 2004 Enough Software. All rights reserved."
+			deleteConfirm="Do you really want to kill me?" 
+		/>
+		
+		<!-- selection of supported devices -->
+		<!-- In the test mode the application is build only for the  -->
+		<!-- Generic/midp1 phone, but when the test-property is set to false, -->
+		<!-- the second deviceRequirements will be used instead. -->
+		<deviceRequirements if="test">
+			<requirement name="Identifier" value="${device}" />
+		</deviceRequirements>
+		<deviceRequirements if="!test and device:defined">
+			<requirement name="Identifier" value="${device}" />
+		</deviceRequirements>
+		<deviceRequirements unless="test">
+			<or>
+						<requirement name="Identifier" value="BlackBerry/7100t" />
+						<requirement name="Identifier" value="BlackBerry/7290" />
+						<requirement name="Identifier" value="BlackBerry/7520" />
+						<requirement name="Identifier" value="BlackBerry/8700" />
+						<requirement name="Identifier" value="Generic/DefaultColorPhone" />
+						<requirement name="Identifier" value="Generic/DefaultGrayPhone" />
+						<!--
+						<requirement name="Identifier" value="Generic/DotNetCF1.1" />
+						-->
+						<requirement name="Identifier" value="Generic/JtwiCldc11" />
+						<requirement name="Identifier" value="Generic/MediaControlSkin" />
+						<requirement name="Identifier" value="Generic/Midp2Cldc11" />
+						<requirement name="Identifier" value="Generic/MppPhone" />
+						<requirement name="Identifier" value="Generic/PlainMidp2Cldc11" />
+						<requirement name="Identifier" value="Generic/QwertyDevice" />
+						<requirement name="Identifier" value="Generic/multi" />
+						<requirement name="Identifier" value="Motorola/A780" />
+						<requirement name="Identifier" value="Motorola/C975" />
+						<requirement name="Identifier" value="Motorola/E1000" />
+						<requirement name="Identifier" value="Motorola/E770" />
+						<requirement name="Identifier" value="Motorola/FOMA_M1000" />
+						<requirement name="Identifier" value="Motorola/I870" />
+						<requirement name="Identifier" value="Motorola/PEBL" />
+						<requirement name="Identifier" value="Motorola/SLVR" />
+						<requirement name="Identifier" value="Motorola/V1050" />
+						<requirement name="Identifier" value="Motorola/V360" />
+						<requirement name="Identifier" value="Motorola/V3x" />
+						<requirement name="Identifier" value="Motorola/V8" />
+						<requirement name="Identifier" value="Motorola/V980" />
+						<requirement name="Identifier" value="Nokia/3152" />
+						<requirement name="Identifier" value="Nokia/3155" />
+						<requirement name="Identifier" value="Nokia/3155i" />
+						<requirement name="Identifier" value="Nokia/5140i" />
+						<requirement name="Identifier" value="Nokia/6020" />
+						<requirement name="Identifier" value="Nokia/6021" />
+						<requirement name="Identifier" value="Nokia/6030" />
+						<requirement name="Identifier" value="Nokia/6060" />
+						<requirement name="Identifier" value="Nokia/6101" />
+						<requirement name="Identifier" value="Nokia/6102" />
+						<requirement name="Identifier" value="Nokia/6111" />
+						<requirement name="Identifier" value="Nokia/6152" />
+						<requirement name="Identifier" value="Nokia/6155" />
+						<requirement name="Identifier" value="Nokia/6155i" />
+						<requirement name="Identifier" value="Nokia/6170" />
+						<requirement name="Identifier" value="Nokia/6230" />
+						<requirement name="Identifier" value="Nokia/6230i" />
+						<requirement name="Identifier" value="Nokia/6235" />
+						<requirement name="Identifier" value="Nokia/6235i" />
+						<requirement name="Identifier" value="Nokia/6255" />
+						<requirement name="Identifier" value="Nokia/6265" />
+						<requirement name="Identifier" value="Nokia/6265i" />
+						<requirement name="Identifier" value="Nokia/6270" />
+						<requirement name="Identifier" value="Nokia/6280" />
+						<requirement name="Identifier" value="Nokia/6630" />
+						<requirement name="Identifier" value="Nokia/6680" />
+						<requirement name="Identifier" value="Nokia/6681" />
+						<requirement name="Identifier" value="Nokia/6682DP2" />
+						<requirement name="Identifier" value="Nokia/6822" />
+						<requirement name="Identifier" value="Nokia/7260" />
+						<requirement name="Identifier" value="Nokia/7270" />
+						<requirement name="Identifier" value="Nokia/7710" />
+						<requirement name="Identifier" value="Nokia/8800" />
+						<requirement name="Identifier" value="Nokia/8801" />
+						<requirement name="Identifier" value="Nokia/9300" />
+						<requirement name="Identifier" value="Nokia/E70" />
+						<requirement name="Identifier" value="Nokia/N70" />
+						<requirement name="Identifier" value="Nokia/N90" />
+						<requirement name="Identifier" value="Nokia/N91" />
+						<requirement name="Identifier" value="Nokia/Series40DP2" />
+						<requirement name="Identifier" value="Nokia/Series40DP3" />
+						<requirement name="Identifier" value="Nokia/Series40Midp2" />
+						<requirement name="Identifier" value="Nokia/Series60E2FP2" />
+						<requirement name="Identifier" value="Nokia/Series60E2FP3" />
+						<requirement name="Identifier" value="Samsung/SGH-D500" />
+						<requirement name="Identifier" value="Samsung/SGH-D600" />
+						<requirement name="Identifier" value="Samsung/SGH-ZM60" />
+						<requirement name="Identifier" value="Siemens/x65" />
+						<requirement name="Identifier" value="Siemens/x75" />
+						<requirement name="Identifier" value="Sony-Ericsson/D750" />
+						<requirement name="Identifier" value="Sony-Ericsson/F500" />
+						<requirement name="Identifier" value="Sony-Ericsson/F500i" />
+						<requirement name="Identifier" value="Sony-Ericsson/J300" />
+						<requirement name="Identifier" value="Sony-Ericsson/JavaPlatform2" />
+						<requirement name="Identifier" value="Sony-Ericsson/JavaPlatform3" />
+						<requirement name="Identifier" value="Sony-Ericsson/JavaPlatform4" />
+						<requirement name="Identifier" value="Sony-Ericsson/JavaPlatform5" />
+						<requirement name="Identifier" value="Sony-Ericsson/JavaPlatform6" />
+						<requirement name="Identifier" value="Sony-Ericsson/K300" />
+						<requirement name="Identifier" value="Sony-Ericsson/K500" />
+						<requirement name="Identifier" value="Sony-Ericsson/K500c" />
+						<requirement name="Identifier" value="Sony-Ericsson/K500i" />
+						<requirement name="Identifier" value="Sony-Ericsson/K600" />
+						<requirement name="Identifier" value="Sony-Ericsson/K608" />
+						<requirement name="Identifier" value="Sony-Ericsson/K700" />
+						<requirement name="Identifier" value="Sony-Ericsson/K700c" />
+						<requirement name="Identifier" value="Sony-Ericsson/K700i" />
+						<requirement name="Identifier" value="Sony-Ericsson/K750" />
+						<requirement name="Identifier" value="Sony-Ericsson/S700" />
+						<requirement name="Identifier" value="Sony-Ericsson/S700c" />
+						<requirement name="Identifier" value="Sony-Ericsson/S700i" />
+						<requirement name="Identifier" value="Sony-Ericsson/V600" />
+						<requirement name="Identifier" value="Sony-Ericsson/V800" />
+						<requirement name="Identifier" value="Sony-Ericsson/V802" />
+						<requirement name="Identifier" value="Sony-Ericsson/W550" />
+						<requirement name="Identifier" value="Sony-Ericsson/W600" />
+						<requirement name="Identifier" value="Sony-Ericsson/W800" />
+						<requirement name="Identifier" value="Sony-Ericsson/W900" />
+						<requirement name="Identifier" value="Sony-Ericsson/W900i" />
+						<requirement name="Identifier" value="Sony-Ericsson/Z1010" />
+						<requirement name="Identifier" value="Sony-Ericsson/Z500" />
+						<requirement name="Identifier" value="Sony-Ericsson/Z500a" />
+						<requirement name="Identifier" value="Sony-Ericsson/Z500i" />
+						<requirement name="Identifier" value="Sony-Ericsson/Z520" />
+						<requirement name="Identifier" value="Sony-Ericsson/Z800" />
+						</or>
+		</deviceRequirements>
+		
+	    <!-- build settings -->
+		<!-- 
+		 -->
+		<build
+			symbols="ExampleSymbol, AnotherExample"
+			fullscreen="menu"
+			usePolishGui="true"
+			workDir="${dir.work}"
+		>
+		    
+			<!-- midlets definition -->
+			<!-- <midlet class="de.enough.polish.example.MenuMidlet" name="Example" /> -->
+			
+			<!-- project-wide variables - used for preprocessing.  -->
+			<!-- You can set localized variables in the resources/messages.txt files as well.  -->
+			<variables includeAntProperties="true" >
+				<!-- example variables:
+				In your Java-code you can use the following snipet to use this variable:
+				//#= private static final String UPDATE_URL = "${ update-url }";
+				You can change the title of the sample application with the "title"-var.
+				-->
+				<variable name="update-url" value="http://www.enough.de/update" />
+				<variable name="title" value="J2ME Polish" />
+			</variables>
+			<!-- Here you can set the dir attribute to "resources2" for an alternative design. -->
+			<resources
+				dir="resources"
+				defaultexcludes="yes"
+				excludes="readme.txt"
+			>
+				<!-- you can add resources based on complex criterias: 
+				<fileset 
+					dir="resources/multimedia" 
+					includes="*.wav" 
+					if="polish.audio.wav" 
+				/>
+				<fileset 
+					dir="resources/multimedia" 
+					includes="*.mid" 
+					if="polish.audio.midi and not polish.audio.wav" 
+				/>
+				-->
+				<!-- add the localization element for created localized
+				     versions of your application: -->
+				<localization locales="de_DE, en_US" unless="test" />
+				<localization locales="en_US" if="test" />
+			</resources>
+			
+			<!-- obfuscator settings: do not obfuscate when the test-property is true -->
+			<obfuscator name="ProGuard" useDefaultPackage="true" unless="test || polish.blackberry" >
+				<!--
+				You can set additional parameters here, e.g.:
+				<parameter name="optimize" value="false" />
+				-->
+			</obfuscator>
+			
+			<!-- debug settings: only include debug setting when the test-property is true -->
+			<debug if="test" showLogOnError="true" verbose="true" level="error">
+				<filter pattern="de.enough.polish.example.*" level="debug" />
+				<filter pattern="de.enough.polish.ui.*" level="warn" />
+			</debug>
+			
+			<!-- user defined JAD attributes can also be used: -->
+			<jad>
+				<attribute name="Nokia-MIDlet-Category" value="Game" if="polish.group.Series40" />
+			</jad>	
+			
+			
+		</build>
+		
+		<!-- execution of emulator(s) -->
+		<emulator
+			wait="true"
+			securityDomain="trusted"
+			enableProfiler="false"
+			enableMemoryMonitor="false"
+			enableNetworkMonitor="false"
+			if="test and not debug"
+			>
+		</emulator>
+	
+		<emulator
+			wait="false"
+			securityDomain="trusted"
+			enableProfiler="false"
+			enableMemoryMonitor="false"
+			enableNetworkMonitor="false"
+			if="debug">
+			<debugger port="8000" />
+		</emulator>
+		
+	</j2mepolish>
+</target>
+
+<target name="emulator" depends="test,j2mepolish" />
+
+<target name="clean" 
+  		description="allows a clean build. You should call [ant clean] whenever you made changes to devices.xml, vendors.xml or groups.xml">
+	<delete dir="build" />
+	<delete dir="dist" />
+</target>
+
+</project>

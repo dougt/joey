@@ -1,0 +1,12 @@
+title.login=Login
+title.mainmenu=Main menu
+title.snapshot=Snapshot
+title.uploads=Uploads
+
+command.exit=Exit
+command.back=Back
+command.select=Select
+command.login=Login
+
+mainmenu.view=View uploads
+mainmenu.snapshot=Take snapshot
