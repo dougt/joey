@@ -34,12 +34,34 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-function init() {
+/* 
+ * Init get from the preferences and updates the checkboxes in the XUL panel. 
+ */
+ 
+var g_joey_prefService = null;
+var g_joey_optionsCheckboxes = ['joey.enable_logging', 'joey.remember_username'];
 
+function init() {
+    try {
+        g_joey_prefService = Components.classes["@mozilla.org/preferences-service;1"]
+                             .getService(Components.interfaces.nsIPrefBranch);
+        
+        for (  indexKey in g_joey_optionsCheckboxes ) {
+            var element = g_joey_optionsCheckboxes[indexKey];
+            document.getElementById("checkbox_"+element).checked = g_joey_prefService.getBoolPref(element);
+        } 
+     } catch (i) { alert(i) }
 }
 
+/* 
+ * Get from the XUL UI and updadtes the preference service..
+ */
 function doOkay() {
-
-
- 
+    try {
+        for (  indexKey in g_joey_optionsCheckboxes ) {
+            var element = g_joey_optionsCheckboxes[indexKey];
+            g_joey_prefService.setBoolPref(element,document.getElementById("checkbox_"+element).checked);
+        } 
+     
+     } catch (i) { alert(i) }
 }
