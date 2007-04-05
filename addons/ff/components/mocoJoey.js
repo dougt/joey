@@ -92,8 +92,6 @@ JoeyStreamListener.prototype =
   onStopRequest: function (aRequest, aContext, aStatus)
   {
       this.mCallbackFunc(this.mOwner, aStatus, this.mBytes);
-
-      debug ("data: \n" +  this.mBytes);
   },
 
   // nsIChannelEventSink
@@ -289,8 +287,6 @@ mocoJoey.prototype =
             return;
         }
         
-        debug("problem logging in... " + self.joey_listener);
-		
         if (self.joey_listener != null)
         {
             self.joey_listener.onStatusChange("login", -1);
@@ -402,8 +398,6 @@ mocoJoey.prototype =
 
         preamble.setData(start, start.length);
 
-        //        debug(start);
-
         mis.appendStream(preamble);
 
         if (fileBuffer != null)
@@ -453,8 +447,6 @@ mocoJoey.prototype =
 
         channel.notificationCallbacks = listener;
         channel.asyncOpen(listener, null);
-        
-        //        debug (" request sent!! " );
 	},
 };
 
