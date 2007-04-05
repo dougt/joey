@@ -48,27 +48,22 @@
 <prefpane id="joeyPrefPane" label="Joey! Options" >
 
 	<preferences>
-		<preference id="joey.enable_logging" name="joey.enable_logging" type="boolean" />
-		<preference id="joey.service_url"    name="joey.service_url"    type="string" />
+    <preference id="joey.enable_logging" name="joey.enable_logging" type="boolean" />
+    <preference id="joey.remember_username" name="joey.remember_username" type="boolean" />
+    <preference id="joey.service_url"    name="joey.service_url"    type="string" />
 	</preferences>
 
 <groupbox flex="1"   align="left" style="" >
 
-  <caption label="Joey! Client Settings" />
+  <caption label="Joey! Password Manager" />
 
   <hbox flex="1">
-    <checkbox id="enableLogging" label="Enable Logging in Error Console" 
-            preference="joey.enable_logging" />
+    <checkbox id="enableUsername" label="Remember username and password" 
+            preference="joey.remember_username" />
 
   </hbox>
-  <hbox flex="1">
-    <vbox >
-      <label value="Password Management goes here" />
 
-    </vbox>
-  </hbox>
 </groupbox>
-
 
   <groupbox flex="1"   align="left" style="" >
 
@@ -82,6 +77,20 @@
       </vbox>
     </hbox>
   </groupbox>
+
+
+  <groupbox flex="1"   align="left" style="" >
+
+    <caption label="Joey! Extra" />
+
+    <hbox flex="1">
+      <checkbox id="enableLogging" label="Enable Logging in Error Console" 
+              preference="joey.enable_logging" />
+
+    </hbox>
+
+  </groupbox>
+
 </prefpane>
 
 </prefwindow>
