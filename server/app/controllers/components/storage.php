@@ -45,6 +45,21 @@ vendor('microsummary');
  */
 class StorageComponent extends Object
 {
+
+    var $suffix = array ("png" => "image/png", "image/png" => "png",
+                         "jpg" => "image/jpeg", "image/jpeg" => "jpg",
+                         "gif" => "image/gif", "image/gif" => "gif",
+                         "tif" => "image/tiff", "image/tiff" => "tif",
+                         "bmp" => "image/bmp", "image/bmp" => "bmp",
+                         "3gp" => "video/3gp", "video/3gp" => "3gp",
+                         "flv" => "video/flv", "video/flv" => "flv",
+                         "mpg" => "video/mpeg", "video/mpeg" => "mpg",
+                         "avi" => "video/avi", "video/avi" => "avi",
+                         "mov" => "video/quicktime", "video/quicktime" => "mov",
+                         "wav" => "audio/x-wav", "audio/x-wav" => "wav",
+                         "mp3" => "audio/mpeg", "audio/mpeg" => "mp3",
+                         "mid" => "audio/mid", "audio/mid" => "mid");
+
     /**
      * Save a reference to the controller on startup
      * @param object &$controller the controller using this component
@@ -76,33 +91,24 @@ class StorageComponent extends Object
      * @param string Filename to make a preview of
      * @return mixed false on failure, the previews filename on success
      */
-    function generatePreview($filename, $filetype) {
+    function generatePreview($filename, $width, $height) {
 
         // Dunno what they gave us, but it's not useful to us
         if (! (is_readable($filename) && is_file($filename)) ) {
             return false;
         }
+        
+        $filenamesuffix = substr($filename, -3, 3);
+        
+        $previewname = dirname($filename).'/previews/'.basename($filename, $filenamesuffix).'png';
 
         // Prepare our file and preview names for the exec()
         $_filename = escapeshellarg($filename);
-        $_previewname = escapeshellarg(dirname($filename).'/previews/'.basename($filename).'.png');
+        $_previewname = escapeshellarg($previewname);
+      
+        if (strcasecmp($filenamesuffix, 'png') == 0) { 
 
-        if (strncasecmp($filetype, 'image', 5) == 0) {
-
-            $_cmd = CONVERT_CMD." -geometry '100x100' {$_filename} {$_previewname}";
-
-            exec($_cmd, $_out, $_ret);
-
-            if ($_ret !== 0) {
-                // bad things happened.  @todo, log $_out to a file.
-                return false;
-            }
-
-            return basename($filename.'.png');
-
-        } else if (strncasecmp($filetype, 'video', 5) == 0) {
-
-            $_cmd = FFMPEG_CMD . " -i {$_filename} -ss 5 -s '100x100' -vframes 1 -f mjpeg {$_previewname}";
+            $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_filename} {$_previewname}";
 
             exec($_cmd, $_out, $_ret);
 
@@ -111,7 +117,20 @@ class StorageComponent extends Object
                 return false;
             }
 
-            return basename($filename.'.png');
+            return basename($previewname);
+
+        } else if (strcasecmp($filenamesuffix, '3gp') == 0) {
+
+            $_cmd = FFMPEG_CMD . " -i {$_filename} -ss 5 -s '{$width}x{$height}' -vframes 1 -f mjpeg {$_previewname}";
+
+            exec($_cmd, $_out, $_ret);
+
+            if ($_ret !== 0) {
+                // bad things happened.  @todo, log $_out to a file.
+                return false;
+            }
+
+            return basename($previewname);
 
         } 
         // We don't support generating a preview on whatever filetype they gave us
@@ -266,7 +285,58 @@ class StorageComponent extends Object
       // If we've made it this far without failing, we're good
       return true;
     }
- 
+    
+    function transcodeFile($filename, $width, $height) {
+      // Dunno what they gave us, but it's not useful to us
+      if (! (is_readable($filename) && is_file($filename)) ) {
+        return null;
+      }
+      
+      // Return values for the transcoded file -- save to DB
+      $ret = array ('name' => '', 'type' => '');
+      $filenamesuffix = substr($filename, -3, 3);
+      
+      if (strcasecmp($filenamesuffix, 'png') == 0 ||
+          strcasecmp($filenamesuffix, 'gif') == 0 ||
+          strcasecmp($filenamesuffix, 'jpg') == 0 ||
+          strcasecmp($filenamesuffix, 'tif') == 0 ||
+          strcasecmp($filenamesuffix, 'bmp') == 0) { 
+        
+        $targetfilename = dirname($filename)."/".basename($filename, '.orig.'.$filenamesuffix).'.png';
+        $_targetfilename = escapeshellarg($targetfilename);
+        $_filename = escapeshellarg($filename);
+        $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_filename} {$_targetfilename}";
+        
+        exec($_cmd, $_out, $_ret);
+        
+        if ($_ret !== 0) {
+          // bad things happened.  @todo, log $_out to a file.
+          return null;
+        } else {
+          $ret['name'] = $targetfilename;
+          $ret['type'] = "image/png"; 
+        }
+      
+      } else if (strcasecmp($filenamesuffix, 'flv') == 0) {
+        $targetfilename = dirname($filename)."/".basename($filename, '.orig.'.$filenamesuffix).'.3gp';
+        $_targetfilename = escapeshellarg($targetfilename);
+        $_filename = escapeshellarg($filename);
+        $_cmd = FFMPEG_CMD . " -y -i {$_filename} -ab 32 -b 15000 -ac 1 -ar 8000 -vcodec h263 -s qcif -r 12 {$_targetfilename}";
+        
+        exec($_cmd, $_out, $_ret);
+        
+        if ($_ret !== 0) {
+          // bad things happened.  @todo, log $_out to a file.
+          return null;
+        } else {
+          $ret['name'] = $targetfilename;
+          $ret['type'] = "video/3gp";  
+        }
+      }
+      
+      return $ret;
+    }
+     
 
     /*
      * translateFile
@@ -275,6 +345,7 @@ class StorageComponent extends Object
      * type. This allows us to store files of a given type
      * in a canonical form.
      */
+    /*
     function translateFile($filename, $filetype) {
       // Dunno what they gave us, but it's not useful to us
       if (! (is_readable($filename) && is_file($filename)) ) {
@@ -318,9 +389,26 @@ class StorageComponent extends Object
         return "video/3gp";
       }
       
-      return "";
+      return $type;
   }
+  */
 
+
+  function uniqueFilenameForUserType($userid, $type) {
+        if (!is_numeric($userid)) {
+            return false;
+        }
+        if (!is_dir(UPLOAD_DIR."/{$userid}")) {
+            return false;
+        }
+        $rand = uniqid ();
+        if (array_key_exists($type, $this->suffix)) {
+          $_filename = UPLOAD_DIR."/{$userid}/"."joey-".$rand.".orig.".$this->suffix[$type];
+        } else {
+          $_filename = UPLOAD_DIR."/{$userid}/"."joey-".$rand.".orig";
+        }
+        return $_filename;
+  }
 
 
     /**
@@ -329,6 +417,7 @@ class StorageComponent extends Object
      * @param userid The user ID to associate the file with
      * @return mixed false if something goes wrong, the filename if all goes well
      */
+    /*
     function uniqueFilenameForUser($userid) {
         if (!is_numeric($userid)) {
             return false;
@@ -348,6 +437,7 @@ class StorageComponent extends Object
             return $_filename;
         }
     }
+    */
 
 }
 ?>

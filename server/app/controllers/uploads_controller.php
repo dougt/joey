@@ -44,7 +44,7 @@ class UploadsController extends AppController
 
     var $components = array('Session','Storage', 'Pagination');
 
-    var $uses = array('Contentsource', 'Contentsourcetype', 'File', 'Upload');
+    var $uses = array('Phone', 'Contentsource', 'Contentsourcetype', 'File', 'Upload');
 
     var $helpers = array('Number','Time', 'Pagination');
 
@@ -104,8 +104,8 @@ class UploadsController extends AppController
                 // Upload and File models, (ie. are required fields filled in?)
                 if ($this->Upload->validates($this->data) && $this->File->validates($this->data)) {
 
-                    // Create a unique file for our new upload
-                    $_filename = $this->Storage->uniqueFilenameForUser($this->_user['id']); 
+                    // Create a unique file name for our new upload
+                    $_filename = $this->Storage->uniqueFilenameForUserType($this->_user['id'], $this->data['File']['Upload']['type']); 
 
                     if ($_filename !== false) {
 
@@ -131,6 +131,13 @@ class UploadsController extends AppController
                             $this->File->invalidate('Upload');
                             $this->set('error_fileupload', 'Could not move uploaded file.');
                         }
+                        
+                        // Get desired width and height for the transcoded media file
+                        $_phone = $this->Phone->findById($this->_user['phone_id']);
+                        $_width = intval ($_phone['Phone']['screen_width']);
+                        $_height = intval ($_phone['Phone']['screen_height']);
+                        $_preview_width = intval ($_width / 2);
+                        $_preview_height = intval ($_height / 2);
 
                         // Start our transaction
                         $this->Upload->begin();
@@ -140,25 +147,34 @@ class UploadsController extends AppController
                         if ($this->Upload->save($this->data)) {
 
                             // Some data massaging to get the POST data into a form cake can use
+                            $_ret = $this->Storage->transcodeFile ($_filename, $_width, $_height);
+                            if ($_ret != null) {
+                              $_filename = $_ret['name'];
+                              $this->data['File']['type'] = $_ret['type'];
+                            } else {
+                              // The $filename is un-changed
+                              $this->data['File']['type'] = $this->data['File']['Upload']['type'];
+                            }
+                            
                             $this->data['File']['upload_id'] = $this->Upload->id;
                             $this->data['File']['name'] = basename($_filename);
                             $this->data['File']['size'] = filesize($_filename);
-                            $this->data['File']['type'] = $this->data['File']['Upload']['type'];
+                            // $this->data['File']['type'] = $this->data['File']['Upload']['type'];
 
                             // Ask our storage component to generate a preview for
                             // us.  If it fails, I'm considering it a disappointing, 
                             // but non-fatal error
-                            if (($_previewname = $this->Storage->generatePreview($_filename, $this->data['File']['Upload']['type'])) !== false) {
+                            if (($_previewname = $this->Storage->generatePreview($_filename, $_preview_width, $_preview_height)) !== false) {
                                 $this->data['File']['preview'] = $_previewname;
                             } else {
                                 // If you want it to be a fatal error, invalidate the
                                 // file here.
                             }
 
-                            $_newtype = $this->Storage->translateFile($_filename, $this->data['File']['Upload']['type']);
-                            if ($_newtype != "") {
-                              $this->data['File']['type'] = $_newtype;
-                            }
+                            // $_newtype = $this->Storage->translateFile($_filename, $this->data['File']['Upload']['type']);
+                            // if ($_newtype != "") {
+                            //   $this->data['File']['type'] = $_newtype;
+                            // }
 
                             // This doesn't really matter anymore, but might as well whack it
                             unset($this->data['File']['Upload']);
@@ -318,11 +334,13 @@ class UploadsController extends AppController
         if ($this->Upload->delete($id)) {
             // Delete the files if they exist
             if (array_key_exists(0,$_item['File'])) {
-                if (!unlink(UPLOAD_DIR."/{$this->_user['id']}/{$_item['File'][0]['name']}")) {
-                  // Don't make this fatal.  If we couldn't unlink, it is a warning
-                  //$this->Upload->rollback();
-                  //$this->flash('Delete failed', '/uploads/index',2);
-                }
+                $filenamesuffix = substr($_item['File'][0]['name'], -3, 3);
+                // delete both name.sfx and name.orig.sfx files
+                $todel = UPLOAD_DIR."/{$this->_user['id']}/".basename($_item['File'][0]['name'], $filenamesuffix);
+                foreach(glob($todel.".*") as $fn) {                    if (!unlink($fn)) {
+                      // Don't make this fatal.  If we couldn't unlink, it is a warning
+                    }                } 
+                
                 if (!empty($_item['File'][0]['preview'])) {
                     if (!unlink(UPLOAD_DIR."/{$this->_user['id']}/previews/{$_item['File'][0]['preview']}")) {
                       // Don't make this fatal.  If we couldn't unlink, it is a warning

@@ -62,6 +62,17 @@ define('UPLOAD_DIR', '');
  */
 define('CONTENTSOURCE_REFRESH_TIME', 15);
 
+/**
+ * Upload limit or each user in MBs
+ */
+define('MAX_DISK_USAGE', 20);
+
+/**
+ * Default time to wait before updating content source uploads in
+ * minutes.
+ */
+define('CONTENTSOURCE_REFRESH_TIME', 15);
+
 /** 
  * Database Configuration
  */
