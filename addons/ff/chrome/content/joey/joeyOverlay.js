@@ -75,12 +75,11 @@ joey_listener.prototype =
         {
             if (status == 0)
             {
-                g_joey_historyArray.push("#login");
-                g_joey_statusUpdateObject.loginStatus("login");
+                g_joey_statusUpdateObject.loginStatus("login","completed");
             }
             else if (status == -1 )
             {
-                g_joey_historyArray.push("#login&-1");
+                g_joey_statusUpdateObject.loginStatus("login","failed");
             }
 
             return;
@@ -88,12 +87,12 @@ joey_listener.prototype =
 
         if (action == "upload")
         {
-            if (status == 1)
-                document.getElementById("joeyStatusTeller").value="Upload Complete.";
-            else
-                document.getElementById("joeyStatusTeller").value="Upload Failed :-(";
-
-            setTimeout("document.getElementById('joeyStatusTeller').value=''", 600);
+            if (status == 1) {
+                g_joey_statusUpdateObject.tellStatus("upload",null,null,"completed");
+            } 
+            else {            
+                g_joey_statusUpdateObject.tellStatus("upload",null,null,"failed"); 
+            }
             return;
         }
     },
@@ -289,17 +288,28 @@ function joey_launchPopup()
   document.getElementById('joeyStatusPopup').showPopup(document.getElementById('joeyStatusButton'),-1,-1,'popup','topright', 'bottomright')
 }
 
+/* FIXME to be as an instance */
+
 function getMediaCallback(content_type, file)
 {
 	if (length>0)
     { 
+        g_joey_console("Download successful...");
+        
+        g_joey_statusUpdateObject.tellStatus("download",null,null,"completed");
+        
         g_joey_file = file;
         g_joey_content_type = content_type;
         uploadDataFromGlobals();
         return;
 	}
-    else
-        alert("Problem uploading media to joey!\n");
+    else {
+    
+        /* This should become failed? */
+        
+        g_joey_statusUpdateObject.tellStatus("download",null,null,"failed");
+        g_joey_console("Problem downloading media to joey!\n");
+    }
 }
 
 
@@ -316,9 +326,10 @@ function JoeyStatusUpdateClass() {
 }
 
 /* 
- * Probably this shoul work as a stack
- * Because we may have multiple joey action events 
- * going on at the same time. We may end up with a stack head counter here.  
+ * UI Wrapper / Deals with the UI 
+ * -------
+ * TODO: Need to be smart / keep history 
+ * TODO: Need to work with multiple instances
  */
 JoeyStatusUpdateClass.prototype = 
 {
@@ -327,39 +338,7 @@ JoeyStatusUpdateClass.prototype =
      * loading status processes 
      */
 	
-	busyCounter:0,
-    
-    inventoryCounter:0, // this is very simple for now. IN the future maybe more complex. It represents the local history list.
-    
-	busyMore: function ()
-    {
-		this.busyCounter++;
-		this.busyRefresh();
-	},
-	
-    busyLess: function () 
-    {
-		this.busyCounter--;
-		this.busyRefresh();
- 	}, 
-    inventoryMore: function () 
-    {
-        this.inventoryCounter++;
-        document.getElementById("joeyInventoryButton").label=this.inventoryCounter;
-	},
-	busyRefresh: function ()
-    {
-		if(this.busyCounter>0) 
-        {
-			document.getElementById("joeyWorkingButton").setAttribute("collapsed","false");
-		} 
-        else
-        {
-			document.getElementById("joeyWorkingButton").setAttribute("collapsed","true");
-		}
-	},
-	
-    loginStatus: function (aMode)
+    loginStatus: function (aMode,aAdVerb)
     {
 		if(aMode == "logout")
         {
@@ -369,7 +348,11 @@ JoeyStatusUpdateClass.prototype =
         else
         { 
 			// login mode.
-			document.getElementById("joeyStatusButton").className="login";
+			if(aAdVerb == "completed")  {
+    			document.getElementById("joeyStatusButton").className="login";
+            } else {
+    			document.getElementById("joeyStatusButton").className="login_failed";            
+            } 
 		}
 	},
     tellMode : function (aMode) {
@@ -395,7 +378,7 @@ JoeyStatusUpdateClass.prototype =
        } 
        
     },
-    tellStatus:function(verb,from,to) 
+    tellStatus:function(verb,from,to,adverb) 
     {
         var value; 
         var percentage = parseInt((from/to)*parseInt(this.progressBoxObject.width));
@@ -427,16 +410,43 @@ JoeyStatusUpdateClass.prototype =
               if(verb =="download") {
                 percentage = this.progressBoxObject.width - percentage;
                 this.progressElement.width=percentage;
-              } else {
-                this.progressElement.width=0;
-              }
+              } 
         } 
         document.getElementById("joeyStatusTeller").value=value;
+        
+        /* adverb */
+       
+        if(adverb=="completed") {
+            this.progressElement.width=0;
+            if(verb=="download") {
+                 document.getElementById("joeyStatusTeller").value="Download completed";
+            } 
+            if(verb=="upload") {
+                 document.getElementById("joeyStatusTeller").value="Upload completed";
+            } 
+            /* Dougt timer status cleanup */
+            setTimeout("document.getElementById('joeyStatusTeller').value=''", 600);
+        }
+
+        if(adverb == "failed") {
+            if(verb=="download") {
+                 document.getElementById("joeyStatusTeller").value="Download failed";
+            } 
+            if(verb=="upload") {
+                 document.getElementById("joeyStatusTeller").value="Upload failed";
+            } 
+            /* Dougt timer status cleanup */
+            setTimeout("document.getElementById('joeyStatusTeller').value=''", 600);
+        }
+                  
     }
     
 }
 
-
+/* 
+ * This is nice for the Download + Progress functional
+ */
+ 
 function JoeyMediaFetcherStreamListener(aCallbackFunc)
 {
   this.mCallbackFunc = aCallbackFunc;
@@ -494,6 +504,7 @@ JoeyMediaFetcherStreamListener.prototype =
       {	
           this.mstream.close(); 
           this.mCallbackFunc(this.mContentType, this.file);
+          
       } 
       else
       {
@@ -1168,7 +1179,7 @@ var g_joeySelectorService = {
         } // end of current event...
         
         if (this.associatedDocument) {
-            setTimeout("g_joeySelectorService.runtimer()",155);
+            setTimeout("g_joeySelectorService.runtimer()",122);
         }	
         
     } // end of runtimer  
