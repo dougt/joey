@@ -62,6 +62,29 @@ class StorageComponent extends Object
                          "rss" => "rss-source/text", "rss-source/text" => "rss",
                          "mcs" => "microsummary/xml", "microsummary/xml" => "mcs");
 
+
+
+    function isImageFile($filenamesuffix)
+    {
+      if (strcasecmp($filenamesuffix, 'png') == 0 ||
+          strcasecmp($filenamesuffix, 'gif') == 0 ||
+          strcasecmp($filenamesuffix, 'jpg') == 0 ||
+          strcasecmp($filenamesuffix, 'tif') == 0 ||
+          strcasecmp($filenamesuffix, 'bmp') == 0 )
+        return true;
+      return false;
+    }
+
+
+    function isVideoFile($filenamesuffix)
+    {
+      if (strcasecmp($filenamesuffix, 'flv') == 0 ||
+          strcasecmp($filenamesuffix, '3pg') == 0 )
+        return true;
+      return false;
+    }
+
+
     /**
      * Save a reference to the controller on startup
      * @param object &$controller the controller using this component
@@ -107,8 +130,8 @@ class StorageComponent extends Object
         // Prepare our file and preview names for the exec()
         $_filename = escapeshellarg($filename);
         $_previewname = escapeshellarg($previewname);
-      
-        if (strcasecmp($filenamesuffix, 'png') == 0) { 
+
+        if ($this->isImageFile($filenamesuffix)) { 
 
             $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_filename} {$_previewname}";
 
@@ -121,7 +144,7 @@ class StorageComponent extends Object
 
             return basename($previewname);
 
-        } else if (strcasecmp($filenamesuffix, '3gp') == 0) {
+        } else if ($this->isVideoFile($filenamesuffix)) {
 
             $_cmd = FFMPEG_CMD . " -i {$_filename} -ss 5 -s '{$width}x{$height}' -vframes 1 -f mjpeg {$_previewname}";
 
@@ -135,6 +158,7 @@ class StorageComponent extends Object
             return basename($previewname);
 
         } 
+
         // We don't support generating a preview on whatever filetype they gave us
         return false;
     }
