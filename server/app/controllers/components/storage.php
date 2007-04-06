@@ -46,7 +46,8 @@ vendor('microsummary');
 class StorageComponent extends Object
 {
 
-    var $suffix = array ("png" => "image/png", "image/png" => "png",
+    var $suffix = array ("txt" => "text/plain", "text/plain" => "txt",
+                         "png" => "image/png", "image/png" => "png",
                          "jpg" => "image/jpeg", "image/jpeg" => "jpg",
                          "gif" => "image/gif", "image/gif" => "gif",
                          "tif" => "image/tiff", "image/tiff" => "tif",
@@ -340,6 +341,7 @@ class StorageComponent extends Object
         } else {
           $ret['name'] = $targetfilename;
           $ret['type'] = "image/png"; 
+          return $ret;
         }
       
       } else if (strcasecmp($filenamesuffix, 'flv') == 0) {
@@ -356,6 +358,7 @@ class StorageComponent extends Object
         } else {
           $ret['name'] = $targetfilename;
           $ret['type'] = "video/3gp";  
+          return $ret;
         }
       }
       
