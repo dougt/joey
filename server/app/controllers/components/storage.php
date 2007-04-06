@@ -155,7 +155,11 @@ class StorageComponent extends Object
       if (empty($_upload['File']))
       {
         // Create a unique file for our new upload
-        $_filename = $this->uniqueFilenameForUserType($_upload['Upload']['user_id']);
+
+        $_contentsourcetype = $this->controller->Contentsourcetype->FindById($_upload['Contentsource'][0]['contentsourcetype_id']);
+        $type = $_contentsourcetype['Contentsourcetype']['name'];
+
+        $_filename = $this->uniqueFilenameForUserType($_upload['Upload']['user_id'], $type);
         
         if ($_filename !== false) {
           $_file = new File();
@@ -181,7 +185,7 @@ class StorageComponent extends Object
       }
       
       // check to see if we should do anything
-      if ($forceUpdate == false)
+      if (false && $forceUpdate == false)
       {
         $expiry = strtotime($_upload['File'][0]['modified'] . " + " . CONTENTSOURCE_REFRESH_TIME . " minutes");
         $nowstamp = strtotime("now");
@@ -197,11 +201,6 @@ class StorageComponent extends Object
 
       // This is the file to operate on:
       $_filename = UPLOAD_DIR."/{$_upload['User']['id']}/{$_upload['File'][0]['name']}";
-
-      // Make sure our file exists, and we can write to it
-      if (! (is_writable($_filename) && is_file($_filename)) ) {
-          return false;
-      }
 
       // Lets find out what kind of update this is. if findBy___() had more
       // recursion, we wouldn't need this extra query, but then we get a lot more
@@ -336,7 +335,8 @@ class StorageComponent extends Object
         }
       }
       
-      return $ret;
+      // nothing to do
+      return null;
     }
      
 

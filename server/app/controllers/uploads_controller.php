@@ -87,6 +87,7 @@ class UploadsController extends AppController
      */
     function add()
     {
+
         $this->pageTitle = 'Add an upload';
 
         $this->set('contentsourcetypes', $this->Contentsourcetype->generateList(null,null,null,'{n}.Contentsourcetype.id','{n}.Contentsourcetype.name'));
@@ -154,6 +155,7 @@ class UploadsController extends AppController
 
                             // Some data massaging to get the POST data into a form cake can use
                             $_ret = $this->Storage->transcodeFile ($_filename, $_width, $_height);
+
                             if ($_ret != null) {
                               $_filename = $_ret['name'];
                               $this->data['File']['type'] = $_ret['type'];
@@ -161,7 +163,8 @@ class UploadsController extends AppController
                               // The $filename is un-changed
                               $this->data['File']['type'] = $this->data['File']['Upload']['type'];
                             }
-                            
+
+
                             $this->data['File']['upload_id'] = $this->Upload->id;
                             $this->data['File']['name'] = basename($_filename);
                             $this->data['File']['size'] = filesize($_filename);

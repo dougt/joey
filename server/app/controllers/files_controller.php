@@ -79,18 +79,17 @@ class FilesController extends AppController
 
     function view($id)
     {
-
-        // before doing anything, see if we have to update the content.
-        $this->Storage->updateFileByUploadId($id, false);
-
-        $this->layout = null;
-
         // Double check this person is editing something they own
         $_item = $this->File->findById($id);
 
         if ($_item['Upload']['user_id'] != $this->_user['id']) {
             $this->flash('Invalid ID requested', '/uploads/index');
         }
+
+        // before doing anything, see if we have to update the content.
+        $this->Storage->updateFileByUploadId($id, false);
+
+        $this->layout = null;
 
         // Make a note if they are asking for a preview
         if (array_key_exists(1,$this->params['pass']) && $this->params['pass'][1] == 'preview') {
