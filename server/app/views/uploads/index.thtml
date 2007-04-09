@@ -25,7 +25,7 @@ You have no uploads yet.
 
     <div class="joey-upload-preview">
         <?php if (array_key_exists(0,$upload['File'])) : ?>
-            <?php if (!empty($upload['File'][0]['preview'])) : ?>
+            <?php if (!empty($upload['File'][0]['preview_name'])) : ?>
                 <?=$html->link( '<img src="'.$html->url("/files/view/{$upload['File'][0]['id']}/preview").'" />', "/files/view/{$upload['File'][0]['id']}",false,false,false ) ?>
             <?php else : ?>
                 <?=$html->link($html->image('na.png'), "/files/view/{$upload['File'][0]['id']}", false, false, false); ?>

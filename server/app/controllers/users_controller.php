@@ -291,7 +291,7 @@ class UsersController extends AppController
                     $_user_id = $this->User->id;
 
                     // Create directories on the disk for the user to store their uploads
-                    if (! (mkdir(UPLOAD_DIR."/{$_user_id}") && mkdir(UPLOAD_DIR."/{$_user_id}/previews"))) {
+                    if (! (mkdir(UPLOAD_DIR."/{$_user_id}") && mkdir(UPLOAD_DIR."/{$_user_id}/previews") && mkdir(UPLOAD_DIR."/{$_user_id}/originals"))) {
                         // I sincerely hope it's a rare case that this fails.  At
                         // this point, the user is in the database, but we can't
                         // create directories for them to put their stuff. We can't

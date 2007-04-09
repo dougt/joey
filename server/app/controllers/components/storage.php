@@ -46,44 +46,22 @@ vendor('microsummary');
 class StorageComponent extends Object
 {
 
-    var $suffix = array ("txt" => "text/plain", "text/plain" => "txt",
-                         "png" => "image/png", "image/png" => "png",
-                         "jpg" => "image/jpeg", "image/jpeg" => "jpg",
-                         "gif" => "image/gif", "image/gif" => "gif",
-                         "tif" => "image/tiff", "image/tiff" => "tif",
-                         "bmp" => "image/bmp", "image/bmp" => "bmp",
-                         "3gp" => "video/3gp", "video/3gp" => "3gp",
-                         "flv" => "video/flv", "video/flv" => "flv",
-                         "mpg" => "video/mpeg", "video/mpeg" => "mpg",
-                         "avi" => "video/avi", "video/avi" => "avi",
-                         "mov" => "video/quicktime", "video/quicktime" => "mov",
-                         "wav" => "audio/x-wav", "audio/x-wav" => "wav",
-                         "mp3" => "audio/mpeg", "audio/mpeg" => "mp3",
-                         "mid" => "audio/mid", "audio/mid" => "mid",
-                         "rss" => "rss-source/text", "rss-source/text" => "rss",
-                         "mcs" => "microsummary/xml", "microsummary/xml" => "mcs");
-
-
-
-    function isImageFile($filenamesuffix)
-    {
-      if (strcasecmp($filenamesuffix, 'png') == 0 ||
-          strcasecmp($filenamesuffix, 'gif') == 0 ||
-          strcasecmp($filenamesuffix, 'jpg') == 0 ||
-          strcasecmp($filenamesuffix, 'tif') == 0 ||
-          strcasecmp($filenamesuffix, 'bmp') == 0 )
-        return true;
-      return false;
-    }
-
-
-    function isVideoFile($filenamesuffix)
-    {
-      if (strcasecmp($filenamesuffix, 'flv') == 0 ||
-          strcasecmp($filenamesuffix, '3pg') == 0 )
-        return true;
-      return false;
-    }
+    var $suffix = array ("text/plain" => "txt",
+                         "image/png" => "png",
+                         "image/jpeg" => "jpg",
+                         "image/gif" => "gif",
+                         "image/tiff" => "tif",
+                         "image/bmp" => "bmp",
+                         "video/3gp" => "3gp",
+                         "video/flv" => "flv",
+                         "video/mpeg" => "mpg",
+                         "video/avi" => "avi",
+                         "video/quicktime" => "mov",
+                         "audio/x-wav" => "wav",
+                         "audio/mpeg" => "mp3",
+                         "audio/mid" => "mid",
+                         "rss-source/text" => "rss",
+                         "microsummary/xml" => "mcs");
 
 
     /**
@@ -110,60 +88,6 @@ class StorageComponent extends Object
       return true;
     }
 
-    /**
-     * Will create a preview file on disk.  I'm not sure if this is really the best
-     * place for this code, but it'll work for now.
-     *
-     * @param string Filename to make a preview of
-     * @return mixed false on failure, the previews filename on success
-     */
-    function generatePreview($filename, $width, $height) {
-
-        // Dunno what they gave us, but it's not useful to us
-        if (! (is_readable($filename) && is_file($filename)) ) {
-            return false;
-        }
-        
-        $filenamesuffix = substr($filename, -3, 3);
-        
-        $previewname = dirname($filename).'/previews/'.basename($filename, $filenamesuffix).'png';
-
-        // Prepare our file and preview names for the exec()
-        $_filename = escapeshellarg($filename);
-        $_previewname = escapeshellarg($previewname);
-
-        if ($this->isImageFile($filenamesuffix)) { 
-
-            $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_filename} {$_previewname}";
-
-            exec($_cmd, $_out, $_ret);
-
-            if ($_ret !== 0) {
-                // bad things happened.  @todo, log $_out to a file.
-                return false;
-            }
-
-            return basename($previewname);
-
-        } else if ($this->isVideoFile($filenamesuffix)) {
-
-            $_cmd = FFMPEG_CMD . " -i {$_filename} -ss 5 -s '{$width}x{$height}' -vframes 1 -f mjpeg {$_previewname}";
-
-            exec($_cmd, $_out, $_ret);
-
-            if ($_ret !== 0) {
-                // bad things happened.  @todo, log $_out to a file.
-                return false;
-            }
-
-            return basename($previewname);
-
-        } 
-
-        // We don't support generating a preview on whatever filetype they gave us
-        return false;
-    }
-
 
     /**
      * Given a file id, this will update the file from it's associated content
@@ -184,29 +108,25 @@ class StorageComponent extends Object
         $_contentsourcetype = $this->controller->Contentsourcetype->FindById($_upload['Contentsource'][0]['contentsourcetype_id']);
         $type = $_contentsourcetype['Contentsourcetype']['name'];
 
-        $_filename = $this->uniqueFilenameForUserType($_upload['Upload']['user_id'], $type);
+        // $_filename = $this->uniqueFilenameForUserType($_upload['Upload']['user_id'], $type);
+        $rand = uniqid ();
+        $_filename = UPLOAD_DIR."/{$_upload['Upload']['user_id']}/"."joey-".$rand.".".$this->suffix[$type];
         
-        if ($_filename !== false) {
-          $_file = new File();
-          $_file->set('name', basename($_filename));
-          $_file->set('upload_id', $id);
-          $_file->set('size', 0);
-          $_file->set('type', "text/plain");
-          if (!$_file->save()) {
-            return false;
-          }
-          
-          // this not should not fail since we just saved it.  Since this is the same
-          // query that we did at the beginning, the built in cake-cache will give us
-          // the same results unless we temporarily disable the cache.
-          $this->controller->Upload->cacheQueries = false;
-          $_upload = $this->controller->Upload->FindById($id);
-          $this->controller->Upload->cacheQueries = true;
-
-        } else {
-          // bad things happened.  @todo, log $_out to a file.
+        $_file = new File();
+        $_file->set('name', basename($_filename));
+        $_file->set('upload_id', $id);
+        $_file->set('size', 0);
+        $_file->set('type', "text/plain");
+        if (!$_file->save()) {
           return false;
         }
+          
+        // this not should not fail since we just saved it.  Since this is the same
+        // query that we did at the beginning, the built in cake-cache will give us
+        // the same results unless we temporarily disable the cache.
+        $this->controller->Upload->cacheQueries = false;
+        $_upload = $this->controller->Upload->FindById($id);
+        $this->controller->Upload->cacheQueries = true;
       }
       
       // check to see if we should do anything
@@ -311,162 +231,140 @@ class StorageComponent extends Object
       // If we've made it this far without failing, we're good
       return true;
     }
+
+   
+  /*
+   * Transcode the input image to PNG and then generate a preview PNG.
+   * The file type is implied in the file name suffix.
+   */
+  function transcodeImage ($fromName, $toName, $previewName, $width, $height) {
+  
+    $_fromName    = escapeshellarg($fromName);
+    $_toName      = escapeshellarg($toName);
+    $_previewName = escapeshellarg($previewName);
     
-    function transcodeFile($filename, $width, $height) {
-      // Dunno what they gave us, but it's not useful to us
-      if (! (is_readable($filename) && is_file($filename)) ) {
-        return null;
-      }
-      
-      // Return values for the transcoded file -- save to DB
-      $ret = array ('name' => '', 'type' => '');
-      $filenamesuffix = substr($filename, -3, 3);
-      
-      if (strcasecmp($filenamesuffix, 'png') == 0 ||
-          strcasecmp($filenamesuffix, 'gif') == 0 ||
-          strcasecmp($filenamesuffix, 'jpg') == 0 ||
-          strcasecmp($filenamesuffix, 'tif') == 0 ||
-          strcasecmp($filenamesuffix, 'bmp') == 0) { 
-        
-        $targetfilename = dirname($filename)."/".basename($filename, '.orig.'.$filenamesuffix).'.png';
-        $_targetfilename = escapeshellarg($targetfilename);
-        $_filename = escapeshellarg($filename);
-        $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_filename} {$_targetfilename}";
-        
-        exec($_cmd, $_out, $_ret);
-        
-        if ($_ret !== 0) {
-          // bad things happened.  @todo, log $_out to a file.
-          return null;
-        } else {
-          $ret['name'] = $targetfilename;
-          $ret['type'] = "image/png"; 
-          return $ret;
-        }
-      
-      } else if (strcasecmp($filenamesuffix, 'flv') == 0) {
-        $targetfilename = dirname($filename)."/".basename($filename, '.orig.'.$filenamesuffix).'.3gp';
-        $_targetfilename = escapeshellarg($targetfilename);
-        $_filename = escapeshellarg($filename);
-        $_cmd = FFMPEG_CMD . " -y -i {$_filename} -ab 32 -b 15000 -ac 1 -ar 8000 -vcodec h263 -s qcif -r 12 {$_targetfilename}";
-        
-        exec($_cmd, $_out, $_ret);
-        
-        if ($_ret !== 0) {
-          // bad things happened.  @todo, log $_out to a file.
-          return null;
-        } else {
-          $ret['name'] = $targetfilename;
-          $ret['type'] = "video/3gp";  
-          return $ret;
-        }
-      }
-      
-      // nothing to do
-      return null;
+    $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_fromName} {$_toName}";    
+    exec($_cmd, $_out, $_ret);
+    if ($_ret !== 0) {
+      // bad things happened.  @todo, log $_out to a file.
+      // If the PNG resize fails, we should abort.
+      return false;
     }
-     
-
-    /*
-     * translateFile
-     *
-     * This function translates files based on their file
-     * type. This allows us to store files of a given type
-     * in a canonical form.
-     */
-    /*
-    function translateFile($filename, $filetype) {
-      // Dunno what they gave us, but it's not useful to us
-      if (! (is_readable($filename) && is_file($filename)) ) {
-        return "";
-      }
-      
-      if (strcasecmp($filetype, 'video/flv') == 0) {
-        
-        // High-end
-        //$command = "$this->ffmpeg -y -i " . $orgfilename ." -ab 32 -ac 1 -ar 8000 -vcodec h263 -s qcif -r 12 " . $this->filename;
-        
-        // lowend
-        //$command = "$this->ffmpeg -y -i " . $orgfilename ." -ab 32 -b 15000 -ac 1 -ar 8000 -vcodec h263 -s qcif -r 12 " . $this->filename;
-        
-        $tempfile = $filename . ".orig";
-        
-        rename ($filename, $tempfile);
-        
-        $origname = $filename;
-        $filename = $origname . ".3gp";
-        
-        $_tempfile = escapeshellarg($tempfile);
-        $_filename = escapeshellarg($filename);
-        $_cmd = FFMPEG_CMD . " -y -i {$_tempfile} -ab 32 -b 15000 -ac 1 -ar 8000 -vcodec h263 -s qcif -r 12 {$_filename}";
-        
-        exec($_cmd, $_out, $_ret);
-        
-        rename ($filename, $origname);
-
-        // Leave around for debugging.
-        // @todo - If you're going to leave this code here, it should key off DEBUG
-        // being set
-        //unlink($tempfile);
-        
-        if ($_ret !== 0) {
-          
-          // bad things happened.  @todo, log $_out to a file.
-          return "";
-        }
-        
-        return "video/3gp";
-      }
-      
-      return $type;
+    
+    $width = intval($width / 2);
+    $height = intval($height / 2);
+    $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_toName} {$_previewName}";    
+    exec($_cmd, $_out, $_ret);
+    if ($_ret !== 0) {
+      // bad things happened.  @todo, log $_out to a file.
+      // If the preview resize fails, we will just fail silently.
+      return false;
+    }
+    
+    return true;
   }
-  */
+  
+  /*
+   * Transcode the input video to 3GP and then generate a preview PNG.
+   * The file type is implied in the file name suffix
+   */
+  function transcodeVideo ($fromName, $toName, $previewName, $width, $height) {
+   
+    $_fromName    = escapeshellarg($fromName);
+    $_toName      = escapeshellarg($toName);
+    $_previewName = escapeshellarg($previewName);
+    
+    $_cmd = FFMPEG_CMD . " -y -i {$_fromName} -ab 32 -b 15000 -ac 1 -ar 8000 -vcodec h263 -s qcif -r 12 {$_toName}";
+    exec($_cmd, $_out, $_ret);
+    if ($_ret !== 0) {
+      // bad things happened.  @todo, log $_out to a file.
+      // If the 3GP transcode fails, we should abort.
+      return false;
+    }
+    
+    $width = intval($width / 2);
+    $height = intval($height / 2);
+    $_cmd = FFMPEG_CMD . " -i {$_fromName} -ss 5 -s '{$width}x{$height}' -vframes 1 -f mjpeg {$_previewName}";
+    exec($_cmd, $_out, $_ret);
+    if ($_ret !== 0) {
+      // bad things happened.  @todo, log $_out to a file.
+      // If the preview resize fails, we will just fail silently.
+      return false;
+    }
+    
+    return true;
+  }
 
 
-  function uniqueFilenameForUserType($userid, $type) {
+  function processUpload($tmpfilename, $userid, $type, $width, $height) {
         if (!is_numeric($userid)) {
-            return false;
+            return null;
         }
         if (!is_dir(UPLOAD_DIR."/{$userid}")) {
-            return false;
+            return null;
         }
+        
+        $_ret = array ('default_name' => '', 'default_type' => '', 'original_name' => '', 'original_type' => '', 'preview_name' => '', 'preview_type' => '');
+        
         $rand = uniqid ();
         if (array_key_exists($type, $this->suffix)) {
-          $_filename = UPLOAD_DIR."/{$userid}/"."joey-".$rand.".orig.".$this->suffix[$type];
+          if (strcasecmp($type, 'video/flv') == 0) {
+            
+            $_ret['original_name'] = UPLOAD_DIR."/{$userid}/originals/"."joey-".$rand.".".$this->suffix[$type];
+            $_ret['original_type'] = $type;
+            $_ret['default_name'] = UPLOAD_DIR."/{$userid}/"."joey-".$rand.".3gp";
+            $_ret['default_type'] = "video/3gp";
+            $_ret['preview_name'] = UPLOAD_DIR."/{$userid}/previews/"."joey-".$rand.".png";
+            $_ret['preview_type'] = "image/png";
+            
+            if (!move_uploaded_file($tmpfilename, $_ret['original_name'])) {
+              return null;
+            }
+            
+            if (!$this->transcodeVideo ($_ret['original_name'], $_ret['default_name'], $_ret['preview_name'], $width, $height)) {
+              return null;
+            }
+            
+            return $_ret;
+          
+          } else if (strcasecmp($type, 'image/png') == 0 ||
+                     strcasecmp($type, 'image/jpeg') == 0 ||
+                     strcasecmp($type, 'image/tiff') == 0 ||
+                     strcasecmp($type, 'image/bmp') == 0 ||
+                     strcasecmp($type, 'image/gif') == 0) {
+            
+            $_ret['original_name'] = UPLOAD_DIR."/{$userid}/originals/"."joey-".$rand.".".$this->suffix[$type];
+            $_ret['original_type'] = $type;
+            $_ret['default_name'] = UPLOAD_DIR."/{$userid}/"."joey-".$rand.".png";
+            $_ret['default_type'] = "image/png";
+            $_ret['preview_name'] = UPLOAD_DIR."/{$userid}/previews/"."joey-".$rand.".png";
+            $_ret['preview_type'] = "image/png";
+            
+            if (!move_uploaded_file($tmpfilename, $_ret['original_name'])) {
+              return null;
+            }
+            
+            if (!$this->transcodeImage ($_ret['original_name'], $_ret['default_name'], $_ret['preview_name'], $width, $height)) {
+              return null;
+            }
+            
+            return $_ret;
+            
+          } else {
+            
+            $_ret['default_name'] = UPLOAD_DIR."/{$userid}/"."joey-".$rand.".".$this->suffix[$type];
+            $_ret['default_type'] = $type;
+            
+            if (!move_uploaded_file($tmpfilename, $_ret['default_name'])) {
+              return null;
+            }
+            
+            return $_ret;
+          }
         } else {
-          $_filename = UPLOAD_DIR."/{$userid}/"."joey-".$rand.".orig";
+          return null;
         }
-        return $_filename;
   }
-
-
-    /**
-     * Will create a unique empty file in a users upload directory.
-     *
-     * @param userid The user ID to associate the file with
-     * @return mixed false if something goes wrong, the filename if all goes well
-     */
-    /*
-    function uniqueFilenameForUser($userid) {
-        if (!is_numeric($userid)) {
-            return false;
-        }
-        if (!is_dir(UPLOAD_DIR."/{$userid}")) {
-            return false;
-        }
-        $_filename = tempnam(UPLOAD_DIR."/{$userid}", 'joey-');
-
-        // If tempnam can't create a unique file in the requested directory, it will
-        // fall back to the system's temp dir.  This isn't good for us, so we double
-        // check here, and if it fell back, we'll return false.
-        if (strpos($_filename, UPLOAD_DIR) === false) {
-            unlink($_filename);
-            return false;
-        } else {
-            return $_filename;
-        }
-    }
-    */
 
 }
 ?>

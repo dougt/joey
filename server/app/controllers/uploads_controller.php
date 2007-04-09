@@ -111,106 +111,83 @@ class UploadsController extends AppController
                 // Upload and File models, (ie. are required fields filled in?)
                 if ($this->Upload->validates($this->data) && $this->File->validates($this->data)) {
 
-                    // Create a unique file name for our new upload
-                    $_filename = $this->Storage->uniqueFilenameForUserType($this->_user['id'], $this->data['File']['Upload']['type']); 
-
-                    if ($_filename !== false) {
-
-                        // Check to see if the user has any additonal space.
-                        $filesize = filesize($this->data['File']['Upload']['tmp_name']);
-                        if ($this->Storage->hasAvailableSpace($this->_user['id'], $filesize) == false) {
-                          if ($this->nbClient) {
-                            $this->nbFlash(NB_CLIENT_ERROR_OUT_OF_SPACE);
-                          } else {
-                            $this->File->invalidate('Upload');
-                            $this->set('error_fileupload', 'Out of space.');
-                          }
-                          unlink($_filename);
-                          // Go ahead and just bail.
-                          return;
+                    // Check to see if the user has any additonal space.
+                    $filesize = filesize($this->data['File']['Upload']['tmp_name']);
+                    if ($this->Storage->hasAvailableSpace($this->_user['id'], $filesize) == false) {
+                        if ($this->nbClient) {
+                          $this->nbFlash(NB_CLIENT_ERROR_OUT_OF_SPACE);
+                        } else {
+                          $this->File->invalidate('Upload');
+                          $this->set('error_fileupload', 'Out of space.');
                         }
+                        // unlink($_filename);
+                        // Go ahead and just bail.
+                        return;
+                    }
+                    
+                    // Get desired width and height for the transcoded media file
+                    $_phone = $this->Phone->findById($this->_user['phone_id']);
+                    $_width = intval ($_phone['Phone']['screen_width']);
+                    $_height = intval ($_phone['Phone']['screen_height']);
 
-                        // Put our file away.  This better not ever fail, but on the
-                        // off chance it does, we'll invalidate the file upload.
-                        // This will make the save below fail, so the db won't get
-                        // out of sync.
-                        if (!move_uploaded_file($this->data['File']['Upload']['tmp_name'], $_filename)) {
+                    // Put our file away, generate the transcode file for mobile, as well as the preview.  This better not ever fail, but on the
+                    // off chance it does, we'll invalidate the file upload.
+                    // This will make the save below fail, so the db won't get
+                    // out of sync.
+                    $_ret = $this->Storage->processUpload($this->data['File']['Upload']['tmp_name'], $this->_user['id'], $this->data['File']['Upload']['type'], $_width, $_height);
+                    
+                    if ($_ret == null) {
                             $this->File->invalidate('Upload');
                             $this->set('error_fileupload', 'Could not move uploaded file.');
-                        }
-                        
-                        // Get desired width and height for the transcoded media file
-                        $_phone = $this->Phone->findById($this->_user['phone_id']);
-                        $_width = intval ($_phone['Phone']['screen_width']);
-                        $_height = intval ($_phone['Phone']['screen_height']);
-                        $_preview_width = intval ($_width / 2);
-                        $_preview_height = intval ($_height / 2);
-
-                        // Start our transaction
-                        $this->Upload->begin();
-
-                        // We've already validated it - there isn't really any reason
-                        // this should fail.
-                        if ($this->Upload->save($this->data)) {
-
-                            // Some data massaging to get the POST data into a form cake can use
-                            $_ret = $this->Storage->transcodeFile ($_filename, $_width, $_height);
-
-                            if ($_ret != null) {
-                              $_filename = $_ret['name'];
-                              $this->data['File']['type'] = $_ret['type'];
-                            } else {
-                              // The $filename is un-changed
-                              $this->data['File']['type'] = $this->data['File']['Upload']['type'];
-                            }
-
-
-                            $this->data['File']['upload_id'] = $this->Upload->id;
-                            $this->data['File']['name'] = basename($_filename);
-                            $this->data['File']['size'] = filesize($_filename);
-                            // $this->data['File']['type'] = $this->data['File']['Upload']['type'];
-
-                            // Ask our storage component to generate a preview for
-                            // us.  If it fails, I'm considering it a disappointing, 
-                            // but non-fatal error
-                            if (($_previewname = $this->Storage->generatePreview($_filename, $_preview_width, $_preview_height)) !== false) {
-                                $this->data['File']['preview'] = $_previewname;
-                            } else {
-                                // If you want it to be a fatal error, invalidate the
-                                // file here.
-                            }
-
-                            // $_newtype = $this->Storage->translateFile($_filename, $this->data['File']['Upload']['type']);
-                            // if ($_newtype != "") {
-                            //   $this->data['File']['type'] = $_newtype;
-                            // }
-
-                            // This doesn't really matter anymore, but might as well whack it
-                            unset($this->data['File']['Upload']);
-
-                            if ($this->File->save($this->data)) {
-                                $this->Upload->commit();
-                                if ($this->nbClient) {
-                                    $this->nbFlash($this->Upload->id);
-                                } else {
-                                    $this->flash('Upload saved.', '/uploads/index');
-                                }
-                            } else {
-                                $this->Upload->rollback();
-                                $this->set('error_mesg', 'Could not save your file.');
-                            }
-
-                        } else {
-                            $this->Upload->rollback();
-                            $this->set('error_mesg', 'Could not save your upload.');
-                        }
-
-                    // Something went wrong trying to create a temporary file.  This
-                    // could happen if apache can't write to the UPLOAD_DIR directory
-                    } else {
-                        $this->File->invalidate('Upload');
-                        $this->set('error_fileupload', 'There was an error creating a temporary file.');
+                            return;
                     }
+                    
+                    $this->data['File']['name'] = basename($_ret['default_name']);
+                    $this->data['File']['type'] = $_ret['default_type'];
+                    $this->data['File']['size'] = filesize($_ret['default_name']);
+                    
+                    if (!empty($_ret['original_name'])) {
+                      $this->data['File']['original_name'] = basename($_ret['original_name']);
+                      $this->data['File']['original_type'] = $_ret['original_type'];
+                      $this->data['File']['original_size'] = filesize($_ret['original_name']);  
+                    }
+                    
+                    if (!empty($_ret['preview_name'])) {
+                      $this->data['File']['preview_name'] = basename($_ret['preview_name']);
+                      $this->data['File']['preview_type'] = $_ret['preview_type'];
+                      $this->data['File']['preview_size'] = filesize($_ret['preview_name']);  
+                    }
+                        
+
+                    // Start our transaction
+                    $this->Upload->begin();
+
+                    // We've already validated it - there isn't really any reason
+                    // this should fail.
+                    if ($this->Upload->save($this->data)) {
+
+                      $this->data['File']['upload_id'] = $this->Upload->id;
+
+                      // This doesn't really matter anymore, but might as well whack it
+                      unset($this->data['File']['Upload']);
+
+                      if ($this->File->save($this->data)) {
+                        $this->Upload->commit();
+                        if ($this->nbClient) {
+                          $this->nbFlash($this->Upload->id);
+                        } else {
+                          $this->flash('Upload saved.', '/uploads/index');
+                        }
+                      } else {
+                        $this->Upload->rollback();
+                        $this->set('error_mesg', 'Could not save your file.');
+                      }
+
+                    } else {
+                      $this->Upload->rollback();
+                      $this->set('error_mesg', 'Could not save your upload.');
+                    }
+
                 }
 
             // They uploaded a content source instead of a file
@@ -343,12 +320,19 @@ class UploadsController extends AppController
         if ($this->Upload->delete($id)) {
             // Delete the files if they exist
             if (array_key_exists(0,$_item['File'])) {
-                $filenamesuffix = substr($_item['File'][0]['name'], -3, 3);
-                // delete both name.sfx and name.orig.sfx files
-                $todel = UPLOAD_DIR."/{$this->_user['id']}/".basename($_item['File'][0]['name'], $filenamesuffix);
-                foreach(glob($todel.".*") as $fn) {                    if (!unlink($fn)) {
+                if (!unlink(UPLOAD_DIR."/{$this->_user['id']}/{$_item['File'][0]['name']}")) {
                       // Don't make this fatal.  If we couldn't unlink, it is a warning
-                    }                } 
+                      //$this->Upload->rollback();
+                      //$this->flash('Delete failed', '/uploads/index',2);
+                }
+                
+                if (!empty($_item['File'][0]['original'])) {
+                    if (!unlink(UPLOAD_DIR."/{$this->_user['id']}/originals/{$_item['File'][0]['original']}")) {
+                      // Don't make this fatal.  If we couldn't unlink, it is a warning
+                      //$this->Upload->rollback();
+                      //$this->flash('Delete failed', '/uploads/index',2);
+                    }
+                }
                 
                 if (!empty($_item['File'][0]['preview'])) {
                     if (!unlink(UPLOAD_DIR."/{$this->_user['id']}/previews/{$_item['File'][0]['preview']}")) {

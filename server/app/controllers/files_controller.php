@@ -91,21 +91,35 @@ class FilesController extends AppController
 
         $this->layout = null;
 
-        // Make a note if they are asking for a preview
+        // Make a note if they are asking for the preview
         if (array_key_exists(1,$this->params['pass']) && $this->params['pass'][1] == 'preview') {
             $_preview = true;
         } else {
             $_preview = false;
         }
+        
+        // Make a note if they are asking for the original
+        if (array_key_exists(1,$this->params['pass']) && $this->params['pass'][1] == 'original') {
+            $_original = true;
+        } else {
+            $_original = false;
+        }
 
-        // If they want a preview, and a preview exists, give it to them.
-        if ($_preview && !empty($_item['File']['preview'])) {
-            $_filename = UPLOAD_DIR."/{$this->_user['id']}/previews/{$_item['File']['preview']}";
-            $_filetype = 'image/png';
+        if ($_preview && !empty($_item['File']['preview_name'])) {
+            $_filename = UPLOAD_DIR."/{$this->_user['id']}/previews/{$_item['File']['preview_name']}";
+            $_filetype = $_item['File']['preview_type'];
+            $_filesize = $_item['File']['preview_size'];
+            
+        } else if ($_original && !empty($_item['File']['original_name'])) {
+            $_filename = UPLOAD_DIR."/{$this->_user['id']}/originals/{$_item['File']['original_name']}";
+            $_filetype = $_item['File']['original_type'];
+            $_filesize = $_item['File']['original_size'];
+            
         } else {
             // Send the whole file
             $_filename = UPLOAD_DIR."/{$this->_user['id']}/{$_item['File']['name']}";
             $_filetype = $_item['File']['type'];
+            $_filesize = $_item['File']['size'];
         }
 
         // We can't read the file for whatever reason.  Fallback to the default.
@@ -113,10 +127,11 @@ class FilesController extends AppController
         if (! (is_readable($_filename) && is_file($_filename))) {
             $_filename = $this->fallback_image;
             $_filetype = 'image/png';
+            $_filesize = filesize($_filename);
         }
 
         $this->set('content_type', $_filetype);
-        $this->set('content_length', filesize($_filename));
+        $this->set('content_length', $_filesize);
         $this->set('content', file_get_contents($_filename));
 
         // @todo decide what we need to do about cheesy hacks like this
