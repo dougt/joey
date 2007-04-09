@@ -1190,7 +1190,8 @@ function joey_selectedTarget(targetElement)
 {
     var obj = uSummaryGen_xPathInit(content.document,targetElement);
     g_joey_data = obj.generatorText;
-    
+    g_joey_isfile = false;
+
     var focusedWindow = document.commandDispatcher.focusedWindow;
     g_joey_url  = focusedWindow.location.href;
     g_joey_title = "Microsummary from : " + focusedWindow.location.href; 
