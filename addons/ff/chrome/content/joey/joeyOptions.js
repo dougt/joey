@@ -63,5 +63,10 @@ function doOkay() {
             g_joey_prefService.setBoolPref(element,document.getElementById("checkbox_"+element).checked);
         } 
      
+        var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                        .getService(Components.interfaces.nsIWindowMediator);
+        win = wm.getMostRecentWindow("navigator:browser");
+        win.g_joey_serverURL = document.getElementById("serviceUrl").value;
+
      } catch (i) { alert(i) }
 }
