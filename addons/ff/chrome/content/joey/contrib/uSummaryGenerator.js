@@ -300,19 +300,30 @@ var uSummaryGen_XPathBuilder = {
 			 + '</exclude>\n';
 		}*/
 		
-		str += ' </pages>\n'
-		+ ' <template>\n'
-		+ '   <transform xmlns="http://www.w3.org/1999/XSL/Transform" version="1.0">\n'
-		+ '     <output method="text"/>\n'
-		+ '     <template match="/">\n'
-		+ '       <value-of select="' + xpath + '"/>\n'
-		+ '     </template>\n'
-		+ '   </transform>\n'
-		+ ' </template>\n'
-		+ '</generator>\n';
-
+        var hint = "";
+        try {
+            hint = uSummaryGen_selectedNode.innerHTML;
+            hint = hint.replace(/\&amp;/g,'&');
+            hint = hint.replace(/\&gt;/g,'>');
+            hint = hint.replace(/\&lt;/g,'<');
+            hint = hint.replace(/\&apos;/g,'\'');
+            hint = hint.replace(/\&quot;/g,'\"');
+            
+            str += ' </pages>\n'
+                + ' <template>\n'
+                + '   <transform xmlns="http://www.w3.org/1999/XSL/Transform" version="1.0">\n'
+                + '     <output method="text"/>\n'
+                + '     <template match="/">\n'
+                + '       <value-of select="' + xpath + '"/>\n'
+                + '     </template>\n'
+                + '   </transform>\n'
+                + ' </template>\n'
+                + '<hint>' + hint + '</hint>'
+                + '</generator>\n';
+            
+        } catch (e) {}
+        
 		this.generatorDoc = str;
-
 	},
 	install: function() {
 		// parse XML to DOM object
