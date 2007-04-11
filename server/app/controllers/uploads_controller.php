@@ -294,14 +294,22 @@ class UploadsController extends AppController
     function delete($id)
     {
         if (!is_numeric($id)) {
-            $this->flash('Delete failed', '/uploads/index',2);
+            if ($this->nbClient) {
+                $this->nbFlash('-1');
+            } else {
+                $this->flash('Delete failed', '/uploads/index',2);
+            }
         }
 
         $_item = $this->Upload->findById($id);
 
         // Check for access
         if ($_item['Upload']['user_id'] != $this->_user['id']) {
-            $this->flash('Delete failed', '/uploads/index',2);
+            if ($this->nbClient) {
+                $this->nbFlash('-1');
+            } else {
+                $this->flash('Delete failed', '/uploads/index',2);
+            }
         }
 
         $this->Upload->begin();
@@ -313,7 +321,11 @@ class UploadsController extends AppController
 
           if (! $this->Contentsource->delete($csid)) {
               $this->Upload->rollback();
-              $this->flash('Content Source Delete Failed', '/uploads/index',2);
+              if ($this->nbClient) {
+                  $this->nbFlash('-1');
+              } else { 
+                  $this->flash('Content Source Delete Failed', '/uploads/index',2);
+              }
           }
         }
 
@@ -344,9 +356,17 @@ class UploadsController extends AppController
             }
 
             $this->Upload->commit();
-            $this->flash('Upload Deleted', '/uploads/index',2);
+            if ($this->nbClient) {
+                $this->nbFlash('0');
+            } else {
+                $this->flash('Upload Deleted', '/uploads/index',2);
+            }
         } else {
-            $this->flash('Delete failed', '/uploads/index',2);
+            if ($this->nbClient) {
+                $this->nbFlash('-1');
+            } else {
+                $this->flash('Delete failed', '/uploads/index',2);
+            }
         }
     }
 
@@ -379,10 +399,10 @@ class UploadsController extends AppController
             $data = $this->Upload->findAll($criteria, NULL, NULL, $limit, $start, 3);
             $count = 0;
             foreach ($data as $row) {
-                if (empty($row['File'][0]['preview'])) {
+                if (empty($row['File'][0]['preview_name'])) {
                     $data[$count]['preview'] = '';
                 } else {
-                    $preview_data = file_get_contents (UPLOAD_DIR."/{$this->_user['id']}/previews/{$row['File'][0]['preview']}");
+                    $preview_data = file_get_contents (UPLOAD_DIR."/{$this->_user['id']}/previews/{$row['File'][0]['preview_name']}");
                     $data[$count]['preview'] = base64_encode($preview_data);
                 }
                 
@@ -440,10 +460,10 @@ class UploadsController extends AppController
             $data = $this->Upload->findAll($criteria, NULL, NULL, $limit, $start, 3);
             $count = 0;
             foreach ($data as $row) {
-                if (empty($row['File'][0]['preview'])) {
+                if (empty($row['File'][0]['preview_name'])) {
                     $data[$count]['preview'] = '';
                 } else {
-                    $preview_data = file_get_contents (UPLOAD_DIR."/{$this->_user['id']}/previews/{$row['File'][0]['preview']}");
+                    $preview_data = file_get_contents (UPLOAD_DIR."/{$this->_user['id']}/previews/{$row['File'][0]['preview_name']}");
                     $data[$count]['preview'] = base64_encode($preview_data);
                 }
                 
