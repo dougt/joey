@@ -927,6 +927,8 @@ joeyBrowserStatusHandler.prototype =
     {
         setTimeout(joeySetCurrentFeed, 600);        
         setTimeout(joeyCheckForMedia, 600); // this needs to be called after the page loads! dougt
+
+        setTimeout(g_joeySelectorService.disable, 0);
     },
     
     onStatusChange : function(aWebProgress, aRequest, aStatus, aMessage)
@@ -973,22 +975,26 @@ joeyBrowserStatusHandler.prototype =
  * upload it to Joey!. 
  */
 
-var sigmaCall = null;
-var omegaCall = null;
-
 var g_joeySelectorService = {
 
     currentEvent         :null,
     previousTargetElement:null,
     associatedDocument   :null,
-    runningState         :0,
+    enabled              :false,
     currentElementLeft   :null,
     currentElementTop    :null,
     currentElementRight  :null,
     currentElementBottom :null,
-    stop:false,
+    timer                :null,
     
     enable: function () {
+
+        g_joey_console("g_joeySelectorService enable");
+
+        if (this.enabled == true)
+            this.disable();
+
+        this.enabled = true;
 
 	    g_joey_statusUpdateObject.tellMode("capture.add"); // we will need also to lock the menu...
 	    
@@ -996,7 +1002,7 @@ var g_joeySelectorService = {
 
         this.createBox();
         
-        thisInstance = this;
+        var thisInstance = this;
         
         sigmaCall = function(e) { thisInstance.mouseMoveListener(e) };
         
@@ -1014,14 +1020,30 @@ var g_joeySelectorService = {
     	                                 ,omegaCall 
     	                                 ,false);
     
+
+        deltaCall = function(e) { thisInstance.keyDownListener(e) };
+        
+    	g_joey_gBrowser.selectedBrowser
+    	               .contentDocument
+    	               .addEventListener("keydown"
+    	                                 ,deltaCall 
+    	                                 ,false);
+
 	    this.runtimer();    // timer-based refresh function..
 
 	    
     },
     
     disable: function () {
+
+        if (this.enabled == false)
+            return;
+
+        g_joey_console("g_joeySelectorService disable");
     
-    	
+        clearTimeout(this.timer);
+        this.timer = null;
+
     	g_joey_gBrowser.selectedBrowser
     	               .contentDocument
     	               .removeEventListener("mousemove"
@@ -1032,24 +1054,35 @@ var g_joeySelectorService = {
     	               .removeEventListener("mousedown"
     	                                 ,omegaCall 
     	                                 ,false);
-           
+
+    	g_joey_gBrowser.selectedBrowser
+    	               .contentDocument
+    	               .removeEventListener("keydown"
+    	                                 ,deltaCall 
+    	                                 ,false);
+
         this.removeBox();
-        this.associatedDocument = null;   
+        this.associatedDocument    = null;   
+        this.currentEvent          = null;
+        this.previousTargetElement = null;
            
         g_joey_statusUpdateObject.tellMode("capture.remove");
 
+        this.enabled = false;
 
     },
+
     mouseMoveListener: function (e) {
 		if (this.previousTargetElement != e.target) {
 			this.currentEvent = e;
 			this.previousTargetElement = e.target;
 		}                                 
     },
-    
+
     mouseClickListener: function (e) {
     
 	    this.disable();
+
         if(e.button == 0) {
             /* 
              * We may revisit this to elect target elements 
@@ -1058,9 +1091,15 @@ var g_joeySelectorService = {
              */
              
 	        joey_selectedTarget(this.currentEvent.target);
-        }     
-            
+            e.preventDefault(); // eat the event
+        }            
     },
+
+    keyDownListener: function (e) {
+        this.disable();
+        e.preventDefault();
+    },
+
     createBox: function () {
 
                 var newDiv= this.associatedDocument.createElementNS("http://www.w3.org/1999/xhtml", "div");
@@ -1114,6 +1153,7 @@ var g_joeySelectorService = {
                 
             
     }, 
+
     removeBox: function () {
     
         try {
@@ -1125,63 +1165,71 @@ var g_joeySelectorService = {
         } catch (i) { g_joey_console(i) } 
          	        	
     },
+
     runtimer: function() {
-        
-        /* 
-         * We want UI to be smooth so we keep this at 150 miliseconds. 
-         * Otherwise the Contextual Box moves too much in the screen for every little DOM node.
-         *
-         */ 
-        if (this.currentEvent && this.associatedDocument) {
-        
-            var currentDocument = this.associatedDocument;
-           
-            var boxObject = currentDocument.getBoxObjectFor(this.currentEvent.target);
-                                           
-            const borderSize=4;
 
-            var boxObjectX = boxObject.x - borderSize;
-            var boxObjectY = boxObject.y - borderSize;
-            var rawWidth = boxObject.width;
-            var rawHeight = boxObject.height;
+        try {
 
-            var restWidth = rawWidth % 4;
-            var restHeight = rawHeight % 4;
+            /* 
+             * We want UI to be smooth so we keep this at 150 miliseconds. 
+             * Otherwise the Contextual Box moves too much in the screen for every little DOM node.
+             *
+             */ 
+            if (this.currentEvent && this.associatedDocument) {
+                
+                var currentDocument = this.associatedDocument;
+                
+                var boxObject = currentDocument.getBoxObjectFor(this.currentEvent.target);
+                
+                const borderSize=4;
+                
+                var boxObjectX = boxObject.x - borderSize;
+                var boxObjectY = boxObject.y - borderSize;
+                var rawWidth = boxObject.width;
+                var rawHeight = boxObject.height;
+                
+                var restWidth = rawWidth % 4;
+                var restHeight = rawHeight % 4;
+                
+                var boxCounterWidth = (rawWidth - restWidth)/4 + 1; 
+                var boxCounterHeight = (rawHeight- restHeight)/4 + 1; 
+                
+                var boxObjectWidth  = ( rawWidth - restWidth )  + ( borderSize * 2 );
+                var boxObjectHeight = ( rawHeight - restHeight )  + ( borderSize * 2 ) ;
+                
+                var modOddWidth = boxCounterWidth % 2;
+                var modOddHeight = boxCounterHeight % 2;            
             
-            var boxCounterWidth = (rawWidth - restWidth)/4 + 1; 
-            var boxCounterHeight = (rawHeight- restHeight)/4 + 1; 
-
-            var boxObjectWidth  = ( rawWidth - restWidth )  + ( borderSize * 2 );
-            var boxObjectHeight = ( rawHeight - restHeight )  + ( borderSize * 2 ) ;
+                if( parseInt(modOddWidth) == 0) {
+                    boxObjectWidth+=4;
+                    boxObjectX-=4;
+                }
             
-            var modOddWidth = boxCounterWidth % 2;
-            var modOddHeight = boxCounterHeight % 2;            
+                if( parseInt(modOddHeight) == 0) {
+                    boxObjectHeight+=4;
+                    boxObjectY-=4;
+                }
+                
+                this.currentElementTop.style.top=boxObjectY+"px";
+                this.currentElementTop.style.left=boxObjectX+"px";
+                this.currentElementTop.style.width=boxObjectWidth+"px";
+                this.currentElementBottom.style.top=boxObjectHeight+"px";
+                this.currentElementBottom.style.width=boxObjectWidth+4+"px";
+                this.currentElementLeft.style.height=boxObjectHeight+"px";
+                this.currentElementRight.style.left=boxObjectWidth+"px";
+                this.currentElementRight.style.height=boxObjectHeight+4+"px";
+                
+            } // end of current event...
             
-            if( parseInt(modOddWidth) == 0) {
-                boxObjectWidth+=4;
-                boxObjectX-=4;
-            }
-            
-            if( parseInt(modOddHeight) == 0) {
-                boxObjectHeight+=4;
-                boxObjectY-=4;
-            }
-            
-            this.currentElementTop.style.top=boxObjectY+"px";
-            this.currentElementTop.style.left=boxObjectX+"px";
-            this.currentElementTop.style.width=boxObjectWidth+"px";
-            this.currentElementBottom.style.top=boxObjectHeight+"px";
-            this.currentElementBottom.style.width=boxObjectWidth+4+"px";
-            this.currentElementLeft.style.height=boxObjectHeight+"px";
-            this.currentElementRight.style.left=boxObjectWidth+"px";
-            this.currentElementRight.style.height=boxObjectHeight+4+"px";
-
-        } // end of current event...
-        
-        if (this.associatedDocument) {
-            setTimeout("g_joeySelectorService.runtimer()",122);
-        }	
-        
+            if (this.associatedDocument) {
+                this.timer = setTimeout("g_joeySelectorService.runtimer()",122);
+            }	
+        }
+        catch(e)
+        {
+            // if any of this fails, just kill it.
+            setTimeout(g_joeySelectorService.disable, 0);
+        }
     } // end of runtimer  
     
 }
