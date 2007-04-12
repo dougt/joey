@@ -129,10 +129,10 @@
 		<deviceRequirements if="test">
 			<requirement name="Identifier" value="${device}" />
 		</deviceRequirements>
-		<deviceRequirements if="!test and device:defined">
+		<deviceRequirements if="device:defined">
 			<requirement name="Identifier" value="${device}" />
 		</deviceRequirements>
-		<deviceRequirements unless="test">
+		<deviceRequirements if="!test and !device:defined">
 			<or>
 						<requirement name="Identifier" value="BlackBerry/7100t" />
 						<requirement name="Identifier" value="BlackBerry/7290" />
@@ -274,6 +274,7 @@
 				-->
 				<variable name="update-url" value="http://www.enough.de/update" />
 				<variable name="title" value="J2ME Polish" />
+				<variable name="polish.rmi.synchrone" value="true" />
 			</variables>
 			<!-- Here you can set the dir attribute to "resources2" for an alternative design. -->
 			<resources
@@ -300,7 +301,7 @@
 			</resources>
 			
 			<!-- obfuscator settings: do not obfuscate when the test-property is true -->
-			<obfuscator name="ProGuard" useDefaultPackage="true" unless="test || polish.blackberry" >
+			<obfuscator name="ProGuard" useDefaultPackage="false" unless="test || polish.blackberry" >
 				<!--
 				You can set additional parameters here, e.g.:
 				<parameter name="optimize" value="false" />
