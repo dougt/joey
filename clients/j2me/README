@@ -1,0 +1,33 @@
+Prerquisites
+============
+
+  To be able to build Joey you need to following software installed on your system:
+  
+    * Java 1.4 compatible environment
+    * Apache Ant 1.6.5
+    * SUN WTK 2.5
+    
+  Newer versions of this software work too.
+    
+  Optional pre-requisites depending on the phones to build for are:
+  
+    * BlackBerry Java Development Environment 4.2 (for 8100 and 8800)
+    * BlackBerry Java Development Environment 4.1 (for older BlackBerry devices)
+    * Motorola emulators
+    * Nokia emulators
+    * Sony Ericsson emulators
+
+Build instructions
+==================
+
+  The Joey J2ME client uses the J2ME Polish to build the software for mobile phones.
+  The J2ME Polish build system bases on Apache ant. To build the client software for
+  the a phone you need use the folling command line:
+  
+    ant -Dwtk.home=path/to/your/WTK -Ddevice=Nokia/E50 clean j2mepolish
+    
+  The resulting files are in the dist folder. You can put the ant properties
+  into a file called {local username}.properties instead of writing them on the
+  command line each time. Please look into mkoch.properties for some more examples.
+  The possible values for the device property can be get from the J2ME Polish
+  device database at http://www.j2mepolish.org/devices-overview.html.
