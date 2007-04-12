@@ -1,4 +1,4 @@
-total=<?php echo $count;?>
+<?php echo $count;?>
 
 <?php
 $i = 1;

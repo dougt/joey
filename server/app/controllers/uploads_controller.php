@@ -295,7 +295,7 @@ class UploadsController extends AppController
     {
         if (!is_numeric($id)) {
             if ($this->nbClient) {
-                $this->nbFlash('-1');
+                $this->nbFlash('-2');
             } else {
                 $this->flash('Delete failed', '/uploads/index',2);
             }
@@ -306,7 +306,7 @@ class UploadsController extends AppController
         // Check for access
         if ($_item['Upload']['user_id'] != $this->_user['id']) {
             if ($this->nbClient) {
-                $this->nbFlash('-1');
+                $this->nbFlash('-2');
             } else {
                 $this->flash('Delete failed', '/uploads/index',2);
             }
@@ -322,7 +322,7 @@ class UploadsController extends AppController
           if (! $this->Contentsource->delete($csid)) {
               $this->Upload->rollback();
               if ($this->nbClient) {
-                  $this->nbFlash('-1');
+                  $this->nbFlash('-2');
               } else { 
                   $this->flash('Content Source Delete Failed', '/uploads/index',2);
               }
@@ -363,7 +363,7 @@ class UploadsController extends AppController
             }
         } else {
             if ($this->nbClient) {
-                $this->nbFlash('-1');
+                $this->nbFlash('-2');
             } else {
                 $this->flash('Delete failed', '/uploads/index',2);
             }

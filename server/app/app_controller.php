@@ -92,6 +92,9 @@ class AppController extends Controller
     function checkSession()
     {
         if (!$this->Session->check('User')) {
+            if ($this->nbClient) {
+                $this->nbFlash('-1');
+            }
             $this->redirect('/users/login');
             exit;
         }

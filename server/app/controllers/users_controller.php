@@ -115,14 +115,14 @@ class UsersController extends AppController
                     }
                 } else {
                     if ($this->nbClient) {
-                        $this->nbFlash('-1');
+                        $this->nbFlash('-2');
                     }
                     $this->set('error_mesg', 'Sorry, your account has not been activated. Please check your email.');
                 }
             } else {
                 // This is a generalized, non-specific error
                 if ($this->nbClient) {
-                    $this->nbFlash('-2');
+                    $this->nbFlash('-3');
                 }
                 $this->set('error_mesg', 'Sorry, cannot login. Please check your username or password.');
             }

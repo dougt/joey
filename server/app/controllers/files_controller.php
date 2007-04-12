@@ -83,6 +83,9 @@ class FilesController extends AppController
         $_item = $this->File->findById($id);
 
         if ($_item['Upload']['user_id'] != $this->_user['id']) {
+            if ($this->nbClient) {
+                $this->nbFlash('-2');
+            }
             $this->flash('Invalid ID requested', '/uploads/index');
         }
 
@@ -128,6 +131,10 @@ class FilesController extends AppController
             $_filename = $this->fallback_image;
             $_filetype = 'image/png';
             $_filesize = filesize($_filename);
+
+            if ($this->nbClient) {
+                $this->nbFlash('-2');
+            }
         }
 
         $this->set('content_type', $_filetype);
