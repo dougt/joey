@@ -591,9 +591,6 @@ function loot_setttings()
 
 function grabAll(elem)
 {
-
-    dump(elem);
-
     if (elem instanceof Components.interfaces.nsIDOMHTMLEmbedElement)
     {
         var base = Components.classes["@mozilla.org/network/standard-url;1"]
@@ -601,15 +598,18 @@ function grabAll(elem)
 
         base.spec = g_joey_gBrowser.contentDocument.location.href;
 
-        // youtube specific.  humm.
-        var url = base.prePath;
-        url += "/get_video.php?";
-        url += elem.src.substring(elem.src.indexOf('?')+1);
+        if (base.host == "youtube.com")
+        {
+            // youtube specific.  humm.
+            var url = base.prePath;
+            url += "/get_video.php?";
+            url += elem.src.substring(elem.src.indexOf('?')+1);
 
-        // great found something -- what about multi embed tags? dougt
-        
-		document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
-        g_joey_media_url = url;
+            // great found something -- what about multi embed tags? dougt
+            
+            document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
+            g_joey_media_url = url;
+        }
 
         //        alert(url);
     }
