@@ -60,12 +60,6 @@
               insertafter="context-stop"
               oncommand="joey_selectedImage();"/>
 
-    <menuitem id="joey_selectContextual"
-              label="Joey! Summary Selector"
-              insertafter="context-stop"
-              oncommand="joey_enableSelection();"/>
-    
-
   </popup>
   
   <!-- status bar static joey presence UI --> 
@@ -107,6 +101,11 @@
           label="Joey! Current Feed"
           insertafter="context-stop"
           oncommand="joey_feed();"/>
+
+        <menuitem id="joey_selectContextual"
+          label="Joey! Summary Selector"
+          insertafter="context-stop"
+          oncommand="joey_enableSelection();"/>
 
         <menuitem id="joey_configurePreferences" 
           label="Preferences.."
