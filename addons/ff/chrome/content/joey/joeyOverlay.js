@@ -597,8 +597,8 @@ function grabAll(elem)
                              .createInstance(Components.interfaces.nsIURI);
 
         base.spec = g_joey_gBrowser.contentDocument.location.href;
-
-        if (base.host == "youtube.com")
+        
+        if (base.host == "youtube.com" || base.host == "www.youtube.com")
         {
             // youtube specific.  humm.
             var url = base.prePath;
@@ -610,8 +610,22 @@ function grabAll(elem)
             document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
             g_joey_media_url = url;
         }
+        else if (base.host == "dailymotion.com" || base.host == "www.dailymotion.com")
+        {
+            var url = unescape(/"url=(.*?)\.flv&duration=/.exec(g_joey_gBrowser.contentDocument.body.innerHTML)[1]);
+            //"  <-- fixes color coding in my editor.
 
-        //        alert(url);
+            document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
+            g_joey_media_url = url;
+        }
+        
+        else // lets just hope that this works for other sites
+        {
+            document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
+            g_joey_media_url = elem.src;
+        }
+
+        g_joey_console(g_joey_media_url);
     }
     
     return NodeFilter.FILTER_ACCEPT;
@@ -926,7 +940,7 @@ joeyBrowserStatusHandler.prototype =
     onLocationChange : function(aWebProgress, aRequest, aLocation)
     {
         setTimeout(joeySetCurrentFeed, 600);        
-        setTimeout(joeyCheckForMedia, 600); // this needs to be called after the page loads! dougt
+        setTimeout(joeyCheckForMedia, 2000); // this needs to be called after the page loads! dougt
 
         setTimeout(g_joeySelectorService.disable, 0);
     },
