@@ -1094,8 +1094,6 @@ var g_joeySelectorService = {
     },
 
     mouseClickListener: function (e) {
-    
-	    this.disable();
 
         if(e.button == 0) {
             /* 
@@ -1106,7 +1104,9 @@ var g_joeySelectorService = {
              
 	        joey_selectedTarget(this.currentEvent.target);
             e.preventDefault(); // eat the event
-        }            
+        }
+
+	    this.disable();
     },
 
     keyDownListener: function (e) {
