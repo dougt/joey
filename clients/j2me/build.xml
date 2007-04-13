@@ -28,7 +28,7 @@
 <!-- The polish.home property should point to the directory   -->
 <!-- containing the J2ME Polish installation.                 -->
 
-<property name="polish.home" value="/home/mkoch/local/J2ME-Polish-2.0-beta2" />
+<property name="polish.home" value="polish" />
 <property file="${polish.home}/global.properties" />
 
 <!-- The wtk.home property should point to the directory      -->
