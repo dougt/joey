@@ -115,7 +115,8 @@ class UploadsController extends AppController
                     $filesize = filesize($this->data['File']['Upload']['tmp_name']);
                     if ($this->Storage->hasAvailableSpace($this->_user['id'], $filesize) == false) {
                         if ($this->nbClient) {
-                          $this->nbFlash(NB_CLIENT_ERROR_OUT_OF_SPACE);
+                          // $this->nbFlash(NB_CLIENT_ERROR_OUT_OF_SPACE);
+                          $this->returnHttpStatusCode($this->ERROR_NO_SPACE);
                         } else {
                           $this->File->invalidate('Upload');
                           $this->set('error_fileupload', 'Out of space.');
@@ -174,7 +175,8 @@ class UploadsController extends AppController
                       if ($this->File->save($this->data)) {
                         $this->Upload->commit();
                         if ($this->nbClient) {
-                          $this->nbFlash($this->Upload->id);
+                          // $this->nbFlash($this->Upload->id);
+                          $this->returnHttpStatusCode($this->SUCCESS);
                         } else {
                           $this->flash('Upload saved.', '/uploads/index');
                         }
@@ -232,7 +234,8 @@ class UploadsController extends AppController
                             $this->Storage->updateFileByUploadId($this->Upload->id, true);
 
                             if ($this->nbClient) {
-                                $this->nbFlash($this->Upload->id);
+                                // $this->nbFlash($this->Upload->id);
+                                $this->returnHttpStatusCode($this->SUCCESS);
                             } else {
                                 $this->flash('Upload saved.', '/uploads/index');
                             }
@@ -267,7 +270,8 @@ class UploadsController extends AppController
             $this->validateErrors($this->Upload, $this->File);
 
             if ($this->nbClient) {
-                $this->nbFlash(NB_CLIENT_ERROR_UPLOAD_FAIL);
+                // $this->nbFlash(NB_CLIENT_ERROR_UPLOAD_FAIL);
+                $this->returnHttpStatusCode($this->ERROR_UPLOAD);
             }
 
         }
@@ -295,7 +299,7 @@ class UploadsController extends AppController
     {
         if (!is_numeric($id)) {
             if ($this->nbClient) {
-                $this->nbFlash('-2');
+                $this->returnHttpStatusCode($this->ERROR_DELETE);
             } else {
                 $this->flash('Delete failed', '/uploads/index',2);
             }
@@ -306,7 +310,7 @@ class UploadsController extends AppController
         // Check for access
         if ($_item['Upload']['user_id'] != $this->_user['id']) {
             if ($this->nbClient) {
-                $this->nbFlash('-2');
+                $this->returnHttpStatusCode($this->ERROR_NOAUTH);
             } else {
                 $this->flash('Delete failed', '/uploads/index',2);
             }
@@ -322,7 +326,7 @@ class UploadsController extends AppController
           if (! $this->Contentsource->delete($csid)) {
               $this->Upload->rollback();
               if ($this->nbClient) {
-                  $this->nbFlash('-2');
+                  $this->returnHttpStatusCode($this->ERROR_DELETE);
               } else { 
                   $this->flash('Content Source Delete Failed', '/uploads/index',2);
               }
@@ -357,13 +361,13 @@ class UploadsController extends AppController
 
             $this->Upload->commit();
             if ($this->nbClient) {
-                $this->nbFlash('0');
+                $this->returnHttpStatusCode($this->SUCCESS);
             } else {
                 $this->flash('Upload Deleted', '/uploads/index',2);
             }
         } else {
             if ($this->nbClient) {
-                $this->nbFlash('-2');
+                $this->returnHttpStatusCode($this->ERROR_DELETE);
             } else {
                 $this->flash('Delete failed', '/uploads/index',2);
             }

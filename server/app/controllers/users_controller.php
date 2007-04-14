@@ -107,22 +107,29 @@ class UsersController extends AppController
                         $this->Session->write('User', $_someone['User']);
 
                         if ($this->nbClient) {
-                            $this->nbFlash($_someone['User']['id']);
+                            // $this->nbFlash($_someone['User']['id']);
+                            $this->returnHttpStatusCode($this->SUCCESS);
                         } else {
                             $this->redirect('/uploads/index');
                             exit;
                         }
+                    } else {
+                        // This is a password error
+                        if ($this->nbClient) {
+                            $this->returnHttpStatusCode($this->ERROR_LOGIN);
+                        }
+                        $this->set('error_mesg', 'Sorry, cannot login. Please check your username or password.');
                     }
                 } else {
                     if ($this->nbClient) {
-                        $this->nbFlash('-2');
+                        $this->returnHttpStatusCode($this->ERROR_ACTIVATION);
                     }
                     $this->set('error_mesg', 'Sorry, your account has not been activated. Please check your email.');
                 }
             } else {
                 // This is a generalized, non-specific error
                 if ($this->nbClient) {
-                    $this->nbFlash('-3');
+                    $this->returnHttpStatusCode($this->ERROR_LOGIN);
                 }
                 $this->set('error_mesg', 'Sorry, cannot login. Please check your username or password.');
             }

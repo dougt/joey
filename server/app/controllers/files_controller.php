@@ -84,7 +84,7 @@ class FilesController extends AppController
 
         if ($_item['Upload']['user_id'] != $this->_user['id']) {
             if ($this->nbClient) {
-                $this->nbFlash('-2');
+                $this->returnHttpStatusCode($this->ERROR_NOAUTH);
             }
             $this->flash('Invalid ID requested', '/uploads/index');
         }
@@ -133,7 +133,7 @@ class FilesController extends AppController
             $_filesize = filesize($_filename);
 
             if ($this->nbClient) {
-                $this->nbFlash('-2');
+                $this->returnHttpStatusCode($this->ERROR_FILE);
             }
         }
 

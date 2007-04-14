@@ -42,6 +42,16 @@ class AppController extends Controller
      * Is the request coming from a non-browser client? Set in the constructor.
      */
     var $nbClient = false;
+    
+    var $SUCCESS          = "200 OK";
+    var $ERROR_NO_SESSION = "511 No Active Session";
+    var $ERROR_LOGIN      = "512 Login Error";
+    var $ERROR_ACTIVATION = "513 User not Activated";
+    var $ERROR_DELETE     = "514 Cannot Delete";
+    var $ERROR_NOAUTH     = "515 Not Permitted for This User";
+    var $ERROR_FILE       = "516 File Access Error";
+    var $ERROR_NO_SPACE   = "517 Out of Space for Upload";
+    var $ERROR_UPLOAD     = "518 Generic Upload Error";
 
     function __construct() {
 
@@ -93,7 +103,7 @@ class AppController extends Controller
     {
         if (!$this->Session->check('User')) {
             if ($this->nbClient) {
-                $this->nbFlash('-1');
+                $this->returnHttpStatusCode($this->ERROR_NO_SESSION);
             }
             $this->redirect('/users/login');
             exit;
@@ -116,6 +126,14 @@ class AppController extends Controller
         $this->render(null, false, VIEWS.'layouts'.DS.'nbflash.thtml');
 
         exit(); // wil, this is what is needed otherwise i see a trailing -1 after the upload_id during a successful upload.
+    }
+    
+    
+    function returnHttpStatusCode($statusCode)
+    {
+        header ("HTTP/1.0 ".$statusCode);
+        $this->layout = null;
+        exit();
     }
 
 }
