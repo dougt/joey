@@ -80,6 +80,14 @@ joey_listener.prototype =
             else if (status == -1 )
             {
                 g_joey_statusUpdateObject.loginStatus("login","failed");
+
+                var c = confirm("Login Failed.  Would you like to try again?");
+                if (c == true)
+                {
+                    // Clear the username and password and try again.
+                    clearLoginData();
+                    setTimeout(uploadDataFromGlobals, 500); // give enough time for us to leave the busy check
+                }
             }
 
             return;
@@ -92,6 +100,7 @@ joey_listener.prototype =
             } 
             else {            
                 g_joey_statusUpdateObject.tellStatus("upload",null,null,"failed"); 
+                alert("Upload Failed.");
             }
             return;
         }
@@ -108,6 +117,31 @@ joey_listener.prototype =
     },
 };
 
+function clearLoginData()
+{
+    
+    // sometimes the password manager remembers username
+    // and password that are wrong or have changed.  If
+    // we failed to login, lets purge this data.  I hate
+    // that this is such a PITA to do.
+    
+    var pwmgr = Components.classes["@mozilla.org/passwordmanager;1"]
+                          .getService(Components.interfaces.nsIPasswordManager);
+    var e = pwmgr.enumerator;
+    
+    var passwds = [];
+    
+    while (e.hasMoreElements()) {
+        var passwd = e.getNext().QueryInterface(Components.interfaces.nsIPassword);
+        passwds.push(passwd);
+    }
+    
+    for (var i = 0; i < passwds.length; ++i)
+    {
+        if (passwds[i].host == g_joey_serverURL)
+            pwmgr.removeUser(passwds[i].host, passwds[i].user);
+    }
+}
 
 function uploadDataFromGlobals()
 {
@@ -248,7 +282,7 @@ function joey_selectedText()
     g_joey_title = focusedWindow.document.title;
     g_joey_url  = focusedWindow.location.href;
 
-    uploadDataFromGlobals();
+    uploadDataFromGlobals(false);
 }
 
 
@@ -279,7 +313,7 @@ function joey_feed(feedLocation)
     g_joey_content_type = "rss-source/text";
     g_joey_title = "Feed / We can put a title in it with one more client call. ";
     g_joey_url  = feedLocation;
-    uploadDataFromGlobals();
+    uploadDataFromGlobals(false);
 }
 
 // Check XUL statusbar item
@@ -300,7 +334,7 @@ function getMediaCallback(content_type, file)
         
         g_joey_file = file;
         g_joey_content_type = content_type;
-        uploadDataFromGlobals();
+        uploadDataFromGlobals(false);
         return;
 	}
     else {
@@ -642,9 +676,6 @@ function doGrab(iterator)
 
 function joeyCheckForMedia()
 {
-
-    //    alert('in');
-
     // reset these on new page load.  should probably move this somewhere else.
     document.getElementById("joeyMediaMenuItem").setAttribute("hidden","true");
     g_joey_media_url = null;
@@ -1094,6 +1125,8 @@ var g_joeySelectorService = {
     },
 
     mouseClickListener: function (e) {
+    
+    try {
 
         if(e.button == 0) {
             /* 
@@ -1104,7 +1137,9 @@ var g_joeySelectorService = {
              
 	        joey_selectedTarget(this.currentEvent.target);
             e.preventDefault(); // eat the event
-        }
+        }            
+
+	} catch (e) {alert(e);}
 
 	    this.disable();
     },
@@ -1259,8 +1294,7 @@ function joey_selectedTarget(targetElement)
     g_joey_title = "Microsummary from : " + focusedWindow.location.href; 
     g_joey_content_type = "microsummary/xml";
 
-    uploadDataFromGlobals();
-	
+    uploadDataFromGlobals(false);
 }
 
 /* 

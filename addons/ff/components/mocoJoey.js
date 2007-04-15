@@ -91,7 +91,9 @@ JoeyStreamListener.prototype =
 
   onStopRequest: function (aRequest, aContext, aStatus)
   {
-      this.mCallbackFunc(this.mOwner, aStatus, this.mBytes);
+      var httpChannel = aRequest.QueryInterface(Components.interfaces.nsIHttpChannel);
+      var httpResponse = httpChannel.responseStatus;
+      this.mCallbackFunc(this.mOwner, httpResponse, this.mBytes);
   },
 
   // nsIChannelEventSink
@@ -275,7 +277,7 @@ mocoJoey.prototype =
     
     loginCallback: function (self, status, bytes)
 	{
-        if (bytes.indexOf("-1") == -1)
+        if (status == 200)
         {
             g_joey_hasLogged = true;
 			
@@ -333,25 +335,32 @@ mocoJoey.prototype =
         var listener = self.joey_listener;
         self.setListener(null);
         g_joey_in_progress = false;
-        
-        if (bytes.indexOf("-1") != -1)
-        {
-            // General error
-            if (listener != null)
-                listener.onStatusChange("upload", -1);
+
+        if (listener == null)
             return;
-        }
-        
-        if (bytes.indexOf("-2") != -1)
+
+        if (status == 200)
         {
-            // Not enough space left for user
-            if (listener != null)
-                listener.onStatusChange("upload", -2);
+            listener.onStatusChange("upload", 1);  // 1 = okay all good. 
             return;
         }
 
-        if (listener != null)
-            listener.onStatusChange("upload", 1);  // 1 = okay all good. 
+        if (status == 517) // Out of Space for Upload
+        {
+            // Not enough space left for user
+            listener.onStatusChange("upload", -2);
+            return;
+        }
+
+        //  TODO: if it is a No Active Session error, try
+        //  relogging in a # of times.  
+        //
+        //  TODO: map more of the http status codes to
+        //  something the client might want to deal with.
+        //  General error
+
+        listener.onStatusChange("upload", -1);
+        return;
 	},
 
 
