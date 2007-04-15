@@ -400,7 +400,7 @@ class UploadsController extends AppController
             }
             
             $criteria=array('user_id' => $this->_user['id']);
-            $data = $this->Upload->findAll($criteria, NULL, NULL, $limit, $start, 3);
+            $data = $this->Upload->findAll($criteria, NULL, 'modified DESC', $limit, $start, 3);
             $count = 0;
             foreach ($data as $row) {
                 if (empty($row['File'][0]['preview_name'])) {
@@ -430,7 +430,8 @@ class UploadsController extends AppController
             $this->pageTitle = 'Uploads';
 
             $criteria=array('user_id' => $this->_user['id']);
-            list($order,$limit,$page) = $this->Pagination->init($criteria); // Added
+            $options=array('sortBy' => 'id', 'direction' => 'DESC');
+            list($order,$limit,$page) = $this->Pagination->init($criteria, NULL, $options); // Added
             $data = $this->Upload->findAll($criteria, NULL, $order, $limit, $page); // Extra parameters added
         
             $this->set('uploads', $data);
