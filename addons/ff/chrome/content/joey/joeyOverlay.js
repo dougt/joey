@@ -1012,10 +1012,12 @@ joeyBrowserStatusHandler.prototype =
 /* 
  * Joey Element Selection Service Singleton
  * ----------------------------------------
- *
- * This implementation is to be moved outside this JS file.
- * This is the UI contextual function that allows and
- * end-user to pick an area
+ * This implementation is to be moved outside
+ * this JS file. This uses the /contrib/uSummaryGenerator.js
+ * This is the UI contextual function that allows and end-user 
+ * to pick an area and then the uSummaryGenerator service is 
+ * called so that we can wrap the generator XML info and  
+ * upload it to Joey!. 
  */
 
 var sigmaCall = null;
@@ -1322,7 +1324,8 @@ function joey_buildXPath(targetElement)
         {
             if (type == Node.ELEMENT_NODE) {
                 if (cur.nodeName.toLowerCase() == "span"   || cur.nodeName.toLowerCase() == "tbody" ||
-                    cur.nodeName.toLowerCase() == "xxxx"   || cur.nodeName.toLowerCase() == "document" ||
+                    cur.nodeName.toLowerCase() == "a"      || cur.nodeName.toLowerCase() == "img" ||
+                    cur.nodeName.toLowerCase() == "ul"     || cur.nodeName.toLowerCase() == "document" ||
                     cur.nodeName.toLowerCase() == "center" || cur.nodeName.toLowerCase() == "document" ||
                     cur.nodeName.toLowerCase() == "font"   || cur.nodeName.toLowerCase() == "#document" )
                     ignore = true;
@@ -1336,10 +1339,13 @@ function joey_buildXPath(targetElement)
                 if (id != null) {
                     
                     if (buffer == "")
-                        return "id('"+id+"')";
-                    
+                    {
+                        buffer = "id('"+id+"')";
+                        return buffer.toLowerCase();
+                    }
+
                     buffer = "id('" + id + "')" + buffer;
-                    return buffer;
+                    return buffer.toLowerCase();
                 }
             }
 
@@ -1381,6 +1387,11 @@ function joey_buildXPath(targetElement)
                 occur = 0;
             }
         }
+
+        if (cur.nodeName.toLowerCase() == "html" ||
+            cur.nodeName.toLowerCase() == "body" )
+            occur = 0;
+
         if (ignore == true) {
         }
         else if (occur == 0) {
@@ -1395,7 +1406,7 @@ function joey_buildXPath(targetElement)
         
     } while (cur != null);
 
-    return buffer;
+    return buffer.toLowerCase();
 }
 
 function toXMLString(str) {
@@ -1417,8 +1428,8 @@ function joey_selectedTarget(targetElement)
     /*
       var xpath = prompt("enter an xpath");
 
-      if (!confirm (xpath))
-      return;
+    if (!confirm (xpath))
+        return;
     */
 
     var uuidGenerator =  Components.classes["@mozilla.org/uuid-generator;1"].getService(Components.interfaces.nsIUUIDGenerator);
@@ -1463,4 +1474,3 @@ function joey_enableSelection() {
     g_joeySelectorService.enable();
 
 }
-
