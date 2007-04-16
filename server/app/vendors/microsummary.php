@@ -269,9 +269,6 @@ class microsummary {
 
     if ($summary == "" && $useHint == true)
     {
-      echo "Not Found";
-      exit();
-
       $rv = 0;
 
       // need a smarter way from finding a hint (innerHTML)
