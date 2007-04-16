@@ -308,7 +308,6 @@ class microsummary {
           //          fwrite ($f, $str);
           //          fclose($f);
 
-          echo "failing here";
           return -1;
         }
 
