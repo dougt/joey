@@ -44,6 +44,7 @@ class microsummary {
   var $msdoc; // microsummary dom document
   var $xsldoc; // dom document of stylesheet embedded in the generator
   var $result;
+  var $hintXPATH;
   var $hint;
 
   // load and parse a microsummary generator file
@@ -66,15 +67,29 @@ class microsummary {
     $templateNode = $xpath->query('/ms:generator/ms:template/xsl:transform')->item(0);
 
     $hintelm = $xpath->query('/ms:generator/ms:hint')->item(0);
+
     if (!empty($hintelm->nodeValue))
       $this->hint = $this->fromXMLString($hintelm->nodeValue);
     else
       $this->hint = "";
 
+    $this->hintXPATH = "";
     // import stylesheet
     $this->xsldoc = DOMDocument::loadXML($this->msdoc->saveXML($templateNode));
   }
 
+  function save()
+  {
+    if ($this->hintXPATH != "")
+    {
+      $valueof = $this->msdoc->getElementsByTagName("value-of");
+      $valueof->item(0)->removeAttribute("select");
+      $valueof->item(0)->setAttribute("select", $this->hintXPATH);
+    }
+
+    $result = $this->msdoc->saveXML();
+    return $result;
+  }
 
   function fromXMLString($in)
   {
@@ -86,82 +101,135 @@ class microsummary {
     return $out;
   }
 
-  //This following function will be included in PHP 5.2.  We can remove it at that point.
    function getNodePath($in_node)
+   {
+     if (!$in_node) {
+       return null;
+     }
+     
+     $buffer = '';
+     $cur = $in_node;
+     do {
+
+       // print xpath as we go:
+       //echo $buffer . "\n";
+       
+       $name = '';
+       $sep = '/';
+       $occur = 0;
+       if (($type = $cur->nodeType) == XML_DOCUMENT_NODE) {
+         if ($buffer[0] == '/') {
+           break;
+         }
+
+       }
+       else if ($type == XML_ATTRIBUTE_NODE) {
+         $sep .= '@';
+         $name = $cur->nodeName;
+         $next = $cur->parentNode;
+       }
+       else {
+         
+         if ($type == XML_ELEMENT_NODE) {
+
+           // Ignore inline elements.  
+           if ($cur->nodeName == "span")
+             $ignore = true;
+
+           $id = $cur->getAttribute('id');
+           if (!empty($id)) {
+             
+             if ($id == "microsummary_hint_id") {
+               $ignore = true;
+             }
+             else {
+               
+               // Found a id.  Lets use that as the base reference.
+
+               if (empty($buffer))
+                 return "id('".$id."')";
+
+               $buffer = "id('".$id."')" . $buffer;
+               return $buffer;  // We are done.
+             }
+           }
+         }
+         
+         $name = $cur->nodeName;
+         $next = $cur->parentNode;
+         
+         // now figure out the index
+         $tmp = $cur->previousSibling;
+         while ($tmp != false) {
+           if ($name == $tmp->nodeName) {
+             $occur++;
+           }
+           $tmp = $tmp->previousSibling;
+         }
+
+         $occur++;
+         
+         if ($type == XML_ELEMENT_NODE) {
+           $name = $name;  //???
+         }
+         
+         // fix the names for those nodes where xpath query and dom node name don't match
+         elseif ($type == XML_COMMENT_NODE) {
+           $ignore = true;
+           $name = 'comment()';
+         }
+         elseif ($type == XML_PI_NODE) {
+           $ignore = true;
+           $name = 'processing-instruction()';
+         }
+         elseif ($type == XML_TEXT_NODE) {
+           $ignore = true;
+           $name = 'text()';
+         }
+         // anything left here has not been coded yet (cdata is broken)
+         else {
+           $name = '';
+           $sep = '';
+           $occur = 0;
+         }
+       }
+       if ($ignore == true) {
+       }
+       else if ($occur == 0) {
+         $buffer = $sep . $name . $buffer;
+       }
+       else {
+         $buffer = $sep . $name . '[' . $occur . ']' . $buffer;
+       }
+       $ignore = false;
+       
+       $cur = $next;
+       
+     } while ($cur != false);
+     
+     return $buffer;
+   }
+
+   function execute($applyTo, $useHint) {
+
+    $rv = 1;
+
+    // fetch
+    if (!$str = $this->fetch($applyTo))
     {
-        if (!$in_node) {
-            return null;
-        }
-
-        $buffer = '';
-        $cur = $in_node;
-        do {
-            $name = '';
-            $sep = '/';
-            $occur = 0;
-            if (($type = $cur->nodeType) == XML_DOCUMENT_NODE) {
-                if ($buffer[0] == '/') {
-                    break;
-                }
-
-                $next = false;
-            }
-            else if ($type == XML_ATTRIBUTE_NODE) {
-                $sep .= '@';
-                $name = $cur->nodeName;
-                $next = $cur->parentNode;
-            }
-            else {
-                $name = $cur->nodeName;
-                $next = $cur->parentNode;
-
-                // now figure out the index
-                $tmp = $cur->previousSibling;
-                while ($tmp != false) {
-                    if ($name == $tmp->nodeName) {
-                        $occur++;
-                    }
-                    $tmp = $tmp->previousSibling;
-                }
-
-                $occur++;
-
-                if ($type == XML_ELEMENT_NODE) {
-                    $name = $name;
-                }
-                // fix the names for those nodes where xpath query and dom node name don't match
-                elseif ($type == XML_COMMENT_NODE) {
-                    $name = 'comment()';
-                }
-                elseif ($type == XML_PI_NODE) {
-                    $name = 'processing-instruction()';
-                }
-                elseif ($type == XML_TEXT_NODE) {
-                    $name = 'text()';
-                }
-                // anything left here has not been coded yet (cdata is broken)
-                else {
-                    $name = '';
-                    $sep = '';
-                    $occur = 0;
-                }
-            }
-            if ($occur == 0) {
-                $buffer = $sep . $name . $buffer;
-            }
-            else {
-                $buffer = $sep . $name . '[' . $occur . ']' . $buffer;
-            }
-
-            $cur = $next;
-
-        } while ($cur != false);
-
-        return $buffer;
+       die("unable to fetch $applyTo");
     }
+    // load into new dom document
+    $d = new DOMDocument();
+    @ $d->loadHTML($str);
 
+    /*
 
-  function execute($applyTo) {
+    // This is the traditional way of creating a
+    // microsummary.  However, the result is just text.
+    // What we want is something richer.  For how, we are
+    // simply going to get the XML/HTML pointed at by the
+    // select XPATH.
 
     $xpath = new DOMXPath($this->msdoc);
 
@@ -176,55 +244,118 @@ class microsummary {
     $xslt = new xsltProcessor;
     $xslt->importStyleSheet($this->xsldoc);
 
-    // fetch
-    if (!$str = $this->fetch($applyTo))
-       die("unable to fetch $applyTo");
-
-    // load into new dom document
-    $d = new DOMDocument();
-    @ $d->loadHTML($str);
-
     // execute xsl against it
     $summary = $xslt->transformToXML($d);
 
-    if (empty ($summary))
-    {
-      if (strstr($str, $this->hint))
-        echo "Found hint";
-      else
-        echo "Hint not found";
+    */
 
+    $valueof = $this->msdoc->getElementsByTagName("value-of");
+    $select = $valueof->item(0)->getAttribute("select");
+
+    $docXpath = new DOMXPath($d);
+    $result = $docXpath->query($select);
+    $summary = "";
+
+    if ($result)
+    {
+      $node = $result->item(0);
+
+      if ($node && $node->ownerDocument)
+      {
+        $summary = "<body>" . $node->ownerDocument->saveXML($node) . "</body>";
+      }
+    }
+
+
+    if ($summary == "" && $useHint == true)
+    {
+      echo "Not Found";
+      exit();
+
+      $rv = 0;
+
+      // need a smarter way from finding a hint (innerHTML)
+      // in the page.
+
+      if (!strstr($str, $this->hint))
+      {
+        // So there wasn't a direct match.  Lets try
+        // checking to see if the hint needs to be massaged
+        // into something more php friendly, or less like
+        // Firefox.
+        //
+        // Currently we only need to kill any closing </li>
+        //
+        // TODO, we should make these tags optional in the
+        // search.  
+        
+        $this->hint = str_replace("</li>", "", $this->hint);
+
+
+        // TODO: We have to turn the hint into a pattern
+        //        (escape it), then we can use something
+        //        like:
+        //  preg_match ( string pattern, string subject);
+
+
+        // TODO: entities: &#39; for '
+
+
+        if (!strstr($str, $this->hint))
+        {
+          // can't figure out what to do.  No updating; no microsummaries
+
+          
+          //          echo $this->hint;
+          //          $f = fopen("/home/dougt/dump", w);
+          //          fwrite ($f, $str);
+          //          fclose($f);
+
+          echo "failing here";
+          return -1;
+        }
+
+      }
+
+      //      echo $str;
 
       $str = str_ireplace ($this->hint,
                            "<div id=\"microsummary_hint_id\">" .
                            $this->hint .
                            "</div>", $str, $count);
 
-      echo "DIV Inserted: " . $count;
-
       $d = new DOMDocument();
       @ $d->loadHTML($str);
       
-      $parent = $d->getElementById("microsummary_hint_id")->parentNode;
-      $xpath_to_hint = $this->getNodePath($parent);
+      $child = $d->getElementById("microsummary_hint_id")->childNodes->item(0);
+      $this->hintXPATH = $this->getNodePath($child);
 
+      // Verify the xpath actually worked.
 
+      echo $this->hintXPATH;
+      $verify = new DOMXPath($d);
+      $result = $verify->query($this->hintXPATH);
 
-      $docXpath = new DOMXPath($d);
-      $result = $docXpath->query($xpath_to_hint);
+      if ($result == null) {
+        echo "Generated XPATH could not be found in Document.";
+      }
       
-      echo $result->item(0)->nodeValue;
-      exit();
+      $rv = 2;
+
+      // TODO Refactor so that after an update, it is easy to get the summmary
+
+      $me_serialized = $this->save();
+      $ms = new microsummary();
+      $ms->load($me_serialized);
+      $ms->execute($applyTo, false);
+      $summary = $ms->result;
+
     }
 
-    $this->updateResultForURI($applyTo, $summary);
+    $this->result = $summary;
+    return $rv;
   }
 
-  // save updated results back to file
-  // if changed, update db and notify consumers
-  function updateResultForURI($uri, $summary) {
-  	$this->result = $summary;
-  }
 
   // curl utility function
   function fetch($url) {
@@ -234,7 +365,6 @@ class microsummary {
     curl_setopt($ch, CURLOPT_TIMEOUT, 5);
     $result = curl_exec($ch);
     if (curl_errno($ch)) {
-      print curl_error($ch);
       return false;
     }
     curl_close($ch);

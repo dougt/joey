@@ -116,7 +116,7 @@ class StorageComponent extends Object
         $_file->set('name', basename($_filename));
         $_file->set('upload_id', $id);
         $_file->set('size', 0);
-        $_file->set('type', "text/plain");
+        $_file->set('type', "text/html");
         if (!$_file->save()) {
           return false;
         }
@@ -195,11 +195,23 @@ class StorageComponent extends Object
 
               $ms = new microsummary();
               $ms->load($_upload['Contentsource'][0]['source']);
-              $ms->execute($_upload['Upload']['referrer']);
+              $rv = $ms->execute($_upload['Upload']['referrer'], true);
+              
+              if ($rv == 2)
+              {
+                // The XPATH has been updated based on the
+                // hint passed.  Lets save this new content
+                // source to the database
 
-              // @todo PHP5 and Firefox don't seam to be
-              // compatible all of the time.  We need to
-              // investigate this a bit.
+                $updated_source =  $ms->save();
+
+                // save in db:
+
+                $this->controller->Contentsource->id = $_upload['Contentsource'][0]['id'];
+                $this->controller->Contentsource->saveField('source', $updated_source);
+
+              }
+
               if (empty($ms->result)) {
                   $ms->result = "XPATH is broken..  this feature doesn't work for the content you have selected. ";
               }
