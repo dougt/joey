@@ -1012,13 +1012,15 @@ joeyBrowserStatusHandler.prototype =
 /* 
  * Joey Element Selection Service Singleton
  * ----------------------------------------
- * This implementation is to be moved outside
- * this JS file. This uses the /contrib/uSummaryGenerator.js
- * This is the UI contextual function that allows and end-user 
- * to pick an area and then the uSummaryGenerator service is 
- * called so that we can wrap the generator XML info and  
- * upload it to Joey!. 
+ *
+ * This implementation is to be moved outside this JS file.
+ * This is the UI contextual function that allows and
+ * end-user to pick an area
  */
+
+var sigmaCall = null;
+var omegaCall = null;
+var deltaCall = null;
 
 var g_joeySelectorService = {
 
@@ -1089,22 +1091,25 @@ var g_joeySelectorService = {
         clearTimeout(this.timer);
         this.timer = null;
 
-    	g_joey_gBrowser.selectedBrowser
-    	               .contentDocument
-    	               .removeEventListener("mousemove"
-    	                                 ,sigmaCall
-    	                                 ,false);        
-    	g_joey_gBrowser.selectedBrowser
-    	               .contentDocument
-    	               .removeEventListener("mousedown"
-    	                                 ,omegaCall 
-    	                                 ,false);
+        if (sigmaCall !=null)
+            g_joey_gBrowser.selectedBrowser
+         	               .contentDocument
+    	                   .removeEventListener("mousemove"
+                                                ,sigmaCall
+                                                ,false);        
+        if (omegaCall != null)
+            g_joey_gBrowser.selectedBrowser
+         	               .contentDocument
+    	                   .removeEventListener("mousedown"
+                                                ,omegaCall 
+                                                ,false);
 
-    	g_joey_gBrowser.selectedBrowser
-    	               .contentDocument
-    	               .removeEventListener("keydown"
-    	                                 ,deltaCall 
-    	                                 ,false);
+        if (deltaCall != null)
+            g_joey_gBrowser.selectedBrowser
+        	               .contentDocument
+        	               .removeEventListener("keydown"
+                                                ,deltaCall 
+                                                ,false);
 
         this.removeBox();
         this.associatedDocument    = null;   
@@ -1283,16 +1288,169 @@ var g_joeySelectorService = {
     
 }
 
+
+function joey_buildXPath(targetElement)
+{
+    if (targetElement == null)
+        return null;
+
+    var buffer = "";
+    var cur = targetElement;
+
+    do {
+
+        var name = "";
+        var sep = "/";
+        var occur = 0;
+        var ignore = false;
+        var type = targetElement.nodeType; 
+
+        //        alert(buffer);
+
+        if (type == Node.DOCUMENT_NODE)
+        {
+            buffer = "/" + buffer;
+            break;
+        }
+        else if (type == Node.ATTRIBUTE_NODE)
+        {
+            sep = "@";
+            name = cur.nodeName;
+            next = cur.parentNode;
+        }
+        else
+        {
+            if (type == Node.ELEMENT_NODE) {
+                if (cur.nodeName.toLowerCase() == "span"   || cur.nodeName.toLowerCase() == "tbody" ||
+                    cur.nodeName.toLowerCase() == "xxxx"   || cur.nodeName.toLowerCase() == "document" ||
+                    cur.nodeName.toLowerCase() == "center" || cur.nodeName.toLowerCase() == "document" ||
+                    cur.nodeName.toLowerCase() == "font"   || cur.nodeName.toLowerCase() == "#document" )
+                    ignore = true;
+
+                var id = null;
+
+                try {// why would this throw?
+                    id = cur.getAttribute('id');
+                } catch (e) {}
+
+                if (id != null) {
+                    
+                    if (buffer == "")
+                        return "id('"+id+"')";
+                    
+                    buffer = "id('" + id + "')" + buffer;
+                    return buffer;
+                }
+            }
+
+            name = cur.nodeName;
+            next = cur.parentNode;
+
+            // now figure out the index
+            var tmp = cur.previousSibling;
+            while (tmp != null) {
+                if (name == tmp.nodeName) {
+                    occur++;
+                }
+                tmp = tmp.previousSibling;
+            }
+            
+            occur++;
+            
+            if (type == Node.ELEMENT_NODE) {
+                name = name; // ??
+            }
+            
+            // fix the names for those nodes where xpath query and dom node name don't match
+            else if (type == Node.COMMENT_NODE) {
+                ignore = true;
+                name = 'comment()';
+            }
+            else if (type == Node.PI_NODE) {
+                ignore = true;
+                name = 'processing-instruction()';
+            }
+            else if (type == Node.TEXT_NODE) {
+                ignore = true;
+                name = 'text()';
+            }
+            // anything left here has not been coded yet (cdata is broken)
+            else {
+                name = '';
+                sep = '';
+                occur = 0;
+            }
+        }
+        if (ignore == true) {
+        }
+        else if (occur == 0) {
+            buffer = sep + name + buffer;
+        }
+        else {
+            buffer = sep + name + '[' + occur + ']' + buffer;
+        }
+        ignore = false;
+        
+        cur = next;
+        
+    } while (cur != null);
+
+    return buffer;
+}
+
+function toXMLString(str) {
+    return str.replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/\'/g, "&apos;").replace(/\"/g, "&quot;");
+}
+
+
 function joey_selectedTarget(targetElement)
 {
-    var obj = uSummaryGen_xPathInit(content.document,targetElement);
-    g_joey_data = obj.generatorText;
     g_joey_isfile = false;
 
     var focusedWindow = document.commandDispatcher.focusedWindow;
     g_joey_url  = focusedWindow.location.href;
     g_joey_title = "Microsummary from : " + focusedWindow.location.href; 
     g_joey_content_type = "microsummary/xml";
+
+    var xpath = joey_buildXPath(targetElement);
+
+    /*
+      var xpath = prompt("enter an xpath");
+
+      if (!confirm (xpath))
+      return;
+    */
+
+    var uuidGenerator =  Components.classes["@mozilla.org/uuid-generator;1"].getService(Components.interfaces.nsIUUIDGenerator);
+    var uuid = uuidGenerator.generateUUID();
+    var uuidString = uuid.toString();
+
+    var str = '<?xml version="1.0" encoding="UTF-8"?>\n'
+		+ '<generator xmlns="http://www.mozilla.org/microsummaries/0.1" name="Microsummary for '
+		+ toXMLString(focusedWindow.location.href) + '" '
+		+ 'uri="urn:' + uuidString + '">\n'
+		+ ' <pages>\n'
+		+ '   <include>' 
+		+ toXMLString(focusedWindow.location.href)
+		+ '</include>\n';
+
+    var hint = toXMLString(targetElement.innerHTML);
+
+    str += ' </pages>\n'
+		+ ' <template>\n'
+		+ '   <transform xmlns="http://www.w3.org/1999/XSL/Transform" version="1.0">\n'
+		+ '     <output method="text"/>\n'
+		+ '     <template match="/">\n'
+		+ '       <value-of select="' + xpath + '"/>\n'
+		+ '     </template>\n'
+		+ '   </transform>\n'
+		+ ' </template>\n'
+        + '<hint>' + hint + '</hint>'
+		+ '</generator>\n';
+
+    alert(str);
+
+    g_joey_data = str;
 
     uploadDataFromGlobals(false);
 }
@@ -1305,3 +1463,4 @@ function joey_enableSelection() {
     g_joeySelectorService.enable();
 
 }
+
