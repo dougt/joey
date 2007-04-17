@@ -1291,6 +1291,58 @@ var g_joeySelectorService = {
 }
 
 
+/**
+ * Determine whether a node's text content is entirely whitespace.
+ *
+ * @param nod  A node implementing the |CharacterData| interface (i.e.,
+ *             a |Text|, |Comment|, or |CDATASection| node
+ * @return     True if all of the text content of |nod| is whitespace,
+ *             otherwise false.
+ */
+function is_all_ws( nod )
+{
+  // Use ECMA-262 Edition 3 String and RegExp features
+  return !(/[^\t\n\r ]/.test(nod.data));
+}
+
+
+/**
+ * Determine if a node should be ignored by the iterator functions.
+ *
+ * @param nod  An object implementing the DOM1 |Node| interface.
+ * @return     true if the node is:
+ *                1) A |Text| node that is all whitespace
+ *                2) A |Comment| node
+ *             and otherwise false.
+ */
+
+function is_ignorable( nod )
+{
+  return ( nod.nodeType == 8) || // A comment node
+         ( (nod.nodeType == 3) && is_all_ws(nod) ); // a text node, all ws
+}
+
+/**
+ * Version of |previousSibling| that skips nodes that are entirely
+ * whitespace or comments.  (Normally |previousSibling| is a property
+ * of all DOM nodes that gives the sibling node, the node that is
+ * a child of the same parent, that occurs immediately before the
+ * reference node.)
+ *
+ * @param sib  The reference node.
+ * @return     Either:
+ *               1) The closest previous sibling to |sib| that is not
+ *                  ignorable according to |is_ignorable|, or
+ *               2) null if no such node exists.
+ */
+function node_before( sib )
+{
+  while ((sib = sib.previousSibling)) {
+    if (!is_ignorable(sib)) return sib;
+  }
+  return null;
+}
+
 function joey_buildXPath(targetElement)
 {
     if (targetElement == null)
@@ -1323,10 +1375,10 @@ function joey_buildXPath(targetElement)
         else
         {
             if (type == Node.ELEMENT_NODE) {
-                if (cur.nodeName.toLowerCase() == "span"   || cur.nodeName.toLowerCase() == "tbody" ||
+                if (cur.nodeName.toLowerCase() == "tbody" ||
                     cur.nodeName.toLowerCase() == "a"      || cur.nodeName.toLowerCase() == "img" ||
                     cur.nodeName.toLowerCase() == "ul"     || cur.nodeName.toLowerCase() == "document" ||
-                    cur.nodeName.toLowerCase() == "center" || cur.nodeName.toLowerCase() == "document" ||
+                    cur.nodeName.toLowerCase() == "document" ||
                     cur.nodeName.toLowerCase() == "font"   || cur.nodeName.toLowerCase() == "#document" )
                     ignore = true;
 
@@ -1353,12 +1405,12 @@ function joey_buildXPath(targetElement)
             next = cur.parentNode;
 
             // now figure out the index
-            var tmp = cur.previousSibling;
+            var tmp = node_before(cur);
             while (tmp != null) {
                 if (name == tmp.nodeName) {
                     occur++;
                 }
-                tmp = tmp.previousSibling;
+                tmp = node_before(tmp);
             }
             
             occur++;
@@ -1446,6 +1498,7 @@ function joey_selectedTarget(targetElement)
 		+ '</include>\n';
 
     var hint = toXMLString(targetElement.innerHTML);
+    hint ="";
 
     str += ' </pages>\n'
 		+ ' <template>\n'
