@@ -1375,8 +1375,7 @@ function joey_buildXPath(targetElement)
         else
         {
             if (type == Node.ELEMENT_NODE) {
-                if (cur.nodeName.toLowerCase() == "tbody" ||
-                    cur.nodeName.toLowerCase() == "a"      || cur.nodeName.toLowerCase() == "img" ||
+                if (cur.nodeName.toLowerCase() == "a"      || cur.nodeName.toLowerCase() == "img" ||
                     cur.nodeName.toLowerCase() == "ul"     || cur.nodeName.toLowerCase() == "document" ||
                     cur.nodeName.toLowerCase() == "document" ||
                     cur.nodeName.toLowerCase() == "font"   || cur.nodeName.toLowerCase() == "#document" )
