@@ -5,7 +5,7 @@
 
 <h2>Login</h2>
 
-<form action="" method="post" />
+<form action="<?=$html->url('/users/login')?>" method="post">
 
 <p>
 Username:<br/>
@@ -14,7 +14,7 @@ Username:<br/>
 
 <p>
 Password:<br/>
-<?=$html->input('User/password')?>
+<?=$html->password('User/password')?>
 </p>
 
 <p>

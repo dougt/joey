@@ -1,0 +1,41 @@
+
+div.error_message {
+    color: #c00;
+    margin: 0;
+    padding-bottom: 1em;
+}
+
+div.oddrow {
+    width: 100%;
+    margin: 0 0 0 0;
+    padding: 5px 0 5px 0;
+    background-color: #FFFFFF;
+}
+
+div.evenrow {
+    width: 100%;
+    margin: 0 0 0 0;
+    padding: 5px 0 5px 0;
+    background-color: #CCCCCC;
+}
+
+span.delete {
+    margin-left: 10px;
+    font-size: smaller;
+    color: #FF0033;
+}
+span.delete a:link, span.delete a:visited {
+    color: #FF0033;
+    text-decoration: none;
+}
+
+span.view {
+     margin-right: 5px;
+     font-weight: bold;
+     color: #006633;
+}
+span.view a:link, span.view a:visited {
+    color: #006633;
+    text-decoration: none;
+}
+
