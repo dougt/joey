@@ -47,7 +47,7 @@
             $user = $this->controller->Session->read('User');
             echo $user['email'].' ('.$html->link('Logout', '/users/logout').')';
             echo "<p>";
-            echo $html->link('Download Joey Addon for Firefox', FULL_BASE_URL.'/joey.xpi');
+            echo $html->link('Download Joey Addon for Firefox', FULL_BASE_URL.'/app/webroot/ff/joey.xpi');
         }
 	
     ?>
