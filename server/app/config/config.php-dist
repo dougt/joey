@@ -40,6 +40,14 @@
  */
 
 /**
+ * Email address to be used when sending out registration 
+ * activate and password reminder emails
+ */
+
+define('JOEY_EMAIL_ADDRESS', 'joey@labs.mozilla.com');
+
+
+/**
  * Full path to convert command.  `man convert` for more details.
  */
 define('CONVERT_CMD', '/usr/bin/convert');

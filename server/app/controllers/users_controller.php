@@ -238,10 +238,10 @@ class UsersController extends AppController
           // in a config var, or a view somewhere.
           // @todo site is hardcoded here to the base URL.  This will
           // work for production but needs to be fixed for other URLs
-          $_message = "Please click on the following link to reset your password:\n\n http://joey.labs.mozilla.com/users/resetpassword/".$_someone['User']['username']."/".$epw." \n";
+          $_message = "Please click on the following link to reset your password:\n\n ".FULL_BASE_URL."/users/resetpassword/".$_someone['User']['username']."/".$epw." \n";
 
           // Send a mail to the user
-          mail($_someone['User']['email'], 'Joey password reset', $_message, "From: joey@labs.mozilla.com\r\n");
+          mail($_someone['User']['email'], 'Joey password reset', $_message, "From: ".JOEY_EMAIL_ADDRESS."\r\n");
 
           $this->flash('Please check your email to reset password.', '/', 2);
           exit;
@@ -324,7 +324,7 @@ class UsersController extends AppController
                         $_message = "Please click on the following link or use the code {$this->data['User']['confirmationcode']} to activate your registration.  ".FULL_BASE_URL."/users/activate/{$this->data['User']['confirmationcode']} .";
 
                         // Send a mail to the user
-                        mail($this->data['User']['email'], 'Welcome to Joey', $_message, "From: joey@labs.mozilla.com\r\n");
+                        mail($this->data['User']['email'], 'Welcome to Joey', $_message, "From: ".JOEY_EMAIL_ADDRESS."\r\n");
 
                         // Grab their information from the database, and store in the session
                         $_newuser = $this->User->findByEmail($this->data['User']['email']);

@@ -48,9 +48,9 @@
 <div>
         <label class="joey-label-large" for="LegalStuff">Important Legal Stuff.</label>
 <br>
-<br>    <a href='https://dougt.joey.labs.mozilla.com/terms/termsofservice'> Terms of Use </a>
-<br>    <a href='https://dougt.joey.labs.mozilla.com/terms/EULA'> End User License Agreement </a>
-<br>    <a href='https://dougt.joey.labs.mozilla.com/terms/privacypolicy'> Privacy Policy </a>
+<br>    <?php echo $html->link('Terms of Use',               FULL_BASE_URL . '/terms/termsofservice') ?> 
+<br>    <?php echo $html->link('End User License Agreement', FULL_BASE_URL . '/terms/EULA') ?> 
+<br>    <?php echo $html->link('Privacy Policy',             FULL_BASE_URL . '/terms/privacypolicy') ?> 
 
 </div>
 
