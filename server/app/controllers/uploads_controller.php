@@ -391,6 +391,7 @@ class UploadsController extends AppController
             if (array_key_exists('limit',$_POST)) {
                 $limit = $_POST['limit'];
             } else {
+                // @todo this should have a (smaller) cap on it to avoid a DOS
                 $limit = 100000;
             }
             if (array_key_exists('start',$_POST)) {
@@ -453,6 +454,7 @@ class UploadsController extends AppController
             if (array_key_exists('limit',$_POST)) {
                 $limit = $_POST['limit'];
             } else {
+                // @todo this should have a (smaller) cap on it to avoid a DOS
                 $limit = 100000;
             }
             if (array_key_exists('start',$_POST)) {

@@ -75,11 +75,14 @@ class StorageComponent extends Object
     /**
      * Check to see if the user has available space for the
      * additional content.
+     * @param int user id
+     * @param int size (in bytes) of requested space
      */
 
     function hasAvailableSpace($userid, $additional) {
       
       $totalused = $this->controller->File->totalSpaceUsed($userid);
+
       // $additional and $totalused is in bytes, MAX_DISK_USAGE is in MB
       if ( ($additional + $totalused) > (MAX_DISK_USAGE * 1024 * 1024)) {
         return false;
@@ -109,7 +112,7 @@ class StorageComponent extends Object
         $type = $_contentsourcetype['Contentsourcetype']['name'];
 
         // $_filename = $this->uniqueFilenameForUserType($_upload['Upload']['user_id'], $type);
-        $rand = uniqid ();
+        $rand = uniqid();
         $_filename = UPLOAD_DIR."/{$_upload['Upload']['user_id']}/"."joey-".$rand.".".$this->suffix[$type];
         
         $_file = new File();
@@ -130,6 +133,7 @@ class StorageComponent extends Object
       }
       
       // check to see if we should do anything
+      // @todo er...wtf - why is this if(false)?  I'm adding a todo tag...
       if (false && $forceUpdate == false)
       {
         $expiry = strtotime($_upload['File'][0]['modified'] . " + " . CONTENTSOURCE_REFRESH_TIME . " minutes");
@@ -318,7 +322,7 @@ class StorageComponent extends Object
         
         $_ret = array ('default_name' => '', 'default_type' => '', 'original_name' => '', 'original_type' => '', 'preview_name' => '', 'preview_type' => '');
         
-        $rand = uniqid ();
+        $rand = uniqid();
         if (array_key_exists($type, $this->suffix)) {
           if (strcasecmp($type, 'video/flv') == 0) {
             
@@ -356,7 +360,7 @@ class StorageComponent extends Object
               return null;
             }
             
-            if (!$this->transcodeImage ($_ret['original_name'], $_ret['default_name'], $_ret['preview_name'], $width, $height)) {
+            if (!$this->transcodeImage($_ret['original_name'], $_ret['default_name'], $_ret['preview_name'], $width, $height)) {
               return null;
             }
             

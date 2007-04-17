@@ -2,11 +2,10 @@
  <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>Joey Uploads</title>
-    <link>http://joey.labs.mozillc.om/</link>
+    <link>http://joey.labs.mozilla.com/</link>
     <description>Your personal uploads via Joey!.</description>
     <language>en-us</language>
     <pubDate><?php echo date("D, j M Y H:i:s", gmmktime()) . ' GMT';?></pubDate>
-    <?php echo date("D, j M Y H:i:s", gmmktime()) . ' GMT';?>
     <docs>http://blogs.law.harvard.edu/tech/rss</docs>
 
     <generator>CakePHP</generator>

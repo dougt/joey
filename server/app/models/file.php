@@ -53,14 +53,30 @@ class File extends AppModel
                             'type'  => '/^.+$/'
                          );
 
+    /**
+     * Check the total space used for a user
+     * @param int user id
+     */
     function totalSpaceUsed($user_id)
     {
-      $query = "select sum(files.size+files.original_size+files.preview_size) from files where files.upload_id in (select uploads.id from uploads where uploads.user_id=" .
-               $user_id . ")"; 
+        // Just double check
+        if (!is_integer($user_id)) {
+            return 0;
+        }
 
-      $ret = $this->query($query);
-      
-      return $ret[0][0]["sum(files.size+files.original_size+files.preview_size)"];
+        $query = "
+            SELECT 
+                sum(files.size+files.original_size+files.preview_size) as `total`
+            FROM 
+                files 
+            WHERE 
+                files.upload_id IN (
+                    SELECT uploads.id FROM uploads WHERE uploads.user_id={$user_id}
+                )";
+
+        $ret = $this->query($query);
+
+        return $ret[0][0]['total'];
     }
 
 }
