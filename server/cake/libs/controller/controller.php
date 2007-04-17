@@ -380,7 +380,7 @@ class Controller extends Object{
 			if (strpos($url, '/') !== 0) {
 				$url = '/' . $url;
 			}
-			$url = $base . $url;
+			$url = FULL_BASE_URL . $base . $url;
 		}
 
 		if (function_exists('session_write_close')) {
