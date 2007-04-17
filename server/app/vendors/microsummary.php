@@ -49,7 +49,7 @@ class microsummary {
 
   // load and parse a microsummary generator file
   function load($generator) {
-  
+
     $this->msdoc = new DOMDocument();
     $this->msdoc->loadXML($generator);
 
@@ -66,6 +66,10 @@ class microsummary {
     // get template node
     $templateNode = $xpath->query('/ms:generator/ms:template/xsl:transform')->item(0);
 
+    // import stylesheet
+    $this->xsldoc = DOMDocument::loadXML($this->msdoc->saveXML($templateNode));
+
+    // read the hint in
     $hintelm = $xpath->query('/ms:generator/ms:hint')->item(0);
 
     if (!empty($hintelm->nodeValue))
@@ -74,8 +78,6 @@ class microsummary {
       $this->hint = "";
 
     $this->hintXPATH = "";
-    // import stylesheet
-    $this->xsldoc = DOMDocument::loadXML($this->msdoc->saveXML($templateNode));
   }
 
   function save()
@@ -131,10 +133,6 @@ class microsummary {
        else {
          
          if ($type == XML_ELEMENT_NODE) {
-
-           // Ignore inline elements.  
-           if ($cur->nodeName == "span")
-             $ignore = true;
 
            $id = $cur->getAttribute('id');
            if (!empty($id)) {
@@ -219,8 +217,18 @@ class microsummary {
     {
        die("unable to fetch $applyTo");
     }
+
+    //    $str = str_replace("<head>",
+    //                       "<head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'/>", $str);
+
+    //    $str = str_replace("charset=iso-8859-1", "charset=utf-8", $str);
+    $str = str_replace("", "", $str);
+
     // load into new dom document
     $d = new DOMDocument();
+    //    $d->preserveWhiteSpace = false;
+    //    $d->resolveExternals = true; // for character entities
+    //    $d->strictErrorChecking = false;
     @ $d->loadHTML($str);
 
     /*
@@ -252,9 +260,14 @@ class microsummary {
     $valueof = $this->msdoc->getElementsByTagName("value-of");
     $select = $valueof->item(0)->getAttribute("select");
 
+    //    $select = "id(\"cnn_t1hd\")";
+
+
     $docXpath = new DOMXPath($d);
+    $docXpath->registerNamespace("html", "http://www.w3.org/1999/xhtml");
     $result = $docXpath->query($select);
     $summary = "";
+
 
     if ($result)
     {
@@ -266,10 +279,15 @@ class microsummary {
       }
     }
 
-
     if ($summary == "" && $useHint == true)
     {
+      echo "Not Found";
+      exit();  // Lets ignore the hint for now.
+
       $rv = 0;
+
+
+      //$query = "//*[.='test']";  ??
 
       // need a smarter way from finding a hint (innerHTML)
       // in the page.
@@ -308,6 +326,7 @@ class microsummary {
           //          fwrite ($f, $str);
           //          fclose($f);
 
+          echo "failing here";
           return -1;
         }
 
@@ -356,8 +375,10 @@ class microsummary {
   // curl utility function
   function fetch($url) {
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt ($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (X11; U; FreeBSD i386; en-US; rv:1.2a) Gecko/20021021");
+    curl_setopt($ch, CURLOPT_URL,$url); // set url to post to
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); // return into a variable
+    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept-Charset:utf-8')); 
     curl_setopt($ch, CURLOPT_TIMEOUT, 5);
     $result = curl_exec($ch);
     if (curl_errno($ch)) {
