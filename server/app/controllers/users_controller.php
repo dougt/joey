@@ -234,10 +234,7 @@ class UsersController extends AppController
           $this->User->id = $_someone['User']['id'];
           $this->User->saveField('confirmationcode', null);
 
-          // Make an email message.  @todo This should really be
-          // in a config var, or a view somewhere.
-          // @todo site is hardcoded here to the base URL.  This will
-          // work for production but needs to be fixed for other URLs
+          // Make an email message.  
           $_message = "Please click on the following link to reset your password:\n\n ".FULL_BASE_URL."/users/resetpassword/".$_someone['User']['username']."/".$epw." \n";
 
           // Send a mail to the user
@@ -317,10 +314,7 @@ class UsersController extends AppController
 
                         $this->set('error_mesg', 'Registration failed.  Please try again.');
                     } else {
-                        // Make an email message.  @todo This should really be
-                        // in a config var, or a view somewhere.
-                        // @todo site is hardcoded here to the base URL.  This will
-                        // work for production but needs to be fixed for other URLs
+                        // Make an email message. 
                         $_message = "Please click on the following link or use the code {$this->data['User']['confirmationcode']} to activate your registration.  ".FULL_BASE_URL."/users/activate/{$this->data['User']['confirmationcode']} .";
 
                         // Send a mail to the user

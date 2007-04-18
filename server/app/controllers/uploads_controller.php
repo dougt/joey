@@ -286,7 +286,7 @@ class UploadsController extends AppController
         
         $id = $data[$count]['Upload']['id'];
         if ($this->delete($id) == false) {
-            // @todo log an error
+          $this->log("deleteAll: Delete of " . $id . " failed.");
         } 
         
         $count = $count + 1;

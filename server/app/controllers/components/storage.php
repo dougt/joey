@@ -133,8 +133,7 @@ class StorageComponent extends Object
       }
       
       // check to see if we should do anything
-      // @todo er...wtf - why is this if(false)?  I'm adding a todo tag...
-      if (false && $forceUpdate == false)
+      if ($forceUpdate == false)
       {
         $expiry = strtotime($_upload['File'][0]['modified'] . " + " . CONTENTSOURCE_REFRESH_TIME . " minutes");
         $nowstamp = strtotime("now");
@@ -178,14 +177,14 @@ class StorageComponent extends Object
             if ($this->controller->Storage->hasAvailableSpace($_upload['User']['id'],
                                                               strlen($rss_result) - filesize($_filename)) == false) 
             {
-              // @todo we should log this and maybe change
-              // the file content to indicate the error.
-              break;
+              $this->log("User " . $_upload['User']['id'] . " is out of space.");
+              return false;
             }
 
             // write the file.
             if (!file_put_contents($_filename, $rss_result)) {
-                return false;
+              $this->log("file_put_contents failed for " . $_filename);
+              return false;
             }
             
             // need to update the size and date in the db.
@@ -218,19 +217,20 @@ class StorageComponent extends Object
 
               if (empty($ms->result)) {
                   $ms->result = "XPATH is broken..  this feature doesn't work for the content you have selected. ";
+                  $this->log("Microsummary ". $_upload['Contentsource'][0]['id'] . "does not have an xpath result");
               }
 
               // does the user have enough space to proceed
               if ($this->controller->Storage->hasAvailableSpace($_upload['User']['id'],
                                                                 strlen($ms->result) - filesize($_filename)) == false) {
-                // @todo we should log this and maybe change
-                // the file content to indicate the error.
-                break;
+                $this->log("User " . $_upload['User']['id'] . " is out of space.");
+                return false;
               }
 
               // write the file.
               if (!file_put_contents($_filename, $ms->result)) {
-                  return false;
+                $this->log("file_put_contents failed for " . $_filename);
+                return false;
               }
 
               // need to update the size and date in the db.
@@ -262,8 +262,7 @@ class StorageComponent extends Object
     $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_fromName} {$_toName}";    
     exec($_cmd, $_out, $_ret);
     if ($_ret !== 0) {
-      // bad things happened.  @todo, log $_out to a file.
-      // If the PNG resize fails, we should abort.
+      $this->log("transcodeImage failed: " . $_cmd);
       return false;
     }
     
@@ -272,8 +271,7 @@ class StorageComponent extends Object
     $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_toName} {$_previewName}";    
     exec($_cmd, $_out, $_ret);
     if ($_ret !== 0) {
-      // bad things happened.  @todo, log $_out to a file.
-      // If the preview resize fails, we will just fail silently.
+      $this->log("transcodeImage failed: " . $_cmd);
       return false;
     }
     
@@ -293,8 +291,7 @@ class StorageComponent extends Object
     $_cmd = FFMPEG_CMD . " -y -i {$_fromName} -ab 32 -b 15000 -ac 1 -ar 8000 -vcodec h263 -s qcif -r 12 {$_toName}";
     exec($_cmd, $_out, $_ret);
     if ($_ret !== 0) {
-      // bad things happened.  @todo, log $_out to a file.
-      // If the 3GP transcode fails, we should abort.
+      $this->log("transcodeVideo failed: " . $_cmd);
       return false;
     }
     
@@ -303,8 +300,7 @@ class StorageComponent extends Object
     $_cmd = FFMPEG_CMD . " -i {$_fromName} -ss 5 -s '{$width}x{$height}' -vframes 1 -f mjpeg {$_previewName}";
     exec($_cmd, $_out, $_ret);
     if ($_ret !== 0) {
-      // bad things happened.  @todo, log $_out to a file.
-      // If the preview resize fails, we will just fail silently.
+      $this->log("transcodeVideo failed: " . $_cmd);
       return false;
     }
     
