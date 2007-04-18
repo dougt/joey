@@ -50,7 +50,7 @@
 
             // FULL_BASE_URL needs to be http because XPInstall can install via HTTPS without barfing over itself with -228 errors.
 
-            $http_url = str_replace("https", "http", FULL_BASE_URL);
+            $http_url = str_replace("https://", "http://", FULL_BASE_URL);
             
 
             echo $html->link('Download Joey Addon for Firefox', $http_url.'/app/webroot/ff/joey.xpi');
