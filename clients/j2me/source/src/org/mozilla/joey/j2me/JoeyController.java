@@ -15,6 +15,7 @@ import javax.microedition.midlet.MIDlet;
 
 import org.mozilla.joey.j2me.views.LoginView;
 import org.mozilla.joey.j2me.views.MainMenuView;
+import org.mozilla.joey.j2me.views.PreferencesView;
 import org.mozilla.joey.j2me.views.UploadsView;
 
 //#if polish.api.mmapi
@@ -29,10 +30,11 @@ public class JoeyController
 {
 	private static final int VIEW_LOGIN = 1;
 	private static final int VIEW_MAINMENU = 2;
-	private static final int VIEW_SNAPSHOT = 3;
-	private static final int VIEW_UPLOADS = 4;
-	private static final int VIEW_UPLOADS_DELETE_ALERT = 5;
-	private static final int VIEW_WAIT = 6;
+	private static final int VIEW_PREFERENCES = 3;
+	private static final int VIEW_SNAPSHOT = 4;
+	private static final int VIEW_UPLOADS = 5;
+	private static final int VIEW_UPLOADS_DELETE_ALERT = 6;
+	private static final int VIEW_WAIT = 7;
 	
 	private static final Command CMD_EXIT = new Command(Locale.get("command.exit"), Command.EXIT, 1);
 //	private static final Command CMD_SELECT = new Command(Locale.get("command.select"), Command.SCREEN, 1);
@@ -40,7 +42,6 @@ public class JoeyController
 	private static final Command CMD_BACK = new Command(Locale.get("command.back"), Command.BACK, 1);
 	private static final Command CMD_LOGIN = new Command(Locale.get("command.login"), Command.SCREEN, 1);
 	private static final Command CMD_DELETE = new Command(Locale.get("command.delete"), Command.SCREEN, 1);
-
 
 	private static final Command CMD_YES = new Command(Locale.get("command.yes"), Command.SCREEN, 1);
 	private static final Command CMD_NO = new Command(Locale.get("command.no"), Command.BACK, 1);
@@ -116,6 +117,12 @@ public class JoeyController
 			view.setCommandListener(this);
 			return view;
 
+		case VIEW_PREFERENCES:
+			view = new PreferencesView();
+			view.addCommand(CMD_BACK);
+			view.setCommandListener(this);
+			return view;
+
 		default:
 			//#debug fatal
 			System.out.println("unknown view: " + viewId);
@@ -151,7 +158,10 @@ public class JoeyController
 		case VIEW_UPLOADS_DELETE_ALERT:
 			handled = processCommandUploads(command);
 			break;
-			
+
+		case VIEW_PREFERENCES:
+			handled = processCommandPreferences(command);
+			break;
 
 		default:
 			//#debug error
@@ -202,13 +212,23 @@ public class JoeyController
 	private boolean processCommandMainMenu(Command command)
 	{
 		if (command == CMD_SELECT) {
-			switch (((MainMenuView) this.currentView).getCurrentIndex()) {
+			int index = ((MainMenuView) this.currentView).getCurrentIndex();
+			switch (index) {
 				case 0:
 					showView(VIEW_UPLOADS);
 					break;
 
 				case 1:
+					showView(VIEW_PREFERENCES);
+					break;
+
+				case 2:
 					showView(VIEW_SNAPSHOT);
+					break;
+
+				default:
+					//#debug fatal
+					System.out.println("invalid menu item: " + index);
 					break;
 			}
 
@@ -221,6 +241,16 @@ public class JoeyController
 	private boolean processCommandLogin(Command command)
 	{
 		if (command == CMD_LOGIN) {
+			showView(VIEW_MAINMENU);
+			return true;
+		}
+
+		return false;
+	}
+
+	private boolean processCommandPreferences(Command command)
+	{
+		if (command == CMD_BACK) {
 			showView(VIEW_MAINMENU);
 			return true;
 		}

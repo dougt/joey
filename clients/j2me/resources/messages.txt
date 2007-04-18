@@ -14,7 +14,10 @@ command.no=No
 
 mainmenu.view=View uploads
 mainmenu.snapshot=Take snapshot
+mainmenu.preferences=Preferences
 
 uploads.delete.msg=Do you really wanna delete this upload?
+
+form.preferences=Preferences
 
 alert.wait.msg=Please wait

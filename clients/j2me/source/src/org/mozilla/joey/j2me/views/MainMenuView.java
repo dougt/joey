@@ -11,10 +11,13 @@ public class MainMenuView
 	{
 		//#style mainmenuScreen
 		super(Locale.get("title.mainmenu"), Choice.IMPLICIT);
-		
+
 		//#style menuentry
 		append(Locale.get("mainmenu.view"), null);
-		
+
+		//#style menuentry
+		append(Locale.get("mainmenu.preferences"), null);
+
 		//#if polish.api.mmapi
 			//#style menuentry
 			append(Locale.get("mainmenu.snapshot"), null);
