@@ -111,10 +111,10 @@
 		<info
 			license="GPL"
 			name="Joey"
-			version="2.0"
+			version="0.0.1"
 			description=""
-			vendorName="Enough Software"
-			infoUrl="http://www.j2mepolish.org"
+			vendorName="Mozilla Foundation"
+			infoUrl="http://www.mozilla.com"
 			icon="dot.png"
 			jarName="${polish.vendor}-${polish.name}-${polish.locale}-joey.jar" 
 			jarUrl="${deploy-url}${polish.jarName}"
@@ -272,8 +272,8 @@
 				//#= private static final String UPDATE_URL = "${ update-url }";
 				You can change the title of the sample application with the "title"-var.
 				-->
-				<variable name="update-url" value="http://www.enough.de/update" />
-				<variable name="title" value="J2ME Polish" />
+				<variable name="update-url" value="http://joey.labs.mozilla.com/update" />
+				<variable name="title" value="Joey" />
 				<variable name="polish.rmi.synchrone" value="true" />
 			</variables>
 			<!-- Here you can set the dir attribute to "resources2" for an alternative design. -->

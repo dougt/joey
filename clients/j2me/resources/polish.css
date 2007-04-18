@@ -20,6 +20,9 @@ colors {
 	inactiveTabColor: silver;
 	
 	darkpink:  rgb(185,26,138);
+
+	uploadBgColor: white;
+	uploadBgColorFocused: red;
 }
 
 .inputScreen {
@@ -36,6 +39,25 @@ colors {
 }
 
 .uploadScreen extends inputScreen {
+}
+
+.uploadItem {
+	padding: 1;
+	border-width: 1;
+	focused-style: .uploadItemFocused;
+	layout: expand | left;
+	background {
+		color: uploadBgColor;
+	}
+}
+
+.uploadItemFocused {
+	padding: 1;
+	border-width: 1;
+	layout: expand | left;
+	background {
+		color: uploadBgColorFocused;
+	}
 }
 
 .input {
