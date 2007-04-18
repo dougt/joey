@@ -7,6 +7,14 @@ command.exit=Exit
 command.back=Back
 command.select=Select
 command.login=Login
+command.delete=Delete
+
+command.yes=Yes
+command.no=No
 
 mainmenu.view=View uploads
 mainmenu.snapshot=Take snapshot
+
+uploads.delete.msg=Do you really wanna delete this upload?
+
+alert.wait.msg=Please wait
