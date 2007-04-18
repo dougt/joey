@@ -1392,11 +1392,11 @@ function joey_buildXPath(targetElement)
                     if (buffer == "")
                     {
                         buffer = "id('"+id+"')";
-                        return buffer.toLowerCase();
+                        return buffer;
                     }
 
                     buffer = "id('" + id + "')" + buffer;
-                    return buffer.toLowerCase();
+                    return buffer;
                 }
             }
 
@@ -1457,7 +1457,7 @@ function joey_buildXPath(targetElement)
         
     } while (cur != null);
 
-    return buffer.toLowerCase();
+    return buffer;
 }
 
 function toXMLString(str) {
@@ -1526,3 +1526,4 @@ function joey_enableSelection() {
     g_joeySelectorService.enable();
 
 }
+
