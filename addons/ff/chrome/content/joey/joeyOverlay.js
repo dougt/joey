@@ -1406,13 +1406,11 @@ function joey_buildXPath(targetElement)
             // now figure out the index
             var tmp = node_before(cur);
             while (tmp != null) {
-                if (name == tmp.nodeName) {
+                if (name == tmp.nodeName.toLowerCase()) {
                     occur++;
                 }
                 tmp = node_before(tmp);
             }
-            
-            occur++;
             
             if (type == Node.ELEMENT_NODE) {
                 name = name; // ??
