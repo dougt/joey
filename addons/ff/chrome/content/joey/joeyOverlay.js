@@ -1400,7 +1400,7 @@ function joey_buildXPath(targetElement)
                 }
             }
 
-            name = cur.nodeName;
+            name = cur.nodeName.toLowerCase();
             next = cur.parentNode;
 
             // now figure out the index
@@ -1411,29 +1411,29 @@ function joey_buildXPath(targetElement)
                 }
                 tmp = node_before(tmp);
             }
+            occur++;
             
-            if (type == Node.ELEMENT_NODE) {
-                name = name; // ??
-            }
-            
-            // fix the names for those nodes where xpath query and dom node name don't match
-            else if (type == Node.COMMENT_NODE) {
-                ignore = true;
-                name = 'comment()';
-            }
-            else if (type == Node.PI_NODE) {
-                ignore = true;
-                name = 'processing-instruction()';
-            }
-            else if (type == Node.TEXT_NODE) {
-                ignore = true;
-                name = 'text()';
-            }
-            // anything left here has not been coded yet (cdata is broken)
-            else {
-                name = '';
-                sep = '';
-                occur = 0;
+            if (type != Node.ELEMENT_NODE) {
+
+                // fix the names for those nodes where xpath query and dom node name don't match
+                if (type == Node.COMMENT_NODE) {
+                    ignore = true;
+                    name = 'comment()';
+                }
+                else if (type == Node.PI_NODE) {
+                    ignore = true;
+                    name = 'processing-instruction()';
+                }
+                else if (type == Node.TEXT_NODE) {
+                    ignore = true;
+                    name = 'text()';
+                }
+                // anything left here has not been coded yet (cdata is broken)
+                else {
+                    name = '';
+                    sep = '';
+                    occur = 0;
+                }
             }
         }
 
@@ -1524,4 +1524,3 @@ function joey_enableSelection() {
     g_joeySelectorService.enable();
 
 }
-
