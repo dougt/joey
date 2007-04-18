@@ -11,23 +11,5 @@ public class UploadsView extends List
 	{
 		//#style uploadScreen
 		super(Locale.get("title.uploads"), Choice.IMPLICIT);
-
-		//#style uploadItem
-		append("Test 1", null);
-		
-		//#style uploadItem
-		append("Test 2", null);
-		
-		//#style uploadItem
-		append("Test 3", null);
-		
-		//#style uploadItem
-		append("Test 4", null);
-		
-		//#style uploadItem
-		append("Test 5", null);
-		
-		//#style uploadItem
-		append("Test 6", null);
 	}
 }

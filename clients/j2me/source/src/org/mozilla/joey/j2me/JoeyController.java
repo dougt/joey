@@ -48,14 +48,6 @@ public class JoeyController
 		this.downloadThread = new CommunicationController();
 		this.downloadThread.setResponseHandler(this);
 		this.downloadThread.start();
-
-		boolean result;
-		
-		result = this.downloadThread.login();
-		System.out.println("Login was successfull: " + result);
-		
-		result = this.downloadThread.getIndex();
-		System.out.println("index retrieval: " + result);
 	}
 	
 	public void startApp()
@@ -173,6 +165,7 @@ public class JoeyController
 
 	private boolean processCommandMainMenu(Command command)
 	{
+		System.out.println("processCommandMainMenu 1");
 		if (command == CMD_SELECT) {
 			switch (((MainMenuView) this.currentView).getCurrentIndex()) {
 				case 0:
@@ -186,6 +179,7 @@ public class JoeyController
 
 			return true;
 		}
+		System.out.println("processCommandMainMenu 2");
 		
 		return false;
 	}
