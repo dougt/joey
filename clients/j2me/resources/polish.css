@@ -146,3 +146,22 @@ menu {
 	font-color: white;
 }
 
+alert {
+	padding: 10;
+	layout: vertical-shrink | horizontal-shrink | bottom | center;
+	repaint-previous-screen: true;
+	background {
+		type: round-rect;
+		color: bgColorFocused;
+	}
+}
+
+waitAlert {
+	padding: 10;
+	layout: expand;
+	repaint-previous-screen: true;
+	background {
+		type: round-rect;
+		color: bgColorFocused;
+	}
+}
