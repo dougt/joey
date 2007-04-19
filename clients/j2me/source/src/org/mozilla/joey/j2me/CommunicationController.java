@@ -38,11 +38,9 @@ public class CommunicationController
 			{
 				synchronized (this.lock)
 				{
-					System.out.println("before wait");
 					if (this.requestURL == null) {
 						this.lock.wait();
 					}
-					System.out.println("after wait");
 				}
 			}
 			catch (InterruptedException e)
@@ -67,7 +65,9 @@ public class CommunicationController
 					
 					try
 					{
+						//#debug debug
 						System.out.println("requesting url " + this.requestURL);
+
 						connection = new RedirectHttpConnection(this.requestURL);
 
 						if (this.cookieStr != null) {
@@ -85,7 +85,6 @@ public class CommunicationController
 
 						in = connection.openDataInputStream();
 						this.responseCode = connection.getResponseCode();
-						System.out.println("Michael: responseCode: " + this.responseCode);
 						
 						String str = connection.getHeaderField("Set-Cookie");
 						if (str != null) {
@@ -114,7 +113,7 @@ public class CommunicationController
 					}
 					catch (EOFException e)
 					{
-						//debug
+						//debug debug
 						System.out.println("Data read.");
 					}
 					catch (IOException e)
@@ -143,7 +142,6 @@ public class CommunicationController
 						}
 					}
 
-					System.out.println("notify response");
 					notifyResponse(data);
 					this.requestURL = null;
 				}
@@ -212,7 +210,6 @@ public class CommunicationController
 		
 		int responseCode = requestURLSynchronous("/users/login", sb.toString());
 		
-		System.out.println("HTTP code: " + responseCode);
 		return responseCode == HttpConnection.HTTP_OK;
 	}
 	
@@ -223,7 +220,6 @@ public class CommunicationController
 		
 		int responseCode = requestURLSynchronous("/uploawgds/index", sb.toString());
 
-		System.out.println("HTTP code: " + responseCode);
 		return responseCode == HttpConnection.HTTP_OK;
 	}
 	
