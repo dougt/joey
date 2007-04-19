@@ -407,7 +407,7 @@ class UploadsController extends AppController
             }
             
             $criteria=array('user_id' => $this->_user['id']);
-            $data = $this->Upload->findAll($criteria, NULL, 'modified DESC', $limit, $start, 3);
+            $data = $this->Upload->findAll($criteria, NULL, 'Upload.modified DESC', $limit, $start, 3);
             $count = 0;
             foreach ($data as $row) {
                 if (empty($row['File'][0]['preview_name'])) {
