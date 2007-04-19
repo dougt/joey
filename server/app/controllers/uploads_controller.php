@@ -275,6 +275,12 @@ class UploadsController extends AppController
             }
 
         }
+
+        // handle XHTML MP browser
+        if (BrowserAgent::isMobile()) {
+          $this->action = 'mp_add';
+          $this->layout = 'mp';
+        }
     }
 
     function deleteAll()

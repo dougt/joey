@@ -1,0 +1,26 @@
+
+<h2>Upload File</h2>
+
+<?php if (isset($error_mesg)) : ?>
+    <div class="error_message"><?=$error_mesg?></div>
+<?php endif; ?>
+
+<form action="<?=$html->url('/uploads/add')?>" method="post" enctype="multipart/form-data">
+
+<p>
+Title (required):<br/>
+<input name="data[Upload][title]" value="Phone Upload" type="text"/>
+<?=$html->tagErrorMsg('Upload/title', 'A title is required.')?>
+</p>
+
+<input type="hidden" name="data[Upload][referrer]" value="uploaded_from_my_phone" />
+
+<p>
+Select File:<br/>
+<?=$html->file('File/Upload')?>
+<?=$html->tagErrorMsg('File/Upload', isset($error_fileupload) ? $error_fileupload : 'A file is required.')?>
+</p>
+
+<input type="submit" value="Upload" />
+
+</form>
