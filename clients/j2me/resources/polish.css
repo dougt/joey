@@ -46,6 +46,10 @@ borders {
 	}	
 }
 
+focused {
+	background-color: bgColorFocused;
+}
+
 .inputScreen {
 	padding: 5;
 }
@@ -65,14 +69,13 @@ borders {
 .uploadItem {
 	padding: 1;
 	border-width: 1;
-	focused-style: .uploadItemFocused;
 	layout: expand | left;
 	background {
 		color: uploadBgColor;
 	}
 }
 
-.uploadItemFocused {
+.uploadItem:hover {
 	padding: 1;
 	border-width: 1;
 	layout: expand | left;
@@ -89,14 +92,13 @@ borders {
 	}
 	font-color: textColorInput;
 	layout: expand;
-	focused-style: .inputFocused;
 }
 
-.inputFocused {
+.input:hover {
 	padding: 2;
 	background {
-		color: bgColorInput;
-		border-color: borderColorInput;
+		color: bgColorFocused;
+		border-color: borderColorInputFocused;
 	}
 	font-color: textColorInput;
 	layout: expand;
@@ -165,7 +167,6 @@ menu {
 	padding: 2;
 	padding-left: 5;
 	layout: left;
-	focused-style: menuentryFocused;
 	font {
 		color: black;
 		size: medium;
@@ -173,7 +174,7 @@ menu {
 	}
 }
 
-.menuentryFocused extends menuentry {
+.menuentry:hover {
 	background-color: black;
 	font-color: white;
 }
