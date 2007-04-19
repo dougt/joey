@@ -216,7 +216,7 @@ public class CommunicationController
 		StringBuffer sb = new StringBuffer();
 		sb.append("rest=1&limit=5&start=0");
 		
-		int responseCode = requestURLSynchronous("/uploawgds/index", sb.toString());
+		int responseCode = requestURLSynchronous("/uploads/index", sb.toString());
 
 		return responseCode == HttpConnection.HTTP_OK;
 	}
