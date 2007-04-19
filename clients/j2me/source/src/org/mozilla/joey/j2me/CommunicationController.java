@@ -20,8 +20,6 @@ public class CommunicationController
 	private Object lock2;
 	
 	private String serverURL = "http://joey.labs.mozilla.com";
-	private String username = "mkoch2";
-	private String password = "mkoch";
 	private int responseCode;
 	private String cookieStr;
 
@@ -200,13 +198,13 @@ public class CommunicationController
 		}
 	}
 	
-	public boolean login()
+	public boolean login(UserData userData)
 	{
 		StringBuffer sb = new StringBuffer();
 		sb.append("rest=1&data[User][username]=");
-		sb.append(this.username);
-		sb.append("data[User][password]=");
-		sb.append(this.password);
+		sb.append(userData.getUsername());
+		sb.append("&data[User][password]=");
+		sb.append(userData.getPassword());
 		
 		int responseCode = requestURLSynchronous("/users/login", sb.toString());
 		

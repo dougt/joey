@@ -39,6 +39,7 @@ public class JoeyController
 	private static final int ALERT_WAIT = 6;
 	private static final int ALERT_UPLOADS_DELETE_CONFIRMATION = 7;
 	private static final int ALERT_EXIT_CONFIRMATION = 8;
+	private static final int ALERT_LOGIN_ERROR = 9;
 	
 	private static final Command CMD_EXIT = new Command(Locale.get("command.exit"), Command.EXIT, 1);
 //	private static final Command CMD_SELECT = new Command(Locale.get("command.select"), Command.SCREEN, 1);
@@ -80,8 +81,6 @@ public class JoeyController
 			
 			this.userdata = new UserData();
 		}
-		System.out.println("Michael: username: >" + this.userdata.getUsername() + "<");
-		System.out.println("Michael: password: >" + this.userdata.getPassword() + "<");
 
 		this.downloadThread = new CommunicationController();
 		this.downloadThread.setResponseHandler(this);
@@ -198,6 +197,11 @@ public class JoeyController
 			}
 			handled = true;
 			break;
+
+		case ALERT_LOGIN_ERROR:
+			showView(VIEW_LOGIN);
+			handled = true;
+			break;
 			
 		default:
 			//#debug error
@@ -283,9 +287,6 @@ public class JoeyController
 
 			try
 			{
-				System.out.println("Michael: username: >" + this.userdata.getUsername() + "<");
-				System.out.println("Michael: password: >" + this.userdata.getPassword() + "<");
-
 				this.storage.save(this.userdata, RMS_USERDATA);
 			}
 			catch (IOException e)
@@ -296,7 +297,12 @@ public class JoeyController
 				e.printStackTrace();
 			}
 
-			showView(VIEW_MAINMENU);
+			if (this.downloadThread.login(this.userdata)) {
+				showView(VIEW_MAINMENU);
+			}
+			else {
+				showLoginAlert();
+			}
 			return true;
 		}
 
@@ -369,5 +375,17 @@ public class JoeyController
 
 		this.prevViewId = this.currentViewId;
 		this.currentViewId = ALERT_WAIT;
+	}
+
+	private void showLoginAlert()
+	{
+		//#style alertConfirmation
+		Alert alert = new Alert(null, Locale.get("alert.login.error"), null, AlertType.ERROR);
+		alert.setTimeout(Alert.FOREVER);
+		alert.setCommandListener(this);
+		this.display.setCurrent(alert);
+
+		this.prevViewId = this.currentViewId;
+		this.currentViewId = ALERT_LOGIN_ERROR;
 	}
 }
