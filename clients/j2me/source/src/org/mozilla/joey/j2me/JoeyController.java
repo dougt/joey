@@ -23,6 +23,7 @@ import org.mozilla.joey.j2me.views.UploadsView;
 import de.enough.polish.ui.SnapshotScreen;
 //#endif
 
+import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -49,12 +50,16 @@ public class JoeyController
 	private static final Command CMD_YES = new Command(Locale.get("command.yes"), Command.SCREEN, 1);
 	private static final Command CMD_NO = new Command(Locale.get("command.no"), Command.BACK, 1);
 
+	private static final String RMS_USERDATA = "userdata";
+
 	private int prevViewId;
 	private int currentViewId;
 	private Displayable currentView;
 	private MIDlet midlet;
 	private Display display;
+	private UserData userdata;
 	private Vector uploads;
+	private RmsStorage storage;
 	private CommunicationController downloadThread;
 
 	public JoeyController(MIDlet midlet)
@@ -62,6 +67,22 @@ public class JoeyController
 		this.midlet = midlet;
 		this.display = Display.getDisplay(midlet);
 		this.uploads = new Vector();
+		this.storage = new RmsStorage();
+		
+		try
+		{
+			this.userdata = (UserData) this.storage.read(RMS_USERDATA);
+		}
+		catch (IOException e)
+		{
+			//#debug info
+			System.out.println("no user data stored in the record store");
+			
+			this.userdata = new UserData();
+		}
+		System.out.println("Michael: username: >" + this.userdata.getUsername() + "<");
+		System.out.println("Michael: password: >" + this.userdata.getPassword() + "<");
+
 		this.downloadThread = new CommunicationController();
 		this.downloadThread.setResponseHandler(this);
 		this.downloadThread.start();
@@ -92,7 +113,7 @@ public class JoeyController
 		switch (viewId)
 		{
 		case VIEW_LOGIN:
-			view = new LoginView(this);
+			view = new LoginView(this, this.userdata);
 			view.addCommand(CMD_EXIT);
 			view.addCommand(CMD_LOGIN);
 			view.setCommandListener(this);
@@ -255,7 +276,26 @@ public class JoeyController
 
 	private boolean processCommandLogin(Command command)
 	{
+		LoginView view = (LoginView) this.currentView;
+
 		if (command == CMD_LOGIN) {
+			view.saveUserData(this.userdata);
+
+			try
+			{
+				System.out.println("Michael: username: >" + this.userdata.getUsername() + "<");
+				System.out.println("Michael: password: >" + this.userdata.getPassword() + "<");
+
+				this.storage.save(this.userdata, RMS_USERDATA);
+			}
+			catch (IOException e)
+			{
+				//#debug error
+				System.out.println("unable to write userdata to record store");
+				
+				e.printStackTrace();
+			}
+
 			showView(VIEW_MAINMENU);
 			return true;
 		}
