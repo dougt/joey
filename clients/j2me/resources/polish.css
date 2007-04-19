@@ -130,7 +130,7 @@ borders {
 		min-width: ${polish.ScreenWidth} * 2 / 3 - 30;
 	//#endif
 	*/
-	layout: expand;
+	layout: expand | newline-before;
 }
 
 /*
