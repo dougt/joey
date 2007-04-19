@@ -61,7 +61,7 @@ public class JoeyController
 	private UserData userdata;
 	private Vector uploads;
 	private RmsStorage storage;
-	private CommunicationController downloadThread;
+	private CommunicationController commController;
 
 	public JoeyController(MIDlet midlet)
 	{
@@ -82,9 +82,9 @@ public class JoeyController
 			this.userdata = new UserData();
 		}
 
-		this.downloadThread = new CommunicationController();
-		this.downloadThread.setResponseHandler(this);
-		this.downloadThread.start();
+		this.commController = new CommunicationController();
+		this.commController.setResponseHandler(this);
+		this.commController.start();
 
 		this.uploads.addElement(new Upload("Test 1", null, null));
 		this.uploads.addElement(new Upload("Test 2", null, null));
@@ -237,7 +237,7 @@ public class JoeyController
 		else if (command == CMD_YES) {
 			// TODO: Show wait alert here while deletion is happening. 
 			//showWaitAlert();
-			this.downloadThread.delete(((List) this.currentView).getSelectedIndex());
+			this.commController.delete(((List) this.currentView).getSelectedIndex());
 			showView(VIEW_UPLOADS);
 			return true;
 		}
@@ -297,7 +297,7 @@ public class JoeyController
 				e.printStackTrace();
 			}
 
-			if (this.downloadThread.login(this.userdata)) {
+			if (this.commController.login(this.userdata)) {
 				showView(VIEW_MAINMENU);
 			}
 			else {
