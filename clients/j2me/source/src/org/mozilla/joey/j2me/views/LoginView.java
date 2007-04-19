@@ -5,7 +5,10 @@ import de.enough.polish.util.Locale;
 import javax.microedition.lcdui.Choice;
 import javax.microedition.lcdui.ChoiceGroup;
 import javax.microedition.lcdui.Form;
+import javax.microedition.lcdui.StringItem;
 import javax.microedition.lcdui.TextField;
+
+import org.mozilla.joey.j2me.JoeyController;
 
 public class LoginView
 	extends Form
@@ -14,7 +17,7 @@ public class LoginView
 	private TextField mPasswordTextField;
 	private ChoiceGroup mLoginOptionsChoiceGroup;
 
-	public LoginView()
+	public LoginView(JoeyController controller)
 	{
 		//#style loginScreen
 		super(Locale.get("title.login"));
@@ -32,5 +35,11 @@ public class LoginView
 
         //#style checkbox
         append(this.mLoginOptionsChoiceGroup);
+        
+        //#style button
+        StringItem item = new StringItem(null, Locale.get("form.login.login"));
+        item.setDefaultCommand(JoeyController.CMD_LOGIN);
+        item.setItemCommandListener(controller);
+        append(item);
 	}
 }

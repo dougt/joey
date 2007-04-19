@@ -25,6 +25,27 @@ colors {
 	uploadBgColorFocused: red;
 }
 
+/*
+ * backgrounds used on several screens
+ */
+backgrounds {
+	buttonFocusedBackground {
+		type: round-rect;
+		color: bgColorFocused;
+		border-color: borderColorFocused;
+	}
+}
+
+/*
+ * borders used on several screens
+ */
+borders {
+	buttonBorder {
+		type: round-rect;
+		color: bgColorFocused;
+	}	
+}
+
 .inputScreen {
 	padding: 5;
 }
@@ -61,6 +82,17 @@ colors {
 }
 
 .input {
+	padding: 2;
+	background {
+		color: bgColorInput;
+		border-color: borderColorInput;
+	}
+	font-color: textColorInput;
+	layout: expand;
+	focused-style: .inputFocused;
+}
+
+.inputFocused {
 	padding: 2;
 	background {
 		color: bgColorInput;
@@ -146,7 +178,7 @@ menu {
 	font-color: white;
 }
 
-alert {
+.alertConfirmation {
 	padding: 10;
 	layout: vertical-shrink | horizontal-shrink | bottom | center;
 	repaint-previous-screen: true;
@@ -156,7 +188,7 @@ alert {
 	}
 }
 
-waitAlert {
+.waitAlert {
 	padding: 10;
 	layout: expand;
 	repaint-previous-screen: true;
@@ -164,4 +196,13 @@ waitAlert {
 		type: round-rect;
 		color: bgColorFocused;
 	}
+}
+
+.button {
+	padding: 2;
+	border: buttonBorder;
+}
+
+.button:hover {
+	background: buttonFocusedBackground;
 }

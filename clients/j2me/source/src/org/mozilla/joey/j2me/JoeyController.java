@@ -1,5 +1,6 @@
 package org.mozilla.joey.j2me;
 
+import de.enough.polish.io.RmsStorage;
 import de.enough.polish.util.Locale;
 
 import javax.microedition.lcdui.Alert;
@@ -33,19 +34,22 @@ public class JoeyController
 	private static final int VIEW_PREFERENCES = 3;
 	private static final int VIEW_SNAPSHOT = 4;
 	private static final int VIEW_UPLOADS = 5;
-	private static final int VIEW_UPLOADS_DELETE_ALERT = 6;
-	private static final int VIEW_WAIT = 7;
+
+	private static final int ALERT_WAIT = 6;
+	private static final int ALERT_UPLOADS_DELETE_CONFIRMATION = 7;
+	private static final int ALERT_EXIT_CONFIRMATION = 8;
 	
 	private static final Command CMD_EXIT = new Command(Locale.get("command.exit"), Command.EXIT, 1);
 //	private static final Command CMD_SELECT = new Command(Locale.get("command.select"), Command.SCREEN, 1);
 	private static final Command CMD_SELECT = List.SELECT_COMMAND;
 	private static final Command CMD_BACK = new Command(Locale.get("command.back"), Command.BACK, 1);
-	private static final Command CMD_LOGIN = new Command(Locale.get("command.login"), Command.SCREEN, 1);
+	public static final Command CMD_LOGIN = new Command(Locale.get("command.login"), Command.SCREEN, 1);
 	private static final Command CMD_DELETE = new Command(Locale.get("command.delete"), Command.SCREEN, 1);
 
 	private static final Command CMD_YES = new Command(Locale.get("command.yes"), Command.SCREEN, 1);
 	private static final Command CMD_NO = new Command(Locale.get("command.no"), Command.BACK, 1);
 
+	private int prevViewId;
 	private int currentViewId;
 	private Displayable currentView;
 	private MIDlet midlet;
@@ -75,6 +79,7 @@ public class JoeyController
 
 	private void showView(int viewId)
 	{
+		this.prevViewId = this.currentViewId;
 		this.currentViewId = viewId;
 		this.currentView = getView(viewId);
 		this.display.setCurrent(this.currentView);
@@ -87,7 +92,7 @@ public class JoeyController
 		switch (viewId)
 		{
 		case VIEW_LOGIN:
-			view = new LoginView();
+			view = new LoginView(this);
 			view.addCommand(CMD_EXIT);
 			view.addCommand(CMD_LOGIN);
 			view.setCommandListener(this);
@@ -136,10 +141,10 @@ public class JoeyController
 		boolean handled = false;
 		
 		if (command == CMD_EXIT) {
-			this.midlet.notifyDestroyed();
-			handled = true;
+			showExitAlert();
+			return;
 		}
-		
+
 		switch (this.currentViewId)
 		{
 		case VIEW_MAINMENU:
@@ -155,7 +160,7 @@ public class JoeyController
 			break;
 			
 		case VIEW_UPLOADS:
-		case VIEW_UPLOADS_DELETE_ALERT:
+		case ALERT_UPLOADS_DELETE_CONFIRMATION:
 			handled = processCommandUploads(command);
 			break;
 
@@ -163,6 +168,16 @@ public class JoeyController
 			handled = processCommandPreferences(command);
 			break;
 
+		case ALERT_EXIT_CONFIRMATION:
+			if (command == CMD_YES) {
+				this.midlet.notifyDestroyed();
+			}
+			else {
+				showView(this.prevViewId);
+			}
+			handled = true;
+			break;
+			
 		default:
 			//#debug error
 			System.out.println("Unknown view: " + this.currentViewId);
@@ -278,7 +293,7 @@ public class JoeyController
 	
 	private void showUploadDeleteAlert()
 	{
-		//#style alert
+		//#style alertConfirmation
 		Alert alert = new Alert( null, Locale.get("uploads.delete.msg"), null, AlertType.CONFIRMATION );
 		alert.setTimeout(Alert.FOREVER);
 		alert.addCommand(CMD_YES);
@@ -286,9 +301,24 @@ public class JoeyController
 		alert.setCommandListener(this);
 		this.display.setCurrent(alert);
 
-		this.currentViewId = VIEW_UPLOADS_DELETE_ALERT;
+		this.prevViewId = this.currentViewId;
+		this.currentViewId = ALERT_UPLOADS_DELETE_CONFIRMATION;
 	}
-	
+
+	private void showExitAlert()
+	{
+		//#style alertConfirmation
+		Alert alert = new Alert(null, Locale.get("alert.exit.msg"), null, AlertType.CONFIRMATION);
+		alert.setTimeout(Alert.FOREVER);
+		alert.addCommand(CMD_YES);
+		alert.addCommand(CMD_NO);
+		alert.setCommandListener(this);
+		this.display.setCurrent(alert);
+
+		this.prevViewId = this.currentViewId;
+		this.currentViewId = ALERT_EXIT_CONFIRMATION;
+	}
+
 	private void showWaitAlert()
 	{
 		//#style waitAlert
@@ -297,6 +327,7 @@ public class JoeyController
 		alert.setCommandListener(this);
 		this.display.setCurrent(alert);
 
-		this.currentViewId = VIEW_WAIT;
+		this.prevViewId = this.currentViewId;
+		this.currentViewId = ALERT_WAIT;
 	}
 }
