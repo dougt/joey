@@ -1,11 +1,18 @@
 package org.mozilla.joey.j2me;
 
-public class User
+import de.enough.polish.io.Serializable;
+
+public class UserData
+	implements Serializable
 {
 	private String username;
 	private String password;
-	
-	public User(String username, String password)
+
+	public UserData()
+	{
+	}
+
+	public UserData(String username, String password)
 	{
 		this.username = username;
 		this.password = password;
