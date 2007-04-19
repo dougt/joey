@@ -166,7 +166,7 @@ menu {
 	margin-top: 2;
 	padding: 2;
 	padding-left: 5;
-	layout: left;
+	layout: center | expand;
 	font {
 		color: black;
 		size: medium;
@@ -175,7 +175,7 @@ menu {
 }
 
 .menuentry:hover {
-	background-color: black;
+	background-color: bgColorFocused;
 	font-color: white;
 }
 
