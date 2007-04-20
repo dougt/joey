@@ -257,9 +257,12 @@ public class JoeyController
 		else if (command == CMD_YES) {
 			// TODO: Show wait alert here while deletion is happening. 
 			//showWaitAlert();
-			this.commController.delete(this.focusedUpload.getId());
+			if (this.commController.delete(this.focusedUpload.getId())) {
+				this.uploads.removeElement(this.focusedUpload);
+			}
 			this.focusedUpload = null;
 			showView(VIEW_UPLOADS);
+			((UploadsView) this.currentView).update(this, this.uploads);
 			return true;
 		}
 		else if (command == CMD_NO) {

@@ -25,6 +25,13 @@ public class UploadsView
 		//#style uploadScreen
 		super(Locale.get("title.uploads"));
 
+		update(controller, uploads);
+	}
+
+	public void update(JoeyController controller, Vector uploads)
+	{
+		deleteAll();
+
 		for (int i = 0; i < uploads.size(); i++) {
 			Upload upload = (Upload) uploads.elementAt(i); 
 			Image image = null;
