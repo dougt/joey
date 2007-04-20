@@ -43,11 +43,6 @@ var g_joey_isfile;
 var g_joey_media_url  = null;
 var g_joey_areaWindow = null;
 
-var g_joey_consoleService    = null;
-var g_joey_console = joeyDumpToNull; // default is a function that does nothing.
-
-var g_joey_serverURL = "https://joey.labs.mozilla.com"; 
-
 var g_joey_gBrowser = null;                // presents the main browser, used by the joey_feed code.
 var g_joey_browserStatusHandler = null;    // to track onloction changes in the above browser ( tab browser ) element.
 var g_joey_statusUpdateObject = null;      // the proxy object to deal with UI 
@@ -136,9 +131,10 @@ function clearLoginData()
         passwds.push(passwd);
     }
     
+    var server = getJoeyServerURL();
     for (var i = 0; i < passwds.length; ++i)
     {
-        if (passwds[i].host == g_joey_serverURL)
+        if (passwds[i].host == server)
             pwmgr.removeUser(passwds[i].host, passwds[i].user);
     }
 }
@@ -251,7 +247,7 @@ function joey_clearMenuHistoryContainer()
 
 function joey_launchCloudSite() 
 {
-	g_joey_gBrowser.loadURI(g_joey_serverURL+"/uploads");
+	g_joey_gBrowser.loadURI(getJoeyServerURL()+"/uploads");
 }
 
 function joey_selectedText() 
@@ -328,7 +324,7 @@ function getMediaCallback(content_type, file)
 {
 	if (length>0)
     { 
-        g_joey_console("Download successful...");
+        joeyDumpToConsole("Download successful...");
         
         g_joey_statusUpdateObject.tellStatus("download",null,null,"completed");
         
@@ -342,7 +338,7 @@ function getMediaCallback(content_type, file)
         /* This should become failed? */
         
         g_joey_statusUpdateObject.tellStatus("download",null,null,"failed");
-        g_joey_console("Problem downloading media to joey!\n");
+        joeyDumpToConsole("Problem downloading media to joey!\n");
     }
 }
 
@@ -515,7 +511,7 @@ JoeyMediaFetcherStreamListener.prototype =
           var http = aRequest.QueryInterface(Components.interfaces.nsIHttpChannel);
           this.mContentType = http.contentType;
       } 
-      catch (ex) { g_joey_console(ex); }	
+      catch (ex) { joeyDumpToConsole(ex); }	
   },
 
   onDataAvailable: function (aRequest, aContext, aStream, aSourceOffset, aLength)
@@ -659,7 +655,7 @@ function grabAll(elem)
             g_joey_media_url = elem.src;
         }
 
-        g_joey_console(g_joey_media_url);
+        joeyDumpToConsole(g_joey_media_url);
     }
     
     return NodeFilter.FILTER_ACCEPT;
@@ -760,37 +756,6 @@ function joeyStartup()
     var psvc = Components.classes["@mozilla.org/preferences-service;1"]
                          .getService(Components.interfaces.nsIPrefBranch);
 
-
-    /* 
-     * Console Service 
-     */
-     
-    g_joey_consoleService = Components.classes["@mozilla.org/consoleservice;1"]
-                               .getService(Components.interfaces.nsIConsoleService);
-
-    
-    try {   
-            if(psvc.getBoolPref("joey.enable_logging")) {
-                g_joey_console = joeyDumpToConsole;
-                g_joey_console("Console Logging enabled!");
-            }
-    } catch (i) {
-        alert(i);
-    }
-
-    try {   
-        var url = g_joey_serverURL;
-        
-        if (psvc.prefHasUserValue("joey.service_url"))
-            url = psvc.getCharPref("joey.service_url");
-        
-        g_joey_serverURL=url;
-        
-    } catch (i) { g_joey_console(i); } 
-
-
-
-
     g_joey_statusUpdateObject = new JoeyStatusUpdateClass();
 
     /* 
@@ -807,22 +772,36 @@ function joeyStartup()
             psvc.setBoolPref("joey.firstRun",false);     
             joeyLaunchPreferences();        
        }
-    } catch(i) { g_joey_console(i) } 
+    } catch(i) { joeyDumpToConsole(i) } 
 
 }
 
-/* 
- * Console Logging Service / See joeyStartup code... 
- * The global function name is g_joey_console = joeyDumpToNull. 
- * If the Pref joey.enable_logging = true, then g_joey_console = joeyDumpToConsole 
- * 
- */
+function getJoeyServerURL()
+{
+    var psvc = Components.classes["@mozilla.org/preferences-service;1"]
+                         .getService(Components.interfaces.nsIPrefBranch);
 
-function joeyDumpToNull(aMessage) {
-    // Does nothing.
+    if (psvc.prefHasUserValue("joey.service_url"))
+        return psvc.getCharPref("joey.service_url");
+
+    return "https://joey.labs.mozilla.com";
 }
+
+
 function joeyDumpToConsole(aMessage) {
-      g_joey_consoleService.logStringMessage("joey: " + aMessage);
+    try {   
+        var psvc = Components.classes["@mozilla.org/preferences-service;1"]
+                             .getService(Components.interfaces.nsIPrefBranch);
+
+        if(psvc.getBoolPref("joey.enable_logging")) {
+
+            var cs = Components.classes["@mozilla.org/consoleservice;1"]
+                               .getService(Components.interfaces.nsIConsoleService);
+
+            cs.logStringMessage("joey: " + aMessage);
+        }
+    } 
+    catch (i) {}
 }
 
 /* 
@@ -1038,7 +1017,7 @@ var g_joeySelectorService = {
     
     enable: function () {
 
-        g_joey_console("g_joeySelectorService enable");
+        joeyDumpToConsole("g_joeySelectorService enable");
 
         if (this.enabled == true)
             this.disable();
@@ -1088,7 +1067,7 @@ var g_joeySelectorService = {
         if (this.enabled == false)
             return;
 
-        g_joey_console("g_joeySelectorService disable");
+        joeyDumpToConsole("g_joeySelectorService disable");
     
         clearTimeout(this.timer);
         this.timer = null;
@@ -1204,7 +1183,7 @@ var g_joeySelectorService = {
                 try {
                     this.associatedDocument.body.appendChild(this.currentElementTop);
                 } catch (ignore) {
-                    g_joey_console(ignore);
+                    joeyDumpToConsole(ignore);
                 }
                 
             
@@ -1218,7 +1197,7 @@ var g_joeySelectorService = {
                 this.currentElementTop.parentNode.removeChild(this.currentElementTop);
         	}        	 
         	
-        } catch (i) { g_joey_console(i) } 
+        } catch (i) { joeyDumpToConsole(i) } 
          	        	
     },
 
@@ -1480,6 +1459,9 @@ function joey_selectedTarget(targetElement)
     if (!confirm (xpath))
         return;
     */
+
+    if (!confirm (xpath))
+        return;
 
     var uuidGenerator =  Components.classes["@mozilla.org/uuid-generator;1"].getService(Components.interfaces.nsIUUIDGenerator);
     var uuid = uuidGenerator.generateUUID();
