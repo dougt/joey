@@ -108,6 +108,7 @@ public class JoeyController
 	private Displayable getView(int viewId)
 	{
 		Displayable view;
+		Alert alert;
 		
 		switch (viewId)
 		{
@@ -148,6 +149,38 @@ public class JoeyController
 			view.setCommandListener(this);
 			return view;
 
+		case ALERT_EXIT_CONFIRMATION:
+			//#style alertConfirmation
+			alert = new Alert(null, Locale.get("alert.exit.msg"), null, AlertType.CONFIRMATION);
+			alert.setTimeout(Alert.FOREVER);
+			alert.addCommand(CMD_YES);
+			alert.addCommand(CMD_NO);
+			alert.setCommandListener(this);
+			return alert;
+
+		case ALERT_LOGIN_ERROR:
+			//#style alertConfirmation
+			alert = new Alert(null, Locale.get("alert.login.error"), null, AlertType.ERROR);
+			alert.setTimeout(Alert.FOREVER);
+			alert.setCommandListener(this);
+			return alert;
+		
+		case ALERT_UPLOADS_DELETE_CONFIRMATION:
+			//#style alertConfirmation
+			alert = new Alert( null, Locale.get("uploads.delete.msg"), null, AlertType.CONFIRMATION );
+			alert.setTimeout(Alert.FOREVER);
+			alert.addCommand(CMD_YES);
+			alert.addCommand(CMD_NO);
+			alert.setCommandListener(this);
+			return alert;
+
+		case ALERT_WAIT:
+			//#style waitAlert
+			alert = new Alert( null, Locale.get("alert.wait.msg"), null, AlertType.INFO );
+			alert.setTimeout(Alert.FOREVER);
+			alert.setCommandListener(this);
+			return alert;
+			
 		default:
 			//#debug fatal
 			System.out.println("unknown view: " + viewId);
@@ -161,7 +194,7 @@ public class JoeyController
 		boolean handled = false;
 		
 		if (command == CMD_EXIT) {
-			showExitAlert();
+			showView(ALERT_EXIT_CONFIRMATION);
 			return;
 		}
 
@@ -231,7 +264,7 @@ public class JoeyController
 			return true;
 		}
 		else if (command == CMD_DELETE) {
-			showUploadDeleteAlert();
+			showView(ALERT_UPLOADS_DELETE_CONFIRMATION);
 			return true;
 		}
 		else if (command == CMD_YES) {
@@ -298,10 +331,11 @@ public class JoeyController
 			}
 
 			if (this.commController.login(this.userdata)) {
+				this.commController.getIndex(this.uploads);
 				showView(VIEW_MAINMENU);
 			}
 			else {
-				showLoginAlert();
+				showView(ALERT_LOGIN_ERROR);
 			}
 			return true;
 		}
@@ -335,57 +369,5 @@ public class JoeyController
 	public void notifyResponse(Hashtable response)
 	{
 		// TODO: Do something.
-	}
-	
-	private void showUploadDeleteAlert()
-	{
-		//#style alertConfirmation
-		Alert alert = new Alert( null, Locale.get("uploads.delete.msg"), null, AlertType.CONFIRMATION );
-		alert.setTimeout(Alert.FOREVER);
-		alert.addCommand(CMD_YES);
-		alert.addCommand(CMD_NO);
-		alert.setCommandListener(this);
-		this.display.setCurrent(alert);
-
-		this.prevViewId = this.currentViewId;
-		this.currentViewId = ALERT_UPLOADS_DELETE_CONFIRMATION;
-	}
-
-	private void showExitAlert()
-	{
-		//#style alertConfirmation
-		Alert alert = new Alert(null, Locale.get("alert.exit.msg"), null, AlertType.CONFIRMATION);
-		alert.setTimeout(Alert.FOREVER);
-		alert.addCommand(CMD_YES);
-		alert.addCommand(CMD_NO);
-		alert.setCommandListener(this);
-		this.display.setCurrent(alert);
-
-		this.prevViewId = this.currentViewId;
-		this.currentViewId = ALERT_EXIT_CONFIRMATION;
-	}
-
-	private void showWaitAlert()
-	{
-		//#style waitAlert
-		Alert alert = new Alert( null, Locale.get("alert.wait.msg"), null, AlertType.INFO );
-		alert.setTimeout(Alert.FOREVER);
-		alert.setCommandListener(this);
-		this.display.setCurrent(alert);
-
-		this.prevViewId = this.currentViewId;
-		this.currentViewId = ALERT_WAIT;
-	}
-
-	private void showLoginAlert()
-	{
-		//#style alertConfirmation
-		Alert alert = new Alert(null, Locale.get("alert.login.error"), null, AlertType.ERROR);
-		alert.setTimeout(Alert.FOREVER);
-		alert.setCommandListener(this);
-		this.display.setCurrent(alert);
-
-		this.prevViewId = this.currentViewId;
-		this.currentViewId = ALERT_LOGIN_ERROR;
 	}
 }
