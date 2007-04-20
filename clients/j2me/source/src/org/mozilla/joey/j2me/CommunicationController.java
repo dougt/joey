@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Hashtable;
+import java.util.Vector;
 
 import javax.microedition.io.HttpConnection;
 
@@ -22,6 +23,7 @@ public class CommunicationController
 	private String serverURL = "http://joey.labs.mozilla.com";
 	private int responseCode;
 	private String cookieStr;
+	private Hashtable data;
 
 	public CommunicationController()
 	{
@@ -140,6 +142,7 @@ public class CommunicationController
 						}
 					}
 
+					this.data = data;
 					notifyResponse(data);
 					this.requestURL = null;
 				}
@@ -211,12 +214,27 @@ public class CommunicationController
 		return responseCode == HttpConnection.HTTP_OK;
 	}
 	
-	public boolean getIndex()
+	public boolean getIndex(Vector uploads)
 	{
 		StringBuffer sb = new StringBuffer();
 		sb.append("rest=1&limit=5&start=0");
 		
 		int responseCode = requestURLSynchronous("/uploads/index", sb.toString());
+
+		if (responseCode == HttpConnection.HTTP_OK) {
+			int count = Integer.parseInt((String) this.data.get("count"));
+
+			for (int i = 1; i <= count; i++) {
+				String id = (String) this.data.get("id." + i);
+				String referrer = (String) this.data.get("referrer." + i);
+				String preview = (String) this.data.get("preview." + i);
+				String mimetype = (String) this.data.get("type." + i);
+				String modified = (String) this.data.get("modified." + i);
+				System.out.println("id=" + id + ", referrer=" + referrer +", preview=" + preview + ", mimetype=" + mimetype + ", modified=" + modified);
+
+				uploads.addElement(new Upload(id, mimetype, preview, modified, referrer));
+			}
+		}
 
 		return responseCode == HttpConnection.HTTP_OK;
 	}
