@@ -1,5 +1,6 @@
 package org.mozilla.joey.j2me;
 
+import de.enough.polish.event.ThreadedCommandListener;
 import de.enough.polish.io.RmsStorage;
 import de.enough.polish.util.Locale;
 
@@ -63,6 +64,7 @@ public class JoeyController
 	private Vector uploads;
 	private Upload focusedUpload;
 	private RmsStorage storage;
+	private CommandListener commandListener;
 	private CommunicationController commController;
 
 	public JoeyController(MIDlet midlet)
@@ -84,6 +86,7 @@ public class JoeyController
 			this.userdata = new UserData();
 		}
 
+		this.commandListener = new ThreadedCommandListener(this);
 		this.commController = new CommunicationController();
 		this.commController.setResponseHandler(this);
 		this.commController.start();
@@ -113,14 +116,14 @@ public class JoeyController
 			view = new LoginView(this, this.userdata);
 			view.addCommand(CMD_EXIT);
 			view.addCommand(CMD_LOGIN);
-			view.setCommandListener(this);
+			view.setCommandListener(this.commandListener);
 			return view;
 		
 		case VIEW_MAINMENU:
 			view = new MainMenuView();
 			view.addCommand(CMD_EXIT);
 			view.addCommand(CMD_SELECT);
-			view.setCommandListener(this);
+			view.setCommandListener(this.commandListener);
 			return view;
 		
 		//#if polish.api.mmapi
@@ -128,20 +131,20 @@ public class JoeyController
 			//#style snapshotScreen
 			view = new SnapshotScreen(Locale.get("title.snapshot"));
 			view.addCommand(CMD_BACK);
-			view.setCommandListener(this);
+			view.setCommandListener(this.commandListener);
 			return view;
 		//#endif
 			
 		case VIEW_UPLOADS:
 			view = new UploadsView(this, this.uploads);
 			view.addCommand(CMD_BACK);
-			view.setCommandListener(this);
+			view.setCommandListener(this.commandListener);
 			return view;
 
 		case VIEW_PREFERENCES:
 			view = new PreferencesView();
 			view.addCommand(CMD_BACK);
-			view.setCommandListener(this);
+			view.setCommandListener(this.commandListener);
 			return view;
 
 		case ALERT_EXIT_CONFIRMATION:
@@ -150,14 +153,14 @@ public class JoeyController
 			alert.setTimeout(Alert.FOREVER);
 			alert.addCommand(CMD_YES);
 			alert.addCommand(CMD_NO);
-			alert.setCommandListener(this);
+			alert.setCommandListener(this.commandListener);
 			return alert;
 
 		case ALERT_LOGIN_ERROR:
 			//#style alertConfirmation
 			alert = new Alert(null, Locale.get("alert.login.error"), null, AlertType.ERROR);
 			alert.setTimeout(Alert.FOREVER);
-			alert.setCommandListener(this);
+			alert.setCommandListener(this.commandListener);
 			return alert;
 		
 		case ALERT_UPLOADS_DELETE_CONFIRMATION:
@@ -166,7 +169,7 @@ public class JoeyController
 			alert.setTimeout(Alert.FOREVER);
 			alert.addCommand(CMD_YES);
 			alert.addCommand(CMD_NO);
-			alert.setCommandListener(this);
+			alert.setCommandListener(this.commandListener);
 			return alert;
 
 		default:
