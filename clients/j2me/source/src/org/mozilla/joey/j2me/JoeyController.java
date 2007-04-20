@@ -283,6 +283,7 @@ public class JoeyController
 			int index = ((MainMenuView) this.currentView).getCurrentIndex();
 			switch (index) {
 				case 0:
+					this.commController.getIndex(this.uploads);
 					showView(VIEW_UPLOADS);
 					break;
 
@@ -326,7 +327,6 @@ public class JoeyController
 			}
 
 			if (this.commController.login(this.userdata)) {
-				this.commController.getIndex(this.uploads);
 				showView(VIEW_MAINMENU);
 			}
 			else {
