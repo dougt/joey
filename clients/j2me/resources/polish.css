@@ -187,9 +187,9 @@ menu {
 	}
 }
 
-.waitAlert {
+.waitScreen {
 	padding: 10;
-	layout: expand;
+	layout: expand | vertical-expand;
 	repaint-previous-screen: true;
 	background {
 		type: round-rect;
