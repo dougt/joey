@@ -1,6 +1,8 @@
 package org.mozilla.joey.j2me;
 
 import de.enough.polish.io.RedirectHttpConnection;
+import de.enough.polish.ui.ScreenInfo;
+import de.enough.polish.util.Locale;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -10,6 +12,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.microedition.io.HttpConnection;
+import javax.microedition.lcdui.StringItem;
 
 public class CommunicationController
 	extends Thread
@@ -29,6 +32,11 @@ public class CommunicationController
 	{
 		this.lock = new Object();
 		this.lock2 = new Object();
+
+		//#style waitScreen
+		StringItem item = new StringItem(null, Locale.get("screeninfo.wait.msg"));
+		ScreenInfo.setItem(item);
+		ScreenInfo.setVisible(false);
 	}
 	
 	public void run()
@@ -58,6 +66,16 @@ public class CommunicationController
 			if (this.requestURL != null) {
 				synchronized (this.lock)
 				{
+					ScreenInfo.setVisible(true);
+					try
+					{
+						Thread.sleep(5000);
+					}
+					catch (InterruptedException e1)
+					{
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 					Hashtable data = new Hashtable();
 					StringBuffer sb = new StringBuffer();
 					RedirectHttpConnection connection = null;
@@ -142,6 +160,7 @@ public class CommunicationController
 					this.data = data;
 					notifyResponse(data);
 					this.requestURL = null;
+					ScreenInfo.setVisible(false);
 				}
 				synchronized (this.lock2)
 				{
