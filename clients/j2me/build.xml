@@ -276,6 +276,7 @@
 				<variable name="title" value="Joey" />
 				<variable name="polish.rmi.synchrone" value="true" />
 				<variable name="polish.TextField.useDirectInput" value="true"/>
+				<variable name="polish.ScreenInfo.enable" value="true"/>
 			</variables>
 			<!-- Here you can set the dir attribute to "resources2" for an alternative design. -->
 			<resources
