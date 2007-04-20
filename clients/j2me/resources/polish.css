@@ -6,6 +6,7 @@ colors {
 	bgColorFocused: #fabd23;
 	borderColorFocused: black;
 	
+	bgColor: white;
 	bgColorInput: white;
 	borderColorInput: gray;
 	bgColorInputFocused: bgColorFocused;
@@ -19,7 +20,7 @@ colors {
 	activeTabColor: #002bc6; 
 	inactiveTabColor: silver;
 	
-	darkpink:  rgb(185,26,138);
+	darkpink: rgb(185,26,138);
 
 	uploadBgColor: white;
 	uploadBgColorFocused: red;
@@ -69,18 +70,15 @@ focused {
 .uploadItem {
 	padding: 1;
 	border-width: 1;
-	layout: expand | left;
+	layout: expand | center;
 	background {
-		color: uploadBgColor;
+		color: bgColor;
 	}
 }
 
 .uploadItem:hover {
-	padding: 1;
-	border-width: 1;
-	layout: expand | left;
 	background {
-		color: uploadBgColorFocused;
+		color: bgColorFocused;
 	}
 }
 
