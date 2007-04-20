@@ -131,6 +131,16 @@ class UploadsController extends AppController
                     $_width = intval ($_phone['Phone']['screen_width']);
                     $_height = intval ($_phone['Phone']['screen_height']);
 
+                    if ($_width < 1 || $_height < 1)
+                    {
+                      // we have really no idea what the
+                      // size should be, so lets just say
+
+                      $_width  = 100;
+                      $_height = 100;
+                      
+                    }
+
                     // Put our file away, generate the transcode file for mobile, as well as the preview.  This better not ever fail, but on the
                     // off chance it does, we'll invalidate the file upload.
                     // This will make the save below fail, so the db won't get
