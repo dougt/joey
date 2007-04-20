@@ -37,7 +37,6 @@ public class JoeyController
 	private static final int VIEW_SNAPSHOT = 4;
 	private static final int VIEW_UPLOADS = 5;
 
-	private static final int ALERT_WAIT = 6;
 	private static final int ALERT_UPLOADS_DELETE_CONFIRMATION = 7;
 	private static final int ALERT_EXIT_CONFIRMATION = 8;
 	private static final int ALERT_LOGIN_ERROR = 9;
@@ -170,13 +169,6 @@ public class JoeyController
 			alert.setCommandListener(this);
 			return alert;
 
-		case ALERT_WAIT:
-			//#style waitAlert
-			alert = new Alert( null, Locale.get("alert.wait.msg"), null, AlertType.INFO );
-			alert.setTimeout(Alert.FOREVER);
-			alert.setCommandListener(this);
-			return alert;
-			
 		default:
 			//#debug fatal
 			System.out.println("unknown view: " + viewId);
