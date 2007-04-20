@@ -41,15 +41,14 @@ public class JoeyController
 	private static final int ALERT_EXIT_CONFIRMATION = 8;
 	private static final int ALERT_LOGIN_ERROR = 9;
 	
-	private static final Command CMD_EXIT = new Command(Locale.get("command.exit"), Command.EXIT, 1);
-//	private static final Command CMD_SELECT = new Command(Locale.get("command.select"), Command.SCREEN, 1);
-	private static final Command CMD_SELECT = List.SELECT_COMMAND;
-	private static final Command CMD_BACK = new Command(Locale.get("command.back"), Command.BACK, 1);
+	public static final Command CMD_EXIT = new Command(Locale.get("command.exit"), Command.EXIT, 1);
+//	public static final Command CMD_SELECT = new Command(Locale.get("command.select"), Command.SCREEN, 1);
+	public static final Command CMD_SELECT = List.SELECT_COMMAND;
+	public static final Command CMD_BACK = new Command(Locale.get("command.back"), Command.BACK, 1);
 	public static final Command CMD_LOGIN = new Command(Locale.get("command.login"), Command.SCREEN, 1);
-	private static final Command CMD_DELETE = new Command(Locale.get("command.delete"), Command.SCREEN, 1);
-
-	private static final Command CMD_YES = new Command(Locale.get("command.yes"), Command.SCREEN, 1);
-	private static final Command CMD_NO = new Command(Locale.get("command.no"), Command.BACK, 1);
+	public static final Command CMD_DELETE = new Command(Locale.get("command.delete"), Command.SCREEN, 1);
+	public static final Command CMD_YES = new Command(Locale.get("command.yes"), Command.SCREEN, 1);
+	public static final Command CMD_NO = new Command(Locale.get("command.no"), Command.BACK, 1);
 
 	private static final String RMS_USERDATA = "userdata";
 
@@ -85,11 +84,6 @@ public class JoeyController
 		this.commController = new CommunicationController();
 		this.commController.setResponseHandler(this);
 		this.commController.start();
-
-		this.uploads.addElement(new Upload("Test 1", null, null));
-		this.uploads.addElement(new Upload("Test 2", null, null));
-		this.uploads.addElement(new Upload("Test 3", null, null));
-		this.uploads.addElement(new Upload("Test 4", null, null));
 	}
 	
 	public void startApp()
