@@ -351,6 +351,19 @@ mocoJoey.prototype =
             listener.onStatusChange("upload", -2);
             return;
         }
+        
+        if (status == 511)
+        {
+            // set the hasLogged to false, and try again.
+            g_joey_in_progress = false;
+            g_joey_hasLogged = false;
+
+            this.uploadDataInternal( this.joey_title,
+                                     this.joey_url, 
+                                     this.joey_file,
+                                     this.joey_content_type);
+            return;
+        }
 
         //  TODO: if it is a No Active Session error, try
         //  relogging in a # of times.  
@@ -513,4 +526,3 @@ function NSGetModule(compMgr, fileSpec)
 {
     return myModule;
 }
-
