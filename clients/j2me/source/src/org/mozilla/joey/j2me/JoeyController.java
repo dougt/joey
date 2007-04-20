@@ -21,6 +21,7 @@ import org.mozilla.joey.j2me.views.UploadsView;
 
 //#if polish.api.mmapi
 import de.enough.polish.ui.SnapshotScreen;
+import de.enough.polish.ui.UiAccess;
 //#endif
 
 import java.io.IOException;
@@ -40,6 +41,8 @@ public class JoeyController
 	private static final int ALERT_UPLOADS_DELETE_CONFIRMATION = 7;
 	private static final int ALERT_EXIT_CONFIRMATION = 8;
 	private static final int ALERT_LOGIN_ERROR = 9;
+
+	public static final String ATTR_UPLOAD = "upload";
 	
 	public static final Command CMD_EXIT = new Command(Locale.get("command.exit"), Command.EXIT, 1);
 //	public static final Command CMD_SELECT = new Command(Locale.get("command.select"), Command.SCREEN, 1);
@@ -59,6 +62,7 @@ public class JoeyController
 	private Display display;
 	private UserData userdata;
 	private Vector uploads;
+	private Upload focusedUpload;
 	private RmsStorage storage;
 	private CommunicationController commController;
 
@@ -132,8 +136,6 @@ public class JoeyController
 		case VIEW_UPLOADS:
 			view = new UploadsView(this, this.uploads);
 			view.addCommand(CMD_BACK);
-			view.addCommand(CMD_SELECT);
-			view.addCommand(CMD_DELETE);
 			view.setCommandListener(this);
 			return view;
 
@@ -208,7 +210,7 @@ public class JoeyController
 			
 		case VIEW_UPLOADS:
 		case ALERT_UPLOADS_DELETE_CONFIRMATION:
-			handled = processCommandUploads(command);
+			handled = processCommandUploads(command, item);
 			break;
 
 		case VIEW_PREFERENCES:
@@ -245,24 +247,31 @@ public class JoeyController
 		return false;
 	}
 
-	private boolean processCommandUploads(Command command)
+	private boolean processCommandUploads(Command command, Item item)
 	{
 		if (command == CMD_BACK) {
 			showView(VIEW_MAINMENU);
 			return true;
 		}
+		else if (command == CMD_SELECT) {
+			// TODO: Do something depending on mimetype here.
+			return true;
+		}
 		else if (command == CMD_DELETE) {
+			this.focusedUpload = (Upload) UiAccess.getAttribute(item, ATTR_UPLOAD);
 			showView(ALERT_UPLOADS_DELETE_CONFIRMATION);
 			return true;
 		}
 		else if (command == CMD_YES) {
 			// TODO: Show wait alert here while deletion is happening. 
 			//showWaitAlert();
-			this.commController.delete(((List) this.currentView).getSelectedIndex());
+			this.commController.delete(this.focusedUpload.getId());
+			this.focusedUpload = null;
 			showView(VIEW_UPLOADS);
 			return true;
 		}
 		else if (command == CMD_NO) {
+			this.focusedUpload = null;
 			showView(VIEW_UPLOADS);
 			return true;
 		}

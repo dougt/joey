@@ -243,7 +243,7 @@ public class CommunicationController
 	{
 	}
 	
-	public boolean delete(int id)
+	public boolean delete(String id)
 	{
 		String requestData = "rest=1";
 

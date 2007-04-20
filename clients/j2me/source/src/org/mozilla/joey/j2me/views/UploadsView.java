@@ -54,8 +54,9 @@ public class UploadsView
 			}
 
 			item.setDefaultCommand(JoeyController.CMD_SELECT);
+			item.addCommand(JoeyController.CMD_DELETE);
 			item.setItemCommandListener(controller);
-			UiAccess.setAttribute(item, "upload", upload);
+			UiAccess.setAttribute(item, JoeyController.ATTR_UPLOAD, upload);
 			append(item);
 		}
 	}
