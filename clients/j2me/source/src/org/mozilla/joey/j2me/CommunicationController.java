@@ -118,9 +118,6 @@ public class CommunicationController
 					}
 					catch (IOException e)
 					{
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						
 						//debug error
 						System.out.println("Error requesting url " + this.requestURL);
 					}
@@ -230,7 +227,6 @@ public class CommunicationController
 				String preview = (String) this.data.get("preview." + i);
 				String mimetype = (String) this.data.get("type." + i);
 				String modified = (String) this.data.get("modified." + i);
-				System.out.println("id=" + id + ", referrer=" + referrer +", preview=" + preview + ", mimetype=" + mimetype + ", modified=" + modified);
 
 				uploads.addElement(new Upload(id, mimetype, preview, modified, referrer));
 			}
