@@ -130,7 +130,7 @@ public class JoeyController
 		//#endif
 			
 		case VIEW_UPLOADS:
-			view = new UploadsView(this.uploads);
+			view = new UploadsView(this, this.uploads);
 			view.addCommand(CMD_BACK);
 			view.addCommand(CMD_SELECT);
 			view.addCommand(CMD_DELETE);
