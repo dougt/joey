@@ -222,13 +222,7 @@ public class JoeyController
 			break;
 
 		case ALERT_EXIT_CONFIRMATION:
-			if (command == CMD_YES) {
-				this.midlet.notifyDestroyed();
-			}
-			else {
-				showView(this.prevViewId);
-			}
-			handled = true;
+			handled = processCommandAlertExitConfirmation(command);
 			break;
 
 		case ALERT_LOGIN_ERROR:
@@ -351,6 +345,18 @@ public class JoeyController
 		}
 
 		return false;
+	}
+
+	private boolean processCommandAlertExitConfirmation(Command command)
+	{
+		if (command == CMD_YES) {
+			this.midlet.notifyDestroyed();
+		}
+		else {
+			showView(this.prevViewId);
+		}
+
+		return true;
 	}
 
 	public void commandAction(Command command, Displayable displayable)
