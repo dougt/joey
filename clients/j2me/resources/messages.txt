@@ -24,4 +24,5 @@ form.preferences=Preferences
 
 alert.login.error=Cannot login into server. Username or password wrong?
 alert.exit.msg=Do you really want to exit Joey?
-alert.wait.msg=Please wait
+
+screeninfo.wait.msg=Please wait
