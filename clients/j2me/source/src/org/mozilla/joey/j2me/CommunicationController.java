@@ -131,12 +131,12 @@ public class CommunicationController
 					}
 					catch (EOFException e)
 					{
-						//debug debug
+						//#debug debug
 						System.out.println("Data read.");
 					}
 					catch (IOException e)
 					{
-						//debug error
+						//#debug error
 						System.out.println("Error requesting url " + this.requestURL);
 					}
 					finally {
