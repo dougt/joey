@@ -90,9 +90,14 @@ JoeyStreamListener.prototype =
   },
 
   onStopRequest: function (aRequest, aContext, aStatus)
-  {
-      var httpChannel = aRequest.QueryInterface(Components.interfaces.nsIHttpChannel);
-      var httpResponse = httpChannel.responseStatus;
+  {      
+      var httpResponse = -1;
+      try {
+          var httpChannel = aRequest.QueryInterface(Components.interfaces.nsIHttpChannel);
+          httpResponse = httpChannel.responseStatus;
+      }
+      catch (e) {}
+
       this.mCallbackFunc(this.mOwner, httpResponse, this.mBytes);
   },
 
