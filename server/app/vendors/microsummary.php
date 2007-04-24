@@ -226,8 +226,8 @@ class microsummary {
 
     // load into new dom document
     $d = new DOMDocument();
-    //    $d->preserveWhiteSpace = false;
-    //    $d->resolveExternals = true; // for character entities
+    $d->preserveWhiteSpace = false;
+    $d->resolveExternals = true; // for character entities
     //    $d->strictErrorChecking = false;
     @ $d->loadHTML($str);
 
@@ -281,7 +281,15 @@ class microsummary {
 
     if ($summary == "" && $useHint == true)
     {
-      echo "Not Found";
+      echo "Not Found:\n";
+      echo $select;
+
+
+      //      $f = fopen("/home/dougt/dump", "w");
+      //      fwrite ($f, $str);
+      //      fclose($f);
+      
+
       exit();  // Lets ignore the hint for now.
 
       $rv = 0;
