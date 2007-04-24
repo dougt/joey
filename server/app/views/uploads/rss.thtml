@@ -1,4 +1,4 @@
-
+<?xml version="1.0" encoding="UTF-8"?>
  <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>Joey Uploads</title>
@@ -23,7 +23,7 @@
       <description>
 
       <?php 
-            echo "URL:  " . $upload['Upload']['referrer'];
+            echo "URL:  " . $this->toXMLString( $upload['Upload']['referrer'] );
             echo "Type: " . $upload['File'][0]['type'];
             echo "Size: " . $upload['File'][0]['size'];
       ?>
