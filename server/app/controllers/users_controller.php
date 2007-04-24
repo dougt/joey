@@ -87,6 +87,14 @@ class UsersController extends AppController
 
         $this->pageTitle = 'Login';
 
+        // @todo this check will change if we are
+        // using a net scaler.
+
+        // if the FULL_BASE_URL isn't https, set secure_page to the https url.
+        if (strncmp(FULL_BASE_URL, "https://", 8) == -1) 
+          $this->set('secure_page', str_replace("http://", "https://", FULL_BASE_URL));
+
+
         // Remove their old session
         $this->Session->delete('User');
 
