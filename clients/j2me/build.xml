@@ -115,7 +115,7 @@
 			description=""
 			vendorName="Mozilla Foundation"
 			infoUrl="http://www.mozilla.com"
-			icon="dot.png"
+			icon=""
 			jarName="${polish.vendor}-${polish.name}-${polish.locale}-joey.jar" 
 			jarUrl="${deploy-url}${polish.jarName}"
 			copyright="Copyright 2004 Enough Software. All rights reserved."
