@@ -90,7 +90,6 @@ class UsersController extends AppController
         // Remove their old session
         $this->Session->delete('User');
 
-
         // If a user has submitted form data:
         if (!empty($this->data)) {
 
@@ -111,7 +110,7 @@ class UsersController extends AppController
                             $this->returnHttpStatusCode($this->SUCCESS);
                         } else {
                             $this->redirect('/uploads/index');
-                            exit;
+                            exit();
                         }
                     } else {
                         // This is a password error

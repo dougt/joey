@@ -106,7 +106,7 @@ class AppController extends Controller
                 $this->returnHttpStatusCode($this->ERROR_NO_SESSION);
             }
             $this->redirect('/users/login');
-            exit;
+            exit();
         }
     }
 
@@ -135,6 +135,27 @@ class AppController extends Controller
         $this->layout = null;
         exit();
     }
+
+    function fromXMLString($in)
+    {
+      $out = str_replace ("&amp;", "&", $in);
+      $out = str_replace ("&gt;",  ">", $out);
+      $out = str_replace ("&lt;",  "<", $out);
+      $out = str_replace ("&apos;","\'", $out);
+      $out = str_replace ("&quot;","\"", $out);
+      return $out;
+    }
+
+    function toXMLString($in)
+    {
+      $out = str_replace ("&", "&amp;", $in);
+      $out = str_replace (">",  "&gt;", $out);
+      $out = str_replace ("<",  "&lt;", $out);
+      $out = str_replace ("\'","&apos;", $out);
+      $out = str_replace ("\"","&quot;", $out);
+      return $out;
+    }
+    
 
 }
 ?>
