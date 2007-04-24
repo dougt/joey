@@ -2,6 +2,7 @@ package org.mozilla.joey.j2me;
 
 import de.enough.polish.event.ThreadedCommandListener;
 import de.enough.polish.io.RmsStorage;
+import de.enough.polish.ui.UiAccess;
 import de.enough.polish.util.Locale;
 
 import javax.microedition.lcdui.Alert;
@@ -22,7 +23,6 @@ import org.mozilla.joey.j2me.views.UploadsView;
 
 //#if polish.api.mmapi
 import de.enough.polish.ui.SnapshotScreen;
-import de.enough.polish.ui.UiAccess;
 //#endif
 
 import java.io.IOException;
