@@ -131,6 +131,7 @@ class UploadsController extends AppController
                     $_width = intval ($_phone['Phone']['screen_width']);
                     $_height = intval ($_phone['Phone']['screen_height']);
 
+                    // @todo fix data?
                     if ($_width < 1 || $_height < 1)
                     {
                       // we have really no idea what the
@@ -453,6 +454,25 @@ class UploadsController extends AppController
         
             $this->set('uploads', $data);
  
+
+            // Get desired width and height for the transcoded media file
+            $_phone = $this->Phone->findById($this->_user['phone_id']);
+            $_width = intval ($_phone['Phone']['screen_width']);
+            $_height = intval ($_phone['Phone']['screen_height']);
+
+            //@todo fix data?
+            if ($_width < 1 || $_height < 1)
+            {
+              // we have really no idea what the
+              // size should be, so lets just say
+              $_width  = 100;
+              $_height = 100;
+            }
+
+            // @todo previews are hardcoded to be 1/2.  fix up? 
+            $this->set('upload_preview_width', $_width /2);
+            $this->set('upload_preview_height', $_height/2);
+
             if (BrowserAgent::isMobile()) {
                 // We're not using render here, because it would conflict with nbFlash()
                 // above (it would render both, instead of just one)

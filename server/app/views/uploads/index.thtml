@@ -23,13 +23,25 @@ You have no uploads yet.
 
 <?php foreach ($uploads as $upload): ?>
 
+    <div>
     <div class="joey-upload-preview">
+
         <?php if (array_key_exists(0,$upload['File'])) : ?>
             <?php if (!empty($upload['File'][0]['preview_name'])) : ?>
-                <?=$html->link( '<img src="'.$html->url("/files/view/{$upload['File'][0]['id']}/preview").'" />', "/files/view/{$upload['File'][0]['id']}",false,false,false ) ?>
-            <?php elseif (!empty($upload['Contentsource'][0]['id'])) : ?>
+                
+                <?=$html->link( '<img src="'.$html->url("/files/view/{$upload['File'][0]['id']}/preview").'" />', 
+                                "/files/view/{$upload['File'][0]['id']}",false,false,false ) ?>
 
-                     <iframe width=100 height=100 scrolling=auto frameborder=1 src=<?php echo "/files/view/" . $upload['File'][0]['id']?>> </iframe>
+            <?php elseif (!empty($upload['Contentsource'][0]['id']) || 
+                          empty($upload['File'][0]['preview_name']) ) : ?>
+
+                     <iframe width=<?php echo $upload_preview_width?> 
+                             height=<?php echo $upload_preview_height?>
+                             scrolling=auto
+                             frameborder=1
+                             src=<?php echo "/files/view/" . $upload['File'][0]['id']?>>
+                      </iframe>
+
 
             <?php else : ?>
                 <?=$html->link($html->image('na.png'), "/files/view/{$upload['File'][0]['id']}", false, false, false); ?>
@@ -37,18 +49,22 @@ You have no uploads yet.
         <?php else : ?>
             <?=$html->image('na.png'); ?>
         <?php endif; ?>
+
     </div>
 
+    <div>
     <h3><?php echo $html->link( $upload['Upload']['title'], $upload['Upload']['referrer']) ?></h3>
-        <ul>
-            <?php if (array_key_exists(0,$upload['File']) && !empty($upload['File'][0]['size'])) : ?>
-                <li>Size:  <?php echo $number->toReadableSize($upload['File'][0]['size']); ?></li>
-            <?php endif; ?>
-            <li>Uploaded <?php echo $time->niceShort($upload['Upload']['created']); ?></li>
-            <li><?php echo $html->link( "Delete", "/uploads/delete/" . $upload['Upload']['id']) ?></li>
-        </ul>
-
+    <ul>
+    <li>Size:  <?php echo $number->toReadableSize($upload['File'][0]['size']); ?></li>
+    <li>Uploaded <?php echo $time->niceShort($upload['Upload']['created']); ?></li>
+    <li><?php echo $html->link( "Original", "/files/view/" . $upload['Upload']['id'] . "/original") ?></li>
+    <li><?php echo $html->link( "Delete", "/uploads/delete/" . $upload['Upload']['id']) ?></li>
+    </ul>
+    </div>
+        
     <div class="clearboth"></div>
+
+   </div>
 <?php endforeach; ?>
 
 

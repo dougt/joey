@@ -133,7 +133,7 @@ class StorageComponent extends Object
       }
       
       // check to see if we should do anything
-      if ($forceUpdate == false)
+      if (false && $forceUpdate == false)
       {
         $expiry = strtotime($_upload['File'][0]['modified'] . " + " . CONTENTSOURCE_REFRESH_TIME . " minutes");
         $nowstamp = strtotime("now");
@@ -266,6 +266,7 @@ class StorageComponent extends Object
       return false;
     }
     
+    // @todo why 1/2?
     $width = intval($width / 2);
     $height = intval($height / 2);
     $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_toName} {$_previewName}";    
