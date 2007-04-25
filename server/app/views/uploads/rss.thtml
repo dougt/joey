@@ -12,8 +12,6 @@
     <webMaster>webmaster@joey.labs.mozilla.com</webMaster>
 
 
-
-
     <?php foreach ($uploads as $upload): ?>
 
     <item>
@@ -22,7 +20,8 @@
       <description>
 
       <?php 
-            echo "URL:  " . $this->toXMLString( $upload['Upload']['referrer'] );
+      // @todo $this->toXMLString( referrer );
+            echo "URL:  " . $upload['Upload']['referrer'];
             echo "Type: " . $upload['File'][0]['type'];
             echo "Size: " . $upload['File'][0]['size'];
       ?>
