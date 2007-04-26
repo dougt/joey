@@ -20,6 +20,7 @@ public class CommunicationController
 	private ResponseHandler handler;
 	private String requestURL;
 	private String requestData;
+	private Upload uploadData;
 	private Object lock;
 	private Object lock2;
 	
@@ -77,7 +78,6 @@ public class CommunicationController
 						e1.printStackTrace();
 					}
 					Hashtable data = new Hashtable();
-					StringBuffer sb = new StringBuffer();
 					RedirectHttpConnection connection = null;
 					InputStream in = null;
 					
@@ -93,11 +93,40 @@ public class CommunicationController
 						}
 						
 						connection.setRequestMethod(HttpConnection.POST);
-						connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
-						if (this.requestData != null) {
+						if (this.uploadData == null) {
+							connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+
+							if (this.requestData != null) {
+								OutputStream out = connection.openOutputStream();
+								out.write(this.requestData.getBytes());
+								out.close();
+							}
+						}
+						else {
+							connection.setRequestProperty("Content-Type", "multipart/form-data, boundary=111222111");
+
+							// Create multipart body content.
+							String content = this.uploadData.getData();
+							StringBuffer body = new StringBuffer();
+							body.append("--111222111\r\n");
+							body.append("Content-disposition: form-data;name=\"rest\"\r\n\r\n1\r\n");
+							body.append("--111222111\r\n");
+							body.append("Content-disposition: form-data;name=\"data[Upload][title]\"\r\n\r\n");
+							body.append(this.uploadData.getName());
+							body.append("\r\n--111222111\r\n");
+							body.append("Content-disposition: form-data;name=\"data[Upload][referrer]\"\r\n\r\n");
+							body.append("http://www.heise.de/\r\n");
+							body.append("--111222111\r\n");
+							body.append("Content-disposition: form-data;name=\"data[File][Upload]\";filename=\"data[File][Upload]\"\r\n");
+							body.append("Content-Type: text/plain\r\n");
+							body.append("Content-Length: " + content.length() + "\r\n\r\n");
+							body.append(content);
+							body.append("\r\n--111222111--\r\n");
+
+							// Write body content.
 							OutputStream out = connection.openOutputStream();
-							out.write(this.requestData.getBytes());
+							out.write(body.toString().getBytes());
 							out.close();
 						}
 
@@ -111,6 +140,7 @@ public class CommunicationController
 						}
 
 						int ch;
+						StringBuffer sb = new StringBuffer();
 						while ((ch = in.read()) != -1) {
 							if (ch == '\n') {
 								String line = sb.toString();
@@ -186,6 +216,7 @@ public class CommunicationController
 		{
 			this.requestURL = this.serverURL + url;
 			this.requestData = requestData;
+			this.uploadData = null;
 			this.lock.notify();
 		}
 	}
@@ -193,6 +224,32 @@ public class CommunicationController
 	public int requestURLSynchronous(String url, String requestData)
 	{
 		requestURL(url, requestData);
+		
+		synchronized (this.lock2)
+		{
+			try
+			{
+				this.lock2.wait();
+			}
+			catch (InterruptedException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		
+		return this.responseCode;
+	}
+	
+	public int requestURLSynchronousMultipart(String url, Upload uploadData)
+	{
+		synchronized (this.lock)
+		{
+			this.requestURL = this.serverURL + url;
+			this.requestData = null;
+			this.uploadData = uploadData;
+			this.lock.notify();
+		}
 		
 		synchronized (this.lock2)
 		{
@@ -247,6 +304,21 @@ public class CommunicationController
 				String mimetype = (String) this.data.get("type." + i);
 				String modified = (String) this.data.get("modified." + i);
 
+				int foundIndex = -1;
+
+				for (int j = 0; j < uploads.size(); j++) {
+					Upload upload = (Upload) uploads.elementAt(j);
+
+					if (upload.isShared() && id.equals(upload.getId())) {
+						foundIndex = j;
+						break;
+					}
+				}
+
+				if (foundIndex != -1) {
+					uploads.removeElementAt(foundIndex);
+				}
+
 				uploads.addElement(new Upload(id, mimetype, preview, modified, referrer));
 			}
 		}
@@ -254,8 +326,12 @@ public class CommunicationController
 		return responseCode == HttpConnection.HTTP_OK;
 	}
 	
-	public void add()
+	public boolean add()
 	{
+		Upload upload = new Upload(null, null, null);
+		int responseCode = requestURLSynchronousMultipart("/uploads/add", upload);
+
+		return responseCode == HttpConnection.HTTP_OK;
 	}
 	
 	public boolean delete(String id)

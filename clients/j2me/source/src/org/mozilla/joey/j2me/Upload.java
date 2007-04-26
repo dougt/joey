@@ -2,6 +2,11 @@ package org.mozilla.joey.j2me;
 
 public class Upload
 {
+	private static final int STATUS_SHARED = 0;
+	private static final int STATUS_LOCAL = 1;
+	private static final int STATUS_EDITED = 2;
+
+	private int status;
 	private String id;
 	private String name;
 	private String description;
@@ -11,13 +16,19 @@ public class Upload
 	private String modified;
 	private String referrer;
 	
-	public Upload(String id, String mimetype, String preview, String modified, String referrer)
+	public Upload(String mimetype, String data, String modified)
 	{
-		this(id, null, null, mimetype, preview, null, modified, referrer);
+		this(STATUS_LOCAL, null, null, null, mimetype, null, data, modified, null);
 	}
 
-	public Upload(String id, String name, String description, String mimetype, String preview, String data, String modified, String referrer)
+	public Upload(String id, String mimetype, String preview, String modified, String referrer)
 	{
+		this(STATUS_SHARED, id, null, null, mimetype, preview, null, modified, referrer);
+	}
+
+	public Upload(int status, String id, String name, String description, String mimetype, String preview, String data, String modified, String referrer)
+	{
+		this.status = status;
 		this.id = id;
 		this.name = name;
 		this.description = description;
@@ -25,6 +36,21 @@ public class Upload
 		this.preview = preview;
 		this.data = data;
 		this.modified = modified;
+	}
+
+	public boolean isShared()
+	{
+		return this.status == STATUS_SHARED;
+	}
+	
+	public boolean isLocal()
+	{
+		return this.status == STATUS_LOCAL;
+	}
+	
+	public boolean isEdited()
+	{
+		return this.status == STATUS_EDITED;
 	}
 
 	public String getId()
