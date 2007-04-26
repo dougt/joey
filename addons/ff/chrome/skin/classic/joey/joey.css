@@ -1,17 +1,5 @@
 #joeyStatusButton {
-    list-style-image  : url("chrome://joey/skin/mini-icon-16-16-logout.png");
-}
-
-#joeyStatusButton.login {
-    list-style-image  : url("chrome://joey/skin/mini-icon-16-16-login.png");
-}
-
-#joeyStatusButton.capture {
-    list-style-image  : url("chrome://joey/skin/mini-icon-16-16-capture.png");
-}
-
-#joeyStatusButton.alert {
-    list-style-image  : url("chrome://joey/skin/mini-icon-16-16-alert.png");
+    list-style-image  : url("chrome://joey/skin/joey16x16.png");
 }
 
 #joeyStatusTeller  {

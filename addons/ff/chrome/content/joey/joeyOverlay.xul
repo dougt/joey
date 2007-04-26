@@ -41,13 +41,12 @@
  
 <overlay id="joeyOverlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-
-  // This imports our javascript.
-
+  
+  <script type="application/x-javascript" src="chrome://joey/content/joeyCommon.js"> </script>
   <script type="application/x-javascript" src="chrome://joey/content/joeyOverlay.js"> </script>
-
+  
   // This is for the right click menu.
-
+  
   <popup id="contentAreaContextMenu">
     <menuitem id="joey_selectedText"
               label="Joey! Selected Text"
@@ -58,65 +57,57 @@
               label="Joey! Selected Image"
               insertafter="context-stop"
               oncommand="joey_selectedImage();"/>
-
   </popup>
   
   <!-- status bar static joey presence UI --> 
   
   <statusbar id="status-bar">
-
     <statusbarpanel  id="joeyStatusbar" context="barcontext" hidden="false" collapsed="false" type="menu" >
-    
       <hbox style="padding:0px;margin:0px">
-
 
         <toolbarbutton id="joeyStatusButton"
                        oncommand="joey_launchPopup()" />
-
+        
         <!-- This gives us the DIV layer capability so we can stack a text
              on top of the background boxes -->
+        
+        <stack id="joeyStatusPanel" 
+               style="margin:4px;margin-left:0px" > 
 
-        <stack id="joeyStatusPanel" style="margin:4px;margin-left:0px" > 
-
-         <box id="joeyBackgrondProgressLayers">
-           <box id="joeyProgressLayer" width="0"/>
-         </box>
-
-         <label id="joeyStatusTeller" />
+          <box id="joeyBackgrondProgressLayers">
+            <box id="joeyProgressLayer" width="0"/>
+          </box>
+          
+          <label id="joeyStatusTeller" />
 
         </stack>
-
       </hbox>
 	  
       <menupopup id="joeyStatusPopup" >
-
-        <menuitem label="Status" hidden="true" id="" oncommand="" />
-
-        <menuitem label="My Joey" oncommand="joey_launchCloudSite()" />
-        <menuitem id="joeyMediaMenuItem" label="Joey! Media on page" hidden="true" oncommand="joey_uploadFoundMedia()" />
+        
+        <menuitem label="My Joey!" 
+                  oncommand="joey_launchCloudSite()" />
+        
+        <menuitem id="joeyMediaMenuItem" 
+                  label="Joey! Media on page"
+                  hidden="true" 
+                  oncommand="joey_uploadFoundMedia()" />
 
         <menuitem id="joey_activeRSSLink" class="menuitem-iconic" 
-          hidden="true"
-          label="Joey! Current Feed"
-          insertafter="context-stop"
-          oncommand="joey_feed();"/>
+                  hidden="true"
+                  label="Joey! Current Feed"
+                  insertafter="context-stop"
+                  oncommand="joey_feed();"/>
 
         <menuitem id="joey_selectContextual"
-          label="Joey! Summary Selector"
-          insertafter="context-stop"
-          oncommand="joey_enableSelection();"/>
+                  label="Joey! Summary Selector"
+                  insertafter="context-stop"
+                  oncommand="joey_enableSelection();"/>
 
         <menuitem id="joey_configurePreferences" 
-          label="Preferences.."
-          insertafter="context-stop"
-          oncommand="joeyLaunchPreferences();"/>
-
-        <menu label="History Log" hidden="true">
-   	      <menupopup id="joeyHistoryMenuContainer" 
-	                 onpopupshown="joey_buildMenuHistoryContainer()"
-                     onpopuphidden="joey_clearMenuHistoryContainer()" >
-	      </menupopup>
-        </menu>
+                  label="Joey! Preferences..."
+                  insertafter="context-stop"
+                  oncommand="joeyLaunchPreferences();"/>
         
       </menupopup>
   </statusbarpanel>

@@ -46,7 +46,6 @@ var g_joey_areaWindow = null;
 var g_joey_gBrowser = null;                // presents the main browser, used by the joey_feed code.
 var g_joey_browserStatusHandler = null;    // to track onloction changes in the above browser ( tab browser ) element.
 var g_joey_statusUpdateObject = null;      // the proxy object to deal with UI 
-var g_joey_historyArray = [];              // This is a very simple version of some sort of history array. So far we put Dougt's alert info in here. 
 /* 
  * Event listeners associated to the joeyOverlay app 
  */
@@ -76,8 +75,12 @@ joey_listener.prototype =
             {
                 g_joey_statusUpdateObject.loginStatus("login","failed");
 
-                var c = confirm("Login Failed.  Would you like to try again?");
-                if (c == true)
+
+                var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+                                        .getService(Components.interfaces.nsIPromptService);
+
+                var result = prompts.confirm(null, "Login Failed.", "Login Failed.  Would you like to try again?");
+                if (result == true)
                 {
                     // Clear the username and password and try again.
                     clearLoginData();
@@ -95,7 +98,10 @@ joey_listener.prototype =
             } 
             else {            
                 g_joey_statusUpdateObject.tellStatus("upload",null,null,"failed"); 
-                alert("Upload Failed.");
+
+                var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+                                        .getService(Components.interfaces.nsIPromptService);
+                prompts.alert(null, "Upload Failed.", "Upload Failed.");
             }
             return;
         }
@@ -111,33 +117,6 @@ joey_listener.prototype =
         return null;
     },
 };
-
-function clearLoginData()
-{
-    
-    // sometimes the password manager remembers username
-    // and password that are wrong or have changed.  If
-    // we failed to login, lets purge this data.  I hate
-    // that this is such a PITA to do.
-    
-    var pwmgr = Components.classes["@mozilla.org/passwordmanager;1"]
-                          .getService(Components.interfaces.nsIPasswordManager);
-    var e = pwmgr.enumerator;
-    
-    var passwds = [];
-    
-    while (e.hasMoreElements()) {
-        var passwd = e.getNext().QueryInterface(Components.interfaces.nsIPassword);
-        passwds.push(passwd);
-    }
-    
-    var server = getJoeyServerURL();
-    for (var i = 0; i < passwds.length; ++i)
-    {
-        if (passwds[i].host == server)
-            pwmgr.removeUser(passwds[i].host, passwds[i].user);
-    }
-}
 
 function uploadDataFromGlobals()
 {
@@ -223,26 +202,6 @@ function replaceAll( str, from, to )
     }
     
     return str;
-}
-
-function joey_buildMenuHistoryContainer() 
-{
-    for (var i = 0; i < g_joey_historyArray.length; i++)
-    {
-        var labelItem = g_joey_historyArray[i];
-        var menuElement=document.createElement("menuitem");
-        menuElement.setAttribute("label",labelItem);
-        document.getElementById("joeyHistoryMenuContainer").appendChild(menuElement);	
-    }
-}
-
-function joey_clearMenuHistoryContainer()
-{
-    var menuContainer=document.getElementById("joeyHistoryMenuContainer");
-    while(menuContainer.firstChild) 
-    {
-        menuContainer.removeChild(menuContainer.firstChild);
-    }
 }
 
 function joey_launchCloudSite() 
@@ -358,7 +317,6 @@ function JoeyStatusUpdateClass() {
 /* 
  * UI Wrapper / Deals with the UI 
  * -------
- * TODO: Need to be smart / keep history 
  * TODO: Need to work with multiple instances
  */
 JoeyStatusUpdateClass.prototype = 
@@ -370,44 +328,8 @@ JoeyStatusUpdateClass.prototype =
 	
     loginStatus: function (aMode,aAdVerb)
     {
-		if(aMode == "logout")
-        {
-			// logout mode.
-			document.getElementById("joeyStatusButton").className="";
-		}
-        else
-        { 
-			// login mode.
-			if(aAdVerb == "completed")  {
-    			document.getElementById("joeyStatusButton").className="login";
-            } else {
-    			document.getElementById("joeyStatusButton").className="login_failed";            
-            } 
-		}
 	},
-    tellMode : function (aMode) {
-       
-       if(aMode.indexOf("capture.add") > -1 ) {
-       
-        var previousClassName = document.getElementById("joeyStatusButton").className;
-        
-        document.getElementById("joey_selectContextual").disabled=true;
-        
-        document.getElementById("joeyStatusButton").className=previousClassName + " capture"; 
-    
-       } 
-              
-       if(aMode.indexOf("capture.remove") > -1 ) {
-       
-        var previousClassName = document.getElementById("joeyStatusButton").className;
 
-        document.getElementById("joey_selectContextual").disabled=false;
-        
-        document.getElementById("joeyStatusButton").className=previousClassName.split("capture")[0]; 
-    
-       } 
-       
-    },
     tellStatus:function(verb,from,to,adverb) 
     {
         var value; 
@@ -740,9 +662,6 @@ function joeyStartup()
                       .getService(Components.interfaces.nsIWindowMediator);
     
     gWin = wm.getMostRecentWindow("navigator:browser");
-
-
-
     
     g_joey_gBrowser = gWin.gBrowser;
     
@@ -774,17 +693,6 @@ function joeyStartup()
        }
     } catch(i) { joeyDumpToConsole(i) } 
 
-}
-
-function getJoeyServerURL()
-{
-    var psvc = Components.classes["@mozilla.org/preferences-service;1"]
-                         .getService(Components.interfaces.nsIPrefBranch);
-
-    if (psvc.prefHasUserValue("joey.service_url"))
-        return psvc.getCharPref("joey.service_url");
-
-    return "https://joey.labs.mozilla.com";
 }
 
 
@@ -1024,8 +932,6 @@ var g_joeySelectorService = {
 
         this.enabled = true;
 
-	    g_joey_statusUpdateObject.tellMode("capture.add"); // we will need also to lock the menu...
-	    
         this.associatedDocument = g_joey_gBrowser.selectedBrowser.contentDocument;
 
         this.createBox();
@@ -1097,8 +1003,6 @@ var g_joeySelectorService = {
         this.currentEvent          = null;
         this.previousTargetElement = null;
            
-        g_joey_statusUpdateObject.tellMode("capture.remove");
-
         this.enabled = false;
 
     },
@@ -1125,7 +1029,7 @@ var g_joeySelectorService = {
             e.preventDefault(); // eat the event
         }            
 
-	} catch (e) {alert(e);}
+	} catch (e) {}
 
 	    this.disable();
     },
@@ -1460,9 +1364,6 @@ function joey_selectedTarget(targetElement)
         return;
     */
 
-    if (!confirm (xpath))
-        return;
-
     var uuidGenerator =  Components.classes["@mozilla.org/uuid-generator;1"].getService(Components.interfaces.nsIUUIDGenerator);
     var uuid = uuidGenerator.generateUUID();
     var uuidString = uuid.toString();
@@ -1491,7 +1392,7 @@ function joey_selectedTarget(targetElement)
         + '<hint>' + hint + '</hint>'
 		+ '</generator>\n';
 
-    alert(str);
+    //    alert(str);
 
     g_joey_data = str;
 

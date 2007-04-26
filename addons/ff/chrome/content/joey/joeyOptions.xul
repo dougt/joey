@@ -43,58 +43,34 @@
 	windowtype="window:prefwindow"
 	title="Joey Options"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
-  onload="init()"
-  ondialogaccept="return doOkay();" 
   >
 
+  <script type="application/x-javascript" src="chrome://joey/content/joeyCommon.js" />
   <script type="application/x-javascript" src="chrome://joey/content/joeyOptions.js" />
 
   <prefpane id="joeyPrefPane" label="Joey! Options" >
-
+    
 	<preferences>
-    <preference id="joey.enable_logging" name="joey.enable_logging" type="boolean" />
-    <preference id="joey.remember_username" name="joey.remember_username" type="boolean" />
-    <preference id="joey.service_url"    name="joey.service_url"    type="string" />
+      <preference id="joey.service_url"    name="joey.service_url"    type="string" />
 	</preferences>
-
-<groupbox flex="1"   align="left" style="" >
-
-  <caption label="Joey! Password Manager" />
-
-  <hbox flex="1">
-    <checkbox id="checkbox_joey.remember_username" label="Remember username and password" 
-            preference="joey.remember_username" />
-
-  </hbox>
-
-</groupbox>
-
-  <groupbox flex="1"   align="left" style="" >
-
-    <caption label="Joey! Server Settings" />
-
-    <hbox flex="1">
-      <vbox >
-        <label value="Web Service Address:" />
-        <textbox size="50" id="serviceUrl" preference="joey.service_url" />
-
-      </vbox>
-    </hbox>
-  </groupbox>
-
-
-  <groupbox flex="1"   align="left" style="" >
-
-    <caption label="Joey! Extra" />
-
-    <hbox flex="1">
-      <checkbox id="checkbox_joey.enable_logging" label="Enable Logging in Error Console" 
-              preference="joey.enable_logging" />
-
-    </hbox>
-
-  </groupbox>
-
-</prefpane>
+    
+    <groupbox flex="1"   align="left" style="" >
+      <hbox flex="1">
+        <label value="Joey! Privacy:" />
+        <button label="Clear Login Data"
+                oncommand="clearLoginData(); return false;"/>
+      </hbox>
+    </groupbox>
+    
+    <groupbox flex="1"   align="left" style="" >
+      <hbox flex="1">
+        <vbox >
+          <label value="Joey! URL:" />
+          <textbox size="50" id="serviceUrl" preference="joey.service_url" />
+        </vbox>
+      </hbox>
+    </groupbox>
+    
+  </prefpane>
 
 </prefwindow>
