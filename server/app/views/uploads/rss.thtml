@@ -1,36 +1,31 @@
 <rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>Joey Uploads</title>
-    <link>http://joey.labs.mozilla.com/</link>
+    <link><?php echo FULL_BASE_URL; ?></link>
     <description>Your personal uploads via Joey!.</description>
     <language>en-us</language>
     <pubDate><?php echo date("D, j M Y H:i:s", gmmktime()) . ' GMT';?></pubDate>
     <docs>http://blogs.law.harvard.edu/tech/rss</docs>
 
     <generator>CakePHP</generator>
-    <managingEditor>editor@joey.labs.mozilla.com</managingEditor>
-    <webMaster>webmaster@joey.labs.mozilla.com</webMaster>
-
+    <managingEditor><?php echo JOEY_EMAIL_ADDRESS; ?></managingEditor>
+    <webMaster><?php echo JOEY_EMAIL_ADDRESS; ?></webMaster>
 
     <?php foreach ($uploads as $upload): ?>
 
     <item>
       <title><?php echo $upload['Upload']['title']; ?> at <?php echo $upload['Upload']['created']; ?></title>
-      <link>https://joey.labs.mozilla.com/files/view/<?php echo $upload['Upload']['id']; ?></link>
+      <link><?php echo FULL_BASE_URL; ?>/files/view/<?php echo $upload['Upload']['id']; ?></link>
       <description>
-
       <?php 
       // @todo $this->toXMLString( referrer );
-            echo "URL:  " . $upload['Upload']['referrer'];
-            echo "Type: " . $upload['File'][0]['type'];
-            echo "Size: " . $upload['File'][0]['size'];
+      // echo "URL:  " . $upload['Upload']['referrer'];
+      // echo "Type: " . $upload['File'][0]['type'];
+      // echo "Size: " . $upload['File'][0]['size'];
       ?>
-      
-
       </description>
-      <?php echo $time->nice($upload['Upload']['created']) . ' GMT'; ?>
-       <pubDate><?php echo $upload['Upload']['created'] ?></pubDate>
-      <guid>https://joey.labs.mozilla.com/files/view/<?php echo $upload['Upload']['id']; ?></guid>
+      <pubDate><?php echo $upload['Upload']['created'] ?></pubDate>
+      <guid><?php echo FULL_BASE_URL; ?>/files/view/<?php echo $upload['Upload']['id']; ?></guid>
     </item>
     <?php endforeach; ?>
   </channel>
