@@ -140,7 +140,7 @@ public class CommunicationController
 							body.append(this.uploadData.getName());
 							body.append("\r\n--111222111\r\n");
 							body.append("Content-disposition: form-data;name=\"data[Upload][referrer]\"\r\n\r\n");
-							body.append("http://www.heise.de/\r\n");
+							body.append("http://www.mozilla.org/\r\n");
 							body.append("--111222111\r\n");
 							body.append("Content-disposition: form-data;name=\"data[File][Upload]\";filename=\"data[File][Upload]\"\r\n");
 							body.append("Content-Type: text/plain\r\n");
