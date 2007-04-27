@@ -38,8 +38,10 @@ import javax.microedition.lcdui.Displayable;
 import javax.microedition.lcdui.Item;
 import javax.microedition.lcdui.ItemCommandListener;
 import javax.microedition.lcdui.List;
+import javax.microedition.media.MediaException;
 import javax.microedition.midlet.MIDlet;
 
+import org.bouncycastle.util.encoders.Base64;
 import org.mozilla.joey.j2me.views.LoginView;
 import org.mozilla.joey.j2me.views.MainMenuView;
 import org.mozilla.joey.j2me.views.PreferencesView;
@@ -50,6 +52,7 @@ import de.enough.polish.ui.SnapshotScreen;
 //#endif
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -74,6 +77,7 @@ public class JoeyController
 	public static final Command CMD_BACK = new Command(Locale.get("command.back"), Command.BACK, 1);
 	public static final Command CMD_LOGIN = new Command(Locale.get("command.login"), Command.SCREEN, 1);
 	public static final Command CMD_DELETE = new Command(Locale.get("command.delete"), Command.SCREEN, 1);
+	public static final Command CMD_SNAPSHOT = new Command(Locale.get("command.snapshot"), Command.SCREEN, 1);
 	public static final Command CMD_YES = new Command(Locale.get("command.yes"), Command.SCREEN, 1);
 	public static final Command CMD_NO = new Command(Locale.get("command.no"), Command.BACK, 1);
 
@@ -154,6 +158,7 @@ public class JoeyController
 		case VIEW_SNAPSHOT:
 			//#style snapshotScreen
 			view = new SnapshotScreen(Locale.get("title.snapshot"));
+			view.addCommand(CMD_SNAPSHOT);
 			view.addCommand(CMD_BACK);
 			view.setCommandListener(this.commandListener);
 			return view;
@@ -262,6 +267,30 @@ public class JoeyController
 			showView(VIEW_MAINMENU);
 			return true;
 		}
+
+		SnapshotScreen view = (SnapshotScreen) this.currentView;
+
+		if (command == CMD_SNAPSHOT) {
+			try
+			{
+				// TODO: Choose the best encoding instead of using the first.
+				String[] encodings = SnapshotScreen.getSnapshotEncodings();
+				byte[] image = view.getSnapshot(encodings[0]);
+				String data = new String(Base64.encode(image));
+				// TODO: Is this the correct format for time? Is this correct for all locales? 
+				String modified = new Date().toString();
+				Upload upload = new Upload("image/jpeg", data, data, modified);
+				this.uploads.addElement(upload);
+				this.commController.add(upload);
+			}
+			catch (MediaException e)
+			{
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+			return true;
+		}
 		
 		return false;
 	}
@@ -309,6 +338,7 @@ public class JoeyController
 				case 0:
 					this.commController.getIndex(this.uploads);
 					showView(VIEW_UPLOADS);
+					((UploadsView) this.currentView).update(this, this.uploads);
 					break;
 
 				case 1:

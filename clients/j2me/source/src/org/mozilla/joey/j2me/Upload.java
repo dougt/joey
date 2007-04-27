@@ -40,9 +40,9 @@ public class Upload
 	private String modified;
 	private String referrer;
 	
-	public Upload(String mimetype, String data, String modified)
+	public Upload(String mimetype, String preview, String data, String modified)
 	{
-		this(STATUS_LOCAL, null, null, null, mimetype, null, data, modified, null);
+		this(STATUS_LOCAL, null, null, null, mimetype, preview, data, modified, null);
 	}
 
 	public Upload(String id, String mimetype, String preview, String modified, String referrer)

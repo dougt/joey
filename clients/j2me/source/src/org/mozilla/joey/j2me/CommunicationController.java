@@ -350,9 +350,8 @@ public class CommunicationController
 		return responseCode == HttpConnection.HTTP_OK;
 	}
 	
-	public boolean add()
+	public boolean add(Upload upload)
 	{
-		Upload upload = new Upload(null, null, null);
 		int responseCode = requestURLSynchronousMultipart("/uploads/add", upload);
 
 		return responseCode == HttpConnection.HTTP_OK;

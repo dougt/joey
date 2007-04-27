@@ -8,6 +8,7 @@ command.back=Back
 command.select=Select
 command.login=Login
 command.delete=Delete
+command.snapshot=Snapshot
 
 command.yes=Yes
 command.no=No
