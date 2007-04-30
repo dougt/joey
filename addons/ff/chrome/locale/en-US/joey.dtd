@@ -9,3 +9,4 @@
 <!ENTITY options.privacyButton.label  "Clear Login Data">
 <!ENTITY options.serverTitle.label    "Server URL:">
 
+<!ENTITY overlay.menuPreferences.label "Joey! Preferences...">

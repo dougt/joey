@@ -1,12 +1,16 @@
 <!-- about.xul -->
 
+<!ENTITY common.joeyVerb.string      "Joey!">
+
 <!ENTITY about.productTitle.label    "Joey">
 <!ENTITY about.creatorValue.label    "Mozilla Corporation">
 
 <!ENTITY about.windowTitle.title       "Joey - About">
 <!ENTITY options.windowTitle.title     "Joey - Options">
 
-
-
-
-
+<!ENTITY overlay.contextSendText.label  "Joey! Selected Text">
+<!ENTITY overlay.contextSendImage.label "Joey! Selected Image">
+<!ENTITY overlay.menuSite.label         "My Joey!">
+<!ENTITY overlay.menuMedia.label        "Joey! Media on page">
+<!ENTITY overlay.menuRSS.label          "Joey! Current Feed">
+<!ENTITY overlay.menuSummary.label      "Joey! Summary Capture">
