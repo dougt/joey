@@ -37,8 +37,13 @@
    -
    - ***** END LICENSE BLOCK ***** -->
  
-<?xml-stylesheet href="chrome://joey/skin/joey.css" type="text/css"?> 
- 
+<?xml-stylesheet href="chrome://joey/skin/joey.css" type="text/css"?>
+<!DOCTYPE overlay [
+  <!ENTITY % brandDTD SYSTEM "chrome://joey/locale/brand.dtd" >
+  %brandDTD;
+  <!ENTITY % joeyDTD SYSTEM "chrome://joey/locale/joey.dtd" >
+  %joeyDTD;
+]>
 <overlay id="joeyOverlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
   
@@ -49,12 +54,12 @@
   
   <popup id="contentAreaContextMenu">
     <menuitem id="joey_selectedText"
-              label="Joey! Selected Text"
+              label="&overlay.contextSendText.label;"
               insertafter="context-stop"
               oncommand="joey_selectedText();"/>
     
     <menuitem id="joey_selectedImage"
-              label="Joey! Selected Image"
+              label="&overlay.contextSendImage.label;"
               insertafter="context-stop"
               oncommand="joey_selectedImage();"/>
   </popup>
@@ -85,27 +90,27 @@
 	  
       <menupopup id="joeyStatusPopup" >
         
-        <menuitem label="My Joey!" 
+        <menuitem label="&overlay.menuSite.label;" 
                   oncommand="joey_launchCloudSite()" />
         
         <menuitem id="joeyMediaMenuItem" 
-                  label="Joey! Media on page"
+                  label="&overlay.menuMedia.label;"
                   hidden="true" 
                   oncommand="joey_uploadFoundMedia()" />
 
         <menuitem id="joey_activeRSSLink" class="menuitem-iconic" 
                   hidden="true"
-                  label="Joey! Current Feed"
+                  label="&overlay.menuRSS.label;"
                   insertafter="context-stop"
                   oncommand="joey_feed();"/>
 
         <menuitem id="joey_selectContextual"
-                  label="Joey! Summary Selector"
+                  label="&overlay.menuSummary.label;"
                   insertafter="context-stop"
                   oncommand="joey_enableSelection();"/>
 
         <menuitem id="joey_configurePreferences" 
-                  label="Joey! Preferences..."
+                  label="&overlay.menuPreferences.label;"
                   insertafter="context-stop"
                   oncommand="joeyLaunchPreferences();"/>
         
