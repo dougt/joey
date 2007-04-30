@@ -1,12 +1,11 @@
-<!-- about.xul -->
 
 <!ENTITY about.productVersion.label  "version 0.2">
+<!ENTITY about.creatorTitle.label    "Created By:">
+<!ENTITY about.serverTitle.label     "Home Page:">
+<!ENTITY about.serverValue.label     "https://joey.labs.mozilla.com">
 
-<!ENTITY about.creatorTitle.label  "Created By:">
-
-<!ENTITY about.serverTitle.label "Home Page:">
-<!ENTITY about.serverValue.label "https://joey.labs.mozilla.com">
-
-
-
+<!ENTITY options.optionTitle.label    "Options">
+<!ENTITY options.privacyTitle.label   "Privacy">
+<!ENTITY options.privacyButton.label  "Clear Login Data">
+<!ENTITY options.serverTitle.label    "Server URL:">
 
