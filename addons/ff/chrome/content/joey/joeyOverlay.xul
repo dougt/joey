@@ -49,6 +49,10 @@
   
   <script type="application/x-javascript" src="chrome://joey/content/joeyCommon.js"> </script>
   <script type="application/x-javascript" src="chrome://joey/content/joeyOverlay.js"> </script>
+
+  <stringbundleset id="stringbundleset">
+    <stringbundle id="joey_properties" src="chrome://joey/locale/joey.properties"/>
+  </stringbundleset>
   
   // This is for the right click menu.
   
