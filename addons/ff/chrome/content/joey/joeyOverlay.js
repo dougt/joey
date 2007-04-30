@@ -88,7 +88,7 @@ joey_listener.prototype =
                 var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
                                         .getService(Components.interfaces.nsIPromptService);
 
-                var result = prompts.confirm(null, "Login Failed.", "Login Failed.  Would you like to try again?");
+                var result = prompts.confirm(null, joeyString("loginFailedShort"), joeyString("loginFailedQuestion"));
                 if (result == true)
                 {
                     // Clear the username and password and try again.
@@ -110,7 +110,7 @@ joey_listener.prototype =
 
                 var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
                                         .getService(Components.interfaces.nsIPromptService);
-                prompts.alert(null, "Upload Failed.", "Upload Failed.");
+                prompts.alert(null, joeyString("uploadFailed"), joeyString("uploadFailed"));
             }
             return;
         }
@@ -347,19 +347,19 @@ JoeyStatusUpdateClass.prototype =
         if (verb == "upload") {
 
             // value = "Uploading... ("+from+"/"+to+")";
-            value = "Uploading... ("+percentage+"%)";
+            value = joeyString("uploading") + "(" + percentage + "%)";
 	  }
         else
         {
             if (from==to)
 
                 // this might not be entirely true... basically, at ths point we are waiting to upload...
-                value = "Logging in..."; 
+                value = joeyString("loggingin"); 
 
             else {
 
                 // value = "Downloading... ("+from+"/"+to+")";
-                value = "Downloading... ("+percentage+"%)";
+                value = joeyString("downloading") + "("+percentage+"%)";
 
 		} 
 
@@ -380,10 +380,10 @@ JoeyStatusUpdateClass.prototype =
         if(adverb=="completed") {
             this.progressElement.width=0;
             if(verb=="download") {
-                 document.getElementById("joeyStatusTeller").value="Download completed";
+                 document.getElementById("joeyStatusTeller").value=joeyString("downloadCompleted");
             } 
             if(verb=="upload") {
-                 document.getElementById("joeyStatusTeller").value="Upload completed";
+                 document.getElementById("joeyStatusTeller").value=joeyString("uploadCompleted");
             } 
             /* Dougt timer status cleanup */
             setTimeout("document.getElementById('joeyStatusTeller').value=''", 600);
@@ -391,10 +391,10 @@ JoeyStatusUpdateClass.prototype =
 
         if(adverb == "failed") {
             if(verb=="download") {
-                 document.getElementById("joeyStatusTeller").value="Download failed";
+                 document.getElementById("joeyStatusTeller").value=joeyString("downloadFailed");
             } 
             if(verb=="upload") {
-                 document.getElementById("joeyStatusTeller").value="Upload failed";
+                 document.getElementById("joeyStatusTeller").value=joeyString("uploadFailed");
             } 
             /* Dougt timer status cleanup */
             setTimeout("document.getElementById('joeyStatusTeller').value=''", 600);
