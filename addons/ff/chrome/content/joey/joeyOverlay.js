@@ -46,6 +46,15 @@ var g_joey_areaWindow = null;
 var g_joey_gBrowser = null;                // presents the main browser, used by the joey_feed code.
 var g_joey_browserStatusHandler = null;    // to track onloction changes in the above browser ( tab browser ) element.
 var g_joey_statusUpdateObject = null;      // the proxy object to deal with UI 
+
+var g_joey_bundleElement = null;
+
+function joeyString(ref) {
+
+     return g_joey_bundleElement.getString(ref);
+
+}
+
 /* 
  * Event listeners associated to the joeyOverlay app 
  */
@@ -692,6 +701,13 @@ function joeyStartup()
             joeyLaunchPreferences();        
        }
     } catch(i) { joeyDumpToConsole(i) } 
+
+    /* 
+     *  Bundle object for local string access
+     */
+    
+    g_joey_bundleElement = document.getElementById("joey_properties");
+    // We can use now joeyString to get strings...     
 
 }
 
