@@ -1,0 +1,16 @@
+<!-- about.xul -->
+
+<!ENTITY common.joeyVerb.string      "Joey!">
+
+<!ENTITY about.productTitle.label    "Joey">
+<!ENTITY about.creatorValue.label    "Mozilla Corporation">
+
+<!ENTITY about.windowTitle.title       "Joey - Sobre">
+<!ENTITY options.windowTitle.title     "Joey - Opçoes">
+
+<!ENTITY overlay.contextSendText.label  "Enviar o Texto Selectionado">
+<!ENTITY overlay.contextSendImage.label "Enviar a Imagem Selecionada">
+<!ENTITY overlay.menuSite.label         "Visitar Joey! Enviados">
+<!ENTITY overlay.menuMedia.label        "Enviar Video nas Páginas">
+<!ENTITY overlay.menuRSS.label          "Enviar o RSS desta página">
+<!ENTITY overlay.menuSummary.label      "Habilitar Captura de Conteúdo">

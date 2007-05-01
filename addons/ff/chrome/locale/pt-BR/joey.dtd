@@ -1,0 +1,12 @@
+
+<!ENTITY about.productVersion.label  "version 0.2">
+<!ENTITY about.creatorTitle.label    "Desenvolvido por:">
+<!ENTITY about.serverTitle.label     "Página Principal:">
+<!ENTITY about.serverValue.label     "https://joey.labs.mozilla.com">
+
+<!ENTITY options.optionTitle.label    "Opçoes">
+<!ENTITY options.privacyTitle.label   "Privacidade">
+<!ENTITY options.privacyButton.label  "Apagar dados de Login">
+<!ENTITY options.serverTitle.label    "URL do Servidor:">
+
+<!ENTITY overlay.menuPreferences.label "Preferencias do Joey...">
