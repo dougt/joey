@@ -94,6 +94,7 @@ public class CommunicationController
 					ScreenInfo.setVisible(true);
 					try
 					{
+                        // TODO why sleepy?
 						Thread.sleep(5000);
 					}
 					catch (InterruptedException e1)

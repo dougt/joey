@@ -14,7 +14,7 @@
  * The Original Code is Mozilla Joey.
  *
  * The Initial Developer of the Original Code is
- * Michael Koch.
+ * Doug Turner.
  * Portions created by the Initial Developer are Copyright (C) 2007
  * the Initial Developer. All Rights Reserved.
  *
@@ -41,51 +41,29 @@ import org.bouncycastle.util.encoders.Base64;
 import org.mozilla.joey.j2me.JoeyController;
 import org.mozilla.joey.j2me.Upload;
 
-public class UploadsView
+public class DetailsView
 	extends Form
 {
-	public UploadsView(JoeyController controller, Vector uploads)
+
+    private Upload upload;
+
+	public DetailsView(Upload upload)
 	{
 		//#style uploadScreen
 		super(Locale.get("title.uploads"));
 
-		update(controller, uploads);
+        this.upload = upload;
+		update();
 	}
 
-	public void update(JoeyController controller, Vector uploads)
+	public void update()
 	{
-		deleteAll();
+        Item item = new StringItem(null, this.upload.getId());
+        append(item);
 
-		for (int i = 0; i < uploads.size(); i++) {
-			Upload upload = (Upload) uploads.elementAt(i); 
-			Image image = null;
-			
-            try
-            {
-                byte[] data = Base64.decode(upload.getPreview());
-                image = Image.createImage(new ByteArrayInputStream(data));
-            }
-            catch (Exception e)
-            {
-                // this is going to fail for string data.
-			}
+        item = new StringItem(null, this.upload.getMimetype());
+        append(item);
 
-			Item item;
 
-			if (image != null) {
-				//#style uploadItem
-				item = new ImageItem(null, image, ImageItem.LAYOUT_CENTER, upload.getId());
-			}
-			else {
-				//#style uploadItem
-                item = new StringItem(null, upload.getId());
-			}
-
-			item.setDefaultCommand(JoeyController.CMD_SELECT);
-			item.addCommand(JoeyController.CMD_DELETE);
-			item.setItemCommandListener(controller);
-			UiAccess.setAttribute(item, JoeyController.ATTR_UPLOAD, upload);
-			append(item);
-		}
 	}
 }

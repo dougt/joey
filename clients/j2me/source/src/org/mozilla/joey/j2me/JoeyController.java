@@ -46,6 +46,7 @@ import org.mozilla.joey.j2me.views.LoginView;
 import org.mozilla.joey.j2me.views.MainMenuView;
 import org.mozilla.joey.j2me.views.PreferencesView;
 import org.mozilla.joey.j2me.views.UploadsView;
+import org.mozilla.joey.j2me.views.DetailsView;
 
 //#if polish.api.mmapi
 import de.enough.polish.ui.SnapshotScreen;
@@ -64,6 +65,7 @@ public class JoeyController
 	private static final int VIEW_PREFERENCES = 3;
 	private static final int VIEW_SNAPSHOT = 4;
 	private static final int VIEW_UPLOADS = 5;
+	private static final int VIEW_DETAILS = 6;
 
 	private static final int ALERT_UPLOADS_DELETE_CONFIRMATION = 7;
 	private static final int ALERT_EXIT_CONFIRMATION = 8;
@@ -176,6 +178,13 @@ public class JoeyController
 			view.setCommandListener(this.commandListener);
 			return view;
 
+        case VIEW_DETAILS:
+            view = new DetailsView(this.focusedUpload);
+            view.addCommand(CMD_BACK);
+			view.addCommand(CMD_DELETE);
+            view.setCommandListener(this.commandListener);
+            return view;
+            
 		case ALERT_EXIT_CONFIRMATION:
 			//#style alertConfirmation
 			alert = new Alert(null, Locale.get("alert.exit.msg"), null, AlertType.CONFIRMATION);
@@ -240,6 +249,10 @@ public class JoeyController
 		case VIEW_PREFERENCES:
 			handled = processCommandPreferences(command);
 			break;
+            
+        case VIEW_DETAILS:
+            handled = processCommandDetails(command, item);
+            break;
 
 		case ALERT_EXIT_CONFIRMATION:
 			handled = processCommandAlertExitConfirmation(command);
@@ -295,6 +308,20 @@ public class JoeyController
 		return false;
 	}
 
+	private boolean processCommandDetails(Command command, Item item)
+	{
+		if (command == CMD_BACK) {
+			showView(VIEW_UPLOADS);
+			return true;
+		}
+		else if (command == CMD_DELETE) {
+			this.focusedUpload = (Upload) UiAccess.getAttribute(item, ATTR_UPLOAD);
+			showView(ALERT_UPLOADS_DELETE_CONFIRMATION);
+			return true;
+		}
+        return false;
+    }
+
 	private boolean processCommandUploads(Command command, Item item)
 	{
 		if (command == CMD_BACK) {
@@ -302,7 +329,8 @@ public class JoeyController
 			return true;
 		}
 		else if (command == CMD_SELECT) {
-			// TODO: Do something depending on mimetype here.
+            this.focusedUpload = (Upload) UiAccess.getAttribute(item, ATTR_UPLOAD);
+            showView(VIEW_DETAILS);
 			return true;
 		}
 		else if (command == CMD_DELETE) {
