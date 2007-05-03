@@ -92,16 +92,7 @@ public class CommunicationController
 				synchronized (this.lock)
 				{
 					ScreenInfo.setVisible(true);
-					try
-					{
-                        // TODO why sleepy?
-						Thread.sleep(5000);
-					}
-					catch (InterruptedException e1)
-					{
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
+
 					Hashtable data = new Hashtable();
 					RedirectHttpConnection connection = null;
 					InputStream in = null;
