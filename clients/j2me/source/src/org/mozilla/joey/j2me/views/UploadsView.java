@@ -28,7 +28,6 @@ import de.enough.polish.ui.UiAccess;
 import de.enough.polish.util.Locale;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.Vector;
 
 import javax.microedition.lcdui.Form;
