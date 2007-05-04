@@ -14,7 +14,7 @@
  * The Original Code is Mozilla Joey.
  *
  * The Initial Developer of the Original Code is
- * Michael Koch.
+ * Doug Turner.
  * Portions created by the Initial Developer are Copyright (C) 2007
  * the Initial Developer. All Rights Reserved.
  *
@@ -24,7 +24,28 @@
 
 package org.mozilla.joey.j2me;
 
-public interface ResponseHandler
+public class LoginNetworkRequest
+    extends NetworkRequest
 {
-	void notifyResponse(NetworkRequest request);
+    public LoginNetworkRequest(UserData userData)
+    {
+        StringBuffer sb = new StringBuffer();
+		sb.append("rest=1&data[User][username]=");
+		sb.append(userData.getUsername());
+		sb.append("&data[User][password]=");
+		sb.append(userData.getPassword());
+        
+        this.requestURL = "/users/login";
+        this.contenttype = "application/x-www-form-urlencoded";
+        this.postdata = sb.toString();
+    }
+
+    public void onStart() {
+        // do nothing.
+    }
+
+    public void onStop() {
+        if (this.handler != null)
+            this.handler.notifyResponse(this);
+    }
 }

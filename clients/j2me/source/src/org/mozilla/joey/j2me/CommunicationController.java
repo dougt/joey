@@ -27,355 +27,184 @@ package org.mozilla.joey.j2me;
 import de.enough.polish.io.RedirectHttpConnection;
 import de.enough.polish.ui.ScreenInfo;
 import de.enough.polish.util.Locale;
+import de.enough.polish.util.ArrayList;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.microedition.io.HttpConnection;
 import javax.microedition.lcdui.StringItem;
 
+
+
 public class CommunicationController
 	extends Thread
 {
-	private ResponseHandler handler;
-	private String requestURL;
-	private String requestData;
-	private Upload uploadData;
-	private Object lock;
-	private Object lock2;
-	
 	private String serverURL = "http://joey.labs.mozilla.com";
-	private int responseCode;
 	private String cookieStr;
-	private Hashtable data;
+
+    private ArrayList queue;
 
 	public CommunicationController()
 	{
-		this.lock = new Object();
-		this.lock2 = new Object();
-
-		//#style waitScreen
-		StringItem item = new StringItem(null, Locale.get("screeninfo.wait.msg"));
-		ScreenInfo.setItem(item);
-		ScreenInfo.setVisible(false);
+        queue = new ArrayList();
 	}
 	
-	public void run()
+    
+    public synchronized NetworkRequest getNextRequest() 
+    {
+
+        try {
+            while (queue.size() == 0) {
+                wait();
+            }
+        }
+        catch (InterruptedException ie)
+        {
+            //TODO what to do?
+            return null;
+        }
+
+        return (NetworkRequest) queue.remove(0);
+    }
+
+    public synchronized void addRequest(NetworkRequest nr)
+    {
+        queue.add(nr);
+        notify();
+    }
+    
+    public void run()
 	{
+        NetworkRequest nr;
+
 		while (true) {
-			try
-			{
-				synchronized (this.lock)
-				{
-					if (this.requestURL == null) {
-						this.lock.wait();
-					}
-				}
-			}
-			catch (InterruptedException e)
-			{
-				//#debug
-				System.out.println("Download thread was interrupted...stopping it");
+            nr = this.getNextRequest();
+            
+            if (nr == null)
+                return; // we are done;
+            process(nr);
+        }
+    }
+   
+    private void process(NetworkRequest nr)
+    {
+        RedirectHttpConnection connection = null;
+        InputStream in = null;
+        
+        nr.onStart();
 
-				break;
-			}
-			catch (Error e)
-			{
-				e.printStackTrace();
-			}
+        try {
+            
+            connection = new RedirectHttpConnection(this.serverURL + nr.requestURL);
+            
+            if (this.cookieStr != null) {
+                connection.setRequestProperty("Cookie", this.cookieStr);
+            }
+            
+            connection.setRequestMethod(HttpConnection.POST);
+            connection.setRequestProperty("Content-Type", nr.contenttype);
+            
+            // Write body content.
+            OutputStream out = connection.openOutputStream();
+            out.write(nr.postdata.getBytes());
+            out.close();
+            
+            in = connection.openDataInputStream();
+            nr.responseCode = connection.getResponseCode();
+            
+            String str = connection.getHeaderField("Set-Cookie");
+            if (str != null) {
+                int pos = str.indexOf(';');
+                this.cookieStr = pos != -1 ? str.substring(0, pos) : str;
+            }
+            
+            // read everything in.
+            
+            ByteArrayOutputStream baos = null;
+            DataOutputStream dos = null;
 
-			if (this.requestURL != null) {
-				synchronized (this.lock)
-				{
-					ScreenInfo.setVisible(true);
+            baos = new ByteArrayOutputStream();
+            dos = new DataOutputStream(baos);
 
-					Hashtable data = new Hashtable();
-					RedirectHttpConnection connection = null;
-					InputStream in = null;
-					
-					try
-					{
-						//#debug debug
-						System.out.println("requesting url " + this.requestURL);
+            int ch;
+            while ((ch = in.read()) != -1) {
+                dos.write((byte) ch);
+            }
+            nr.data = baos.toByteArray();
+        }
+        catch (EOFException e)
+        {
+            //#debug debug
+            System.out.println("Data read.");
+        }
+        catch (IOException e)
+        {
+            //#debug error
+            System.out.println("Error requesting url " + nr.requestURL);
+        }
+        finally {
+            try
+            {
+                if (in != null) {
+                    in.close();
+                }
+				
+                if (connection != null) {
+                    connection.close();
+                }
+            }
+            catch (IOException e)
+            {
+                //#debug error
+                System.out.println("Cannot close HTTP connection correctly");
+            }
+        }
+        
+        
+        nr.onStop();
+    }
 
-						connection = new RedirectHttpConnection(this.requestURL);
+	public void login(UserData userData, ResponseHandler handler)
+	{
+        LoginNetworkRequest nr = new LoginNetworkRequest(userData);
+        nr.setResponseHandler(handler);
 
-						if (this.cookieStr != null) {
-							connection.setRequestProperty("Cookie", this.cookieStr);
-						}
-						
-						connection.setRequestMethod(HttpConnection.POST);
+        this.addRequest(nr);
+        return;
+	}
 
-						if (this.uploadData == null) {
-							connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+	public void getIndex(Vector uploads, ResponseHandler handler)
+	{
+        IndexNetworkRequest nr = new IndexNetworkRequest(uploads);
+        nr.setResponseHandler(handler);
 
-							if (this.requestData != null) {
-								OutputStream out = connection.openOutputStream();
-								out.write(this.requestData.getBytes());
-								out.close();
-							}
-						}
-						else {
-							connection.setRequestProperty("Content-Type", "multipart/form-data, boundary=111222111");
+        this.addRequest(nr);
+        return;
+	}
 
-							// Create multipart body content.
-							String content = this.uploadData.getData();
-							StringBuffer body = new StringBuffer();
-							body.append("--111222111\r\n");
-							body.append("Content-disposition: form-data;name=\"rest\"\r\n\r\n1\r\n");
-							body.append("--111222111\r\n");
-							body.append("Content-disposition: form-data;name=\"data[Upload][title]\"\r\n\r\n");
-							body.append(this.uploadData.getName());
-							body.append("\r\n--111222111\r\n");
-							body.append("Content-disposition: form-data;name=\"data[Upload][referrer]\"\r\n\r\n");
-							body.append("http://www.mozilla.org/\r\n");
-							body.append("--111222111\r\n");
-							body.append("Content-disposition: form-data;name=\"data[File][Upload]\";filename=\"data[File][Upload]\"\r\n");
-							body.append("Content-Type: text/plain\r\n");
-							body.append("Content-Length: " + content.length() + "\r\n\r\n");
-							body.append(content);
-							body.append("\r\n--111222111--\r\n");
+	public void add(Upload upload, ResponseHandler handler)
+	{
+        AddNetworkRequest nr = new AddNetworkRequest(upload);
+        nr.setResponseHandler(handler);
 
-							// Write body content.
-							OutputStream out = connection.openOutputStream();
-							out.write(body.toString().getBytes());
-							out.close();
-						}
+        this.addRequest(nr);
+        return;
+	}
 
-						in = connection.openDataInputStream();
-						this.responseCode = connection.getResponseCode();
-						
-						String str = connection.getHeaderField("Set-Cookie");
-						if (str != null) {
-							int pos = str.indexOf(';');
-							this.cookieStr = pos != -1 ? str.substring(0, pos) : str;
-						}
+    public void delete(String id, ResponseHandler handler)
+	{
+        DeleteNetworkRequest nr = new DeleteNetworkRequest(id);
+        nr.setResponseHandler(handler);
 
-						int ch;
-						StringBuffer sb = new StringBuffer();
-						while ((ch = in.read()) != -1) {
-							if (ch == '\n') {
-								String line = sb.toString();
-								int pos = line.indexOf('=');
-								if (pos > 0) {
-									data.put(line.substring(0, pos).trim(),
-									         line.substring(pos + 1).trim());
-								}
-								sb.setLength(0);
-							}
-							else {
-								sb.append((char) ch);
-							}
-						}
-						
-						in.close();
-						connection.close();
-					}
-					catch (EOFException e)
-					{
-						//#debug debug
-						System.out.println("Data read.");
-					}
-					catch (IOException e)
-					{
-						//#debug error
-						System.out.println("Error requesting url " + this.requestURL);
-					}
-					finally {
-						try
-						{
-							if (in != null) {
-								in.close();
-							}
-							
-							if (connection != null) {
-								connection.close();
-							}
-						}
-						catch (IOException e)
-						{
-							//#debug error
-							System.out.println("Cannot close HTTP connection correctly");
-						}
-					}
-
-					this.data = data;
-					notifyResponse(data);
-					this.requestURL = null;
-					ScreenInfo.setVisible(false);
-				}
-				synchronized (this.lock2)
-				{
-					this.lock2.notify();
-				}
-			}
-		}
+        this.addRequest(nr);
+        return;
 	}
 	
-	public void setResponseHandler(ResponseHandler handler)
-	{
-		this.handler = handler;
-	}
-	
-	public void requestURL(String url)
-	{
-		requestURL(url, null);
-	}
-	
-	public void requestURL(String url, String requestData)
-	{
-		synchronized (this.lock)
-		{
-			this.requestURL = this.serverURL + url;
-			this.requestData = requestData;
-			this.uploadData = null;
-			this.lock.notify();
-		}
-	}
-	
-	public int requestURLSynchronous(String url, String requestData)
-	{
-		requestURL(url, requestData);
-		
-		synchronized (this.lock2)
-		{
-			try
-			{
-				this.lock2.wait();
-			}
-			catch (InterruptedException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		return this.responseCode;
-	}
-	
-	public int requestURLSynchronousMultipart(String url, Upload uploadData)
-	{
-		synchronized (this.lock)
-		{
-			this.requestURL = this.serverURL + url;
-			this.requestData = null;
-			this.uploadData = uploadData;
-			this.lock.notify();
-		}
-		
-		synchronized (this.lock2)
-		{
-			try
-			{
-				this.lock2.wait();
-			}
-			catch (InterruptedException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		
-		return this.responseCode;
-	}
-	
-	public void notifyResponse(Hashtable response)
-	{
-		if (this.handler != null) {
-			this.handler.notifyResponse(response);
-		}
-	}
-	
-	public boolean login(UserData userData)
-	{
-		StringBuffer sb = new StringBuffer();
-		sb.append("rest=1&data[User][username]=");
-		sb.append(userData.getUsername());
-		sb.append("&data[User][password]=");
-		sb.append(userData.getPassword());
-		
-		int responseCode = requestURLSynchronous("/users/login", sb.toString());
-		
-		return responseCode == HttpConnection.HTTP_OK;
-	}
-	
-	public boolean getIndex(Vector uploads)
-	{
-		StringBuffer sb = new StringBuffer();
-		sb.append("rest=1&limit=5&start=0");
-		
-		int responseCode = requestURLSynchronous("/uploads/index", sb.toString());
-
-		if (responseCode == HttpConnection.HTTP_OK) {
-			int count = Integer.parseInt((String) this.data.get("count"));
-
-			for (int i = 1; i <= count; i++) {
-				String id = (String) this.data.get("id." + i);
-				String referrer = (String) this.data.get("referrer." + i);
-				String preview = (String) this.data.get("preview." + i);
-				String mimetype = (String) this.data.get("type." + i);
-				String modified = (String) this.data.get("modified." + i);
-
-				int foundIndex = -1;
-
-				for (int j = 0; j < uploads.size(); j++) {
-					Upload upload = (Upload) uploads.elementAt(j);
-
-					if (upload.isShared() && id.equals(upload.getId())) {
-						foundIndex = j;
-						break;
-					}
-				}
-
-				if (foundIndex != -1) {
-					uploads.removeElementAt(foundIndex);
-				}
-
-				uploads.addElement(new Upload(id, mimetype, preview, modified, referrer));
-			}
-		}
-
-		return responseCode == HttpConnection.HTTP_OK;
-	}
-	
-	public boolean add(Upload upload)
-	{
-		int responseCode = requestURLSynchronousMultipart("/uploads/add", upload);
-
-		return responseCode == HttpConnection.HTTP_OK;
-	}
-	
-	public boolean delete(String id)
-	{
-		String requestData = "rest=1";
-
-		int responseCode = requestURLSynchronous("/uploads/delete/" + id, requestData);
-
-		return responseCode == HttpConnection.HTTP_OK;
-	}
-	
-	public boolean getById(int id)
-	{
-		String requestData = "rest=1";
-
-		int responseCode = requestURLSynchronous("/files/view/" + id, requestData);
-
-		return responseCode == HttpConnection.HTTP_OK;
-	}
-	
-	public boolean getPreviewById(int id)
-	{
-		// TODO: Implement me.
-		return false;
-	}
-	
-	public boolean getContentById(int id)
-	{
-		// TODO: Implement me.
-		return false;
-	}
 }

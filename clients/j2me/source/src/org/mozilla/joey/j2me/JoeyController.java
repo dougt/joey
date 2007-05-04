@@ -118,7 +118,6 @@ public class JoeyController
 
 		this.commandListener = new ThreadedCommandListener(this);
 		this.commController = new CommunicationController();
-		this.commController.setResponseHandler(this);
 		this.commController.start();
 	}
 	
@@ -294,7 +293,7 @@ public class JoeyController
 				String modified = new Date().toString();
 				Upload upload = new Upload("image/jpeg", data, data, modified);
 				this.uploads.addElement(upload);
-				this.commController.add(upload);
+                this.commController.add(upload, this);
 			}
 			catch (MediaException e)
 			{
@@ -341,13 +340,8 @@ public class JoeyController
 		else if (command == CMD_YES) {
 			// TODO: Show wait alert here while deletion is happening. 
 			//showWaitAlert();
-			if (this.commController.delete(this.focusedUpload.getId())) {
-				this.uploads.removeElement(this.focusedUpload);
-			}
-			this.focusedUpload = null;
-			showView(VIEW_UPLOADS);
-			((UploadsView) this.currentView).update(this, this.uploads);
-			return true;
+            this.commController.delete(this.focusedUpload.getId(), this);
+            return true;
 		}
 		else if (command == CMD_NO) {
 			this.focusedUpload = null;
@@ -364,9 +358,7 @@ public class JoeyController
 			int index = ((MainMenuView) this.currentView).getCurrentIndex();
 			switch (index) {
 				case 0:
-					this.commController.getIndex(this.uploads);
-					showView(VIEW_UPLOADS);
-					((UploadsView) this.currentView).update(this, this.uploads);
+					this.commController.getIndex(this.uploads, this);
 					break;
 
 				case 1:
@@ -408,12 +400,8 @@ public class JoeyController
 				e.printStackTrace();
 			}
 
-			if (this.commController.login(this.userdata)) {
-				showView(VIEW_MAINMENU);
-			}
-			else {
-				showView(ALERT_LOGIN_ERROR);
-			}
+            this.commController.login(this.userdata, this);
+
 			return true;
 		}
 
@@ -452,11 +440,44 @@ public class JoeyController
 		processCommand(command, null, item);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mozilla.joey.j2me.ResponseHandler#notifyResponse(java.util.Hashtable)
-	 */
-	public void notifyResponse(Hashtable response)
+	public void notifyResponse(NetworkRequest request)
 	{
-		// TODO: Do something.
+
+        System.out.println("request status: " + request.responseCode);
+
+        if (request instanceof LoginNetworkRequest)
+        {
+            if (request.responseCode == 200) // Login ok,
+				showView(VIEW_MAINMENU);
+            else
+				showView(ALERT_LOGIN_ERROR);
+
+            return;
+        }
+
+        if (request instanceof IndexNetworkRequest)
+        {
+            showView(VIEW_UPLOADS);
+            ((UploadsView) this.currentView).update(this,((IndexNetworkRequest) request).uploads);
+            return;
+        }
+
+        if (request instanceof AddNetworkRequest)
+        {
+            // do something?
+            return;
+        }
+
+        if (request instanceof DeleteNetworkRequest)
+        {
+
+            // TODO:
+            this.uploads.removeElement(this.focusedUpload);
+			this.focusedUpload = null;
+			showView(VIEW_UPLOADS);
+			((UploadsView) this.currentView).update(this, this.uploads);
+
+            return;
+        }
 	}
 }
