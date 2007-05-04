@@ -579,7 +579,13 @@ function grabAll(elem)
             document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
             g_joey_media_url = url;
         }
-        
+        else if (base.host == "video.google.com" )
+        {
+            var url = elem.src.substring(elem.src.indexOf('&videoUrl\u003d')+10);
+            url+="&autoplay=true";
+            document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
+            g_joey_media_url = url;
+        }
         else // lets just hope that this works for other sites
         {
             document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
@@ -674,8 +680,6 @@ function joeyStartup()
     
     g_joey_gBrowser = gWin.gBrowser;
     
-    g_joey_gBrowser.addEventListener("DOMLinkAdded", joeyLinkAddedHandler, false);
-
     g_joey_browserStatusHandler = new joeyBrowserStatusHandler();
 
     g_joey_gBrowser.addProgressListener( g_joey_browserStatusHandler , Components.interfaces.nsIWebProgress.NOTIFY_STATE_DOCUMENT);
@@ -736,107 +740,6 @@ function joeyLaunchPreferences() {
                     "welcome", 
                     "chrome,resizable=yes");
 }
-                                            
-/* 
- * From FF. We may be able to use a detection service instead this copied code. 
- */ 
- 
-function joeyLinkAddedHandler(event)
-{
-    
-    /* 
-     * Taken from browser.js - yes this should be in tabbrowser
-     */
-    
-    var erel = event.target.rel;
-    var etype = event.target.type;
-    var etitle = event.target.title;
-    var ehref = event.target.href;
-    
-    const alternateRelRegex = /(^|\s)alternate($|\s)/i;
-    const rssTitleRegex = /(^|\s)rss($|\s)/i;
-    
-    if (!alternateRelRegex.test(erel) || !etype) return;
-    
-    etype = etype.replace(/^\s+/, "");
-    etype = etype.replace(/\s+$/, "");
-    etype = etype.replace(/\s*;.*/, "");
-    etype = etype.toLowerCase();
-    
-    if (etype == "application/rss+xml" || etype == "application/atom+xml" || 
-        (etype == "text/xml" || etype == "application/xml" || etype == "application/rdf+xml") && 
-        rssTitleRegex.test(etitle))
-    {
-        const targetDoc = event.target.ownerDocument;
-        
-        var browsers = g_joey_gBrowser.browsers;
-        var shellInfo = null;
-        
-        for (var i = 0; i < browsers.length; i++)
-        {
-            
-            var shell = findChildShell(targetDoc, browsers[i].docShell, null);
-            if (shell) shellInfo = { shell: shell, browser: browsers[i] };
-        }
-    
-        //var shellInfo = this._getContentShell(targetDoc);
-        
-        var browserForLink = shellInfo.browser;
-        
-        if(!browserForLink) return;
-        
-        if(browserForLink.feeds) 
-        {
-            joeySetCurrentFeed();
-            // We do this now because we dont want to messe up with Existing feeds info in Firefox. 
-            return; 
-        }     
-
-        // Do we really nees this? MArcio, remove the following or review it. 
-        
-        var feeds = [];
-        if (browserForLink.feeds != null) feeds = browserForLink.feeds;
-        var wrapper = event.target;
-        feeds.push({ href: wrapper.href, type: etype, title: wrapper.title});
-
-        // We dont want to add more feed information on it. 
-        // browserForLink.feeds = feeds;
-        
-        if (browserForLink == g_joey_gBrowser || browserForLink == g_joey_gBrowser.mCurrentBrowser) {
-            joeySetCurrentFeed();
-        } 
-    }
-}
-
-/* 
- * We should check this again. Maybe we can reuse this function from the main browser 
- * ( browser.js ) 
- */
-
-function findChildShell(aDocument, aDocShell, aSoughtURI) 
-{
-
-    const nsIWebNavigation         = Components.interfaces.nsIWebNavigation;
-    const nsIInterfaceRequestor    = Components.interfaces.nsIInterfaceRequestor;
-    const nsIDOMDocument           = Components.interfaces.nsIDOMDocument;
-    const nsIDocShellTreeNode      = Components.interfaces.nsIDocShellTreeNode;
-    
-    aDocShell.QueryInterface(nsIWebNavigation);
-    aDocShell.QueryInterface(nsIInterfaceRequestor);
-    var doc = aDocShell.getInterface(nsIDOMDocument);
-    if ((aDocument && doc == aDocument) || 
-        (aSoughtURI && aSoughtURI.spec == aDocShell.currentURI.spec))
-        return aDocShell;
-    
-    var node = aDocShell.QueryInterface(nsIDocShellTreeNode);
-    for (var i = 0; i < node.childCount; ++i)
-    {
-        var docShell = node.getChildAt(i);
-        docShell = findChildShell(aDocument, docShell, aSoughtURI);
-        if (docShell) return docShell;
-    }
-    return null;
-}
 
 function joeyBrowserStatusHandler() {}
 
@@ -865,6 +768,27 @@ joeyBrowserStatusHandler.prototype =
     
     onStateChange : function(aWebProgress, aRequest, aStateFlags, aStatus)
     {
+         /* via state changes we notify our local startDocumentLoad and endDocumentLoad
+         * Joey uses endDocumentLoad to do a little sniffing in the doc, check feeds, 
+         * check media items, and possibly more..
+         */
+         
+        const nsIWebProgressListener = Components.interfaces.nsIWebProgressListener;
+        const nsIChannel = Components.interfaces.nsIChannel;
+        if (aStateFlags & nsIWebProgressListener.STATE_START) {
+            if (aStateFlags & nsIWebProgressListener.STATE_IS_NETWORK &&
+                aRequest && aWebProgress.DOMWindow == content)
+              this.startDocumentLoad(aRequest);
+              
+        }
+        else if (aStateFlags & nsIWebProgressListener.STATE_STOP) {
+          if (aStateFlags & nsIWebProgressListener.STATE_IS_NETWORK) {
+            if (aWebProgress.DOMWindow == content) {
+              if (aRequest)
+                this.endDocumentLoad(aRequest, aStatus);
+            }
+          }
+        }
     },
 
     onProgressChange : function(aWebProgress, aRequest, aCurSelfProgress, aMaxSelfProgress, aCurTotalProgress, aMaxTotalProgress)
@@ -873,10 +797,7 @@ joeyBrowserStatusHandler.prototype =
 
     onLocationChange : function(aWebProgress, aRequest, aLocation)
     {
-        setTimeout(joeySetCurrentFeed, 600);        
-        setTimeout(joeyCheckForMedia, 2000); // this needs to be called after the page loads! dougt
 
-        setTimeout(g_joeySelectorService.disable, 0);
     },
     
     onStatusChange : function(aWebProgress, aRequest, aStatus, aMessage)
@@ -889,6 +810,9 @@ joeyBrowserStatusHandler.prototype =
     
     endDocumentLoad : function(aRequest, aStatus)
     {
+        setTimeout(joeySetCurrentFeed, 0);        
+        setTimeout(joeyCheckForMedia, 0); 
+        setTimeout(g_joeySelectorService.disable, 0);
     },
 
     onSecurityChange : function(aWebProgress, aRequest, aState)
