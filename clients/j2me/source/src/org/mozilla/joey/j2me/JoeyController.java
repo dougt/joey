@@ -329,7 +329,7 @@ public class JoeyController
 		}
 		else if (command == CMD_SELECT) {
             this.focusedUpload = (Upload) UiAccess.getAttribute(item, ATTR_UPLOAD);
-            showView(VIEW_DETAILS);
+            this.commController.get(this.focusedUpload.getId(), this);
 			return true;
 		}
 		else if (command == CMD_DELETE) {
@@ -443,10 +443,10 @@ public class JoeyController
 	public void notifyResponse(NetworkRequest request)
 	{
 
-        System.out.println("request status: " + request.responseCode);
 
         if (request instanceof LoginNetworkRequest)
         {
+            System.out.println("LoginNetworkRequest request status: " + request.responseCode);
             if (request.responseCode == 200) // Login ok,
 				showView(VIEW_MAINMENU);
             else
@@ -457,6 +457,8 @@ public class JoeyController
 
         if (request instanceof IndexNetworkRequest)
         {
+            System.out.println("IndexNetworkRequest request status: " + request.responseCode);
+
             showView(VIEW_UPLOADS);
             ((UploadsView) this.currentView).update(this,((IndexNetworkRequest) request).uploads);
             return;
@@ -464,14 +466,16 @@ public class JoeyController
 
         if (request instanceof AddNetworkRequest)
         {
+            System.out.println("AddNetworkRequest request status: " + request.responseCode);
             // do something?
             return;
         }
 
         if (request instanceof DeleteNetworkRequest)
         {
+            System.out.println("DeleteNetworkRequest request status: " + request.responseCode);
 
-            // TODO:
+            // TODO.  
             this.uploads.removeElement(this.focusedUpload);
 			this.focusedUpload = null;
 			showView(VIEW_UPLOADS);
@@ -479,5 +483,25 @@ public class JoeyController
 
             return;
         }
+
+        
+        if (request instanceof GetNetworkRequest)
+        {
+            System.out.println("GetNetworkRequest request status: " + request.responseCode);
+
+            if (request.responseCode == 200) // ok
+            {
+                // @todo, upload.data is always a base64
+                // encoded string, we should consider
+                // changing this to just be the raw bytes
+
+                this.focusedUpload.setData(new String(Base64.encode(request.data)));
+                showView(VIEW_DETAILS);
+
+            }
+            return;
+        }
+
+        
 	}
 }

@@ -58,12 +58,35 @@ public class DetailsView
 
 	public void update()
 	{
-        Item item = new StringItem(null, this.upload.getId());
+        Item item = new StringItem(null, upload.getId());
         append(item);
 
-        item = new StringItem(null, this.upload.getMimetype());
+        item = new StringItem(null, upload.getMimetype());
         append(item);
 
+        System.out.println(" asdfasdf " + upload.getMimetype().substring(0,5));
 
+        if (upload.getMimetype().equals("text/plain"))
+        {
+            item = new StringItem(null, new String(Base64.decode(upload.getData())));
+            append(item);
+        }
+        else if (upload.getMimetype().substring(0,5).equals("image"))
+        {
+            Image image = null;
+            try
+            {
+                image = Image.createImage(new ByteArrayInputStream(Base64.decode(upload.getData())));
+            } catch (Exception ignored) {}
+
+            item = new ImageItem(null, image, ImageItem.LAYOUT_CENTER, upload.getId());
+            append(item);
+        }
+        else if (upload.getMimetype().equals("video/3gp"))
+        {
+            //@todo
+        }
+        
+        
 	}
 }

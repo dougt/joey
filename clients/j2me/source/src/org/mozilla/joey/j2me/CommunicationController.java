@@ -207,4 +207,12 @@ public class CommunicationController
         return;
 	}
 	
+    public void get(String id, ResponseHandler handler)
+    {
+        GetNetworkRequest nr = new GetNetworkRequest(id);
+        nr.setResponseHandler(handler);
+
+        this.addRequest(nr);
+        return;
+    }
 }
