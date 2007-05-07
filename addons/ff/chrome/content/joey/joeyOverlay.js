@@ -129,6 +129,34 @@ joey_listener.prototype =
 
 function uploadDataFromGlobals()
 {
+
+    ////
+    /// review in progress 
+    // bug 378091
+    // todo: intl support / strings
+    // todo: preferences support 
+    
+    try {
+                     
+        var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+                                .getService(Components.interfaces.nsIPromptService);
+        
+        var titleObject = {value: g_joey_title}; // default the username to user
+        var check = {value: true};  // default the checkbox to true
+        
+        var result = prompts.prompt(null, "Joey Upload", 
+                                                       "Enter new title:",
+                                                       titleObject,
+                                                       "Always ask me to edit titles", 
+                                                       check);
+        
+        if(result) {
+            g_joey_title = titleObject.value;
+        }
+                               
+    } catch (i) { alert(i) }
+
+
     var joey = Components.classes["@mozilla.com/joey;1"]
                          .createInstance(Components.interfaces.mocoJoey);
     
