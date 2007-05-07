@@ -39,12 +39,12 @@ import javax.microedition.lcdui.ImageItem;
 import javax.microedition.lcdui.Item;
 import javax.microedition.lcdui.StringItem;
 
-// VIDEO
+//#if polish.api.mmapi
 import javax.microedition.media.Manager;
 import javax.microedition.media.MediaException;
 import javax.microedition.media.Player;
 import javax.microedition.media.control.VideoControl;
-// END VIDEO
+//#endif
 
 import org.mozilla.joey.j2me.JoeyController;
 import org.mozilla.joey.j2me.Upload;
@@ -89,7 +89,7 @@ public class DetailsView
             item = new ImageItem(null, image, ImageItem.LAYOUT_CENTER, upload.getId());
             append(item);
         }
-// VIDEO
+//#if polish.api.mmapi
         else if (upload.getMimetype().equals("video/3gp"))
         {
 
@@ -114,6 +114,6 @@ public class DetailsView
                 System.out.println("assertion: " + t);
             }
         }
-// END VIDEO
+//#endif
 	}
 }
