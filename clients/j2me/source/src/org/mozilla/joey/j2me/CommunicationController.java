@@ -76,6 +76,8 @@ public class CommunicationController
 
     public synchronized void addRequest(NetworkRequest nr)
     {
+        System.out.println("addRequest " + nr);
+
         queue.add(nr);
         notify();
     }
@@ -126,18 +128,29 @@ public class CommunicationController
             }
             
             // read everything in.
-            
-            ByteArrayOutputStream baos = null;
-            DataOutputStream dos = null;
 
-            baos = new ByteArrayOutputStream();
-            dos = new DataOutputStream(baos);
+            int len = (int)connection.getLength();
 
-            int ch;
-            while ((ch = in.read()) != -1) {
-                dos.write((byte) ch);
+            System.out.println("getLength: " + len);
+
+            if (len == -1 ) {
+                ByteArrayOutputStream baos = null;
+                DataOutputStream dos = null;
+                
+                baos = new ByteArrayOutputStream();
+                dos = new DataOutputStream(baos);
+                
+                int ch;
+                while ((ch = in.read()) != -1) {
+                    dos.write((byte) ch);
+                }
+                nr.data = baos.toByteArray();
             }
-            nr.data = baos.toByteArray();
+            else
+            {
+                nr.data = new byte[len];
+                in.read(nr.data, 0, len);
+            }
         }
         catch (EOFException e)
         {

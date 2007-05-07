@@ -36,7 +36,6 @@ import javax.microedition.lcdui.ImageItem;
 import javax.microedition.lcdui.Item;
 import javax.microedition.lcdui.StringItem;
 
-import org.bouncycastle.util.encoders.Base64;
 import org.mozilla.joey.j2me.JoeyController;
 import org.mozilla.joey.j2me.Upload;
 
@@ -61,8 +60,7 @@ public class UploadsView
 			
             try
             {
-                byte[] data = Base64.decode(upload.getPreview());
-                image = Image.createImage(new ByteArrayInputStream(data));
+                image = Image.createImage(new ByteArrayInputStream(upload.getPreview()));
             }
             catch (Exception e)
             {

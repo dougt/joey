@@ -41,7 +41,6 @@ import javax.microedition.lcdui.List;
 import javax.microedition.media.MediaException;
 import javax.microedition.midlet.MIDlet;
 
-import org.bouncycastle.util.encoders.Base64;
 import org.mozilla.joey.j2me.views.LoginView;
 import org.mozilla.joey.j2me.views.MainMenuView;
 import org.mozilla.joey.j2me.views.PreferencesView;
@@ -288,10 +287,10 @@ public class JoeyController
 				// TODO: Choose the best encoding instead of using the first.
 				String[] encodings = SnapshotScreen.getSnapshotEncodings();
 				byte[] image = view.getSnapshot(encodings[0]);
-				String data = new String(Base64.encode(image));
+
 				// TODO: Is this the correct format for time? Is this correct for all locales? 
 				String modified = new Date().toString();
-				Upload upload = new Upload("image/jpeg", data, data, modified);
+				Upload upload = new Upload("image/jpeg", image, image, modified);
 				this.uploads.addElement(upload);
                 this.commController.add(upload, this);
 			}
@@ -443,6 +442,11 @@ public class JoeyController
 	public void notifyResponse(NetworkRequest request)
 	{
 
+        if (request.responseCode == 511)  // No Active Session
+        {
+            // We have been logged out.  :-(
+            this.commController.login(this.userdata, this);
+        }
 
         if (request instanceof LoginNetworkRequest)
         {
@@ -491,11 +495,7 @@ public class JoeyController
 
             if (request.responseCode == 200) // ok
             {
-                // @todo, upload.data is always a base64
-                // encoded string, we should consider
-                // changing this to just be the raw bytes
-
-                this.focusedUpload.setData(new String(Base64.encode(request.data)));
+                this.focusedUpload.setData(request.data);
                 showView(VIEW_DETAILS);
 
             }

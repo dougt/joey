@@ -24,6 +24,8 @@
 
 package org.mozilla.joey.j2me.views;
 
+import org.bouncycastle.util.encoders.Base64;
+
 import de.enough.polish.ui.UiAccess;
 import de.enough.polish.util.Locale;
 
@@ -37,7 +39,13 @@ import javax.microedition.lcdui.ImageItem;
 import javax.microedition.lcdui.Item;
 import javax.microedition.lcdui.StringItem;
 
-import org.bouncycastle.util.encoders.Base64;
+// VIDEO
+import javax.microedition.media.Manager;
+import javax.microedition.media.MediaException;
+import javax.microedition.media.Player;
+import javax.microedition.media.control.VideoControl;
+// END VIDEO
+
 import org.mozilla.joey.j2me.JoeyController;
 import org.mozilla.joey.j2me.Upload;
 
@@ -64,11 +72,10 @@ public class DetailsView
         item = new StringItem(null, upload.getMimetype());
         append(item);
 
-        System.out.println(" asdfasdf " + upload.getMimetype().substring(0,5));
-
-        if (upload.getMimetype().equals("text/plain"))
+        if (upload.getMimetype().equals("text/plain") ||
+            upload.getMimetype().equals("microsummary/xml"))
         {
-            item = new StringItem(null, new String(Base64.decode(upload.getData())));
+            item = new StringItem(null, new String(upload.getData()));
             append(item);
         }
         else if (upload.getMimetype().substring(0,5).equals("image"))
@@ -76,17 +83,37 @@ public class DetailsView
             Image image = null;
             try
             {
-                image = Image.createImage(new ByteArrayInputStream(Base64.decode(upload.getData())));
+                image = Image.createImage(new ByteArrayInputStream(upload.getData()));
             } catch (Exception ignored) {}
 
             item = new ImageItem(null, image, ImageItem.LAYOUT_CENTER, upload.getId());
             append(item);
         }
+// VIDEO
         else if (upload.getMimetype().equals("video/3gp"))
         {
-            //@todo
+
+            try {
+                VideoControl vc;
+                Player player;
+
+                // create a player instance
+                player = Manager.createPlayer(new ByteArrayInputStream(upload.getData()), "video/3gpp");
+                //                player.addPlayerListener(this);
+                // realize the player
+                player.realize();
+                vc = (VideoControl)player.getControl("VideoControl");
+                if(vc != null) {
+                    Item video = (Item)vc.initDisplayMode(vc.USE_GUI_PRIMITIVE, null);
+                    append(video);
+                }
+                player.prefetch();
+                player.start();
+            }
+            catch(Throwable t) {
+                System.out.println("assertion: " + t);
+            }
         }
-        
-        
+// END VIDEO
 	}
 }

@@ -24,12 +24,14 @@
 
 package org.mozilla.joey.j2me;
 
+import org.bouncycastle.util.encoders.Base64;
+
 public class AddNetworkRequest
     extends NetworkRequest
 {
     public AddNetworkRequest(Upload uploadData)
     {
-        String content = uploadData.getData();
+        String content = new String(Base64.encode(uploadData.getData()));
 
         StringBuffer sb = new StringBuffer();
 

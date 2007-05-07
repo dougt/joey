@@ -35,22 +35,22 @@ public class Upload
 	private String name;
 	private String description;
 	private String mimetype;
-	private String preview;
-	private String data;
+	private byte[] preview;
+	private byte[] data;
 	private String modified;
 	private String referrer;
 	
-	public Upload(String mimetype, String preview, String data, String modified)
+	public Upload(String mimetype, byte[] preview, byte[] data, String modified)
 	{
 		this(STATUS_LOCAL, null, null, null, mimetype, preview, data, modified, null);
 	}
 
-	public Upload(String id, String mimetype, String preview, String modified, String referrer)
+	public Upload(String id, String mimetype, byte[] preview, String modified, String referrer)
 	{
 		this(STATUS_SHARED, id, null, null, mimetype, preview, null, modified, referrer);
 	}
 
-	public Upload(int status, String id, String name, String description, String mimetype, String preview, String data, String modified, String referrer)
+	public Upload(int status, String id, String name, String description, String mimetype, byte[] preview, byte[] data, String modified, String referrer)
 	{
 		this.status = status;
 		this.id = id;
@@ -87,12 +87,12 @@ public class Upload
 		this.id = id;
 	}
 
-	public String getData()
+	public byte[] getData()
 	{
 		return this.data;
 	}
 
-	public void setData(String data)
+	public void setData(byte[] data)
 	{
 		this.data = data;
 	}
@@ -127,12 +127,12 @@ public class Upload
 		this.mimetype = mimetype;
 	}
 
-	public String getPreview()
+	public byte[] getPreview()
 	{
 		return this.preview;
 	}
 
-	public void setPreview(String preview)
+	public void setPreview(byte[] preview)
 	{
 		this.preview = preview;
 	}

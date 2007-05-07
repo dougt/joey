@@ -28,6 +28,7 @@ import java.util.Vector;
 import java.util.Hashtable;
 
 import javax.microedition.io.HttpConnection;
+import org.bouncycastle.util.encoders.Base64;
 
 
 public class IndexNetworkRequest
@@ -104,7 +105,13 @@ public class IndexNetworkRequest
 					uploads.removeElementAt(foundIndex);
 				}
                 
-				uploads.addElement(new Upload(id, mimetype, preview, modified, referrer));
+                // previews are optional.
+                byte[] previewBytes = null;
+                try {
+                    previewBytes = Base64.decode(preview);
+                } catch (Exception ex) {}
+
+				uploads.addElement(new Upload(id, mimetype, previewBytes, modified, referrer));
 			}
             
         }
