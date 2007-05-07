@@ -50,10 +50,6 @@ public class IndexNetworkRequest
         this.uploads = uploads;
     }
 
-    public void onStart() {
-        // do nothing.
-    }
-
     public void onStop() {
 
 		if (this.responseCode == HttpConnection.HTTP_OK) {

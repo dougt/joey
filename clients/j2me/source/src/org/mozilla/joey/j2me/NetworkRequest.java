@@ -72,10 +72,20 @@ public class NetworkRequest
 
 	protected ResponseHandler handler;
 
+
     public void onStart() {
+        // do nothing.
+    }
+
+    public void onProgress(long current, long total)
+    {
+        if (this.handler != null)
+            this.handler.notifyProgress(this, current, total);
     }
 
     public void onStop() {
+        if (this.handler != null)
+            this.handler.notifyResponse(this);
     }
 
     public void setResponseHandler(ResponseHandler handler)

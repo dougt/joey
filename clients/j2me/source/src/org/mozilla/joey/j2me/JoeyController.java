@@ -439,6 +439,11 @@ public class JoeyController
 		processCommand(command, null, item);
 	}
 
+	public void notifyProgress(NetworkRequest request, long current, long total)
+    {
+        //System.out.println(request + "(" + current + "/" + total + ")");
+    }
+
 	public void notifyResponse(NetworkRequest request)
 	{
 

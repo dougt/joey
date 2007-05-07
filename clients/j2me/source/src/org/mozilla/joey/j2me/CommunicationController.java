@@ -46,6 +46,7 @@ import javax.microedition.lcdui.StringItem;
 public class CommunicationController
 	extends Thread
 {
+    private int    progressBeforeNotification = 4096;
 	private String serverURL = "http://joey.labs.mozilla.com";
 	private String cookieStr;
 
@@ -133,23 +134,39 @@ public class CommunicationController
 
             System.out.println("getLength: " + len);
 
-            if (len == -1 ) {
+            if (len <= 0) {
                 ByteArrayOutputStream baos = null;
                 DataOutputStream dos = null;
                 
                 baos = new ByteArrayOutputStream();
                 dos = new DataOutputStream(baos);
                 
+                int counter = progressBeforeNotification;
+                long total = 0;
                 int ch;
                 while ((ch = in.read()) != -1) {
                     dos.write((byte) ch);
+                    total++;
+                    if (--counter == 0)
+                    {
+                        nr.onProgress(total, -1);
+                        counter = progressBeforeNotification;
+                    }
                 }
                 nr.data = baos.toByteArray();
             }
             else
             {
                 nr.data = new byte[len];
-                in.read(nr.data, 0, len);
+                
+                int total = 0;
+                while (total <= len)
+                {
+                    int amtToRead = (len < progressBeforeNotification ? len : progressBeforeNotification);
+                    in.read(nr.data, total, amtToRead);
+                    total += amtToRead;
+                    nr.onProgress(total, len);
+                }
             }
         }
         catch (EOFException e)

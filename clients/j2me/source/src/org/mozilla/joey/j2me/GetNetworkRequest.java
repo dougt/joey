@@ -33,13 +33,4 @@ public class GetNetworkRequest
         this.contenttype = "application/x-www-form-urlencoded";
         this.postdata = "rest=1";
     }
-
-    public void onStart() {
-        // do nothing.
-    }
-
-    public void onStop() {
-        if (this.handler != null)
-            this.handler.notifyResponse(this);
-    }
 }

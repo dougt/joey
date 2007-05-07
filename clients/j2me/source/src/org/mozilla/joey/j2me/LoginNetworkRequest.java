@@ -39,13 +39,4 @@ public class LoginNetworkRequest
         this.contenttype = "application/x-www-form-urlencoded";
         this.postdata = sb.toString();
     }
-
-    public void onStart() {
-        // do nothing.
-    }
-
-    public void onStop() {
-        if (this.handler != null)
-            this.handler.notifyResponse(this);
-    }
 }

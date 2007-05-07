@@ -26,5 +26,7 @@ package org.mozilla.joey.j2me;
 
 public interface ResponseHandler
 {
+	void notifyProgress(NetworkRequest request, long current, long total);
+
 	void notifyResponse(NetworkRequest request);
 }

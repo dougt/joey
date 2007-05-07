@@ -54,13 +54,4 @@ public class AddNetworkRequest
         this.contenttype = "multipart/form-data, boundary=111222111";
         this.postdata = sb.toString();
     }
-
-    public void onStart() {
-        // do nothing.
-    }
-
-    public void onStop() {
-        if (this.handler != null)
-            this.handler.notifyResponse(this);
-    }
 }
