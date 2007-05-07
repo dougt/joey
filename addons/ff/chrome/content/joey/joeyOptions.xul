@@ -56,12 +56,12 @@
   <script type="application/x-javascript" src="chrome://joey/content/joeyOptions.js" />
 
   <prefpane id="joeyPrefPane" label="&options.optionTitle.label;" >
-    
-	<preferences>
-    <preference id="joey.service_url"    name="joey.service_url"    type="string" />
-    <preference id="joey.askfortitle"    name="joey.askfortitle"    type="boolean" />
-  </preferences>
-    
+
+    <preferences>
+      <preference id="joey.service_url"    name="joey.service_url"    type="string" />
+      <preference id="joey.askForTitle"    name="joey.askForTitle"    type="boolean" />
+    </preferences>
+
     <groupbox flex="1"   align="left">
       <hbox flex="1">
         <label value="&options.privacyTitle.label;" />
@@ -74,10 +74,10 @@
       <vbox flex="1">
         <label value="Joey Upload:" />
         <checkbox label="&options.askForTitle.label;"
-                id="AlwaysAskForTitle" preference="joey.askfortitle"/>
+                id="AlwaysAskForTitle" preference="joey.askForTitle"/>
       </vbox>
     </groupbox>
-    
+
     <groupbox flex="1"   align="left" style="" >
       <hbox flex="1">
         <vbox >
@@ -86,7 +86,7 @@
         </vbox>
       </hbox>
     </groupbox>
-    
+
   </prefpane>
 
 </prefwindow>

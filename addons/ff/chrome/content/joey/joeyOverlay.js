@@ -130,31 +130,42 @@ joey_listener.prototype =
 function uploadDataFromGlobals()
 {
 
-    ////
-    /// review in progress 
-    // bug 378091
-    // todo: intl support / strings
-    // todo: preferences support 
-    
+    // marcio
+
     try {
                      
         var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
                                 .getService(Components.interfaces.nsIPromptService);
         
         var titleObject = {value: g_joey_title}; // default the username to user
-        var check = {value: true};  // default the checkbox to true
+
+
+        var psvc = Components.classes["@mozilla.org/preferences-service;1"]
+                         .getService(Components.interfaces.nsIPrefBranch);
+
+        var askState = psvc.getBoolPref("joey.askForTitle");
+     
+        if(askState == true ) {
         
-        var result = prompts.prompt(null, joeyString("promptTitle.windowTitle"), 
-                                                       joeyString("promptTitle.label"),
-                                                       titleObject,
-                                                       joeyString("promptTitle.prefQuestion"), 
-                                                       check);
-        
-        if(result) {
-            g_joey_title = titleObject.value;
-        }
-                               
-    } catch (i) { alert(i) }
+            var check = {value: askState};  // default the checkbox to true
+            
+            var result = prompts.prompt(null, joeyString("promptTitle.windowTitle"), 
+                                                           joeyString("promptTitle.label"),
+                                                           titleObject,
+                                                           joeyString("promptTitle.prefQuestion"), 
+                                                           check);
+            
+            if(result) {
+                g_joey_title = titleObject.value;
+            }
+            
+            
+            psvc.setBoolPref("joey.askForTitle",check.value);       
+            
+            
+        } 
+                              
+    } catch (i) { joeyDumpToConsole(i) }
 
 
     var joey = Components.classes["@mozilla.com/joey;1"]
