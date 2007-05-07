@@ -9,4 +9,7 @@
 <!ENTITY options.privacyButton.label  "Clear Login Data">
 <!ENTITY options.serverTitle.label    "Server URL:">
 
+<!ENTITY options.uploadOptions.label  "Upload Settings:" >
+<!ENTITY options.askForTitle.label    "Always ask for a title when uploading items" >
+
 <!ENTITY overlay.menuPreferences.label "Joey! Preferences...">
