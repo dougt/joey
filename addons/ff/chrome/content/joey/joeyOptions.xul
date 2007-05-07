@@ -59,7 +59,7 @@
 
     <preferences>
       <preference id="joey.service_url"    name="joey.service_url"    type="string" />
-      <preference id="joey.askForTitle"    name="joey.askForTitle"    type="boolean" />
+      <preference id="joey.askForTitle"    name="joey.askForTitle"    type="bool" />
     </preferences>
 
     <groupbox flex="1"   align="left">
