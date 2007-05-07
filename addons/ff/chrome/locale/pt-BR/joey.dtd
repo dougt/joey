@@ -1,12 +1,15 @@
 
 <!ENTITY about.productVersion.label  "version 0.2">
 <!ENTITY about.creatorTitle.label    "Desenvolvido por:">
-<!ENTITY about.serverTitle.label     "P�gina Principal:">
+<!ENTITY about.serverTitle.label     "Página Principal:">
 <!ENTITY about.serverValue.label     "https://joey.labs.mozilla.com">
 
-<!ENTITY options.optionTitle.label    "Op�oes">
+<!ENTITY options.optionTitle.label    "Opções">
 <!ENTITY options.privacyTitle.label   "Privacidade">
-<!ENTITY options.privacyButton.label  "Apagar dados de Login">
-<!ENTITY options.serverTitle.label    "URL do Servidor:">
+<!ENTITY options.privacyButton.label  "Apagar dados de login">
+<!ENTITY options.serverTitle.label    "URL do servidor:">
 
-<!ENTITY overlay.menuPreferences.label "Preferencias do Joey...">
+<!ENTITY options.uploadOptions.label  "Enviando:" >
+<!ENTITY options.askForTitle.label    "Sempre perguntar um título para objetos enviados" >
+
+<!ENTITY overlay.menuPreferences.label "Preferências do Joey...">
