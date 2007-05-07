@@ -73,7 +73,7 @@
     <groupbox flex="1"   align="left">
       <vbox flex="1">
         <label value="Joey Upload:" />
-        <checkbox label="Always ask for title when uploading items"
+        <checkbox label="&options.askForTitle.label;"
                 id="AlwaysAskForTitle" preference="joey.askfortitle"/>
       </vbox>
     </groupbox>

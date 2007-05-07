@@ -144,10 +144,10 @@ function uploadDataFromGlobals()
         var titleObject = {value: g_joey_title}; // default the username to user
         var check = {value: true};  // default the checkbox to true
         
-        var result = prompts.prompt(null, "Joey Upload", 
-                                                       "Enter new title:",
+        var result = prompts.prompt(null, joeyString("promptTitle.windowTitle"), 
+                                                       joeyString("promptTitle.label"),
                                                        titleObject,
-                                                       "Always ask me to edit titles", 
+                                                       joeyString("promptTitle.prefQuestion"), 
                                                        check);
         
         if(result) {
