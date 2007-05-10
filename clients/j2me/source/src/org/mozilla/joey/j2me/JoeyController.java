@@ -279,6 +279,7 @@ public class JoeyController
 			return true;
 		}
 
+//#if polish.api.mmapi
 		SnapshotScreen view = (SnapshotScreen) this.currentView;
 
 		if (command == CMD_SNAPSHOT) {
@@ -302,7 +303,7 @@ public class JoeyController
 
 			return true;
 		}
-		
+//#endif		
 		return false;
 	}
 

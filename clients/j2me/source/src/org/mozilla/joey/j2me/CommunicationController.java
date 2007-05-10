@@ -134,40 +134,25 @@ public class CommunicationController
 
             System.out.println("getLength: " + len);
 
-            if (len <= 0) {
-                ByteArrayOutputStream baos = null;
-                DataOutputStream dos = null;
-                
-                baos = new ByteArrayOutputStream();
-                dos = new DataOutputStream(baos);
-                
-                int counter = progressBeforeNotification;
-                long total = 0;
-                int ch;
-                while ((ch = in.read()) != -1) {
-                    dos.write((byte) ch);
-                    total++;
-                    if (--counter == 0)
-                    {
-                        nr.onProgress(total, -1);
-                        counter = progressBeforeNotification;
-                    }
-                }
-                nr.data = baos.toByteArray();
-            }
-            else
-            {
-                nr.data = new byte[len];
-                
-                int total = 0;
-                while (total <= len)
+            ByteArrayOutputStream baos = null;
+            DataOutputStream dos = null;
+            
+            baos = new ByteArrayOutputStream();
+            dos = new DataOutputStream(baos);
+            
+            int counter = progressBeforeNotification;
+            long total = 0;
+            int ch;
+            while ((ch = in.read()) != -1) {
+                dos.write((byte) ch);
+                total++;
+                if (--counter == 0)
                 {
-                    int amtToRead = (len < progressBeforeNotification ? len : progressBeforeNotification);
-                    in.read(nr.data, total, amtToRead);
-                    total += amtToRead;
-                    nr.onProgress(total, len);
+                    nr.onProgress(total, -1);
+                    counter = progressBeforeNotification;
                 }
             }
+            nr.data = baos.toByteArray();
         }
         catch (EOFException e)
         {
