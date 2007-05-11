@@ -37,6 +37,7 @@
  * ***** END LICENSE BLOCK ***** */
 
 vendor('BrowserAgent.class');
+uses('sanitize');
 
 class UsersController extends AppController
 {
@@ -78,6 +79,108 @@ class UsersController extends AppController
             // Invalid code, give them an error.
             $this->set('error_mesg', 'Wrong activation code!');
         }
+    }
+
+    /**
+     *
+     */
+    function edit() {
+
+        $this->pageTitle = 'Edit User';
+
+        $this->_user = $this->Session->read('User');
+
+        $this->set('phones', $this->Phone->generateList(null,null,null,'{n}.Phone.id','{n}.Phone.name'));
+        $this->set('operators', $this->Operator->generateList(null,null,null,'{n}.Operator.id','{n}.Operator.provider'));
+
+        // If they just show up here, prefill the data and return
+        if (empty($this->data)) {
+            $_sanitize = new Sanitize();
+
+            $this->data = $this->User->findByUsername($this->_user['username']);
+            $this->data['User']['password'] = '';
+
+            $this->set('username', $_sanitize->html($this->_user['username']));
+            return;
+        }
+
+        // If a user has submitted form data
+        if (!empty($this->data)) {
+
+            // Grab our current values
+            $_someone = $this->User->findById($this->_user['id']);
+
+            // We don't accept any other changes (eg. username)
+            $changed = array();
+            $changed['email'] = $this->data['User']['email'];
+            $changed['phonenumber'] = $this->data['User']['phonenumber'];
+
+            // If the passwords aren't the same, they're invalid
+            if ($this->data['User']['password'] != $this->data['User']['confirmpassword']) {
+                $this->User->invalidate('confirmpassword');
+            }
+        
+            // If they're changing the password, encrypt it
+            if (!empty($this->data['User']['password'])) {
+                $changed['password'] = sha1($this->data['User']['password']);
+            } else {
+                $changed['password'] = $_someone['User']['password'];
+            }
+
+            // If they're changing their email address, assign a unique confirmation code
+            if ($this->data['User']['email'] != $this->_user['email']) {
+                $changed['confirmationcode'] = uniqid();
+            }
+
+            // Does our data validate?
+            if ($this->User->validates(array('User' => $changed)) && $this->Phone->validates($this->data) && $this->Operator->validates($this->data)) {
+
+                $changed['phone_id']    = $this->data['Phone']['name'];
+                $changed['operator_id'] = $this->data['Operator']['provider'];
+
+                $this->User->id = $this->_user['id'];
+                $this->User->data['User'] = $changed;
+
+                if ($this->User->save()) {
+
+                    $_flash_message = '';
+
+                    if (isset($changed['confirmationcode'])) {
+
+                        // Make an email message. 
+                        $_message = "Please click on the following link or use the code {$changed['confirmationcode']} to activate your registration.  ".FULL_BASE_URL."/users/activate/{$changed['confirmationcode']} .";
+
+                        // Send a mail to the user
+                        mail($this->data['User']['email'], 'Welcome to Joey', $_message, "From: ".JOEY_EMAIL_ADDRESS."\r\n");
+
+                        $_flash_message = 'Please check your email.';
+                    }
+
+                    // Grab their information from the database, and store in the session
+                    $_newuser = $this->User->findById($this->_user['id']);
+
+                    $this->Session->write('User', $_newuser['User']);
+
+                    // They're outta here
+                    $this->flash('Account Updated. '.$_flash_message, '/users/edit', 1);
+
+                } else {
+                    $this->set('error_mesg', 'Update failed.  Please try again.');
+                }
+            } else {
+                // Since we're using &&'s in the if() statement above, there is a
+                // chance some of these didn't run.  If we run them all manually, we
+                // can provide a complete set of error messages to the user all in
+                // one go.
+                    $this->User->validates($this->data);
+                    $this->Phone->validates($this->data);
+                    $this->Operator->validates($this->data);
+
+                // Send the errors to the form 
+                $this->validateErrors($this->User, $this->Phone, $this->Operator);
+            }
+        }
+
     }
 
     /**
@@ -351,6 +454,7 @@ class UsersController extends AppController
             }
         }
     }
+    
 
 }
 ?>

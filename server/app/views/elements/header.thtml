@@ -45,7 +45,7 @@
 
         if ($this->controller->Session->check('User'))  {
             $user = $this->controller->Session->read('User');
-            echo $user['email'].' ('.$html->link('Logout', '/users/logout').')';
+            echo $html->link($user['username'],'/users/edit').' ('.$html->link('Logout', '/users/logout').')';
             echo "<p>";
 
             // FULL_BASE_URL needs to be http because XPInstall can install via HTTPS without barfing over itself with -228 errors.
