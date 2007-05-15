@@ -25,8 +25,6 @@
 package org.mozilla.joey.j2me;
 
 import de.enough.polish.io.RedirectHttpConnection;
-import de.enough.polish.ui.ScreenInfo;
-import de.enough.polish.util.Locale;
 import de.enough.polish.util.ArrayList;
 
 import java.io.EOFException;
@@ -35,13 +33,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.util.Hashtable;
 import java.util.Vector;
 
 import javax.microedition.io.HttpConnection;
-import javax.microedition.lcdui.StringItem;
-
-
 
 public class CommunicationController
 	extends Thread
@@ -54,7 +48,7 @@ public class CommunicationController
 
 	public CommunicationController()
 	{
-        queue = new ArrayList();
+        this.queue = new ArrayList();
 	}
 	
     
@@ -62,7 +56,7 @@ public class CommunicationController
     {
 
         try {
-            while (queue.size() == 0) {
+            while (this.queue.size() == 0) {
                 wait();
             }
         }
@@ -72,26 +66,36 @@ public class CommunicationController
             return null;
         }
 
-        return (NetworkRequest) queue.remove(0);
+        return (NetworkRequest) this.queue.remove(0);
     }
 
     public synchronized void addRequest(NetworkRequest nr)
     {
-        System.out.println("addRequest " + nr);
+    	//#debug debug
+    	System.out.println("addRequest " + nr);
+    	
+    	this.queue.add(nr);
+    	notify();
+    }
 
-        queue.add(nr);
+    public synchronized void addNextRequest(NetworkRequest nr)
+    {
+    	//#debug debug
+        System.out.println("addNextRequest " + nr);
+
+        this.queue.add(0, nr);
         notify();
     }
     
     public void run()
 	{
-        NetworkRequest nr;
-
 		while (true) {
-            nr = this.getNextRequest();
+            NetworkRequest nr = this.getNextRequest();
             
-            if (nr == null)
-                return; // we are done;
+            if (nr == null) {
+            	break; // we are done;
+            }
+
             process(nr);
         }
     }
@@ -140,18 +144,20 @@ public class CommunicationController
             baos = new ByteArrayOutputStream();
             dos = new DataOutputStream(baos);
             
-            int counter = progressBeforeNotification;
+            int counter = this.progressBeforeNotification;
             long total = 0;
             int ch;
+
             while ((ch = in.read()) != -1) {
                 dos.write((byte) ch);
                 total++;
                 if (--counter == 0)
                 {
                     nr.onProgress(total, -1);
-                    counter = progressBeforeNotification;
+                    counter = this.progressBeforeNotification;
                 }
             }
+
             nr.data = baos.toByteArray();
         }
         catch (EOFException e)
@@ -181,8 +187,7 @@ public class CommunicationController
                 System.out.println("Cannot close HTTP connection correctly");
             }
         }
-        
-        
+
         nr.onStop();
     }
 
@@ -191,8 +196,7 @@ public class CommunicationController
         LoginNetworkRequest nr = new LoginNetworkRequest(userData);
         nr.setResponseHandler(handler);
 
-        this.addRequest(nr);
-        return;
+        addNextRequest(nr);
 	}
 
 	public void getIndex(Vector uploads, ResponseHandler handler)
@@ -200,8 +204,7 @@ public class CommunicationController
         IndexNetworkRequest nr = new IndexNetworkRequest(uploads);
         nr.setResponseHandler(handler);
 
-        this.addRequest(nr);
-        return;
+        addRequest(nr);
 	}
 
 	public void add(Upload upload, ResponseHandler handler)
@@ -209,8 +212,7 @@ public class CommunicationController
         AddNetworkRequest nr = new AddNetworkRequest(upload);
         nr.setResponseHandler(handler);
 
-        this.addRequest(nr);
-        return;
+        addRequest(nr);
 	}
 
     public void delete(String id, ResponseHandler handler)
@@ -218,8 +220,7 @@ public class CommunicationController
         DeleteNetworkRequest nr = new DeleteNetworkRequest(id);
         nr.setResponseHandler(handler);
 
-        this.addRequest(nr);
-        return;
+        addRequest(nr);
 	}
 	
     public void get(String id, ResponseHandler handler)
@@ -228,6 +229,5 @@ public class CommunicationController
         nr.setResponseHandler(handler);
 
         this.addRequest(nr);
-        return;
     }
 }
