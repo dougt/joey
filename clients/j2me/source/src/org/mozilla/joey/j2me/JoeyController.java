@@ -478,6 +478,7 @@ public class JoeyController
         }
         else if (request instanceof DeleteNetworkRequest)
         {
+        	//#debug debug
             System.out.println("DeleteNetworkRequest request status: " + request.responseCode);
 
             // TODO: ??
@@ -488,6 +489,7 @@ public class JoeyController
         }
         else if (request instanceof GetNetworkRequest)
         {
+        	//#debug debug
             System.out.println("GetNetworkRequest request status: " + request.responseCode);
 
             if (request.responseCode == 200) // ok
