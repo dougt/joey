@@ -45,6 +45,66 @@ class UsersController extends AppController
     var $uses = array('Operator', 'Phone', 'User');
     var $helpers = array('Form','Html');
 
+
+    function getSoftware() {
+
+      // Set the local user variable to the Session's User
+      $this->_user = $this->Session->read('User');
+
+      // What kind of phone does the user have.
+      $phone = $this->Phone->findById($this->_user['phone_id']);
+
+      // the name in the db is human readable (friendly),
+      // the name of the files aren't as friendly to read.
+      $phonename = str_replace(" - ", "-", $phone['Phone']['name']);
+      $phonename = str_replace(" ", "", $phonename);
+
+      $http_url = str_replace("https://", "http://", FULL_BASE_URL);
+      $http_url = $http_url.'/app/webroot/ff/'.$phonename.".jad";
+
+      $this->set('url_to_jad', $http_url);
+
+      $this->set('url_to_xpi', str_replace("https://", "http://", FULL_BASE_URL) . '/app/webroot/ff/joey.xpi');
+
+      
+      // They haven't hit submit on the form yet
+
+      // @todo hack.  it seams that i have to pass dummy
+      // data here from the view so that the controller can
+      // check to see if the submit button was checked or
+      // not.  I tried using just the submit button itself
+      // (array_key_exists('submit', $_POST)), but that
+      // seams to be something cake takes care of.
+
+      if (! array_key_exists('joey', $_POST))
+      {
+        return;
+      }
+
+      // Find out what operator the user is using.
+      $operator = $this->Operator->findById($this->_user['operator_id']);
+
+      $username = str_replace( "-", "", $this->_user['phonenumber']);
+      
+      //@todo very US centric.
+      if (empty($operator['Operator']['emaildomain']) || (strlen($username) != 11)) {
+        $this->flash("Sorry, we don't know how to send you an SMS.");
+        return;
+      }
+
+      $email = $username . '@' . $operator['Operator']['emaildomain'];
+
+      //@todo localize
+      $message = "go to " . $http_url;
+
+      // Send a mail to the user
+      mail($email, 'Want Joey?', $message, "From: ".JOEY_EMAIL_ADDRESS."\r\n");
+
+      $this->flash("Mail sent to ". $email, '/users/getSoftware', 2);
+
+      return;
+    }
+
     /**
      *
      */

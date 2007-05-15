@@ -39,21 +39,20 @@
 
 <div id="header">
 
-    <h1>Joey!</h1>
+    <h1><?php echo $html->link('Joey!', '/'); ?></h1>
     <p>
     <?php
 
         if ($this->controller->Session->check('User'))  {
             $user = $this->controller->Session->read('User');
+
+            echo "<div style='float: left'>";
             echo $html->link($user['username'],'/users/edit').' ('.$html->link('Logout', '/users/logout').')';
-            echo "<p>";
+            echo "</div>";
 
-            // FULL_BASE_URL needs to be http because XPInstall can install via HTTPS without barfing over itself with -228 errors.
-
-            $http_url = str_replace("https://", "http://", FULL_BASE_URL);
-            
-
-            echo $html->link('Download Joey Addon for Firefox', $http_url.'/app/webroot/ff/joey.xpi');
+            echo "<div style='float: right'>";
+            echo $html->link('get the software','/users/getSoftware');
+            echo "</div>";
         }
 	
     ?>

@@ -44,9 +44,9 @@
     <?=$html->tagErrorMsg('Operator/provider', 'A provider is required.')?>
 </div>
 
-
 <div class="button-box">
     <?=$html->submit('Accept and Register',array('class' => 'joey-submit')); ?>
 </div>
 
 </form>
+
