@@ -214,14 +214,14 @@ menu {
 	}
 }
 
-.waitScreen {
-	padding: 10;
-	layout: expand | vertical-expand;
-	repaint-previous-screen: true;
-	background {
-		type: round-rect;
-		color: bgColorFocused;
-	}
+alertWait {
+    repaint-previous-screen: true;
+    background {
+        type: round-rect;
+        color: gray;
+    }
+    padding: 5;
+    layout: vertical-shrink | horizontal-shrink | center | vcenter;
 }
 
 .button {

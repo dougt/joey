@@ -68,6 +68,7 @@ public class JoeyController
 	private static final int ALERT_UPLOADS_DELETE_CONFIRMATION = 7;
 	private static final int ALERT_EXIT_CONFIRMATION = 8;
 	private static final int ALERT_LOGIN_ERROR = 9;
+	private static final int ALERT_WAIT = 10;
 
 	public static final String ATTR_UPLOAD = "upload";
 	
@@ -207,6 +208,12 @@ public class JoeyController
 			alert.setCommandListener(this.commandListener);
 			return alert;
 
+		case ALERT_WAIT:
+			//#style alertWait
+			alert = new Alert("Title", Locale.get("alert.wait.msg"), null, AlertType.INFO);
+			alert.setTimeout(Alert.FOREVER);
+			return alert;
+
 		default:
 			//#debug fatal
 			System.out.println("unknown view: " + viewId);
@@ -327,6 +334,7 @@ public class JoeyController
 			return true;
 		}
 		else if (command == CMD_SELECT) {
+			showView(ALERT_WAIT);
             this.focusedUpload = (Upload) UiAccess.getAttribute(item, ATTR_UPLOAD);
             this.commController.get(this.focusedUpload.getId(), this);
 			return true;
@@ -337,8 +345,7 @@ public class JoeyController
 			return true;
 		}
 		else if (command == CMD_YES) {
-			// TODO: Show wait alert here while deletion is happening. 
-			//showWaitAlert();
+			showView(ALERT_WAIT);
             this.commController.delete(this.focusedUpload.getId(), this);
             return true;
 		}
@@ -357,6 +364,7 @@ public class JoeyController
 			int index = ((MainMenuView) this.currentView).getCurrentIndex();
 			switch (index) {
 				case 0:
+					showView(ALERT_WAIT);
 					this.commController.getIndex(this.uploads, this);
 					break;
 
@@ -399,6 +407,7 @@ public class JoeyController
 				e.printStackTrace();
 			}
 
+			showView(ALERT_WAIT);
             this.commController.login(this.userdata, this);
 
 			return true;
@@ -448,7 +457,8 @@ public class JoeyController
 	{
         if (request.responseCode == 511)  // No Active Session
         {
-            // We have been logged out.  :-(
+            // We have been logged out. Retry.
+        	this.commController.addNextRequest(request);
             this.commController.login(this.userdata, this);
         }
         else if (request instanceof LoginNetworkRequest)

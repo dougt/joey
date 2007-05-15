@@ -26,5 +26,4 @@ form.preferences=Einstellungen
 
 alert.login.error=Anmeldung auf dem Server nicht möglich. Benutzername oder Passwort falsch?
 alert.exit.msg=Wollen sie Joey wirklich beenden?
-
-screeninfo.wait.msg=Bitte warten
+alert.wait.msg=Bitte warten!

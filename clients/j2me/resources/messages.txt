@@ -2,6 +2,7 @@ title.login=Login
 title.mainmenu=Main menu
 title.snapshot=Snapshot
 title.uploads=Uploads
+title.details=Details
 
 command.exit=Exit
 command.back=Back
@@ -25,5 +26,4 @@ form.preferences=Preferences
 
 alert.login.error=Cannot login into server. Username or password wrong?
 alert.exit.msg=Do you really want to exit Joey?
-
-screeninfo.wait.msg=Please wait
+alert.wait.msg=Please wait!
