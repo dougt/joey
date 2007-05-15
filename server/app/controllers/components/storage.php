@@ -52,7 +52,7 @@ class StorageComponent extends Object
                          "image/gif" => "gif",
                          "image/tiff" => "tif",
                          "image/bmp" => "bmp",
-                         "video/3gp" => "3gp",
+                         "video/3gpp" => "3gp",
                          "video/flv" => "flv",
                          "video/mpeg" => "mpg",
                          "video/avi" => "avi",
@@ -326,7 +326,7 @@ class StorageComponent extends Object
             $_ret['original_name'] = UPLOAD_DIR."/{$userid}/originals/"."joey-".$rand.".".$this->suffix[$type];
             $_ret['original_type'] = $type;
             $_ret['default_name'] = UPLOAD_DIR."/{$userid}/"."joey-".$rand.".3gp";
-            $_ret['default_type'] = "video/3gp";
+            $_ret['default_type'] = "video/3gpp";
             $_ret['preview_name'] = UPLOAD_DIR."/{$userid}/previews/"."joey-".$rand.".png";
             $_ret['preview_type'] = "image/png";
             
