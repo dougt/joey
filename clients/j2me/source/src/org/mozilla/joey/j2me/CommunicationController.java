@@ -108,7 +108,6 @@ public class CommunicationController
         nr.onStart();
 
         try {
-            
             connection = new RedirectHttpConnection(this.serverURL + nr.requestURL);
             
             if (this.cookieStr != null) {
@@ -127,14 +126,14 @@ public class CommunicationController
             nr.responseCode = connection.getResponseCode();
             
             String str = connection.getHeaderField("Set-Cookie");
+
             if (str != null) {
                 int pos = str.indexOf(';');
                 this.cookieStr = pos != -1 ? str.substring(0, pos) : str;
             }
             
             // read everything in.
-
-            int len = (int)connection.getLength();
+            int len = (int) connection.getLength();
 
             System.out.println("getLength: " + len);
 

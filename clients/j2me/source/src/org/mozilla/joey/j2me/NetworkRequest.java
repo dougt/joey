@@ -24,20 +24,6 @@
 
 package org.mozilla.joey.j2me;
 
-import de.enough.polish.io.RedirectHttpConnection;
-import de.enough.polish.ui.ScreenInfo;
-import de.enough.polish.util.Locale;
-
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Hashtable;
-import java.util.Vector;
-
-import javax.microedition.io.HttpConnection;
-import javax.microedition.lcdui.StringItem;
-
 public class NetworkRequest
 {
     /*
@@ -72,26 +58,25 @@ public class NetworkRequest
 
 	protected ResponseHandler handler;
 
-
     public void onStart() {
         // do nothing.
     }
 
     public void onProgress(long current, long total)
     {
-        if (this.handler != null)
+        if (this.handler != null) {
             this.handler.notifyProgress(this, current, total);
+        }
     }
 
     public void onStop() {
-        if (this.handler != null)
+        if (this.handler != null) {
             this.handler.notifyResponse(this);
+        }
     }
 
     public void setResponseHandler(ResponseHandler handler)
 	{
 		this.handler = handler;
 	}
-    
- 
 }
