@@ -24,14 +24,9 @@
 
 package org.mozilla.joey.j2me.views;
 
-import org.bouncycastle.util.encoders.Base64;
-
-import de.enough.polish.ui.UiAccess;
 import de.enough.polish.util.Locale;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.util.Vector;
 
 import javax.microedition.lcdui.Form;
 import javax.microedition.lcdui.Image;
@@ -41,24 +36,22 @@ import javax.microedition.lcdui.StringItem;
 
 //#if polish.api.mmapi
 import javax.microedition.media.Manager;
-import javax.microedition.media.MediaException;
 import javax.microedition.media.Player;
+import javax.microedition.media.control.GUIControl;
 import javax.microedition.media.control.VideoControl;
 //#endif
 
-import org.mozilla.joey.j2me.JoeyController;
 import org.mozilla.joey.j2me.Upload;
 
 public class DetailsView
 	extends Form
 {
-
     private Upload upload;
 
 	public DetailsView(Upload upload)
 	{
-		//#style uploadScreen
-		super(Locale.get("title.uploads"));
+		//#style detailsScreen
+		super(Locale.get("title.details"));
 
         this.upload = upload;
 		update();
@@ -66,45 +59,48 @@ public class DetailsView
 
 	public void update()
 	{
-        Item item = new StringItem(null, upload.getId());
+		deleteAll();
+
+		//#style input
+		Item item = new StringItem(null, this.upload.getId());
+		append(item);
+
+        //#style input
+        item = new StringItem(null, this.upload.getMimetype());
         append(item);
 
-        item = new StringItem(null, upload.getMimetype());
-        append(item);
-
-        if (upload.getMimetype().equals("text/plain") ||
-            upload.getMimetype().equals("microsummary/xml"))
+        if (this.upload.getMimetype().equals("text/plain") ||
+            this.upload.getMimetype().equals("microsummary/xml"))
         {
-            item = new StringItem(null, new String(upload.getData()));
+            item = new StringItem(null, new String(this.upload.getData()));
             append(item);
         }
-        else if (upload.getMimetype().substring(0,5).equals("image"))
+        else if (this.upload.getMimetype().substring(0,5).equals("image"))
         {
             Image image = null;
             try
             {
-                image = Image.createImage(new ByteArrayInputStream(upload.getData()));
+                image = Image.createImage(new ByteArrayInputStream(this.upload.getData()));
             } catch (Exception ignored) {}
 
-            item = new ImageItem(null, image, ImageItem.LAYOUT_CENTER, upload.getId());
+            item = new ImageItem(null, image, ImageItem.LAYOUT_CENTER, this.upload.getId());
             append(item);
         }
 //#if polish.api.mmapi
-        else if (upload.getMimetype().equals("video/3gp"))
+        else if (this.upload.getMimetype().equals("video/3gp"))
         {
-
-            try {
-                VideoControl vc;
+        	try {
+            	VideoControl vc;
                 Player player;
 
                 // create a player instance
-                player = Manager.createPlayer(new ByteArrayInputStream(upload.getData()), "video/3gpp");
-                //                player.addPlayerListener(this);
+                player = Manager.createPlayer(new ByteArrayInputStream(this.upload.getData()), "video/3gpp");
+//                player.addPlayerListener(this);
                 // realize the player
                 player.realize();
                 vc = (VideoControl)player.getControl("VideoControl");
                 if(vc != null) {
-                    Item video = (Item)vc.initDisplayMode(vc.USE_GUI_PRIMITIVE, null);
+                    Item video = (Item)vc.initDisplayMode(GUIControl.USE_GUI_PRIMITIVE, null);
                     append(video);
                 }
                 player.prefetch();
