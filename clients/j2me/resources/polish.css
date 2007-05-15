@@ -91,6 +91,9 @@ focused {
 .uploadScreen extends inputScreen {
 }
 
+.detailsScreen extends inputScreen {
+}
+
 .uploadItem {
 	padding: 1;
 	border-width: 1;
