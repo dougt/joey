@@ -53,7 +53,6 @@ import de.enough.polish.ui.SnapshotScreen;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.Vector;
 
 public class JoeyController
@@ -447,55 +446,47 @@ public class JoeyController
 
 	public void notifyResponse(NetworkRequest request)
 	{
-
         if (request.responseCode == 511)  // No Active Session
         {
             // We have been logged out.  :-(
             this.commController.login(this.userdata, this);
         }
-
-        if (request instanceof LoginNetworkRequest)
+        else if (request instanceof LoginNetworkRequest)
         {
+        	//#debug debug
             System.out.println("LoginNetworkRequest request status: " + request.responseCode);
+
             if (request.responseCode == 200) // Login ok,
 				showView(VIEW_MAINMENU);
             else
 				showView(ALERT_LOGIN_ERROR);
-
-            return;
         }
-
-        if (request instanceof IndexNetworkRequest)
+        else if (request instanceof IndexNetworkRequest)
         {
+        	//#debug debug
             System.out.println("IndexNetworkRequest request status: " + request.responseCode);
 
             showView(VIEW_UPLOADS);
             ((UploadsView) this.currentView).update(this,((IndexNetworkRequest) request).uploads);
-            return;
         }
-
-        if (request instanceof AddNetworkRequest)
+        else if (request instanceof AddNetworkRequest)
         {
+        	//#debug debug
             System.out.println("AddNetworkRequest request status: " + request.responseCode);
-            // do something?
-            return;
-        }
 
-        if (request instanceof DeleteNetworkRequest)
+            // TODO: Do something?
+        }
+        else if (request instanceof DeleteNetworkRequest)
         {
             System.out.println("DeleteNetworkRequest request status: " + request.responseCode);
 
-            // TODO.  
+            // TODO: ??
             this.uploads.removeElement(this.focusedUpload);
 			this.focusedUpload = null;
 			showView(VIEW_UPLOADS);
 			((UploadsView) this.currentView).update(this, this.uploads);
-
-            return;
         }
-
-        
-        if (request instanceof GetNetworkRequest)
+        else if (request instanceof GetNetworkRequest)
         {
             System.out.println("GetNetworkRequest request status: " + request.responseCode);
 
@@ -503,11 +494,7 @@ public class JoeyController
             {
                 this.focusedUpload.setData(request.data);
                 showView(VIEW_DETAILS);
-
             }
-            return;
         }
-
-        
 	}
 }
