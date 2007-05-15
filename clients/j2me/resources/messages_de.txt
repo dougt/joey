@@ -2,6 +2,7 @@ title.login=Anmelden
 title.mainmenu=Hauptmenü
 title.snapshot=Schnappschuss
 title.uploads=Uploads
+title.details=Details
 
 command.exit=Beenden
 command.back=Zurück
