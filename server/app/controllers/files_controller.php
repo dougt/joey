@@ -142,11 +142,10 @@ class FilesController extends AppController
         $this->set('content', file_get_contents($_filename));
 
         // @todo decide what we need to do about cheesy hacks like this
-        if ($_filetype == 'video/3gp ')
+        if ($_filetype == 'video/3gpp') {          
           $this->set('content_disposition', 'filename=' . basename($_filename));
           $this->set('content_type', 'video/3gpp');
         }
     }
-
 }
 ?>
