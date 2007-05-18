@@ -442,7 +442,7 @@ class UploadsController extends AppController
             $this->set('count', $count);
             $this->layout = NULL;
             $this->action = 'j2me_index';
-        
+            header("X-joey-status: 200");
         } else {
             // Render a page for the browser client
             

@@ -10,7 +10,5 @@
         header("Content-Disposition: {$content_disposition}");
     }
     
-    header ("X-joey-status: 200");
-
     echo $content;
 ?>

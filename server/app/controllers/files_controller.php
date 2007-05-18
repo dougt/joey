@@ -141,6 +141,10 @@ class FilesController extends AppController
         $this->set('content_length', $_filesize);
         $this->set('content', file_get_contents($_filename));
 
+
+        if ($this->nbClient) {
+            header("X-joey-status: 200");
+        }
         // @todo decide what we need to do about cheesy hacks like this
         if ($_filetype == 'video/3gpp') {          
           $this->set('content_disposition', 'filename=' . basename($_filename));
