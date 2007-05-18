@@ -120,9 +120,24 @@ public class CommunicationController
             OutputStream out = connection.openOutputStream();
             out.write(nr.postdata.getBytes());
             out.close();
-            
+
             in = connection.openDataInputStream();
             nr.responseCode = connection.getHeaderFieldInt("X-joey-status", -1);
+
+            /* Debug code to dump all headers for testing.             
+
+            int i = 0; 
+            String header;
+            do {
+                header = connection.getHeaderField(i);
+                if (header!=null) {
+                    System.out.println("Header " + i + " " + 
+                                       connection.getHeaderFieldKey(i) + " : " + header);
+                }
+                i++;
+            } while (header!=null);
+   
+            */
 
             String str = connection.getHeaderField("Set-Cookie");
 
@@ -151,7 +166,6 @@ public class CommunicationController
                     counter = this.progressBeforeNotification;
                 }
             }
-
             nr.data = baos.toByteArray();
         }
         catch (EOFException e)
@@ -159,8 +173,19 @@ public class CommunicationController
             //#debug debug
             System.out.println("Data read.");
         }
-        catch (IOException e)
+        /*
+          @todo 
+          catch (UnknownHostException e)
+          {
+          //#debug error
+          System.out.println("Joey Host not found");
+          }
+        */
+        catch (Exception e)
         {
+
+            System.out.println(e);
+
             //#debug error
             System.out.println("Error requesting url " + nr.requestURL);
         }
@@ -175,7 +200,7 @@ public class CommunicationController
                     connection.close();
                 }
             }
-            catch (IOException e)
+            catch (Exception e)
             {
                 //#debug error
                 System.out.println("Cannot close HTTP connection correctly");
