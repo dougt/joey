@@ -43,15 +43,19 @@ class AppController extends Controller
      */
     var $nbClient = false;
     
-    var $SUCCESS          = "200 OK";
-    var $ERROR_NO_SESSION = "511 No Active Session";
-    var $ERROR_LOGIN      = "512 Login Error";
-    var $ERROR_ACTIVATION = "513 User not Activated";
-    var $ERROR_DELETE     = "514 Cannot Delete";
-    var $ERROR_NOAUTH     = "515 Not Permitted for This User";
-    var $ERROR_FILE       = "516 File Access Error";
-    var $ERROR_NO_SPACE   = "517 Out of Space for Upload";
-    var $ERROR_UPLOAD     = "518 Generic Upload Error";
+
+    //@ todo maybe we should change these value so that they
+    //do not resemble http status codes?
+
+    var $SUCCESS          = "200";  //  OK
+    var $ERROR_NO_SESSION = "511";  //  No Active Session
+    var $ERROR_LOGIN      = "512";  //  Login Error
+    var $ERROR_ACTIVATION = "513";  //  User not Activated
+    var $ERROR_DELETE     = "514";  //  Cannot Delete
+    var $ERROR_NOAUTH     = "515";  //  Not Permitted for This User
+    var $ERROR_FILE       = "516";  //  File Access Error
+    var $ERROR_NO_SPACE   = "517";  //  Out of Space for Upload
+    var $ERROR_UPLOAD     = "518";  //  Generic Upload Error
 
     function __construct() {
 
@@ -103,7 +107,7 @@ class AppController extends Controller
     {
         if (!$this->Session->check('User')) {
             if ($this->nbClient) {
-                $this->returnHttpStatusCode($this->ERROR_NO_SESSION);
+                $this->returnJoeyStatusCode($this->ERROR_NO_SESSION);
             }
             $this->redirect('/users/login');
             exit();
@@ -129,9 +133,10 @@ class AppController extends Controller
     }
     
     
-    function returnHttpStatusCode($statusCode)
+    function returnJoeyStatusCode($statusCode)
     {
-        header ("HTTP/1.0 ".$statusCode);
+        header ("X-joey-status: " . $statusCode, true);
+
         $this->layout = null;
         exit();
     }

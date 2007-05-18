@@ -278,7 +278,7 @@ class UsersController extends AppController
 
                         if ($this->nbClient) {
                             // $this->nbFlash($_someone['User']['id']);
-                            $this->returnHttpStatusCode($this->SUCCESS);
+                            $this->returnJoeyStatusCode($this->SUCCESS);
                         } else {
                             $this->redirect('/uploads/index');
                             exit();
@@ -286,20 +286,20 @@ class UsersController extends AppController
                     } else {
                         // This is a password error
                         if ($this->nbClient) {
-                            $this->returnHttpStatusCode($this->ERROR_LOGIN);
+                            $this->returnJoeyStatusCode($this->ERROR_LOGIN);
                         }
                         $this->set('error_mesg', 'Sorry, cannot login. Please check your username or password.');
                     }
                 } else {
                     if ($this->nbClient) {
-                        $this->returnHttpStatusCode($this->ERROR_ACTIVATION);
+                        $this->returnJoeyStatusCode($this->ERROR_ACTIVATION);
                     }
                     $this->set('error_mesg', 'Sorry, your account has not been activated. Please check your email.');
                 }
             } else {
                 // This is a generalized, non-specific error
                 if ($this->nbClient) {
-                    $this->returnHttpStatusCode($this->ERROR_LOGIN);
+                    $this->returnJoeyStatusCode($this->ERROR_LOGIN);
                 }
                 $this->set('error_mesg', 'Sorry, cannot login. Please check your username or password.');
             }
