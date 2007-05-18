@@ -38,6 +38,7 @@
 
 vendor('magpierss/rss_fetch.inc');
 vendor('microsummary');
+vendor('joeywidget');
 
 /**
  * Some mildly associated functions for storing files on the disk.  Maybe there is a
@@ -61,7 +62,8 @@ class StorageComponent extends Object
                          "audio/mpeg" => "mp3",
                          "audio/mid" => "mid",
                          "rss-source/text" => "rss",
-                         "microsummary/xml" => "mcs");
+                         "microsummary/xml" => "mcs",
+                         "widget/joey" => "jwt");
 
 
     /**
@@ -114,12 +116,19 @@ class StorageComponent extends Object
         // $_filename = $this->uniqueFilenameForUserType($_upload['Upload']['user_id'], $type);
         $rand = uniqid();
         $_filename = UPLOAD_DIR."/{$_upload['Upload']['user_id']}/"."joey-".$rand.".".$this->suffix[$type];
+
+        $rand = uniqid();
+        $_previewname = UPLOAD_DIR."/{$_upload['Upload']['user_id']}/previews/"."joey-".$rand.".png";
         
         $_file = new File();
         $_file->set('name', basename($_filename));
         $_file->set('upload_id', $id);
         $_file->set('size', 0);
         $_file->set('type', "text/html");
+        $_file->set('preview_name', basename($_previewname));
+        $_file->set('preview_type', "image/png");
+        $_file->set('preview_size', 0);
+
         if (!$_file->save()) {
           return false;
         }
@@ -133,7 +142,7 @@ class StorageComponent extends Object
       }
       
       // check to see if we should do anything
-      if ($forceUpdate == false)
+      if ($forceUpdate == false) 
       {
         $expiry = strtotime($_upload['File'][0]['modified'] . " + " . CONTENTSOURCE_REFRESH_TIME . " minutes");
         $nowstamp = strtotime("now");
@@ -147,10 +156,12 @@ class StorageComponent extends Object
           return true; //  don't process anything just yet.
       }
 
-      // This is the file to operate on:
+      // These are the file to operate on:
       $_filename = UPLOAD_DIR."/{$_upload['User']['id']}/{$_upload['File'][0]['name']}";
+      $_previewname = UPLOAD_DIR."/{$_upload['User']['id']}/previews/{$_upload['File'][0]['preview_name']}";
 
       // Lets find out what kind of update this is. if findBy___() had more
+
       // recursion, we wouldn't need this extra query, but then we get a lot more
       // info back than we need.
       $_contentsourcetype = $this->controller->Contentsourcetype->FindById($_upload['Contentsource'][0]['contentsourcetype_id']);
@@ -238,6 +249,31 @@ class StorageComponent extends Object
               $this->controller->File->saveField('size',filesize($_filename));
 
               break;
+
+
+          case 'widget/joey':
+
+                $jw = new joeywidget();
+                $jw->load($_upload['Contentsource'][0]['source']);
+                
+                //@todo check for available space
+
+                // write the file.
+                if (!file_put_contents($_filename, $jw->content)) {
+                  $this->log("file_put_contents failed for " . $_filename);
+                  return false;
+                }
+                if (!file_put_contents($_previewname, $jw->preview)) {
+                  $this->log("file_put_contents failed for " . $_previewname);
+                  return false;
+                }
+                
+                // need to update the size and date in the db.
+                $this->controller->File->id = $id;
+                $this->controller->File->saveField('size',filesize($_filename));
+                $this->controller->File->saveField('preview_size',filesize($_filename));
+
+                break;
 
               // We don't support whatever they're trying to update.  :(
           default:

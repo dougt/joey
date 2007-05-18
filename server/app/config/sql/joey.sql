@@ -161,6 +161,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 INSERT INTO `contentsourcetypes` VALUES (1,'application/atom+xml','2007-03-18 09:45:49','2007-03-18 09:45:49');
 INSERT INTO `contentsourcetypes` VALUES (2,'rss-source/text','2007-03-18 09:45:49','2007-03-18 09:45:49');
 INSERT INTO `contentsourcetypes` VALUES (3,'microsummary/xml','2007-03-18 09:45:49','2007-03-18 09:45:49');
+INSERT INTO `contentsourcetypes` VALUES (4,'widget/joey','2007-03-18 09:45:49','2007-03-18 09:45:49');
 
 INSERT INTO `operators` VALUES (1,'Not Sure', '','2007-03-18 09:19:04','0000-00-00 00:00:00');
 INSERT INTO `operators` VALUES (2,'AT&T', 'mobile.att.net','2007-03-18 09:19:04','0000-00-00 00:00:00');
