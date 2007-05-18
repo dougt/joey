@@ -1,6 +1,8 @@
 count=<?php echo $count;?>
 
 <?php
+header ("X-joey-status: 200");
+
 $i = 1;
 foreach ($uploads as $upload) {
 ?>

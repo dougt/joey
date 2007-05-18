@@ -405,9 +405,6 @@ class UploadsController extends AppController
     {
         if ($this->nbClient) {
 
-            // Index always returns 200.
-            header ("X-joey-status: 200");
-
             // We are dealing with a J2ME client here
             if (array_key_exists('limit',$_POST)) {
                 $limit = $_POST['limit'];
