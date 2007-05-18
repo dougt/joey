@@ -54,7 +54,6 @@ public class CommunicationController
     
     public synchronized NetworkRequest getNextRequest() 
     {
-
         try {
             while (this.queue.size() == 0) {
                 wait();
@@ -123,8 +122,8 @@ public class CommunicationController
             out.close();
             
             in = connection.openDataInputStream();
-            nr.responseCode = connection.getResponseCode();
-            
+            nr.responseCode = connection.getHeaderFieldInt("X-joey-status", -1);
+
             String str = connection.getHeaderField("Set-Cookie");
 
             if (str != null) {
@@ -133,10 +132,6 @@ public class CommunicationController
             }
             
             // read everything in.
-            int len = (int) connection.getLength();
-
-            System.out.println("getLength: " + len);
-
             ByteArrayOutputStream baos = null;
             DataOutputStream dos = null;
             
