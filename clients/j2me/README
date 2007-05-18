@@ -31,3 +31,5 @@ Build instructions
   command line each time. Please look into mkoch.properties for some more examples.
   The possible values for the device property can be get from the J2ME Polish
   device database at http://www.j2mepolish.org/devices-overview.html.
+
+Testing SVN e-mails
