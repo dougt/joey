@@ -91,14 +91,14 @@ JoeyStreamListener.prototype =
 
   onStopRequest: function (aRequest, aContext, aStatus)
   {      
-      var httpResponse = -1;
+      var joeyResponse = -1;
       try {
           var httpChannel = aRequest.QueryInterface(Components.interfaces.nsIHttpChannel);
-          httpResponse = httpChannel.responseStatus;
+          joeyResponse = httpChannel.getResponseHeader("X-joey-status");
       }
       catch (e) {}
 
-      this.mCallbackFunc(this.mOwner, httpResponse, this.mBytes);
+      this.mCallbackFunc(this.mOwner, joeyResponse, this.mBytes);
   },
 
   // nsIChannelEventSink
