@@ -457,13 +457,16 @@ public class JoeyController
 	{
         if (request.responseCode == 511)  // No Active Session
         {
+        	//#debug info
+            System.out.println("Response said we are not logged in. Login and retry...");
+
             // We have been logged out. Retry.
         	this.commController.addNextRequest(request);
             this.commController.login(this.userdata, this);
         }
         else if (request instanceof LoginNetworkRequest)
         {
-        	//#debug debug
+        	//#debug info
             System.out.println("LoginNetworkRequest request status: " + request.responseCode);
 
             if (request.responseCode == 200) // Login ok,
@@ -473,7 +476,7 @@ public class JoeyController
         }
         else if (request instanceof IndexNetworkRequest)
         {
-        	//#debug debug
+        	//#debug info
             System.out.println("IndexNetworkRequest request status: " + request.responseCode);
 
             showView(VIEW_UPLOADS);
@@ -481,14 +484,14 @@ public class JoeyController
         }
         else if (request instanceof AddNetworkRequest)
         {
-        	//#debug debug
+        	//#debug info
             System.out.println("AddNetworkRequest request status: " + request.responseCode);
 
             // TODO: Do something?
         }
         else if (request instanceof DeleteNetworkRequest)
         {
-        	//#debug debug
+        	//#debug info
             System.out.println("DeleteNetworkRequest request status: " + request.responseCode);
 
             // TODO: ??
@@ -499,7 +502,7 @@ public class JoeyController
         }
         else if (request instanceof GetNetworkRequest)
         {
-        	//#debug debug
+        	//#debug info
             System.out.println("GetNetworkRequest request status: " + request.responseCode);
 
             if (request.responseCode == 200) // ok
