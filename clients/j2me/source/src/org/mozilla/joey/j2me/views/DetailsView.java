@@ -41,6 +41,8 @@ import javax.microedition.media.control.GUIControl;
 import javax.microedition.media.control.VideoControl;
 //#endif
 
+import de.enough.polish.browser.html.HtmlBrowser;
+
 import org.mozilla.joey.j2me.Upload;
 
 public class DetailsView
@@ -111,5 +113,19 @@ public class DetailsView
             }
         }
 //#endif
+        else if (this.upload.getMimetype().equals("widget/joey"))
+        {
+            try {
+
+                System.out.println(new String(this.upload.getData()));
+
+                HtmlBrowser b = new HtmlBrowser();
+                b.loadPage( new ByteArrayInputStream( this.upload.getData() ));
+                append(b);
+            } catch(Exception t) {
+                t.printStackTrace();
+                System.out.println("assertion: " + t);
+            }
+        }
 	}
 }
