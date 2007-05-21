@@ -240,7 +240,7 @@ class UploadsController extends AppController
                         if ($this->Contentsource->save($this->data)) {
                             $this->Upload->commit();
 
-                            @ $this->Storage->updateFileByUploadId($this->Upload->id, true);
+                            $this->Storage->updateFileByUploadId($this->Upload->id, true);
 
                             if ($this->nbClient) {
                                 $this->returnJoeyStatusCode($this->SUCCESS);
