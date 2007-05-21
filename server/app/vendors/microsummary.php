@@ -64,7 +64,11 @@ class microsummary {
 
 
     // get template node
-    $templateNode = $xpath->query('/ms:generator/ms:template/xsl:transform')->item(0);
+    $xsltransform = $xpath->query('/ms:generator/ms:template/xsl:transform');
+    if (empty($xsltransform))
+      return;
+
+    $templateNode = $xsltransform->item(0);
 
     // import stylesheet
     $this->xsldoc = DOMDocument::loadXML($this->msdoc->saveXML($templateNode));
