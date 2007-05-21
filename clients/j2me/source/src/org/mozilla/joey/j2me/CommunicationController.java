@@ -28,7 +28,6 @@ import de.enough.polish.io.RedirectHttpConnection;
 import de.enough.polish.util.ArrayList;
 
 import java.io.EOFException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
