@@ -115,7 +115,6 @@ class UploadsController extends AppController
                     $filesize = filesize($this->data['File']['Upload']['tmp_name']);
                     if ($this->Storage->hasAvailableSpace($this->_user['id'], $filesize) == false) {
                         if ($this->nbClient) {
-                          // $this->nbFlash(NB_CLIENT_ERROR_OUT_OF_SPACE);
                           $this->returnJoeyStatusCode($this->ERROR_NO_SPACE);
                         } else {
                           $this->File->invalidate('Upload');
@@ -186,7 +185,6 @@ class UploadsController extends AppController
                       if ($this->File->save($this->data)) {
                         $this->Upload->commit();
                         if ($this->nbClient) {
-                          // $this->nbFlash($this->Upload->id);
                           $this->returnJoeyStatusCode($this->SUCCESS);
                         } else {
                           $this->flash('Upload saved.', '/uploads/index');
@@ -245,7 +243,6 @@ class UploadsController extends AppController
                             $this->Storage->updateFileByUploadId($this->Upload->id, true);
 
                             if ($this->nbClient) {
-                                // $this->nbFlash($this->Upload->id);
                                 $this->returnJoeyStatusCode($this->SUCCESS);
                             } else {
                                 $this->flash('Upload saved.', '/uploads/index');
@@ -281,7 +278,6 @@ class UploadsController extends AppController
             $this->validateErrors($this->Upload, $this->File);
 
             if ($this->nbClient) {
-                // $this->nbFlash(NB_CLIENT_ERROR_UPLOAD_FAIL);
                 $this->returnJoeyStatusCode($this->ERROR_UPLOAD);
             }
 
@@ -475,8 +471,6 @@ class UploadsController extends AppController
             $this->set('upload_preview_height', $_height/2);
 
             if (BrowserAgent::isMobile()) {
-                // We're not using render here, because it would conflict with nbFlash()
-                // above (it would render both, instead of just one)
                 $this->action = 'mp_index';
                 $this->layout = 'mp';
             } else {

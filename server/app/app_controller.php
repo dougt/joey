@@ -114,25 +114,6 @@ class AppController extends Controller
         }
     }
 
-    /**
-     * If the user is using a non-browser client to access the pages, we use this
-     * method to print error/success information on the page.  We're not overriding
-     * flash() because we usually need to send different data.
-     *
-     * @param string  Message to print on page
-     */
-    function nbFlash($message)
-    {
-        $this->set('message', $message);
-
-        $this->layout = null;
-
-        $this->render(null, false, VIEWS.'layouts'.DS.'nbflash.thtml');
-
-        exit(); // wil, this is what is needed otherwise i see a trailing -1 after the upload_id during a successful upload.
-    }
-    
-    
     function returnJoeyStatusCode($statusCode)
     {
         header ("X-joey-status: " . $statusCode, true);

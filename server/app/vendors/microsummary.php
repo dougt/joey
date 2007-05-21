@@ -290,7 +290,7 @@ class microsummary {
       //      fclose($f);
       
 
-      exit();  // Lets ignore the hint for now.
+      return;  // Lets ignore the hint for now.
 
       $rv = 0;
 

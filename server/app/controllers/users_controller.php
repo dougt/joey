@@ -277,7 +277,6 @@ class UsersController extends AppController
                         $this->Session->write('User', $_someone['User']);
 
                         if ($this->nbClient) {
-                            // $this->nbFlash($_someone['User']['id']);
                             $this->returnJoeyStatusCode($this->SUCCESS);
                         } else {
                             $this->redirect('/uploads/index');
@@ -306,8 +305,6 @@ class UsersController extends AppController
         }
 
         if (BrowserAgent::isMobile()) {
-            // We're not using $this->render() here, because it would conflict with nbFlash()
-            // above (it would render both, instead of just one)
             $this->action = 'mp_login';
             $this->layout = 'mp';
         } else {
