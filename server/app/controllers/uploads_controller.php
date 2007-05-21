@@ -484,47 +484,5 @@ class UploadsController extends AppController
             }
         }
     }
-    
-    function j2me_index()
-    {
-            // We are dealing with a J2ME client here
-            if (array_key_exists('limit',$_POST)) {
-                $limit = $_POST['limit'];
-            } else {
-                // @todo this should have a (smaller) cap on it to avoid a DOS
-                $limit = 100000;
-            }
-            if (array_key_exists('start',$_POST)) {
-                $start = $_POST['start'];
-            } else {
-                $start = 0;
-            }
-            
-            $criteria=array('user_id' => $this->_user['id']);
-            $data = $this->Upload->findAll($criteria, NULL, NULL, $limit, $start, 3);
-            $count = 0;
-            foreach ($data as $row) {
-                if (empty($row['File'][0]['preview_name'])) {
-                    $data[$count]['preview'] = '';
-                } else {
-                    $preview_data = file_get_contents (UPLOAD_DIR."/{$this->_user['id']}/previews/{$row['File'][0]['preview_name']}");
-                    $data[$count]['preview'] = base64_encode($preview_data);
-                }
-                
-                if (array_key_exists(0,$row['Contentsource'])) {
-                    $data[$count]['type'] = $row['Contentsource'][0]['Contentsourcetype']['name'];
-                } else {
-                    $data[$count]['type'] = $row['File'][0]['type'];
-                }
-                
-                $count = $count + 1;
-            }
-            
-            $this->set('uploads', $data);
-            $this->set('count', $count);
-            $this->layout = NULL;
-            $this->action = 'j2me_index';
-    }
-
 }
 ?>
