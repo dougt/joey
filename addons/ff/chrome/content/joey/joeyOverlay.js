@@ -303,13 +303,15 @@ function joey_selected()
 	joey_selectedArea();
 }
 
-function joey_feed(feedLocation)
+function joey_feed()
 {
     /* We can detect which type of feed and send additional information 
      * as well, such as the title. On the other hand, the feed title 
      * may change, so that could be something chechec ( and refreshed ) 
      * on the server 
      */
+    
+    var feedLocation = g_joey_gBrowser.mCurrentBrowser.feeds[0].href;
     
     g_joey_data = feedLocation;
     g_joey_isfile = false;
@@ -700,12 +702,10 @@ function joeySetCurrentFeed()
 		if(currentFeedURI ||currentFeedURI.length>0) 
         {
 			document.getElementById("joey_activeRSSLink").setAttribute("hidden","false");
-			document.getElementById("joey_activeRSSLink").setAttribute("oncommand","joey_feed('"+currentFeedURI[0].href+"')");
 		} 
 	} 
     catch(i)
     {
-		document.getElementById("joey_activeRSSLink").setAttribute("oncommand","");
 		document.getElementById("joey_activeRSSLink").setAttribute("hidden","true");
 	} 
 }
