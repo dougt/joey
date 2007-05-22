@@ -11,5 +11,6 @@
 
 <!ENTITY options.uploadOptions.label  "Enviando:" >
 <!ENTITY options.askForTitle.label    "Sempre perguntar um título para objetos enviados" >
+<!ENTITY options.restoreButton.label  "Recuperar Padrões" >
 
 <!ENTITY overlay.menuPreferences.label "Preferências do Joey...">
