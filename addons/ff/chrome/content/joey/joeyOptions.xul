@@ -91,7 +91,7 @@
             </row>
             <row>
               <textbox size="50" id="serviceUrl" preference="joey.service_url" />
-              <button label="&options.restoreButton.label;"/>
+              <button label="&options.restoreButton.label;" oncommand="restoreDefaults()"/>
             </row>
 
           </rows>

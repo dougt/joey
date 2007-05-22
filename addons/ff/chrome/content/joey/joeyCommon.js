@@ -1,4 +1,10 @@
 
+
+////
+/// Hardcoded values..
+//
+const cJoeyDefaultServer = "https://joey.labs.mozilla.com";
+
 function getJoeyServerURL()
 {
     var psvc = Components.classes["@mozilla.org/preferences-service;1"]
@@ -7,7 +13,7 @@ function getJoeyServerURL()
     if (psvc.prefHasUserValue("joey.service_url"))
         return psvc.getCharPref("joey.service_url");
 
-    return "https://joey.labs.mozilla.com";
+    return cJoeyDefaultServer;
 }
 
 function clearLoginData()
@@ -37,3 +43,14 @@ function clearLoginData()
     }
 }
 
+function restoreDefaults() {
+
+    try {
+        var psvc = Components.classes["@mozilla.org/preferences-service;1"]
+                         .getService(Components.interfaces.nsIPrefBranch);
+
+        psvc.setCharPref("joey.service_url", cJoeyDefaultServer );       
+                       
+    } catch (i) { alert(i) }
+    
+}
