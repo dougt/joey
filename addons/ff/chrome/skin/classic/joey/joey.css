@@ -1,4 +1,6 @@
-#joeyStatusButton {
+#joeyStatusButton 
+{
+	margin:0px;padding:0px;
     list-style-image  : url("chrome://joey/skin/joey16x16.png");
 }
 
