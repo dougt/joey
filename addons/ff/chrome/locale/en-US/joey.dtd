@@ -11,5 +11,6 @@
 
 <!ENTITY options.uploadOptions.label  "Upload Settings:" >
 <!ENTITY options.askForTitle.label    "Always ask for a title when uploading items" >
+<!ENTITY options.restoreButton.label  "Restore Defaults" >
 
 <!ENTITY overlay.menuPreferences.label "Joey! Preferences...">
