@@ -80,10 +80,23 @@
 
     <groupbox flex="1"   align="left" style="" >
       <hbox flex="1">
-        <vbox >
-          <label value="&options.serverTitle.label;" />
-          <textbox size="50" id="serviceUrl" preference="joey.service_url" />
-        </vbox>
+        <grid flex="1">
+          <columns>
+            <column flex="1"/>
+          </columns>
+
+          <rows>
+            <row>
+              <label value="&options.serverTitle.label;" />
+            </row>
+            <row>
+              <textbox size="50" id="serviceUrl" preference="joey.service_url" />
+              <button label="Restore defaults"/>
+            </row>
+
+          </rows>
+        </grid>
+
       </hbox>
     </groupbox>
 
