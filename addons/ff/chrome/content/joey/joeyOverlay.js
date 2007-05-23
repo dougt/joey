@@ -41,6 +41,7 @@ var g_joey_title;
 var g_joey_url;
 var g_joey_isfile;
 var g_joey_media_url  = null;
+var g_joey_media_type = null;
 var g_joey_areaWindow = null;
 
 var g_joey_gBrowser = null;                // presents the main browser, used by the joey_feed code.
@@ -333,12 +334,11 @@ function getMediaCallback(content_type, file)
 {
 	if (length>0)
     { 
-        joeyDumpToConsole("Download successful...");
+        joeyDumpToConsole("Download successful... (" + content_type + ")");
         
         g_joey_statusUpdateObject.tellStatus("download",null,null,"completed");
         
         g_joey_file = file;
-        g_joey_content_type = content_type;
         uploadDataFromGlobals(false);
         return;
 	}
@@ -590,6 +590,13 @@ function loot_setttings()
     joey.setLoginInfo();
 }
 
+function rev(str)
+ {
+   if (!str) return '';
+   var revstr='';
+   for (i=str.length-1;i>=0;i--){revstr+=str.charAt(i)}
+   return revstr;
+ }
 
 function grabAll(elem)
 {
@@ -600,7 +607,30 @@ function grabAll(elem)
 
         base.spec = g_joey_gBrowser.contentDocument.location.href;
         
-        if (base.host == "youtube.com" || base.host == "www.youtube.com")
+        g_joey_media_type = "video/flv";
+
+        if (base.host == "vids.myspace.com")
+        {
+
+            // borrowed from the greasemonkey script here:
+            // http://userscripts.org/scripts/source/8427
+
+            var vid = base.spec.match(/videoID=[0-9]+/i)[0].substr(8);
+
+            var url='http:\/\/content.movies.myspace.com\/' +
+                Math.pow(10,7-(vid.length-5)).toString().substr(1) + 
+                vid.substr(0,vid.length-5)+'\/' + 
+                rev(vid.substring(vid.length-2)) + 
+                '\/' + 
+                rev(vid.substring(vid.length-4,vid.length-2)) + 
+                '\/' + 
+                vid + 
+                '.flv';
+
+            document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
+            g_joey_media_url = url;
+        }
+        else if (base.host == "youtube.com" || base.host == "www.youtube.com")
         {
             // youtube specific.  humm.
             var url = base.prePath;
@@ -667,7 +697,8 @@ function joey_uploadFoundMedia() // refactor with joey_selectedImage
     g_joey_title = focusedWindow.document.title;
     g_joey_url = focusedWindow.location.href;
     g_joey_isfile = true;
-    
+    g_joey_content_type = g_joey_media_type;
+
     // g_joey_data, g_joey_content_type
     // will be filled in when we have the media data.
     
