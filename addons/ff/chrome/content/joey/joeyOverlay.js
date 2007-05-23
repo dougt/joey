@@ -325,7 +325,12 @@ function joey_feed()
 // Check XUL statusbar item
 function joey_launchPopup() 
 {
+
+  joeySetCurrentFeed();
   document.getElementById('joeyStatusPopup').showPopup(document.getElementById('joeyStatusButton'),-1,-1,'popup','topright', 'bottomright')
+
+
+
 }
 
 /* FIXME to be as an instance */
@@ -880,7 +885,6 @@ joeyBrowserStatusHandler.prototype =
     
     endDocumentLoad : function(aRequest, aStatus)
     {
-        setTimeout(joeySetCurrentFeed, 0);        
         setTimeout(joeyCheckForMedia, 0); 
         setTimeout(g_joeySelectorService.disable, 0);
     },
