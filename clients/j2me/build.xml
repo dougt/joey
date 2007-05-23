@@ -133,122 +133,12 @@
 			<requirement name="Identifier" value="${device}" />
 		</deviceRequirements>
 		<deviceRequirements if="!test and !device:defined">
-			<or>
-						<requirement name="Identifier" value="BlackBerry/7100t" />
-						<requirement name="Identifier" value="BlackBerry/7290" />
-						<requirement name="Identifier" value="BlackBerry/7520" />
-						<requirement name="Identifier" value="BlackBerry/8700" />
-						<requirement name="Identifier" value="Generic/DefaultColorPhone" />
-						<requirement name="Identifier" value="Generic/DefaultGrayPhone" />
-						<!--
-						<requirement name="Identifier" value="Generic/DotNetCF1.1" />
-						-->
-						<requirement name="Identifier" value="Generic/JtwiCldc11" />
-						<requirement name="Identifier" value="Generic/MediaControlSkin" />
-						<requirement name="Identifier" value="Generic/Midp2Cldc11" />
-						<requirement name="Identifier" value="Generic/MppPhone" />
-						<requirement name="Identifier" value="Generic/PlainMidp2Cldc11" />
-						<requirement name="Identifier" value="Generic/QwertyDevice" />
-						<requirement name="Identifier" value="Generic/multi" />
-						<requirement name="Identifier" value="Motorola/A780" />
-						<requirement name="Identifier" value="Motorola/C975" />
-						<requirement name="Identifier" value="Motorola/E1000" />
-						<requirement name="Identifier" value="Motorola/E770" />
-						<requirement name="Identifier" value="Motorola/FOMA_M1000" />
-						<requirement name="Identifier" value="Motorola/I870" />
-						<requirement name="Identifier" value="Motorola/PEBL" />
-						<requirement name="Identifier" value="Motorola/SLVR" />
-						<requirement name="Identifier" value="Motorola/V1050" />
-						<requirement name="Identifier" value="Motorola/V360" />
-						<requirement name="Identifier" value="Motorola/V3x" />
-						<requirement name="Identifier" value="Motorola/V8" />
-						<requirement name="Identifier" value="Motorola/V980" />
-						<requirement name="Identifier" value="Nokia/3152" />
-						<requirement name="Identifier" value="Nokia/3155" />
-						<requirement name="Identifier" value="Nokia/3155i" />
-						<requirement name="Identifier" value="Nokia/5140i" />
-						<requirement name="Identifier" value="Nokia/6020" />
-						<requirement name="Identifier" value="Nokia/6021" />
-						<requirement name="Identifier" value="Nokia/6030" />
-						<requirement name="Identifier" value="Nokia/6060" />
-						<requirement name="Identifier" value="Nokia/6101" />
-						<requirement name="Identifier" value="Nokia/6102" />
-						<requirement name="Identifier" value="Nokia/6111" />
-						<requirement name="Identifier" value="Nokia/6152" />
-						<requirement name="Identifier" value="Nokia/6155" />
-						<requirement name="Identifier" value="Nokia/6155i" />
-						<requirement name="Identifier" value="Nokia/6170" />
-						<requirement name="Identifier" value="Nokia/6230" />
-						<requirement name="Identifier" value="Nokia/6230i" />
-						<requirement name="Identifier" value="Nokia/6235" />
-						<requirement name="Identifier" value="Nokia/6235i" />
-						<requirement name="Identifier" value="Nokia/6255" />
-						<requirement name="Identifier" value="Nokia/6265" />
-						<requirement name="Identifier" value="Nokia/6265i" />
-						<requirement name="Identifier" value="Nokia/6270" />
-						<requirement name="Identifier" value="Nokia/6280" />
-						<requirement name="Identifier" value="Nokia/6630" />
-						<requirement name="Identifier" value="Nokia/6680" />
-						<requirement name="Identifier" value="Nokia/6681" />
-						<requirement name="Identifier" value="Nokia/6682DP2" />
-						<requirement name="Identifier" value="Nokia/6822" />
-						<requirement name="Identifier" value="Nokia/7260" />
-						<requirement name="Identifier" value="Nokia/7270" />
-						<requirement name="Identifier" value="Nokia/7710" />
-						<requirement name="Identifier" value="Nokia/8800" />
-						<requirement name="Identifier" value="Nokia/8801" />
-						<requirement name="Identifier" value="Nokia/9300" />
-						<requirement name="Identifier" value="Nokia/E70" />
-						<requirement name="Identifier" value="Nokia/N70" />
-						<requirement name="Identifier" value="Nokia/N90" />
-						<requirement name="Identifier" value="Nokia/N91" />
-						<requirement name="Identifier" value="Nokia/Series40DP2" />
-						<requirement name="Identifier" value="Nokia/Series40DP3" />
-						<requirement name="Identifier" value="Nokia/Series40Midp2" />
-						<requirement name="Identifier" value="Nokia/Series60E2FP2" />
-						<requirement name="Identifier" value="Nokia/Series60E2FP3" />
-						<requirement name="Identifier" value="Samsung/SGH-D500" />
-						<requirement name="Identifier" value="Samsung/SGH-D600" />
-						<requirement name="Identifier" value="Samsung/SGH-ZM60" />
-						<requirement name="Identifier" value="Siemens/x65" />
-						<requirement name="Identifier" value="Siemens/x75" />
-						<requirement name="Identifier" value="Sony-Ericsson/D750" />
-						<requirement name="Identifier" value="Sony-Ericsson/F500" />
-						<requirement name="Identifier" value="Sony-Ericsson/F500i" />
-						<requirement name="Identifier" value="Sony-Ericsson/J300" />
-						<requirement name="Identifier" value="Sony-Ericsson/JavaPlatform2" />
-						<requirement name="Identifier" value="Sony-Ericsson/JavaPlatform3" />
-						<requirement name="Identifier" value="Sony-Ericsson/JavaPlatform4" />
-						<requirement name="Identifier" value="Sony-Ericsson/JavaPlatform5" />
-						<requirement name="Identifier" value="Sony-Ericsson/JavaPlatform6" />
-						<requirement name="Identifier" value="Sony-Ericsson/K300" />
-						<requirement name="Identifier" value="Sony-Ericsson/K500" />
-						<requirement name="Identifier" value="Sony-Ericsson/K500c" />
-						<requirement name="Identifier" value="Sony-Ericsson/K500i" />
-						<requirement name="Identifier" value="Sony-Ericsson/K600" />
-						<requirement name="Identifier" value="Sony-Ericsson/K608" />
-						<requirement name="Identifier" value="Sony-Ericsson/K700" />
-						<requirement name="Identifier" value="Sony-Ericsson/K700c" />
-						<requirement name="Identifier" value="Sony-Ericsson/K700i" />
-						<requirement name="Identifier" value="Sony-Ericsson/K750" />
-						<requirement name="Identifier" value="Sony-Ericsson/S700" />
-						<requirement name="Identifier" value="Sony-Ericsson/S700c" />
-						<requirement name="Identifier" value="Sony-Ericsson/S700i" />
-						<requirement name="Identifier" value="Sony-Ericsson/V600" />
-						<requirement name="Identifier" value="Sony-Ericsson/V800" />
-						<requirement name="Identifier" value="Sony-Ericsson/V802" />
-						<requirement name="Identifier" value="Sony-Ericsson/W550" />
-						<requirement name="Identifier" value="Sony-Ericsson/W600" />
-						<requirement name="Identifier" value="Sony-Ericsson/W800" />
-						<requirement name="Identifier" value="Sony-Ericsson/W900" />
-						<requirement name="Identifier" value="Sony-Ericsson/W900i" />
-						<requirement name="Identifier" value="Sony-Ericsson/Z1010" />
-						<requirement name="Identifier" value="Sony-Ericsson/Z500" />
-						<requirement name="Identifier" value="Sony-Ericsson/Z500a" />
-						<requirement name="Identifier" value="Sony-Ericsson/Z500i" />
-						<requirement name="Identifier" value="Sony-Ericsson/Z520" />
-						<requirement name="Identifier" value="Sony-Ericsson/Z800" />
-						</or>
+			<and>
+				<requirement name="Feature" value="supportsPolishGui" />
+				<requirement name="JavaPlatform" value="MIDP/2.0+" />
+				<requirement name="Term" value="!polish.blackberry" />
+				<requirement name="Term" value="!(polish.identifier == Generic/DotNetCF1.1)" />
+			</and>
 		</deviceRequirements>
 		
 	    <!-- build settings -->
