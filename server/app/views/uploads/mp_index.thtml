@@ -19,8 +19,8 @@ foreach ($uploads as $upload):
   if (!empty($preview_name)) {
 ?>
 <br/>
-<a href="../files/view/<?=$upload['Upload']['id']?>">
-  <img src="../files/view/<?=$upload['Upload']['id']?>/preview"/>
+<a href="../files/view/<?=$upload['File'][0]['id']?>">
+  <img src="../files/view/<?=$upload['File'][0]['id']?>/preview"/>
 </a>
 <?php
   }
