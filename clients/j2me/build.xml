@@ -60,9 +60,9 @@
 	
 <property name="motorola.home" value="/" />
 	
-	
 <property name="siemens.home" value="/" />
-	
+
+<property name="locales" value="en_US, de_DE" />
 	
 <!-- Definition of the J2ME Polish task:                      -->
 
@@ -187,8 +187,9 @@
 				-->
 				<!-- add the localization element for created localized
 				     versions of your application: -->
-				<localization locales="de_DE, en_US" unless="test" />
-				<localization locales="en_US" if="test" />
+				<localization>
+					<locale name="${locales}" encoding="UTF-8" />
+				</localization>
 			</resources>
 			
 			<!-- obfuscator settings: do not obfuscate when the test-property is true -->
