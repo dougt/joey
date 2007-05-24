@@ -57,7 +57,7 @@ You have no uploads yet.
     <ul>
     <li>Size:  <?php echo $number->toReadableSize($upload['File'][0]['size']); ?></li>
     <li>Uploaded <?php echo $time->niceShort($upload['Upload']['created']); ?></li>
-    <li><?php echo $html->link( "Original", "/files/view/" . $upload['Upload']['id'] . "/original") ?></li>
+    <li><?php echo $html->link( "Original", "/files/view/" . $upload['File'][0]['id'] . "/original") ?></li>
     <li><?php echo $html->link( "Delete", "/uploads/delete/" . $upload['Upload']['id']) ?></li>
     </ul>
     </div>
