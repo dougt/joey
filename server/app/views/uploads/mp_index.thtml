@@ -11,7 +11,7 @@ foreach ($uploads as $upload):
 ?>
 
 <div class="<?=$class?>">
-<span class="view">[<a href="../files/view/<?=$upload['Upload']['id']?>">View</a>]</span> 
+<span class="view">[<a href="../files/view/<?=$upload['File'][0]['id']?>">View</a>]</span> 
 <?=$upload['Upload']['title']?>
 <span class="delete">[<a href="../uploads/delete/<?=$upload['Upload']['id']?>">Delete</a>]</span>
 <?php 
