@@ -106,6 +106,11 @@ class StorageComponent extends Object
     {
       $_upload = $this->controller->Upload->FindById($id);
 
+      $_owner = $this->controller->Upload->findOwnerDataFromUploadId($id);
+
+      // There is a small chance this could be an empty array
+      if (empty($_owner)) { return false; }
+
       if (empty($_upload['File']))
       {
         // Create a unique file for our new upload
@@ -115,10 +120,10 @@ class StorageComponent extends Object
 
         // $_filename = $this->uniqueFilenameForUserType($_upload['Upload']['user_id'], $type);
         $rand = uniqid();
-        $_filename = UPLOAD_DIR."/{$_upload['Upload']['user_id']}/"."joey-".$rand.".".$this->suffix[$type];
+        $_filename = UPLOAD_DIR."/{$_owner['User']['id']}/"."joey-".$rand.".".$this->suffix[$type];
 
         $rand = uniqid();
-        $_previewname = UPLOAD_DIR."/{$_upload['Upload']['user_id']}/previews/"."joey-".$rand.".png";
+        $_previewname = UPLOAD_DIR."/{$_owner['User']['id']}/previews/"."joey-".$rand.".png";
         
         $_file = new File();
         $_file->set('name', basename($_filename));
@@ -157,127 +162,128 @@ class StorageComponent extends Object
       }
 
       // These are the file to operate on:
-      $_filename = UPLOAD_DIR."/{$_upload['User']['id']}/{$_upload['File'][0]['name']}";
-      $_previewname = UPLOAD_DIR."/{$_upload['User']['id']}/previews/{$_upload['File'][0]['preview_name']}";
+      $_filename = UPLOAD_DIR."/{$_owner['User']['id']}/{$_upload['File'][0]['name']}";
+      $_previewname = UPLOAD_DIR."/{$_owner['User']['id']}/previews/{$_upload['File'][0]['preview_name']}";
 
-      // Lets find out what kind of update this is. if findBy___() had more
+      if (!empty($_upload['Contentsource'])) {
+          // Lets find out what kind of update this is. if findBy___() had more
+          // recursion, we wouldn't need this extra query, but then we get a lot more
+          // info back than we need.
+          $_contentsourcetype = $this->controller->Contentsourcetype->FindById($_upload['Contentsource'][0]['contentsourcetype_id']);
 
-      // recursion, we wouldn't need this extra query, but then we get a lot more
-      // info back than we need.
-      $_contentsourcetype = $this->controller->Contentsourcetype->FindById($_upload['Contentsource'][0]['contentsourcetype_id']);
+            // Depending on the type, update the file
+          switch ($_contentsourcetype['Contentsourcetype']['name']) {
 
-        // Depending on the type, update the file
-      switch ($_contentsourcetype['Contentsourcetype']['name']) {
+              case 'rss-source/text':
 
-          case 'rss-source/text':
-
-            // Go get the rss feed.
-            $rss = fetch_rss( $_upload['Contentsource'][0]['source'] );
-            if (empty($rss)) {
-                return false;
-            }
-            
-            $rss_result = "Channel Title: " . $rss->channel['title'] . "\n";
-            foreach ($rss->items as $item) {
-              //$href = $item['link'];
-              $title = $item['title'];
-              $rss_result = $rss_result . $title . "\n";
-            }
-
-            // does the user have enough space to proceed
-            if ($this->controller->Storage->hasAvailableSpace($_upload['User']['id'],
-                                                              strlen($rss_result) - filesize($_filename)) == false) 
-            {
-              $this->log("User " . $_upload['User']['id'] . " is out of space.");
-              return false;
-            }
-
-            // write the file.
-            if (!file_put_contents($_filename, $rss_result)) {
-              $this->log("file_put_contents failed for " . $_filename);
-              return false;
-            }
-            
-            // need to update the size and date in the db.
-            $this->controller->File->id = $id;
-            $this->controller->File->saveField('size',filesize($_filename));
-            
-            
-            break;
-
-          case 'microsummary/xml':
-
-              $ms = new microsummary();
-              $ms->load($_upload['Contentsource'][0]['source']);
-              $rv = $ms->execute($_upload['Upload']['referrer'], true);
-              
-              if ($rv == 2)
-              {
-                // The XPATH has been updated based on the
-                // hint passed.  Lets save this new content
-                // source to the database
-
-                $updated_source =  $ms->save();
-
-                // save in db:
-
-                $this->controller->Contentsource->id = $_upload['Contentsource'][0]['id'];
-                $this->controller->Contentsource->saveField('source', $updated_source);
-
-              }
-
-              if (empty($ms->result)) {
-                  $ms->result = "XPATH is broken..  this feature doesn't work for the content you have selected. ";
-                  $this->log("Microsummary ". $_upload['Contentsource'][0]['id'] . "does not have an xpath result");
-              }
-
-              // does the user have enough space to proceed
-              if ($this->controller->Storage->hasAvailableSpace($_upload['User']['id'],
-                                                                strlen($ms->result) - filesize($_filename)) == false) {
-                $this->log("User " . $_upload['User']['id'] . " is out of space.");
-                return false;
-              }
-
-              // write the file.
-              if (!file_put_contents($_filename, $ms->result)) {
-                $this->log("file_put_contents failed for " . $_filename);
-                return false;
-              }
-
-              // need to update the size and date in the db.
-              $this->controller->File->id = $id;
-              $this->controller->File->saveField('size',filesize($_filename));
-
-              break;
-
-
-          case 'widget/joey':
-
-                $jw = new joeywidget();
-                $jw->load($_upload['Contentsource'][0]['source']);
+                // Go get the rss feed.
+                $rss = fetch_rss( $_upload['Contentsource'][0]['source'] );
+                if (empty($rss)) {
+                    return false;
+                }
                 
-                //@todo check for available space
+                $rss_result = "Channel Title: " . $rss->channel['title'] . "\n";
+                foreach ($rss->items as $item) {
+                  //$href = $item['link'];
+                  $title = $item['title'];
+                  $rss_result = $rss_result . $title . "\n";
+                }
 
-                // write the file.
-                if (!file_put_contents($_filename, $jw->content)) {
-                  $this->log("file_put_contents failed for " . $_filename);
+                // does the user have enough space to proceed
+                if ($this->controller->Storage->hasAvailableSpace($_owner['User']['id'],
+                                                                  strlen($rss_result) - filesize($_filename)) == false) 
+                {
+                  $this->log("User " . $_owner['User']['id'] . " is out of space.");
                   return false;
                 }
-                if (!file_put_contents($_previewname, $jw->preview)) {
-                  $this->log("file_put_contents failed for " . $_previewname);
+
+                // write the file.
+                if (!file_put_contents($_filename, $rss_result)) {
+                  $this->log("file_put_contents failed for " . $_filename);
                   return false;
                 }
                 
                 // need to update the size and date in the db.
                 $this->controller->File->id = $id;
                 $this->controller->File->saveField('size',filesize($_filename));
-                $this->controller->File->saveField('preview_size',filesize($_filename));
-
+                
+                
                 break;
 
-              // We don't support whatever they're trying to update.  :(
-          default:
-              return false;
+              case 'microsummary/xml':
+
+                  $ms = new microsummary();
+                  $ms->load($_upload['Contentsource'][0]['source']);
+                  $rv = $ms->execute($_upload['Upload']['referrer'], true);
+                  
+                  if ($rv == 2)
+                  {
+                    // The XPATH has been updated based on the
+                    // hint passed.  Lets save this new content
+                    // source to the database
+
+                    $updated_source =  $ms->save();
+
+                    // save in db:
+
+                    $this->controller->Contentsource->id = $_upload['Contentsource'][0]['id'];
+                    $this->controller->Contentsource->saveField('source', $updated_source);
+
+                  }
+
+                  if (empty($ms->result)) {
+                      $ms->result = "XPATH is broken..  this feature doesn't work for the content you have selected. ";
+                      $this->log("Microsummary ". $_upload['Contentsource'][0]['id'] . "does not have an xpath result");
+                  }
+
+                  // does the user have enough space to proceed
+                  if ($this->controller->Storage->hasAvailableSpace($_owner['User']['id'],
+                                                                    strlen($ms->result) - filesize($_filename)) == false) {
+                    $this->log("User " . $_owner['User']['id'] . " is out of space.");
+                    return false;
+                  }
+
+                  // write the file.
+                  if (!file_put_contents($_filename, $ms->result)) {
+                    $this->log("file_put_contents failed for " . $_filename);
+                    return false;
+                  }
+
+                  // need to update the size and date in the db.
+                  $this->controller->File->id = $id;
+                  $this->controller->File->saveField('size',filesize($_filename));
+
+                  break;
+
+
+              case 'widget/joey':
+
+                    $jw = new joeywidget();
+                    $jw->load($_upload['Contentsource'][0]['source']);
+                    
+                    //@todo check for available space
+
+                    // write the file.
+                    if (!file_put_contents($_filename, $jw->content)) {
+                      $this->log("file_put_contents failed for " . $_filename);
+                      return false;
+                    }
+                    if (!file_put_contents($_previewname, $jw->preview)) {
+                      $this->log("file_put_contents failed for " . $_previewname);
+                      return false;
+                    }
+                    
+                    // need to update the size and date in the db.
+                    $this->controller->File->id = $id;
+                    $this->controller->File->saveField('size',filesize($_filename));
+                    $this->controller->File->saveField('preview_size',filesize($_filename));
+
+                    break;
+
+                  // We don't support whatever they're trying to update.  :(
+              default:
+                  return false;
+          }
       }
       
       // If we've made it this far without failing, we're good

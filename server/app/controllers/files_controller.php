@@ -42,7 +42,7 @@ class FilesController extends AppController
 
     var $components = array('Session','Storage');
 
-    var $uses = array('Contentsource', 'Contentsourcetype', 'File', 'Upload');
+    var $uses = array('Contentsource', 'Contentsourcetype', 'File', 'Upload', 'User');
 
     var $helpers = array('Number','Time');
 
@@ -79,10 +79,19 @@ class FilesController extends AppController
 
     function view($id)
     {
-        // Double check this person is editing something they own
+        $_associated_user = false;
+
         $_item = $this->File->findById($id);
 
-        if ($_item['Upload']['user_id'] != $this->_user['id']) {
+        $_users = $this->Upload->findById($_item['Upload']['id']);
+
+        foreach ($_users['User'] as $user) {
+            if ($user['id'] == $this->_user['id']) {
+                $_associated_user = true;
+            }
+        }
+
+        if (!$_associated_user) {
             if ($this->nbClient) {
                 $this->returnJoeyStatusCode($this->ERROR_NOAUTH);
             }
@@ -90,7 +99,7 @@ class FilesController extends AppController
         }
 
         // before doing anything, see if we have to update the content.
-        $this->Storage->updateFileByUploadId($id, false);
+        $this->Storage->updateFileByUploadId($_item['File']['upload_id'], false);
 
         $this->layout = null;
 

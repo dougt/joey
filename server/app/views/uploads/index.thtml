@@ -11,41 +11,45 @@ You have no uploads yet.
 <?php echo $html->link( "Delete All", "/uploads/deleteAll"); ?>
 </div>
 
-<?php endif; ?>
 
 <div class="joey-upload">
 
 
 <?php
    $pagination->setPaging($paging); // Initialize the pagination variables
+
 ?>
 
 
-<?php foreach ($uploads as $upload): ?>
+<?php foreach ($uploads as $upload): 
+?>
 
     <div>
     <div class="joey-upload-preview">
 
         <?php if (array_key_exists(0,$upload['File'])) : ?>
-            <?php if (!empty($upload['File'][0]['preview_name'])) : ?>
+            <?php 
+                if (!empty($upload['File'][0]['preview_name'])) :
                 
-                <?=$html->link( '<img src="'.$html->url("/files/view/{$upload['File'][0]['id']}/preview").'" />', 
-                                "/files/view/{$upload['File'][0]['id']}",false,false,false ) ?>
+                    echo $html->link( '<img src="'.$html->url("/files/view/{$upload['File'][0]['id']}/preview").'" alt="Upload Preview" />', "/files/view/{$upload['File'][0]['id']}",false,false,false );
 
-            <?php elseif (!empty($upload['Contentsource'][0]['id']) || 
-                          empty($upload['File'][0]['preview_name']) ) : ?>
+                elseif (!empty($upload['Contentsource'][0]['id']) || empty($upload['File'][0]['preview_name'])) : 
+            ?>
 
-                     <iframe width=<?php echo $upload_preview_width?> 
-                             height=<?php echo $upload_preview_height?>
-                             scrolling=auto
-                             frameborder=1
-                             src=<?php echo "/files/view/" . $upload['File'][0]['id']?>>
+                     <iframe width="<?php echo $upload_preview_width?> "
+                             height="<?php echo $upload_preview_height?>"
+                             scrolling="auto"
+                             frameborder="1"
+                             src="<?php echo "/files/view/" . $upload['File'][0]['id']?>>"
                       </iframe>
 
+            <?php 
+                else :
 
-            <?php else : ?>
-                <?=$html->link($html->image('na.png'), "/files/view/{$upload['File'][0]['id']}", false, false, false); ?>
-            <?php endif; ?>
+                    echo $html->link($html->image('na.png'), "/files/view/{$upload['File'][0]['id']}", false, false, false);
+
+                endif; 
+            ?>
         <?php else : ?>
             <?=$html->image('na.png'); ?>
         <?php endif; ?>
@@ -53,12 +57,12 @@ You have no uploads yet.
     </div>
 
     <div>
-    <h3><?php echo $html->link( $upload['Upload']['title'], $upload['Upload']['referrer']) ?></h3>
+    <h3><?php echo $html->link( $upload['title'], $upload['referrer']) ?></h3>
     <ul>
-    <li>Size:  <?php echo $number->toReadableSize($upload['File'][0]['size']); ?></li>
-    <li>Uploaded <?php echo $time->niceShort($upload['Upload']['created']); ?></li>
-    <li><?php echo $html->link( "Original", "/files/view/" . $upload['File'][0]['id'] . "/original") ?></li>
-    <li><?php echo $html->link( "Delete", "/uploads/delete/" . $upload['Upload']['id']) ?></li>
+        <li>Size:  <?php echo $number->toReadableSize($upload['File'][0]['size']); ?></li>
+        <li>Uploaded <?php echo $time->niceShort($upload['created']); ?></li>
+        <li><?php echo $html->link( "Original", "/files/view/" . $upload['File'][0]['id'] . "/original") ?></li>
+        <li><?php echo $html->link( "Delete", "/uploads/delete/" . $upload['id']) ?></li>
     </ul>
     </div>
         
@@ -71,3 +75,4 @@ You have no uploads yet.
 <?php echo $this->renderElement('pagination'); ?> 
 </div>
 
+<?php endif; ?>

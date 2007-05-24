@@ -105,13 +105,24 @@ CREATE TABLE `phones` (
 DROP TABLE IF EXISTS `uploads`;
 CREATE TABLE `uploads` (
   `id` int(11) unsigned NOT NULL auto_increment,
-  `user_id` int(11) unsigned NOT NULL,
   `title` varchar(255) NOT NULL default '',
   `referrer` varchar(255) NOT NULL default '',
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL,
-  PRIMARY KEY  (`id`),
-  KEY `user_id` (`user_id`)
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `uploads_users`
+--
+DROP TABLE IF EXISTS `uploads_users`;
+CREATE TABLE `uploads_users` (
+  `upload_id` int(11) unsigned NOT NULL,
+  `user_id` int(11) unsigned NOT NULL,
+  `owner` int(1) NOT NULL default 0,
+  `created` datetime NOT NULL,
+  `modified` datetime NOT NULL,
+  PRIMARY KEY  (`upload_id`,`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -148,8 +159,9 @@ ALTER TABLE `contentsources`
 ALTER TABLE `files`
   ADD CONSTRAINT `files_ibfk_1` FOREIGN KEY (`upload_id`) REFERENCES `uploads` (`id`) ON UPDATE CASCADE ON DELETE CASCADE;
 
-ALTER TABLE `uploads`
-  ADD CONSTRAINT `uploads_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+ALTER TABLE `uploads_users`
+  ADD CONSTRAINT `uploads_users_ibfk_1` FOREIGN KEY (`upload_id`) REFERENCES `uploads` (`id`) ON UPDATE CASCADE ON DELETE CASCADE,
+  ADD CONSTRAINT `uploads_users_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 ALTER TABLE `users`
   ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`phone_id`) REFERENCES `phones` (`id`),

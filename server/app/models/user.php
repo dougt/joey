@@ -52,12 +52,13 @@ class User extends AppModel
                                 )
                          );
 
-    var $hasMany = array('Upload' =>
-                           array('className'  => 'Upload',
-                                 'conditions' => '',
-                                 'order'      => ''
-                                )
-                        );
+    var $hasAndBelongsToMany = array('Upload' =>
+                                   array('className'  => 'Upload',
+                                         'joinTable'  => 'uploads_users',
+                                         'foreignKey' => 'user_id',
+                                         'associationForeignKey' => 'upload_id'
+                                        )
+                                  );
 
     var $validate = array(
                             'username'    => '/^\w+$/',

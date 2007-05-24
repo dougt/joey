@@ -44,7 +44,7 @@ class UploadsController extends AppController
 
     var $components = array('Session','Storage', 'Pagination');
 
-    var $uses = array('Phone', 'Contentsource', 'Contentsourcetype', 'File', 'Upload');
+    var $uses = array('Phone', 'Contentsource', 'Contentsourcetype', 'File', 'Upload','User');
 
     var $helpers = array('Number','Time', 'Pagination');
 
@@ -95,8 +95,8 @@ class UploadsController extends AppController
         // They've submitted data
         if (!empty($this->data)) {
             
-            // Fill in the user_id FK
-            $this->data['Upload']['user_id'] = $this->_user['id'];
+            // Fill in the user_id FK.  Cake needs this doubled up for the HABTM relationship
+            $this->data['User']['User']['id'] = $this->_user['id'];
 
             // We've got two use cases.  First, let's check if they've uploaded a
             // file successfully.
@@ -133,12 +133,9 @@ class UploadsController extends AppController
                     // @todo fix data?
                     if ($_width < 1 || $_height < 1)
                     {
-                      // we have really no idea what the
-                      // size should be, so lets just say
-
+                      // we have really no idea what the size should be, so lets just say
                       $_width  = 100;
                       $_height = 100;
-                      
                     }
 
                     // Put our file away, generate the transcode file for mobile, as well as the preview.  This better not ever fail, but on the
@@ -183,12 +180,17 @@ class UploadsController extends AppController
                       unset($this->data['File']['Upload']);
 
                       if ($this->File->save($this->data)) {
+
+                        $this->Upload->setOwnerForUploadIdAndUserId($this->Upload->id, $this->_user['id']);
+
                         $this->Upload->commit();
+
                         if ($this->nbClient) {
                           $this->returnJoeyStatusCode($this->SUCCESS);
                         } else {
                           $this->flash('Upload saved.', '/uploads/index');
                         }
+
                       } else {
                         $this->Upload->rollback();
                         $this->set('error_mesg', 'Could not save your file.');
@@ -239,6 +241,8 @@ class UploadsController extends AppController
 
                         if ($this->Contentsource->save($this->data)) {
                             $this->Upload->commit();
+
+                            $this->Upload->setOwnerForUploadIdAndUserId($this->Upload->id, $this->_user['id']);
 
                             $this->Storage->updateFileByUploadId($this->Upload->id, true);
 
@@ -292,20 +296,22 @@ class UploadsController extends AppController
 
     function deleteAll()
     {
-      $data = $this->Upload->findAllByUser_id($this->_user['id']);
-      $count = 0;
+      $data = $this->User->findAllById($this->_user['id']);
+      $_count = 0;
 
-      foreach ($data as $row) {
+      foreach ($data[0]['Upload'] as $row) {
         
-        $id = $data[$count]['Upload']['id'];
+        $id = $row['id'];
+
         if ($this->delete($id) == false) {
           $this->log("deleteAll: Delete of " . $id . " failed.");
-        } 
+        }  else {
+          $_count++;
+        }
         
-        $count = $count + 1;
       }
 
-      $this->flash("{$count} items deleted", '/uploads/index', 2);
+      $this->flash("{$_count} items deleted", '/uploads/index', 2);
     }
 
     function delete($id)
@@ -320,8 +326,10 @@ class UploadsController extends AppController
 
         $_item = $this->Upload->findById($id);
 
+        $_owner = $this->Upload->findOwnerDataFromUploadId($id);
+
         // Check for access
-        if ($_item['Upload']['user_id'] != $this->_user['id']) {
+        if ($_owner['User']['id'] != $this->_user['id']) {
             if ($this->nbClient) {
                 $this->returnJoeyStatusCode($this->ERROR_NOAUTH);
             } else {
@@ -444,18 +452,25 @@ class UploadsController extends AppController
             
             $this->pageTitle = 'Uploads';
 
-            $criteria=array('user_id' => $this->_user['id']);
-            $options=array('sortBy' => 'id', 'direction' => 'DESC');
-            list($order,$limit,$page) = $this->Pagination->init($criteria, NULL, $options); // Added
-            $data = $this->Upload->findAll($criteria, NULL, $order, $limit, $page); // Extra parameters added
-        
-            $this->set('uploads', $data);
- 
+            $criteria = array(
+                                'User.id' => $this->_user['id']
+                             );
+
+            $options = array(
+                                'direction' => 'DESC',
+                                'sortBy'    => 'id',
+                                'total'     => $this->Upload->User->findCount($criteria,0)
+                            );
+
+            list(,$limit,$page) = $this->Pagination->init($criteria, array(), $options);
+
+            $data = $this->Upload->User->findAll($criteria, null, null, $limit, $page, 2);
+
+            $this->set('uploads', $data[0]['Upload']);
 
             // Get desired width and height for the transcoded media file
-            $_phone = $this->Phone->findById($this->_user['phone_id']);
-            $_width = intval ($_phone['Phone']['screen_width']);
-            $_height = intval ($_phone['Phone']['screen_height']);
+            $_width = intval ($data[0]['Phone']['screen_width']);
+            $_height = intval ($data[0]['Phone']['screen_height']);
 
             //@todo fix data?
             if ($_width < 1 || $_height < 1)

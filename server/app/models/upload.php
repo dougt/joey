@@ -40,12 +40,13 @@ class Upload extends AppModel
 {
     var $name = 'Upload';
 
-    var $belongsTo = array('User' =>
-                           array('className'  => 'User',
-                                 'conditions' => '',
-                                 'order'      => ''
-                                )
-                          );
+    var $hasAndBelongsToMany = array('User' =>
+                                   array('className'  => 'User',
+                                         'joinTable'  => 'uploads_users',
+                                         'foreignKey' => 'upload_id',
+                                         'associationForeignKey' => 'user_id'
+                                        )
+                                  );
 
     var $hasMany = array('File' =>
                            array('className'  => 'File',
@@ -64,6 +65,42 @@ class Upload extends AppModel
                             'title'    => '/^.+$/',
                             'referrer' => '/^.+$/'
                          );
+
+
+    /**
+     * Cake isn't setup to handle a role defined in the relationship (mapping table).
+     * That means we get to do custom queries anytime we care about the owner flag.
+     */
+    function findOwnerDataFromUploadId($id) {
+        if (is_numeric($id)) {
+
+            $_ret = $this->query("SELECT user_id FROM uploads_users WHERE upload_id={$id} AND owner=1");
+
+            if (is_numeric($_ret[0]['uploads_users']['user_id'])) {
+
+                return $this->User->findById($_ret[0]['uploads_users']['user_id']);
+            }
+        }
+
+        return array();
+
+    }
+
+
+    function setOwnerForUploadIdAndUserId($upload_id, $user_id) {
+        if (is_numeric($upload_id) && is_numeric($user_id)) {
+
+            $this->execute("UPDATE uploads_users SET owner=1, modified=NOW() WHERE upload_id={$upload_id} AND user_id={$user_id}");
+            
+            return true;
+        }
+
+        return false;
+    }
+
+
+
+
 
 }
 ?>

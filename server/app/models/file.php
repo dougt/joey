@@ -53,6 +53,38 @@ class File extends AppModel
                             'type'  => '/^.+$/'
                          );
 
+
+    function findOwnerDataFromFileId($id) {
+        if (is_numeric($id)) {
+
+            $_query = "
+                SELECT 
+                    uploads_users.user_id 
+                FROM 
+                    uploads_users, 
+                    uploads, 
+                    files 
+                WHERE 
+                    uploads_users.upload_id = uploads.id
+                    AND files.upload_id = uploads.id
+                    AND files.id = {$id}
+                    AND uploads_users.owner=1
+                        ";
+
+            $_ret = $this->query($_query);
+
+            if (array_key_exists(0,$_ret) && is_numeric($_ret[0]['uploads_users']['user_id'])) {
+
+                // Can't query User here automatically because there is no official
+                // relationship
+                return array_shift($this->query("SELECT * FROM users WHERE id={$_ret[0]['uploads_users']['user_id']}"));
+            }
+        }
+
+        return array();
+
+    }
+
     /**
      * Check the total space used for a user
      * @param int user id
