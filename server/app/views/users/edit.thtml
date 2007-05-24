@@ -45,7 +45,7 @@
 </div>
 
 <div class="button-box">
-    <?=$html->submit('Accept and Register',array('class' => 'joey-submit')); ?>
+    <?=$html->submit('Save Changes',array('class' => 'joey-submit')); ?>
 </div>
 
 </form>
