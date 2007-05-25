@@ -107,7 +107,7 @@
  *
  *  Number below is seconds.
  */
-	define('CAKE_SESSION_TIMEOUT', '120');
+	define('CAKE_SESSION_TIMEOUT', '2000');
 /**
  * Uncomment the define below to use cake built in admin routes.
  * You can set this value to anything you want.
