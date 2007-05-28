@@ -50,6 +50,8 @@ var g_joey_statusUpdateObject = null;      // the proxy object to deal with UI
 
 var g_joey_bundleElement = null;
 
+var g_joey_mediaContentTypes = ['flv','mov','wmv','avi','mpeg','mp3','wav']; 
+
 function joeyString(ref) {
 
      return g_joey_bundleElement.getString(ref);
@@ -603,97 +605,35 @@ function rev(str)
    return revstr;
  }
 
-function grabAll(elem)
-{
-    if (elem instanceof Components.interfaces.nsIDOMHTMLEmbedElement)
-    {
-        var base = Components.classes["@mozilla.org/network/standard-url;1"]
-                             .createInstance(Components.interfaces.nsIURI);
 
-        base.spec = g_joey_gBrowser.contentDocument.location.href;
-        
-        g_joey_media_type = "video/flv";
+var httpscanner = {
+  observe: function(subject,topic,data){
+        var response=subject.QueryInterface(Components.interfaces.nsIHttpChannel);
+	    var contentType=response.getResponseHeader('Content-Type');         
 
-        if (base.host == "vids.myspace.com")
-        {
-
-            // borrowed from the greasemonkey script here:
-            // http://userscripts.org/scripts/source/8427
-
-            var vid = base.spec.match(/videoID=[0-9]+/i)[0].substr(8);
-
-            var url='http:\/\/content.movies.myspace.com\/' +
-                Math.pow(10,7-(vid.length-5)).toString().substr(1) + 
-                vid.substr(0,vid.length-5)+'\/' + 
-                rev(vid.substring(vid.length-2)) + 
-                '\/' + 
-                rev(vid.substring(vid.length-4,vid.length-2)) + 
-                '\/' + 
-                vid + 
-                '.flv';
-
-            document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
-            g_joey_media_url = url;
-        }
-        else if (base.host == "youtube.com" || base.host == "www.youtube.com")
-        {
-            // youtube specific.  humm.
-            var url = base.prePath;
-            url += "/get_video.php?";
-            url += elem.src.substring(elem.src.indexOf('?')+1);
-
-            // great found something -- what about multi embed tags? dougt
-            
-            document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
-            g_joey_media_url = url;
-        }
-        else if (base.host == "dailymotion.com" || base.host == "www.dailymotion.com")
-        {
-            var url = unescape(/"url=(.*?)\.flv&duration=/.exec(g_joey_gBrowser.contentDocument.body.innerHTML)[1]);
-            //"  <-- fixes color coding in my editor.
-
-            document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
-            g_joey_media_url = url;
-        }
-        else if (base.host == "video.google.com" )
-        {
-            var url = elem.src.substring(elem.src.indexOf('&videoUrl\u003d')+10);
-            url+="&autoplay=true";
-            document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
-            g_joey_media_url = url;
-        }
-        else // lets just hope that this works for other sites
-        {
-            document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
-            g_joey_media_url = elem.src;
+        function testContentType(types){
+                var isMediaFile = false;
+                for(var i=types.length;i>=0;i--){
+					if(contentType.indexOf(types[i])>-1 || mediaLocation.indexOf('.'+types[i])>-1) isMediaFile = true;
+                }
+                return isMediaFile;
         }
 
-        joeyDumpToConsole(g_joey_media_url);
-    }
-    
-    return NodeFilter.FILTER_ACCEPT;
+        if(contentType.indexOf('video')>-1 || contentType.indexOf('audio')>-1 || contentType.indexOf('octet')>-1){
+                var mediaLocation = subject.QueryInterface(Components.interfaces.nsIChannel).URI;
+                        mediaLocation=mediaLocation.prePath+mediaLocation.path;
+
+                if(testContentType(g_joey_mediaContentTypes)){
+                        joeyDumpToConsole("media content found: "+ mediaLocation);
+                        document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
+                        g_joey_media_type = contentType;
+                        g_joey_media_url = mediaLocation;
+                }
+        }
+	}
 }
-
-function doGrab(iterator)
-{
-    for (var i = 0; i < 50; ++i)
-        if (!iterator.nextNode())
-            return;
-    
-    setTimeout(doGrab, 16, iterator);
-}
-
-function joeyCheckForMedia()
-{
-    // reset these on new page load.  should probably move this somewhere else.
-    document.getElementById("joeyMediaMenuItem").setAttribute("hidden","true");
-    g_joey_media_url = null;
-    
-    var doc = g_joey_gBrowser.contentDocument;
-    
-    var iterator = doc.createTreeWalker(doc, NodeFilter.SHOW_ELEMENT, grabAll, true);
-    setTimeout(doGrab, 16, iterator);
-}
+var observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
+	observerService.addObserver(httpscanner,"http-on-examine-response",false);
 
 function joey_uploadFoundMedia() // refactor with joey_selectedImage
 {
@@ -885,7 +825,6 @@ joeyBrowserStatusHandler.prototype =
     
     endDocumentLoad : function(aRequest, aStatus)
     {
-        setTimeout(joeyCheckForMedia, 0); 
         setTimeout(g_joeySelectorService.disable, 0);
     },
 
