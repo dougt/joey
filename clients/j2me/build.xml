@@ -138,6 +138,7 @@
 				<requirement name="JavaPlatform" value="MIDP/2.0+" />
 				<requirement name="Term" value="!polish.blackberry" />
 				<requirement name="Term" value="!(polish.identifier == Generic/DotNetCF1.1)" />
+				<requirement name="Term" value="!(polish.identifier == Nokia/Series90)" />
 			</and>
 		</deviceRequirements>
 		
@@ -199,6 +200,9 @@
 				<parameter name="optimize" value="false" />
 				-->
 			</obfuscator>
+
+			<!-- output list which devices/locales are built -->
+			<finalizer name="buildlist" />
 			
 			<!-- debug settings: only include debug setting when the test-property is true -->
 			<debug if="test" showLogOnError="true" verbose="true" level="error">
@@ -248,6 +252,16 @@
   		description="allows a clean build. You should call [ant clean] whenever you made changes to devices.xml, vendors.xml or groups.xml">
 	<delete dir="build" />
 	<delete dir="dist" />
+</target>
+
+<target name="buildall" depends="clean">
+	<java
+		classname="org.apache.tools.ant.launch.Launcher"
+		classpath="${java.class.path}"
+		fork="true"
+	>
+		<jvmarg value="-XX:MaxPermSize=512m" />
+	</java>
 </target>
 
 </project>
