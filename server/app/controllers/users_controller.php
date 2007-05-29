@@ -87,7 +87,7 @@ class UsersController extends AppController
       $username = str_replace( "-", "", $this->_user['phonenumber']);
       
       //@todo very US centric.
-      if (empty($operator['Operator']['emaildomain']) || (strlen($username) != 11)) {
+      if (empty($operator['Operator']['emaildomain'])) {
         $this->flash("Sorry, we don't know how to send you an SMS.");
         return;
       }
