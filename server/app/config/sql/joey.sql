@@ -185,6 +185,7 @@ INSERT INTO `operators` VALUES (7,'Orange','orange.net','2007-03-18 09:19:04','0
 INSERT INTO `operators` VALUES (8,'O2', 'o2.co.uk','2007-03-18 09:19:04','0000-00-00 00:00:00');
 INSERT INTO `operators` VALUES (9,'T-Mobile', 'tmomail.net','2007-03-18 09:19:04','0000-00-00 00:00:00');
 INSERT INTO `operators` VALUES (10,'Verizon PCS', 'vtext.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (11,'Sprint PCS', 'messaging.sprintpcs.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
 
 INSERT INTO `phones` VALUES (1, 'Alcatel - One Touch 735i', '128', '128', '12', '2007-03-15 14:27:14','0000-00-00 00:00:00');
 INSERT INTO `phones` VALUES (2, 'Alcatel - One Touch 756', '128', '160', '18', '2007-03-15 14:27:14','0000-00-00 00:00:00');
