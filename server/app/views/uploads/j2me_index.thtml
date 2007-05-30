@@ -5,13 +5,13 @@ count=<?php echo $count;?>
 $i = 1;
 foreach ($uploads as $upload) {
 ?>
-title.<?php echo $i;?>=<?php echo $upload['title'];?>
+title.<?php echo $i;?>=<?php echo $upload['Upload']['title'];?>
 
-referrer.<?php echo $i;?>=<?php echo $upload['referrer'];?>
+referrer.<?php echo $i;?>=<?php echo $upload['Upload']['referrer'];?>
 
-modified.<?php echo $i;?>=<?php echo $upload['modified'];?>
+modified.<?php echo $i;?>=<?php echo $upload['Upload']['modified'];?>
 
-id.<?php echo $i;?>=<?php echo $upload['id'];?>
+id.<?php echo $i;?>=<?php echo $upload['Upload']['id'];?>
  
 type.<?php echo $i;?>=<?php echo $upload['type'];?>
 
