@@ -437,20 +437,16 @@ class UploadsController extends AppController
 
             $this->pageTitle = 'Uploads';
 
-            $criteria = array(
-                                'User.id' => $this->_user['id']
-                             );
-
             $_pagination_options = array(
                                 'direction' => 'DESC',
                                 'sortBy'    => 'id',
-                                'total'     => $this->Upload->User->findCount($criteria,0)
+                                'total'     => count($this->Upload->findAllUploadsForUserId($this->_user['id']))
                             );
 
-            list(,$limit,$page) = $this->Pagination->init($criteria, array(), $_pagination_options);
+            list(,$limit,$page) = $this->Pagination->init(array(), array(), $_pagination_options);
 
             // @todo need to calculate $start
-            $options = array( 'limit' => $limit );
+            $options = array( 'limit' => $limit, 'start' => (($page-1)*$limit) );
 
             $data = $this->Upload->findAllUploadsForUserId($this->_user['id'], $options);
 
