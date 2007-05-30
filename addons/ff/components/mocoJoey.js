@@ -158,6 +158,7 @@ mocoJoey.prototype =
 
     setLoginInfo: function()
     {
+    
         this.joey_username = "";
         this.joey_password = "";
         
@@ -180,6 +181,19 @@ mocoJoey.prototype =
             } 
             catch (ex) {}
         }
+    
+        /* We get the strings from the locale properties file */ 
+            
+        var stringBundle = Components.classes["@mozilla.org/intl/stringbundle;1"]
+                                .getService(Components.interfaces.nsIStringBundleService);
+                      
+        var joeyStrings = stringBundle.createBundle("chrome://joey/locale/joey.properties");
+        
+        var promptTitle    = joeyStrings.GetStringFromName("promptUserPass.windowtitle");
+        var promptQuestion = joeyStrings.GetStringFromName("promptUserPass.question");
+        var promptButton   = joeyStrings.GetStringFromName("promptUserPass.button");
+        
+        /* All good, render the prompt with right strings.. */
     
         var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
                                 .getService(Components.interfaces.nsIPromptService);
