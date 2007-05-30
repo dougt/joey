@@ -203,12 +203,13 @@ mocoJoey.prototype =
         var check = {value: true};  // default the checkbox to true
         
         var result = prompts.promptUsernameAndPassword(null, 
-                                                       "Title", 
-                                                       "Enter username and password:",
+                                                       promptTitle, 
+                                                       promptQuestion,
                                                        u,
                                                        p,
-                                                       "Save", 
+                                                       promptButton, 
                                                        check);
+        
         
         if (!result)
         {
