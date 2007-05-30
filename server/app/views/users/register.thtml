@@ -46,6 +46,11 @@
 </div>
 
 <div>
+<i> Don't see your phone or cell operator? </i> <br>
+Please tell us!  Join the conversation on the <a href="https://labs.mozilla.com/forum/index.php?board=3.0">Joey Forum</a>.
+</div>
+
+<div>
         <label class="joey-label-large" for="LegalStuff">Important Legal Stuff.</label>
 <br>
 <br>    <?php echo $html->link('Terms of Use',               FULL_BASE_URL . '/terms/termsofservice') ?> 
