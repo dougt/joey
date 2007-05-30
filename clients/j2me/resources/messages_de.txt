@@ -1,14 +1,14 @@
 title.login=Anmelden
-title.mainmenu=Hauptmenü
+title.mainmenu=Hauptmen\u00fc
 title.snapshot=Schnappschuss
 title.uploads=Uploads
 title.details=Details
 
 command.exit=Beenden
-command.back=Zurück
-command.select=Auswählen
+command.back=Zur\u00fcck
+command.select=Ausw\u00e4hlen
 command.login=Anmelden
-command.delete=Löschen
+command.delete=L\u00f6schen
 command.snapshot=Schnappschuss
 
 command.yes=Ja
@@ -18,12 +18,12 @@ mainmenu.view=Uploads betrachten
 mainmenu.snapshot=Schnappschuss machen
 mainmenu.preferences=Einstellungen
 
-uploads.delete.msg=Wollen sie diesen Upload wirklich löschen?
+uploads.delete.msg=Wollen sie diesen Upload wirklich l\u00f6schen?
 
 form.login.login=Anmelden
 
 form.preferences=Einstellungen
 
-alert.login.error=Anmeldung auf dem Server nicht möglich. Benutzername oder Passwort falsch?
+alert.login.error=Anmeldung auf dem Server nicht m\u00f6glich. Benutzername oder Passwort falsch?
 alert.exit.msg=Wollen sie Joey wirklich beenden?
 alert.wait.msg=Bitte warten!
