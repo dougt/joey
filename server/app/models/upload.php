@@ -52,11 +52,6 @@ class Upload extends AppModel
                            array('className'  => 'File',
                                  'conditions' => '',
                                  'order'      => ''
-                                ),
-                         'Contentsource' =>
-                           array('className'  => 'Contentsource',
-                                 'conditions' => '',
-                                 'order'      => ''
                                 )
                         );
 
@@ -99,7 +94,35 @@ class Upload extends AppModel
     }
 
 
+    function findAllUploadsForUserId($id, $options = array()) {
 
+            if (!is_numeric($id)) {
+                return array();
+            }
+
+            $_limit = array_key_exists('limit', $options) ? $options['limit'] : null;
+            $_start = array_key_exists('start', $options) ? $options['start'] : null;
+
+            $_query = "
+                        SELECT * FROM 
+                            uploads_users 
+                        JOIN uploads as Upload ON uploads_users.upload_id = Upload.id
+                        JOIN files as File ON Upload.id = File.upload_id
+                        LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
+                        LEFT JOIN contentsourcetypes as Contentsourcetype ON Contentsource.contentsourcetype_id = Contentsourcetype.id
+                        WHERE uploads_users.user_id = {$id}
+            ";
+
+            if (is_numeric($_limit) && is_numeric($_start)) {
+                $_query .= " LIMIT $_start, $_limit";
+            } else if (is_numeric($_limit)) {
+                $_query .= " LIMIT $_limit";
+            }
+
+            $data = $this->query($_query);
+
+            return $data;
+    }
 
 
 }

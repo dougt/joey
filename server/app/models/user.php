@@ -67,5 +67,32 @@ class User extends AppModel
                             'email'       => VALID_EMAIL
                          );
 
+    /**
+     * Check the total space used for a user
+     * @param int user id
+     */
+    function totalSpaceUsedByUserId($user_id)
+    {
+        // Just double check
+        if (!ctype_digit($user_id)) {
+            return 0;
+        }
+
+        $query = "SELECT sum(files.size+files.original_size+files.preview_size) as `total`
+                    FROM files 
+                    JOIN uploads ON files.id = uploads.file_id
+                    JOIN uploads_users ON uploads.id = uploads_users.upload_id
+                    WHERE uploads_users.user_id = {$user_id}";
+
+        $ret = $this->query($query);
+
+        // If they don't have uploads, this is null
+        if (empty($ret[0][0]['total'])) {
+            return 0;
+        }
+
+        return $ret[0][0]['total'];
+    }
+
 }
 ?>

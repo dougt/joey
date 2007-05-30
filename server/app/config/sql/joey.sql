@@ -21,13 +21,13 @@ CREATE TABLE `cake_sessions` (
 DROP TABLE IF EXISTS `contentsources`;
 CREATE TABLE `contentsources` (
   `id` int(11) unsigned NOT NULL auto_increment,
-  `upload_id` int(11) unsigned NOT NULL,
+  `file_id` int(11) unsigned NOT NULL,
   `source` text,
   `contentsourcetype_id` int(11) unsigned NOT NULL default '0',
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL,
   PRIMARY KEY  (`id`),
-  KEY `upload_id` (`upload_id`),
+  KEY `file_id` (`file_id`),
   KEY `contentsourcetype_id` (`contentsourcetype_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -153,7 +153,7 @@ CREATE TABLE `users` (
 -- CONSTRAINTS
 
 ALTER TABLE `contentsources`
-  ADD CONSTRAINT `contentsources_ibfk_1` FOREIGN KEY (`upload_id`) REFERENCES `uploads` (`id`),
+  ADD CONSTRAINT `contentsources_ibfk_1` FOREIGN KEY (`file_id`) REFERENCES `files` (`id`),
   ADD CONSTRAINT `contentsources_ibfk_2` FOREIGN KEY (`contentsourcetype_id`) REFERENCES `contentsourcetypes` (`id`);
 
 ALTER TABLE `files`

@@ -42,17 +42,12 @@ class UploadsController extends AppController
 {
     var $name = 'Uploads';
 
-    var $components = array('Session','Storage', 'Pagination');
+    var $components = array('Joey', 'Pagination', 'Session', 'Storage');
 
+//@todo review these
     var $uses = array('Phone', 'Contentsource', 'Contentsourcetype', 'File', 'Upload','User');
 
     var $helpers = array('Number','Time', 'Pagination');
-
-    /**
-     * Set in the constructor.  This is just a friendlier way to say "no preview
-     * available" - this must be a .png
-     */
-    var $fallback_image = '';
 
     /**
      * Set in beforeFilter().  Will hold the session user data.
@@ -69,14 +64,6 @@ class UploadsController extends AppController
 
         // Set the local user variable to the Session's User
         $this->_user = $this->Session->read('User');
-    }
-
-    function __construct() {
-
-        parent::__construct();
-
-        // The content-type for this is hardcoded below (to .png)
-        $this->fallback_image = WWW_ROOT.'img'.DS.'na.png';
     }
 
     /**
@@ -107,23 +94,25 @@ class UploadsController extends AppController
                     $this->set('error_fileupload', 'Could not locate uploaded file.');
                 }
 
+                // Check to see if the user has any additonal space.
+                $filesize = filesize($this->data['File']['Upload']['tmp_name']);
+
+                if ($this->Storage->hasAvailableSpace($this->_user['id'], $filesize) == false) {
+                    if ($this->nbClient) {
+                      $this->returnJoeyStatusCode($this->ERROR_NO_SPACE);
+                    } else {
+                      $_used = $this->Joey->bytesToReadableSize($this->User->totalSpaceUsedByUserId($this->_user['id']));
+                      $_max  = MAX_DISK_USAGE.' MB'; //this is already in MB
+                      $_size = $this->Joey->bytesToReadableSize($filesize);
+                      $this->set('error_fileupload', "You don't have enough space to save that file. You're using {$_used} out of {$_max} and your upload takes up {$_size}.");
+                    }
+                    $this->File->invalidate('Upload');
+                    unlink($this->data['File']['Upload']['tmp_name']);
+                }
+
                 // Check if our form validates.  This only checks the stuff in the
                 // Upload and File models, (ie. are required fields filled in?)
                 if ($this->Upload->validates($this->data) && $this->File->validates($this->data)) {
-
-                    // Check to see if the user has any additonal space.
-                    $filesize = filesize($this->data['File']['Upload']['tmp_name']);
-                    if ($this->Storage->hasAvailableSpace($this->_user['id'], $filesize) == false) {
-                        if ($this->nbClient) {
-                          $this->returnJoeyStatusCode($this->ERROR_NO_SPACE);
-                        } else {
-                          $this->File->invalidate('Upload');
-                          $this->set('error_fileupload', 'Out of space.');
-                        }
-                        // unlink($_filename);
-                        // Go ahead and just bail.
-                        return;
-                    }
                     
                     // Get desired width and height for the transcoded media file
                     $_phone = $this->Phone->findById($this->_user['phone_id']);
@@ -131,23 +120,18 @@ class UploadsController extends AppController
                     $_height = intval ($_phone['Phone']['screen_height']);
 
                     // @todo fix data?
-                    if ($_width < 1 || $_height < 1)
-                    {
+                    if ($_width < 1 || $_height < 1) {
                       // we have really no idea what the size should be, so lets just say
                       $_width  = 100;
                       $_height = 100;
                     }
 
-                    // Put our file away, generate the transcode file for mobile, as well as the preview.  This better not ever fail, but on the
-                    // off chance it does, we'll invalidate the file upload.
-                    // This will make the save below fail, so the db won't get
-                    // out of sync.
+                    // Put our file away, generate the transcode file for mobile, as well as the preview. 
                     $_ret = $this->Storage->processUpload($this->data['File']['Upload']['tmp_name'], $this->_user['id'], $this->data['File']['Upload']['type'], $_width, $_height);
                     
                     if ($_ret == null) {
                             $this->File->invalidate('Upload');
                             $this->set('error_fileupload', 'Could not move uploaded file.');
-                            return;
                     }
                     
                     $this->data['File']['name'] = basename($_ret['default_name']);
@@ -166,12 +150,9 @@ class UploadsController extends AppController
                       $this->data['File']['preview_size'] = filesize($_ret['preview_name']);  
                     }
                         
-
                     // Start our transaction
                     $this->Upload->begin();
 
-                    // We've already validated it - there isn't really any reason
-                    // this should fail.
                     if ($this->Upload->save($this->data)) {
 
                       $this->data['File']['upload_id'] = $this->Upload->id;
@@ -221,11 +202,16 @@ class UploadsController extends AppController
                     // support.  In that case, invalidate.
                     if (array_key_exists('id', $_contentsource['Contentsourcetype']) && is_numeric($_contentsource['Contentsourcetype']['id'])) {
                         $this->data['Contentsourcetype']['id'] = $_contentsource['Contentsourcetype']['id'];
-                        unset($_contentsource, $this->data['Contentsourcetype']['name']);
                     } else {
                         $this->Contentsource->invalidate('name');
                     }
+                } else {
+                    // As it turns out, we need the type as a string too
+                    $_contentsource = $this->Contentsourcetype->findById($this->data['Contentsourcetype']['id'], array('name'), null, 0);
+                    $this->data['Contentsourcetype']['name'] = $_contentsource['Contentsourcetype']['name'];
                 }
+
+                unset($_contentsource);
 
                 if ($this->Upload->validates($this->data) && $this->Contentsource->validates($this->data) && $this->Contentsourcetype->validates($this->data)) {
 
@@ -235,21 +221,29 @@ class UploadsController extends AppController
 
                     // This shouldn't ever fail, since we validated it
                     if ($this->Upload->save($this->data)) {
-                        // gg cake
-                        $this->data['Contentsource']['contentsourcetype_id'] = $this->data['Contentsourcetype']['id'];
-                        $this->data['Contentsource']['upload_id']            = $this->Upload->id;
 
-                        if ($this->Contentsource->save($this->data)) {
-                            $this->Upload->commit();
+                        // Create a new file row
+                        if (($_file_id = $this->Storage->createFileForUploadId($this->Upload->id, $this->data['Contentsourcetype']['name'])) !== false) {
 
-                            $this->Upload->setOwnerForUploadIdAndUserId($this->Upload->id, $this->_user['id']);
+                            // gg cake
+                            $this->data['Contentsource']['file_id']              = $_file_id;
+                            $this->data['Contentsource']['contentsourcetype_id'] = $this->data['Contentsourcetype']['id'];
 
-                            $this->Storage->updateFileByUploadId($this->Upload->id, true);
+                            if ($this->Contentsource->save($this->data)) {
 
-                            if ($this->nbClient) {
-                                $this->returnJoeyStatusCode($this->SUCCESS);
+                                $this->Upload->setOwnerForUploadIdAndUserId($this->Upload->id, $this->_user['id']);
+                                $this->Storage->updateFileByUploadId($this->Upload->id, true);
+
+                                $this->Upload->commit();
+
+                                if ($this->nbClient) {
+                                    $this->returnJoeyStatusCode($this->SUCCESS);
+                                } else {
+                                    $this->flash('Upload saved.', '/uploads/index');
+                                }
                             } else {
-                                $this->flash('Upload saved.', '/uploads/index');
+                                $this->Upload->rollback();
+                                $this->set('error_mesg', 'There was an error saving your upload.');
                             }
 
                         } else {
@@ -266,7 +260,7 @@ class UploadsController extends AppController
             } else {
                 // Something is wrong.  Either there was an error uploading the file, or
                 // they sent an incomplete POST.  Either way, not much we can do.
-                $this->set('error_mesg', 'Incomplete POST data.  Failing.');
+                $this->set('error_mesg', 'Failing: There was an error saving your upload.');
             }
 
             //@todo Really, they only need a file OR a contentsource[type], but this
@@ -324,12 +318,12 @@ class UploadsController extends AppController
             }
         }
 
-        $_item = $this->Upload->findById($id);
+        $_item = $this->Upload->findById($id, null,null,2);//@todo this pulls way too much data
 
         $_owner = $this->Upload->findOwnerDataFromUploadId($id);
 
         // Check for access
-        if ($_owner['User']['id'] != $this->_user['id']) {
+        if (empty($_owner) || ($_owner['User']['id'] != $this->_user['id'])) {
             if ($this->nbClient) {
                 $this->returnJoeyStatusCode($this->ERROR_NOAUTH);
             } else {
@@ -340,9 +334,8 @@ class UploadsController extends AppController
         $this->Upload->begin();
 
         // If this is a content source upload, kill that too.
-        if (!empty( $_item['Contentsource'] ))
-        {
-          $csid = $_item['Contentsource'][0]['id'];
+        if (!empty( $_item['File'][0]['Contentsource'] )) {
+          $csid = $_item['File'][0]['Contentsource'][0]['id'];
 
           if (! $this->Contentsource->delete($csid)) {
               $this->Upload->rollback();
@@ -363,16 +356,16 @@ class UploadsController extends AppController
                       //$this->flash('Delete failed', '/uploads/index',2);
                 }
                 
-                if (!empty($_item['File'][0]['original'])) {
-                    if (!unlink(UPLOAD_DIR."/{$this->_user['id']}/originals/{$_item['File'][0]['original']}")) {
+                if (!empty($_item['File'][0]['original_name'])) {
+                    if (!unlink(UPLOAD_DIR."/{$this->_user['id']}/originals/{$_item['File'][0]['original_name']}")) {
                       // Don't make this fatal.  If we couldn't unlink, it is a warning
                       //$this->Upload->rollback();
                       //$this->flash('Delete failed', '/uploads/index',2);
                     }
                 }
                 
-                if (!empty($_item['File'][0]['preview'])) {
-                    if (!unlink(UPLOAD_DIR."/{$this->_user['id']}/previews/{$_item['File'][0]['preview']}")) {
+                if (!empty($_item['File'][0]['preview_name'])) {
+                    if (!unlink(UPLOAD_DIR."/{$this->_user['id']}/previews/{$_item['File'][0]['preview_name']}")) {
                       // Don't make this fatal.  If we couldn't unlink, it is a warning
                       //$this->Upload->rollback();
                       //$this->flash('Delete failed', '/uploads/index',2);
@@ -399,47 +392,39 @@ class UploadsController extends AppController
     {
       $this->layout = 'xml';
       
-      $criteria=array('user_id' => $this->_user['id']);
-      $data = $this->Upload->findAll($criteria, NULL, "Upload.modified DESC", 15);
-      $this->set('uploads', $data);
+      $this->set('uploads', $this->Upload->findAllUploadsForUserId($this->_user['id']));
 
     }
 
     function index()
     {
+        // We are dealing with a J2ME client here
         if ($this->nbClient) {
 
-            // We are dealing with a J2ME client here
-            if (array_key_exists('limit',$_POST)) {
-                $limit = $_POST['limit'];
-            } else {
-                // @todo this should have a (smaller) cap on it to avoid a DOS
-                $limit = 100000;
-            }
-            if (array_key_exists('start',$_POST)) {
-                $start = $_POST['start'];
-            } else {
-                $start = 0;
-            }
+            $_options = array();
+
+            if (array_key_exists('limit',$_POST)) { $_options['limit'] = $_POST['limit']; }
+            if (array_key_exists('start',$_POST)) { $_options['start'] = $_POST['start']; }
             
-            $criteria=array('user_id' => $this->_user['id']);
-            $data = $this->Upload->findAll($criteria, NULL, 'Upload.modified DESC', $limit, $start, 3);
+            $data = $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options);
+
             $count = 0;
             foreach ($data as $row) {
-                if (empty($row['File'][0]['preview_name'])) {
-                    $data[$count]['preview'] = '';
-                } else {
-                    $preview_data = file_get_contents (UPLOAD_DIR."/{$this->_user['id']}/previews/{$row['File'][0]['preview_name']}");
+                if (!empty($row['File']['preview_name']) && file_exists(UPLOAD_DIR."/{$this->_user['id']}/previews/{$row['File']['preview_name']}")) {
+                    $preview_data = file_get_contents (UPLOAD_DIR."/{$this->_user['id']}/previews/{$row['File']['preview_name']}");
                     $data[$count]['preview'] = base64_encode($preview_data);
-                }
-                
-                if (array_key_exists(0,$row['Contentsource'])) {
-                    $data[$count]['type'] = $row['Contentsource'][0]['Contentsourcetype']['name'];
                 } else {
-                    $data[$count]['type'] = $row['File'][0]['type'];
+                    $data[$count]['preview'] = '';
                 }
                 
-                $count = $count + 1;
+                // left joins bring back null rows
+                if (array_key_exists('id',$row['Contentsource']) && !empty($row['Contentsource']['id'])) {
+                    $data[$count]['type'] = $row['Contentsourcetype']['name'];
+                } else {
+                    $data[$count]['type'] = $row['File']['type'];
+                }
+                
+                $count++;
             }
             
             $this->set('uploads', $data);

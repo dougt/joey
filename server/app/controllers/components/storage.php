@@ -83,7 +83,7 @@ class StorageComponent extends Object
 
     function hasAvailableSpace($userid, $additional) {
       
-      $totalused = $this->controller->File->totalSpaceUsed($userid);
+      $totalused = $this->controller->User->totalSpaceUsedByUserId($userid);
 
       // $additional and $totalused is in bytes, MAX_DISK_USAGE is in MB
       if ( ($additional + $totalused) > (MAX_DISK_USAGE * 1024 * 1024)) {
@@ -93,43 +93,24 @@ class StorageComponent extends Object
       return true;
     }
 
-
     /**
-     * Given a file id, this will update the file from it's associated content
-     * source.  (Obviously, this only works if there is a contentsource for the
-     * upload).
-     *
-     * @param int ID of the Upload that is associated with the file to update
-     * @return boolean true on success, false on failure
+     * @return mixed true on success, false on failure
      */
-    function updateFileByUploadId($id, $forceUpdate)
-    {
-      $_upload = $this->controller->Upload->FindById($id);
+    function createFileForUploadId($id, $type) {
 
-      $_owner = $this->controller->Upload->findOwnerDataFromUploadId($id);
-
-      // There is a small chance this could be an empty array
-      if (empty($_owner)) { return false; }
-
-      if (empty($_upload['File']))
-      {
-        // Create a unique file for our new upload
-
-        $_contentsourcetype = $this->controller->Contentsourcetype->FindById($_upload['Contentsource'][0]['contentsourcetype_id']);
-        $type = $_contentsourcetype['Contentsourcetype']['name'];
-
-        // $_filename = $this->uniqueFilenameForUserType($_upload['Upload']['user_id'], $type);
-        $rand = uniqid();
-        $_filename = UPLOAD_DIR."/{$_owner['User']['id']}/"."joey-".$rand.".".$this->suffix[$type];
+        if (!is_numeric($id)) { return false; }
+        if (empty($type))     { return false; }
 
         $rand = uniqid();
-        $_previewname = UPLOAD_DIR."/{$_owner['User']['id']}/previews/"."joey-".$rand.".png";
+
+        $_filename    = "joey-{$rand}.{$this->suffix[$type]}";
+        $_previewname = "joey-{$rand}.png";
         
         $_file = new File();
-        $_file->set('name', basename($_filename));
         $_file->set('upload_id', $id);
+        $_file->set('name', basename($_filename));
         $_file->set('size', 0);
-        $_file->set('type', "text/html");
+        $_file->set('type', "text/html"); //@todo dougt: why is this text/html?
         $_file->set('preview_name', basename($_previewname));
         $_file->set('preview_type', "image/png");
         $_file->set('preview_size', 0);
@@ -137,14 +118,41 @@ class StorageComponent extends Object
         if (!$_file->save()) {
           return false;
         }
+
+        return $_file->getLastInsertId();
+    }
+
+
+    /**
+     * Given a file id, this will update the file from it's associated content
+     * source.  (Obviously, this only works if there is a contentsource for the
+     * upload).
+     *
+     * @param int ID of the Upload that is associated with the file to update
+     * @return mixed true on success, false on failure
+     */
+    function updateFileByUploadId($id, $forceUpdate)
+    {
+      $_upload = $this->controller->Upload->FindById($id);
+
+      if (empty($_upload['File']))
+      {
+          if ($this->createFileForUploadId($id) == false) {
+              return false;
+          }
           
-        // this not should not fail since we just saved it.  Since this is the same
-        // query that we did at the beginning, the built in cake-cache will give us
-        // the same results unless we temporarily disable the cache.
-        $this->controller->Upload->cacheQueries = false;
-        $_upload = $this->controller->Upload->FindById($id);
-        $this->controller->Upload->cacheQueries = true;
+          // this not should not fail since we just saved it.  Since this is the same
+          // query that we did at the beginning, the built in cake-cache will give us
+          // the same results unless we temporarily disable the cache.
+          $this->controller->Upload->cacheQueries = false;
+          $_upload = $this->controller->Upload->FindById($id);
+          $this->controller->Upload->cacheQueries = true;
       }
+
+      $_owner = $this->controller->Upload->findOwnerDataFromUploadId($id);
+
+      // There is a small chance this could be an empty array
+      if (empty($_owner)) { return false; }
       
       // check to see if we should do anything
       if ($forceUpdate == false) 
@@ -171,7 +179,7 @@ class StorageComponent extends Object
           // info back than we need.
           $_contentsourcetype = $this->controller->Contentsourcetype->FindById($_upload['Contentsource'][0]['contentsourcetype_id']);
 
-            // Depending on the type, update the file
+          // Depending on the type, update the file
           switch ($_contentsourcetype['Contentsourcetype']['name']) {
 
               case 'rss-source/text':
@@ -358,66 +366,66 @@ class StorageComponent extends Object
         if (!is_dir(UPLOAD_DIR."/{$userid}")) {
             return null;
         }
+        if (!array_key_exists($type, $this->suffix)) {
+            return null;
+        }
         
         $_ret = array ('default_name' => '', 'default_type' => '', 'original_name' => '', 'original_type' => '', 'preview_name' => '', 'preview_type' => '');
         
         $rand = uniqid();
-        if (array_key_exists($type, $this->suffix)) {
-          if (strcasecmp($type, 'video/flv') == 0) {
-            
+
+        if (strcasecmp($type, 'video/flv') == 0) {
+
             $_ret['original_name'] = UPLOAD_DIR."/{$userid}/originals/"."joey-".$rand.".".$this->suffix[$type];
             $_ret['original_type'] = $type;
             $_ret['default_name'] = UPLOAD_DIR."/{$userid}/"."joey-".$rand.".3gp";
             $_ret['default_type'] = "video/3gpp";
             $_ret['preview_name'] = UPLOAD_DIR."/{$userid}/previews/"."joey-".$rand.".png";
             $_ret['preview_type'] = "image/png";
-            
+
             if (!move_uploaded_file($tmpfilename, $_ret['original_name'])) {
-              return null;
+                return null;
             }
-            
-            if (!$this->transcodeVideo ($_ret['original_name'], $_ret['default_name'], $_ret['preview_name'], $width, $height)) {
-              return null;
+
+            if (!$this->transcodeVideo($_ret['original_name'], $_ret['default_name'], $_ret['preview_name'], $width, $height)) {
+                return null;
             }
-            
+
             return $_ret;
-          
-          } else if (strcasecmp($type, 'image/png') == 0 ||
-                     strcasecmp($type, 'image/jpeg') == 0 ||
-                     strcasecmp($type, 'image/tiff') == 0 ||
-                     strcasecmp($type, 'image/bmp') == 0 ||
-                     strcasecmp($type, 'image/gif') == 0) {
-            
+
+        } else if (strcasecmp($type, 'image/png') == 0 ||
+                strcasecmp($type, 'image/jpeg') == 0 ||
+                strcasecmp($type, 'image/tiff') == 0 ||
+                strcasecmp($type, 'image/bmp') == 0 ||
+                strcasecmp($type, 'image/gif') == 0) {
+
             $_ret['original_name'] = UPLOAD_DIR."/{$userid}/originals/"."joey-".$rand.".".$this->suffix[$type];
             $_ret['original_type'] = $type;
             $_ret['default_name'] = UPLOAD_DIR."/{$userid}/"."joey-".$rand.".png";
             $_ret['default_type'] = "image/png";
             $_ret['preview_name'] = UPLOAD_DIR."/{$userid}/previews/"."joey-".$rand.".png";
             $_ret['preview_type'] = "image/png";
-            
+
             if (!move_uploaded_file($tmpfilename, $_ret['original_name'])) {
-              return null;
+                return null;
             }
-            
+
             if (!$this->transcodeImage($_ret['original_name'], $_ret['default_name'], $_ret['preview_name'], $width, $height)) {
-              return null;
+                return null;
             }
-            
+
             return $_ret;
-            
-          } else {
-            
+
+        } else {
+
             $_ret['default_name'] = UPLOAD_DIR."/{$userid}/"."joey-".$rand.".".$this->suffix[$type];
             $_ret['default_type'] = $type;
-            
+
             if (!move_uploaded_file($tmpfilename, $_ret['default_name'])) {
-              return null;
+                return null;
             }
-            
+
             return $_ret;
-          }
-        } else {
-          return null;
         }
   }
 

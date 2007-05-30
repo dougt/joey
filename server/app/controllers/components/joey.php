@@ -12,7 +12,6 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * The Original Code is Kubla CMS
  *
  * The Initial Developer of the Original Code is
  * The Mozilla Foundation.
@@ -20,7 +19,7 @@
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
- *   Wil Clouser <clouserw@mozilla.com> (Original Author)
+ *   Wil Clouser <clouserw@mozilla.com>
  *
  * Alternatively, the contents of this file may be used under the terms of
  * either the GNU General Public License Version 2 or later (the "GPL"), or
@@ -36,27 +35,50 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-class Contentsource extends AppModel
+
+/**
+ * A "misc" component
+ */
+class JoeyComponent extends Object
 {
-    var $name = 'Contentsource';
 
-    var $belongsTo = array(
-                        'File' =>
-                           array('className'  => 'File',
-                                 'conditions' => '',
-                                 'order'      => ''
-                                ),
-                        'Contentsourcetype' =>
-                           array('className'  => 'Contentsourcetype',
-                                 'conditions' => '',
-                                 'order'      => ''
-                                )
-                          );
+    /**
+     * Save a reference to the controller on startup
+     * @param object &$controller the controller using this component
+     */
+    function startup(&$controller) {
+        $this->controller =& $controller;
+    }
 
-    var $validate = array(
-                            'source'               => VALID_NOT_EMPTY,
-                            'contentsourcetype_id' => VALID_NOT_EMPTY
-                         );
 
+    /**
+     * Pretty much stolen from cake's NumberHelper, but we need to use it in a
+     * controller instead of a view
+     */
+    function bytesToReadableSize($size) {
+        switch($size)
+        {
+            case 0:
+                return '0 Bytes';
+
+            case 1: 
+                return '1 Byte';
+
+            case $size < 1024: 
+                return $size . ' Bytes';
+
+            case $size < 1024 * 1024: 
+                return sprintf("%01.3f", $size / 1024, 0) . ' KB';
+
+            case $size < 1024 * 1024 * 1024: 
+                return sprintf("%01.3f", $size / 1024 / 1024) . ' MB';
+
+            case $size < 1024 * 1024 * 1024 * 1024: 
+                return sprintf("%01.3f", $size / 1024 / 1024 / 1024) . ' GB';
+
+            case $size < 1024 * 1024 * 1024 * 1024 * 1024:
+                return sprintf("%01.3f", $size / 1024 / 1024 / 1024 / 1024) . ' TB';
+        }
+    }
 }
 ?>

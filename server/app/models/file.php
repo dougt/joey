@@ -40,12 +40,19 @@ class File extends AppModel
 {
     var $name = 'File';
 
-    var $belongsTo = array('Upload' =>
+    var $belongsTo = array(
+                           'Upload' =>
                            array('className'  => 'Upload',
                                  'conditions' => '',
                                  'order'      => ''
                                 )
-                          );
+    );
+    var $hasMany = array('Contentsource' =>
+                           array('className'  => 'Contentsource',
+                                 'conditions' => '',
+                                 'order'      => ''
+                                )
+                        );
 
     /* name and type should not have line feeds.  Bug 375350. */
     var $validate = array(
@@ -83,32 +90,6 @@ class File extends AppModel
 
         return array();
 
-    }
-
-    /**
-     * Check the total space used for a user
-     * @param int user id
-     */
-    function totalSpaceUsed($user_id)
-    {
-        // Just double check
-        if (!is_integer($user_id)) {
-            return 0;
-        }
-
-        $query = "
-            SELECT 
-                sum(files.size+files.original_size+files.preview_size) as `total`
-            FROM 
-                files 
-            WHERE 
-                files.upload_id IN (
-                    SELECT uploads.id FROM uploads WHERE uploads.user_id={$user_id}
-                )";
-
-        $ret = $this->query($query);
-
-        return $ret[0][0]['total'];
     }
 
 }
