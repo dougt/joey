@@ -40,6 +40,7 @@ public class CommunicationController
 	extends Thread
 {
     private int    progressBeforeNotification = 4096;
+    //private String serverURL = "http://dougt.joey-dev.labs.mozilla.com";
 	private String serverURL = "http://joey.labs.mozilla.com";
 	private String cookieStr;
 
@@ -106,6 +107,10 @@ public class CommunicationController
         nr.onStart();
 
         try {
+
+            //#debug info
+            System.out.println("creating connection to: " + this.serverURL + nr.requestURL);
+
             connection = new RedirectHttpConnection(this.serverURL + nr.requestURL);
             
             if (this.cookieStr != null) {
