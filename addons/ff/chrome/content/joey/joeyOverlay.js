@@ -345,6 +345,7 @@ function getMediaCallback(content_type, file)
         
         g_joey_statusUpdateObject.tellStatus("download",null,null,"completed");
         
+        g_joey_content_type = content_type;
         g_joey_file = file;
         uploadDataFromGlobals(false);
         return;
@@ -392,25 +393,27 @@ JoeyStatusUpdateClass.prototype =
         var value; 
         var percentage = parseInt((from/to)*parseInt(this.progressBoxObject.width));
 
+        // account for roundoff error that we have been seeing.
+        if (percentage > 100)
+            percentage = 100;
+        
         if (verb == "upload") {
-
+            
             // value = "Uploading... ("+from+"/"+to+")";
             value = joeyString("uploading") + "(" + percentage + "%)";
-	  }
+        }
         else
         {
             if (from==to)
-
+            {       
                 // this might not be entirely true... basically, at ths point we are waiting to upload...
                 value = joeyString("loggingin"); 
-
+            }
             else {
-
+                
                 // value = "Downloading... ("+from+"/"+to+")";
                 value = joeyString("downloading") + "("+percentage+"%)";
-
-		} 
-
+            } 
         }   
 
         if(verb =="upload") {
