@@ -79,6 +79,10 @@ focused {
 
 .inputScreen {
 	padding: 5;
+
+	background {
+		image: url(joey.png);
+	}
 }
 
 .loginScreen extends inputScreen {
@@ -100,9 +104,11 @@ focused {
 	padding: 1;
 	border-width: 1;
 	layout: expand | center;
+	/*
 	background {
 		color: bgColor;
 	}
+	*/
 }
 
 .uploadItem:hover {
