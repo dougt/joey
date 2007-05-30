@@ -11,7 +11,7 @@ referrer.<?php echo $i;?>=<?php echo $upload['Upload']['referrer'];?>
 
 modified.<?php echo $i;?>=<?php echo $upload['Upload']['modified'];?>
 
-id.<?php echo $i;?>=<?php echo $upload['Upload']['id'];?>
+id.<?php echo $i;?>=<?php echo $upload['File']['id'];?>
  
 type.<?php echo $i;?>=<?php echo $upload['type'];?>
 
