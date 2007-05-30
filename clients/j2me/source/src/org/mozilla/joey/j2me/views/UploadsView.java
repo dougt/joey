@@ -25,7 +25,6 @@
 package org.mozilla.joey.j2me.views;
 
 import de.enough.polish.ui.FramedForm;
-import de.enough.polish.ui.StyleSheet;
 import de.enough.polish.ui.UiAccess;
 import de.enough.polish.util.Locale;
 
