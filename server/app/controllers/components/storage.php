@@ -111,13 +111,19 @@ class StorageComponent extends Object
         $_file->set('name', basename($_filename));
         $_file->set('size', 0);
         $_file->set('type', "text/html"); //@todo dougt: why is this text/html?
-        $_file->set('preview_name', basename($_previewname));
-        $_file->set('preview_type', "image/png");
-        $_file->set('preview_size', 0);
+        //$_file->set('preview_name', basename($_previewname));
+        //$_file->set('preview_type', "image/png");
+        //$_file->set('preview_size', 0);
 
         if (!$_file->save()) {
           return false;
         }
+
+        
+      if ( !touch(UPLOAD_DIR."/{$this->controller->_user['id']}/{$_filename}")) {
+          return false;
+      }
+
 
         return $_file->getLastInsertId();
     }
@@ -133,11 +139,19 @@ class StorageComponent extends Object
      */
     function updateFileByUploadId($id, $forceUpdate)
     {
-      $_upload = $this->controller->Upload->FindById($id);
+
+      $_upload = $this->controller->Upload->FindDataById($id);
+
+      // This Upload doesn't have a contentsource
+      if (empty($_upload['Contentsourcetype']['name'])) {
+
+          return false;
+      }
 
       if (empty($_upload['File']))
       {
-          if ($this->createFileForUploadId($id) == false) {
+
+          if ($this->createFileForUploadId($id, $_upload['Contentsourcetype']['name']) == false) {
               return false;
           }
           
@@ -145,7 +159,7 @@ class StorageComponent extends Object
           // query that we did at the beginning, the built in cake-cache will give us
           // the same results unless we temporarily disable the cache.
           $this->controller->Upload->cacheQueries = false;
-          $_upload = $this->controller->Upload->FindById($id);
+          $_upload = $this->controller->Upload->FindDataById($id);
           $this->controller->Upload->cacheQueries = true;
       }
 
@@ -157,35 +171,26 @@ class StorageComponent extends Object
       // check to see if we should do anything
       if ($forceUpdate == false) 
       {
-        $expiry = strtotime($_upload['File'][0]['modified'] . " + " . CONTENTSOURCE_REFRESH_TIME . " minutes");
+        $expiry = strtotime($_upload['File']['modified'] . " + " . CONTENTSOURCE_REFRESH_TIME . " minutes");
         $nowstamp = strtotime("now");
 
-        //echo "this is the intial: " . date('l dS \o\f F Y h:i:s A', strtotime($_upload['File'][0]['modified'])) . "<p>";        
-        //echo "this is the expiry: " . date('l dS \o\f F Y h:i:s A', $expiry) . "<p>";
-        //echo "this is the now stamp " . date('l dS \o\f F Y h:i:s A', $nowstamp);
-
-        
         if (($expiry == false) || $expiry > $nowstamp)
           return true; //  don't process anything just yet.
       }
 
       // These are the file to operate on:
-      $_filename = UPLOAD_DIR."/{$_owner['User']['id']}/{$_upload['File'][0]['name']}";
-      $_previewname = UPLOAD_DIR."/{$_owner['User']['id']}/previews/{$_upload['File'][0]['preview_name']}";
+      $_filename = UPLOAD_DIR."/{$_owner['User']['id']}/{$_upload['File']['name']}";
+      $_previewname = UPLOAD_DIR."/{$_owner['User']['id']}/previews/{$_upload['File']['preview_name']}";
 
-      if (!empty($_upload['Contentsource'])) {
-          // Lets find out what kind of update this is. if findBy___() had more
-          // recursion, we wouldn't need this extra query, but then we get a lot more
-          // info back than we need.
-          $_contentsourcetype = $this->controller->Contentsourcetype->FindById($_upload['Contentsource'][0]['contentsourcetype_id']);
+      if (!empty($_upload['Contentsource']['source'])) {
 
           // Depending on the type, update the file
-          switch ($_contentsourcetype['Contentsourcetype']['name']) {
+          switch ($_upload['Contentsourcetype']['name']) {
 
               case 'rss-source/text':
 
                 // Go get the rss feed.
-                $rss = fetch_rss( $_upload['Contentsource'][0]['source'] );
+                $rss = fetch_rss( $_upload['Contentsource']['source'] );
                 if (empty($rss)) {
                     return false;
                 }
@@ -212,16 +217,15 @@ class StorageComponent extends Object
                 }
                 
                 // need to update the size and date in the db.
-                $this->controller->File->id = $id;
+                $this->controller->File->id = $_upload['File']['id'];
                 $this->controller->File->saveField('size',filesize($_filename));
-                
                 
                 break;
 
               case 'microsummary/xml':
 
                   $ms = new microsummary();
-                  $ms->load($_upload['Contentsource'][0]['source']);
+                  $ms->load($_upload['Contentsource']['source']);
                   $rv = $ms->execute($_upload['Upload']['referrer'], true);
                   
                   if ($rv == 2)
@@ -234,14 +238,14 @@ class StorageComponent extends Object
 
                     // save in db:
 
-                    $this->controller->Contentsource->id = $_upload['Contentsource'][0]['id'];
+                    $this->controller->Contentsource->id = $_upload['Contentsource']['id'];
                     $this->controller->Contentsource->saveField('source', $updated_source);
 
                   }
 
                   if (empty($ms->result)) {
                       $ms->result = "XPATH is broken..  this feature doesn't work for the content you have selected. ";
-                      $this->log("Microsummary ". $_upload['Contentsource'][0]['id'] . "does not have an xpath result");
+                      $this->log("Microsummary ". $_upload['Contentsource']['id'] . "does not have an xpath result");
                   }
 
                   // does the user have enough space to proceed
@@ -258,7 +262,7 @@ class StorageComponent extends Object
                   }
 
                   // need to update the size and date in the db.
-                  $this->controller->File->id = $id;
+                  $this->controller->File->id = $_upload['File']['id'];
                   $this->controller->File->saveField('size',filesize($_filename));
 
                   break;
@@ -267,7 +271,7 @@ class StorageComponent extends Object
               case 'widget/joey':
 
                     $jw = new joeywidget();
-                    $jw->load($_upload['Contentsource'][0]['source']);
+                    $jw->load($_upload['Contentsource']['source']);
                     
                     //@todo check for available space
 
@@ -282,7 +286,7 @@ class StorageComponent extends Object
                     }
                     
                     // need to update the size and date in the db.
-                    $this->controller->File->id = $id;
+                    $this->controller->File->id = $_upload['File']['id'];
                     $this->controller->File->saveField('size',filesize($_filename));
                     $this->controller->File->saveField('preview_size',filesize($_filename));
 

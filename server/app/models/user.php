@@ -74,15 +74,15 @@ class User extends AppModel
     function totalSpaceUsedByUserId($user_id)
     {
         // Just double check
-        if (!ctype_digit($user_id)) {
+        if (!is_numeric($user_id)) {
             return 0;
         }
 
         $query = "SELECT sum(files.size+files.original_size+files.preview_size) as `total`
                     FROM files 
-                    JOIN uploads ON files.id = uploads.file_id
+                    JOIN uploads ON files.upload_id = uploads.id
                     JOIN uploads_users ON uploads.id = uploads_users.upload_id
-                    WHERE uploads_users.user_id = {$user_id}";
+                    WHERE uploads_users.user_id = '{$user_id}'";
 
         $ret = $this->query($query);
 

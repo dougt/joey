@@ -27,26 +27,26 @@ You have no uploads yet.
     <div>
     <div class="joey-upload-preview">
 
-        <?php if (array_key_exists(0,$upload['File'])) : ?>
+        <?php if (!empty($upload['File']['name'])) : ?>
             <?php 
-                if (!empty($upload['File'][0]['preview_name'])) :
+                if (!empty($upload['File']['preview_name'])) :
                 
-                    echo $html->link( '<img src="'.$html->url("/files/view/{$upload['File'][0]['id']}/preview").'" alt="Upload Preview" />', "/files/view/{$upload['File'][0]['id']}",false,false,false );
+                    echo $html->link( '<img src="'.$html->url("/files/view/{$upload['File']['id']}/preview").'" alt="Upload Preview" />', "/files/view/{$upload['File']['id']}",false,false,false );
 
-                elseif (!empty($upload['Contentsource'][0]['id']) || empty($upload['File'][0]['preview_name'])) : 
+                elseif (!empty($upload['Contentsource']['id']) || empty($upload['File']['preview_name'])) : 
             ?>
 
                      <iframe width="<?php echo $upload_preview_width?> "
                              height="<?php echo $upload_preview_height?>"
                              scrolling="auto"
                              frameborder="1"
-                             src="<?php echo "/files/view/" . $upload['File'][0]['id']?>>"
+                             src="<?php echo "/files/view/" . $upload['File']['id']?>>"
                       </iframe>
 
             <?php 
                 else :
 
-                    echo $html->link($html->image('na.png'), "/files/view/{$upload['File'][0]['id']}", false, false, false);
+                    echo $html->link($html->image('na.png'), "/files/view/{$upload['File']['id']}", false, false, false);
 
                 endif; 
             ?>
@@ -57,12 +57,12 @@ You have no uploads yet.
     </div>
 
     <div>
-    <h3><?php echo $html->link( $upload['title'], $upload['referrer']) ?></h3>
+    <h3><?php echo $html->link( $upload['Upload']['title'], $upload['Upload']['referrer']) ?></h3>
     <ul>
-        <li>Size:  <?php echo $number->toReadableSize($upload['File'][0]['size']); ?></li>
-        <li>Uploaded <?php echo $time->niceShort($upload['created']); ?></li>
-        <li><?php echo $html->link( "Original", "/files/view/" . $upload['File'][0]['id'] . "/original") ?></li>
-        <li><?php echo $html->link( "Delete", "/uploads/delete/" . $upload['id']) ?></li>
+        <li>Size:  <?php echo $number->toReadableSize($upload['File']['size']); ?></li>
+        <li>Uploaded <?php echo $time->niceShort($upload['Upload']['created']); ?></li>
+        <li><?php echo $html->link( "Original", "/files/view/" . $upload['File']['id'] . "/original") ?></li>
+        <li><?php echo $html->link( "Delete", "/uploads/delete/" . $upload['Upload']['id']) ?></li>
     </ul>
     </div>
         

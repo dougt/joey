@@ -205,7 +205,7 @@ class UploadsController extends AppController
                     } else {
                         $this->Contentsource->invalidate('name');
                     }
-                } else {
+                } else if(!empty($this->data['Contentsourcetype']['id'])) {
                     // As it turns out, we need the type as a string too
                     $_contentsource = $this->Contentsourcetype->findById($this->data['Contentsourcetype']['id'], array('name'), null, 0);
                     $this->data['Contentsourcetype']['name'] = $_contentsource['Contentsourcetype']['name'];
@@ -434,28 +434,33 @@ class UploadsController extends AppController
             header("X-joey-status: 200");
         } else {
             // Render a page for the browser client
-            
+
             $this->pageTitle = 'Uploads';
 
             $criteria = array(
                                 'User.id' => $this->_user['id']
                              );
 
-            $options = array(
+            $_pagination_options = array(
                                 'direction' => 'DESC',
                                 'sortBy'    => 'id',
                                 'total'     => $this->Upload->User->findCount($criteria,0)
                             );
 
-            list(,$limit,$page) = $this->Pagination->init($criteria, array(), $options);
+            list(,$limit,$page) = $this->Pagination->init($criteria, array(), $_pagination_options);
 
-            $data = $this->Upload->User->findAll($criteria, null, null, $limit, $page, 2);
+            // @todo need to calculate $start
+            $options = array( 'limit' => $limit );
 
-            $this->set('uploads', $data[0]['Upload']);
+            $data = $this->Upload->findAllUploadsForUserId($this->_user['id'], $options);
+
+            $this->set('uploads', $data);
+
+            $_phone = $this->Phone->findById($this->_user['phone_id'], null, null, 0);
 
             // Get desired width and height for the transcoded media file
-            $_width = intval ($data[0]['Phone']['screen_width']);
-            $_height = intval ($data[0]['Phone']['screen_height']);
+            $_width = intval($_phone['Phone']['screen_width']);
+            $_height = intval($_phone['Phone']['screen_height']);
 
             //@todo fix data?
             if ($_width < 1 || $_height < 1)
