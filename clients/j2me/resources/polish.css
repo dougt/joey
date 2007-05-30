@@ -50,6 +50,14 @@ colors {
 	uploadBgColorFocused: red;
 
 	bgColorCommands: gray;
+
+	fontColor: black;
+	screenColorTop1: black;
+	screenColorBottom1: black;
+	screenColorTop2: yellow;
+	screenColorBottom2: yellow;
+	focusedBackgroundColor: white;
+	focusedBorderColor: black;
 }
 
 /*
@@ -181,21 +189,72 @@ focused {
 }
 
 menu {
-	margin-left: 2;
+	margin-left: 4;
+	margin-right: 4;
+	margin-bottom: -4; /* for the border */
+	min-width: 100;
 	padding: 2;
-	background {
-		type: round-rect;
-		color: white;
-		border-width: 2;
-		border-color: yellow;
+	font-color: textColorInputFocused;
+	font-size: small;
+	view-type: slide-up;
+	background-color: yellow;
+
+	border {
+		type: drop-shadow;
+		width: 4;
+		start-color: #aeee;
+		end-color: #2222;
+		orientation: top-right;
 	}
-	focused-style: .menuentryFocused;
-	menubar-color: darkpink;
-	font-color: white;
-	font-style: bold;
+
+	/*
+	background {
+		type: horizontal-stripes;
+		first-top-color: screenColorTop1;
+		first-bottom-color: screenColorBottom1;
+		second-top-color: screenColorTop2;
+		second-bottom-color: screenColorBottom2;
+	}
+	*/
 }
 
-.menuentry {
+menuItem {
+        padding: 3;
+        padding-left: 10;
+        padding-right: 10;
+        font {
+                color: fontColor;
+                size: small;
+                style: bold;
+        }
+        layout: left;
+        //#if ${ exists( arrowRight.png ) }
+                command-child-indicator: url(arrowRight.png);
+        //#else
+                command-child-indicator-color: blue;
+                command-child-indicator-width: 8;
+                command-child-indicator-height: 10;
+        //#endif
+}
+
+.menuItem:hover {
+        padding: 2;
+        padding-left: 9;
+        padding-right: 9;
+        background {
+                type: round-rect;
+                color: focusedBackgroundColor;
+                border-color: focusedBorderColor;
+        }
+        font {
+                style: bold;
+                size: small;
+                color: textColorInputFocused;
+        }
+        layout: left | horizontal-expand;
+}
+
+.mainmenuentry {
 	margin-top: 2;
 	padding: 2;
 	padding-left: 5;
@@ -207,7 +266,7 @@ menu {
 	}
 }
 
-.menuentry:hover {
+.mainmenuentry:hover {
 	background-color: bgColorFocused;
 	font-color: white;
 }
