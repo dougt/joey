@@ -48,6 +48,8 @@ colors {
 
 	uploadBgColor: white;
 	uploadBgColorFocused: red;
+
+	bgColorCommands: gray;
 }
 
 /*
@@ -231,4 +233,28 @@ alertWait {
 
 .button:hover {
 	background: buttonFocusedBackground;
+}
+
+.commandsarea {
+	background-color: bgColorCommands;
+	/*
+	layout: right;
+	layout: center;
+	*/
+
+	view-type: horizontal-choice;
+	horizontalview-roundtrip: true;
+    horizontalview-arrow-position: none;
+}
+
+.commandsarea:hover {
+	background-color: bgColorCommands;
+}
+
+.commandsitem {
+	background-color: bgColorCommands;
+}
+
+.commandsitem:hover {
+	background-color: red;
 }
