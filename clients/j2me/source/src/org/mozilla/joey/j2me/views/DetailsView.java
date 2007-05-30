@@ -72,7 +72,8 @@ public class DetailsView
         append(item);
 
         if (this.upload.getMimetype().equals("text/plain") ||
-            this.upload.getMimetype().equals("microsummary/xml"))
+            this.upload.getMimetype().equals("microsummary/xml") ||
+            this.upload.getMimetype().equals("rss-source/text")  )
         {
             item = new StringItem(null, new String(this.upload.getData()));
             append(item);
@@ -89,7 +90,21 @@ public class DetailsView
             append(item);
         }
 //#if polish.api.mmapi
-        else if (this.upload.getMimetype().equals("video/3gp"))
+        else if (this.upload.getMimetype().equals("audio/mpeg"))
+        {
+        	try {
+                Player player;
+                player = Manager.createPlayer(new ByteArrayInputStream(this.upload.getData()), "audio/mpeg");
+                player.realize();
+                player.prefetch();
+                player.start();
+            }
+            catch(Throwable t) {
+                System.out.println("assertion: " + t);
+            }
+
+        }
+        else if (this.upload.getMimetype().equals("video/3gpp"))
         {
         	try {
             	VideoControl vc;
@@ -97,7 +112,7 @@ public class DetailsView
 
                 // create a player instance
                 player = Manager.createPlayer(new ByteArrayInputStream(this.upload.getData()), "video/3gpp");
-//                player.addPlayerListener(this);
+
                 // realize the player
                 player.realize();
                 vc = (VideoControl)player.getControl("VideoControl");
@@ -126,6 +141,11 @@ public class DetailsView
                 t.printStackTrace();
                 System.out.println("assertion: " + t);
             }
+        }
+        else
+        {
+            item = new StringItem(null, "Mime type not supported yet (" + this.upload.getMimetype() + ")");
+            append(item);
         }
 	}
 }
