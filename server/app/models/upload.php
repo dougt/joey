@@ -102,6 +102,7 @@ class Upload extends AppModel
 
         $_limit = array_key_exists('limit', $options) ? $options['limit'] : null;
         $_start = array_key_exists('start', $options) ? $options['start'] : null;
+        $_types = array_key_exists('types', $options) ? $options['types'] : null;
 
         $_query = "
             SELECT * FROM 
@@ -112,6 +113,21 @@ class Upload extends AppModel
             LEFT JOIN contentsourcetypes as Contentsourcetype ON Contentsource.contentsourcetype_id = Contentsourcetype.id
             WHERE uploads_users.user_id = {$id}
         ";
+
+        if ($_types != null) {
+
+            $_query .= "AND";
+
+            $i = 0;
+            while (isset ($_types[$i])) {
+
+              if ($i > 0)
+                $_query .= " OR ";
+
+              $_query .= " File.type = '" . $_types[$i] . "'";
+              $i++;
+            }
+        }
 
         if (is_numeric($_limit) && is_numeric($_start)) {
             $_query .= " LIMIT $_start, $_limit";

@@ -49,6 +49,17 @@ class UploadsController extends AppController
 
     var $helpers = array('Number','Time', 'Pagination');
 
+    // maybe move this to the storage component or into a table
+    var $filetypes = array (
+                            "videos"           => array("video/3gpp", "video/flv", "video/mpeg", "video/avi", "video/quicktime"),
+                            "audio"            => array("audio/x-wav", "audio/mpeg", "audio/mid"),
+                            "images"           => array("image/png", "image/jpeg", "image/gif", "image/tiff", "image/bmp"),
+                            "rss"              => array("rss-source/text"),
+                            "text"             => array("text/plain"),
+                            "microsummaries"   => array("microsummary/xml"),
+                            "widgets"          => array("widget/joey"),
+                            );
+
     /**
      * Set in beforeFilter().  Will hold the session user data.
      */
@@ -406,10 +417,18 @@ class UploadsController extends AppController
             if (array_key_exists('limit',$_POST)) { $_options['limit'] = $_POST['limit']; }
             if (array_key_exists('start',$_POST)) { $_options['start'] = $_POST['start']; }
             
-            $data = $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options);
 
+            if (array_key_exists('type',$_POST))
+            {
+              //@todo verify type
+              $_options['types'] = $this->filetypes[ $_POST['type'] ];
+            }
+
+            $data = $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options);
+            
             $count = 0;
             foreach ($data as $row) {
+
                 if (!empty($row['File']['preview_name']) && file_exists(UPLOAD_DIR."/{$this->_user['id']}/previews/{$row['File']['preview_name']}")) {
                     $preview_data = file_get_contents (UPLOAD_DIR."/{$this->_user['id']}/previews/{$row['File']['preview_name']}");
                     $data[$count]['preview'] = base64_encode($preview_data);
