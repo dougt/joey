@@ -206,16 +206,6 @@ menu {
 		end-color: #2222;
 		orientation: top-right;
 	}
-
-	/*
-	background {
-		type: horizontal-stripes;
-		first-top-color: screenColorTop1;
-		first-bottom-color: screenColorBottom1;
-		second-top-color: screenColorTop2;
-		second-bottom-color: screenColorBottom2;
-	}
-	*/
 }
 
 menuItem {
