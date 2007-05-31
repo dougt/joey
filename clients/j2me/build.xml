@@ -261,6 +261,7 @@
 		fork="true"
 	>
 		<jvmarg value="-XX:MaxPermSize=512m" />
+		<jvmarg value="-Xmx128m" />
 	</java>
 </target>
 
