@@ -447,6 +447,7 @@ public class JoeyController
 
 	private void doSnapshot()
 	{
+//#if polish.api.mmapi
 		int event;
 		SnapshotScreen view = (SnapshotScreen) showView(VIEW_SNAPSHOT);
 		
@@ -482,6 +483,8 @@ public class JoeyController
 					break;
 			}
 		} while (event != EVENT_BACK);
+
+        //#endif
 	}
 	
 	private void doPreferences()
