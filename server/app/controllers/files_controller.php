@@ -76,6 +76,14 @@ class FilesController extends AppController
         // The content-type for this is hardcoded below (to .png)
         $this->fallback_image = WWW_ROOT.'img'.DS.'na.png';
     }
+    
+    function delete($id)
+    {
+      $_item = $this->File->findById($id);
+      
+      $this->redirect('/uploads/delete/'.$_item['Upload']['id']);
+      exit();
+    }
 
     function view($id)
     {
