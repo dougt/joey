@@ -27,7 +27,9 @@ package org.mozilla.joey.j2me;
 public class LoginNetworkRequest
     extends NetworkRequest
 {
-    public LoginNetworkRequest(UserData userData)
+	private boolean sendSuccessNotification;
+
+    public LoginNetworkRequest(UserData userData, boolean sendSuccessNotification)
     {
         StringBuffer sb = new StringBuffer();
 		sb.append("rest=1&data[User][username]=");
@@ -38,5 +40,11 @@ public class LoginNetworkRequest
         this.requestURL = "/users/login";
         this.contenttype = "application/x-www-form-urlencoded";
         this.postdata = sb.toString();
+        this.sendSuccessNotification = sendSuccessNotification;
+    }
+
+    public boolean sendSuccessNotification()
+    {
+    	return this.sendSuccessNotification;
     }
 }

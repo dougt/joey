@@ -26,7 +26,6 @@ package org.mozilla.joey.j2me;
 
 import de.enough.polish.event.ThreadedCommandListener;
 import de.enough.polish.io.RmsStorage;
-import de.enough.polish.ui.UiAccess;
 import de.enough.polish.util.Locale;
 
 import javax.microedition.lcdui.Alert;
@@ -56,8 +55,22 @@ import java.util.Date;
 import java.util.Vector;
 
 public class JoeyController
+	extends Thread
 	implements CommandListener, ItemCommandListener, ResponseHandler
 {
+	public static final int EVENT_NONE = 0;
+	public static final int EVENT_NO = 1;
+	public static final int EVENT_YES = 2;
+	public static final int EVENT_CANCEL = 3;
+	public static final int EVENT_OK = 4;
+	public static final int EVENT_BACK = 5;
+	public static final int EVENT_EXIT = 6;
+	public static final int EVENT_SELECT = 7;
+	public static final int EVENT_DELETE = 8;
+
+	public static final int EVENT_NETWORK_REQUEST_SUCCESSFUL = 100;
+	public static final int EVENT_NETWORK_REQUEST_FAILED = 101;
+
 	private static final int VIEW_LOGIN = 1;
 	private static final int VIEW_MAINMENU = 2;
 	private static final int VIEW_PREFERENCES = 3;
@@ -84,14 +97,12 @@ public class JoeyController
 
 	private static final String RMS_USERDATA = "userdata";
 
-	private int prevViewId;
-	private int currentViewId;
+	private int nextEvent = EVENT_NONE;
 	private Displayable currentView;
 	private MIDlet midlet;
 	private Display display;
 	private UserData userdata;
 	private Vector uploads;
-	private Upload focusedUpload;
 	private RmsStorage storage;
 	private CommandListener commandListener;
 	private CommunicationController commController;
@@ -120,17 +131,11 @@ public class JoeyController
 		this.commController.start();
 	}
 	
-	public void startApp()
+	private Displayable showView(int viewId)
 	{
-		showView(VIEW_LOGIN);
-	}
-
-	private void showView(int viewId)
-	{
-		this.prevViewId = this.currentViewId;
-		this.currentViewId = viewId;
 		this.currentView = getView(viewId);
 		this.display.setCurrent(this.currentView);
+		return this.currentView;
 	}
 
 	private Displayable getView(int viewId)
@@ -177,7 +182,7 @@ public class JoeyController
 			return view;
 
         case VIEW_DETAILS:
-            view = new DetailsView(this.focusedUpload);
+            view = new DetailsView();
             view.addCommand(CMD_BACK);
 			view.addCommand(CMD_DELETE);
             view.setCommandListener(this.commandListener);
@@ -221,231 +226,63 @@ public class JoeyController
 			return null;
 		}
 	}
-	
-	private void processCommand(Command command, Displayable displayable, Item item)
-	{
-		boolean handled = false;
-		
-		if (command == CMD_EXIT) {
-			showView(ALERT_EXIT_CONFIRMATION);
-			return;
-		}
-
-		switch (this.currentViewId)
-		{
-		case VIEW_MAINMENU:
-			handled = processCommandMainMenu(command);
-			break;
-
-		case VIEW_LOGIN:
-			handled = processCommandLogin(command);
-			break;
-
-		case VIEW_SNAPSHOT:
-			handled = processCommandSnapshot(command);
-			break;
-			
-		case VIEW_UPLOADS:
-		case ALERT_UPLOADS_DELETE_CONFIRMATION:
-			handled = processCommandUploads(command, item);
-			break;
-
-		case VIEW_PREFERENCES:
-			handled = processCommandPreferences(command);
-			break;
-            
-        case VIEW_DETAILS:
-            handled = processCommandDetails(command, item);
-            break;
-
-		case ALERT_EXIT_CONFIRMATION:
-			handled = processCommandAlertExitConfirmation(command);
-			break;
-
-		case ALERT_LOGIN_ERROR:
-			showView(VIEW_LOGIN);
-			handled = true;
-			break;
-			
-		default:
-			//#debug error
-			System.out.println("Unknown view: " + this.currentViewId);
-			break;
-		}
-		
-		if (! handled) {
-			System.err.println("Command [ " + command + " ] not handled for view [ " + this.currentView + " ]");
-		}
-	}
-
-	private boolean processCommandSnapshot(Command command)
-	{
-		if (command == CMD_BACK) {
-			showView(VIEW_MAINMENU);
-			return true;
-		}
-
-//#if polish.api.mmapi
-		SnapshotScreen view = (SnapshotScreen) this.currentView;
-
-		if (command == CMD_SNAPSHOT) {
-			try
-			{
-				// TODO: Choose the best encoding instead of using the first.
-				String[] encodings = SnapshotScreen.getSnapshotEncodings();
-				byte[] image = view.getSnapshot(encodings[0]);
-
-				// TODO: Is this the correct format for time? Is this correct for all locales? 
-				String modified = new Date().toString();
-				Upload upload = new Upload("image/jpeg", image, image, modified);
-				this.uploads.addElement(upload);
-                this.commController.add(upload, this);
-			}
-			catch (MediaException e)
-			{
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			return true;
-		}
-//#endif		
-		return false;
-	}
-
-	private boolean processCommandDetails(Command command, Item item)
-	{
-		if (command == CMD_BACK) {
-			showView(VIEW_UPLOADS);
-			return true;
-		}
-		else if (command == CMD_DELETE) {
-			this.focusedUpload = (Upload) UiAccess.getAttribute(item, ATTR_UPLOAD);
-			showView(ALERT_UPLOADS_DELETE_CONFIRMATION);
-			return true;
-		}
-        return false;
-    }
-
-	private boolean processCommandUploads(Command command, Item item)
-	{
-		if (command == CMD_BACK) {
-			showView(VIEW_MAINMENU);
-			return true;
-		}
-		else if (command == CMD_SELECT) {
-			showView(ALERT_WAIT);
-            this.focusedUpload = (Upload) UiAccess.getAttribute(item, ATTR_UPLOAD);
-            this.commController.get(this.focusedUpload.getId(), this);
-			return true;
-		}
-		else if (command == CMD_DELETE) {
-			this.focusedUpload = (Upload) UiAccess.getAttribute(item, ATTR_UPLOAD);
-			showView(ALERT_UPLOADS_DELETE_CONFIRMATION);
-			return true;
-		}
-		else if (command == CMD_YES) {
-			showView(ALERT_WAIT);
-            this.commController.delete(this.focusedUpload.getId(), this);
-            return true;
-		}
-		else if (command == CMD_NO) {
-			this.focusedUpload = null;
-			showView(VIEW_UPLOADS);
-			return true;
-		}
-
-		return false;
-	}
-
-	private boolean processCommandMainMenu(Command command)
-	{
-		if (command == CMD_SELECT) {
-			int index = ((MainMenuView) this.currentView).getCurrentIndex();
-			switch (index) {
-				case 0:
-					showView(ALERT_WAIT);
-					this.commController.getIndex(this.uploads, this);
-					break;
-
-				case 1:
-					showView(VIEW_PREFERENCES);
-					break;
-
-				case 2:
-					showView(VIEW_SNAPSHOT);
-					break;
-
-				default:
-					//#debug fatal
-					System.out.println("invalid menu item: " + index);
-					break;
-			}
-
-			return true;
-		}
-		
-		return false;
-	}
-
-	private boolean processCommandLogin(Command command)
-	{
-		LoginView view = (LoginView) this.currentView;
-
-		if (command == CMD_LOGIN) {
-			view.saveUserData(this.userdata);
-
-			try
-			{
-				this.storage.save(this.userdata, RMS_USERDATA);
-			}
-			catch (IOException e)
-			{
-				//#debug error
-				System.out.println("unable to write userdata to record store");
-				
-				e.printStackTrace();
-			}
-
-			showView(ALERT_WAIT);
-            this.commController.login(this.userdata, this);
-
-			return true;
-		}
-
-		return false;
-	}
-
-	private boolean processCommandPreferences(Command command)
-	{
-		if (command == CMD_BACK) {
-			showView(VIEW_MAINMENU);
-			return true;
-		}
-
-		return false;
-	}
-
-	private boolean processCommandAlertExitConfirmation(Command command)
-	{
-		if (command == CMD_YES) {
-			this.midlet.notifyDestroyed();
-		}
-		else {
-			showView(this.prevViewId);
-		}
-
-		return true;
-	}
 
 	public void commandAction(Command command, Displayable displayable)
 	{
-		processCommand(command, displayable, null);
+		processCommand(command);
 	}
 
 	public void commandAction(Command command, Item item)
 	{
-		processCommand(command, null, item);
+		processCommand(command);
+	}
+	
+	private void processCommand(Command command)
+	{
+		switch (command.getCommandType()) {
+			case Command.EXIT:
+				notifyEvent(EVENT_EXIT);
+				break;
+
+			case Command.BACK:
+				if (command == CMD_NO) {
+					notifyEvent(EVENT_NO);
+				}
+				else {
+					notifyEvent(EVENT_BACK);
+				}
+				break;
+
+			case Command.OK:
+				notifyEvent(EVENT_OK);
+				break;
+
+			case Command.CANCEL:
+				notifyEvent(EVENT_CANCEL);
+				break;
+
+			case Command.SCREEN:
+			case Command.ITEM:
+				if (command == CMD_SELECT) {
+					notifyEvent(EVENT_SELECT);
+				}
+				else if (command == CMD_LOGIN) {
+					notifyEvent(EVENT_SELECT);
+				}
+				else if (command == CMD_YES) {
+					notifyEvent(EVENT_YES);
+				}
+				else {
+					//#debug info
+					System.out.println("Unknown command: " + command.getLabel());
+				}
+				break;
+
+			default:
+				//#debug info
+				System.out.println("Unknown command type: " + command.getCommandType());
+				break;
+		}
 	}
 
 	public void notifyProgress(NetworkRequest request, long current, long total)
@@ -462,54 +299,321 @@ public class JoeyController
 
             // We have been logged out. Retry.
         	this.commController.addNextRequest(request);
-            this.commController.login(this.userdata, this);
+            this.commController.login(this.userdata, this, false);
         }
         else if (request instanceof LoginNetworkRequest)
         {
         	//#debug info
             System.out.println("LoginNetworkRequest request status: " + request.responseCode);
 
-            if (request.responseCode == 200) // Login ok,
-				showView(VIEW_MAINMENU);
-            else
-				showView(ALERT_LOGIN_ERROR);
+            if (request.responseCode == 200) {
+            	if (((LoginNetworkRequest) request).sendSuccessNotification()) {
+            		notifyEvent(EVENT_NETWORK_REQUEST_SUCCESSFUL);
+            	}
+            }
+            else {
+            	notifyEvent(EVENT_NETWORK_REQUEST_FAILED);
+            }
         }
         else if (request instanceof IndexNetworkRequest)
         {
         	//#debug info
             System.out.println("IndexNetworkRequest request status: " + request.responseCode);
 
-            showView(VIEW_UPLOADS);
-            ((UploadsView) this.currentView).update(this,((IndexNetworkRequest) request).uploads);
+            notifyEvent(request.responseCode == 200 ? EVENT_NETWORK_REQUEST_SUCCESSFUL : EVENT_NETWORK_REQUEST_FAILED);
         }
         else if (request instanceof AddNetworkRequest)
         {
         	//#debug info
             System.out.println("AddNetworkRequest request status: " + request.responseCode);
 
-            // TODO: Do something?
+            notifyEvent(request.responseCode == 200 ? EVENT_NETWORK_REQUEST_SUCCESSFUL : EVENT_NETWORK_REQUEST_FAILED);
         }
         else if (request instanceof DeleteNetworkRequest)
         {
         	//#debug info
             System.out.println("DeleteNetworkRequest request status: " + request.responseCode);
 
-            // TODO: ??
-            this.uploads.removeElement(this.focusedUpload);
-			this.focusedUpload = null;
-			showView(VIEW_UPLOADS);
-			((UploadsView) this.currentView).update(this, this.uploads);
+            notifyEvent(request.responseCode == 200 ? EVENT_NETWORK_REQUEST_SUCCESSFUL : EVENT_NETWORK_REQUEST_FAILED);
         }
         else if (request instanceof GetNetworkRequest)
         {
         	//#debug info
             System.out.println("GetNetworkRequest request status: " + request.responseCode);
 
-            if (request.responseCode == 200) // ok
-            {
-                this.focusedUpload.setData(request.data);
-                showView(VIEW_DETAILS);
-            }
+            notifyEvent(request.responseCode == 200 ? EVENT_NETWORK_REQUEST_SUCCESSFUL : EVENT_NETWORK_REQUEST_FAILED);
         }
+	}
+
+	public void run()
+	{
+		int event;
+
+		// Handle application login screen.
+		do {
+			LoginView view = (LoginView) showView(VIEW_LOGIN);
+			
+			event = waitEvent();
+			switch (event) {
+				case EVENT_SELECT:
+					showView(ALERT_WAIT);
+					view.saveUserData(this.userdata);
+
+					try {
+						this.storage.save(this.userdata, RMS_USERDATA);
+					}
+					catch (IOException e) {
+						//#debug error
+						System.out.println("unable to write userdata to record store");
+									
+						e.printStackTrace();
+					}
+
+					// Send login request.
+					this.commController.login(this.userdata, this);
+
+					// Handle events while wait screen is shown.
+					do {
+						event = waitEvent();
+						
+						switch (event) {
+							case EVENT_NETWORK_REQUEST_SUCCESSFUL:
+								break;
+	
+							case EVENT_NETWORK_REQUEST_FAILED:
+								view = (LoginView) showView(VIEW_LOGIN);
+								event = EVENT_NONE;
+								break;
+	
+							default:
+								event = EVENT_NONE;
+								break;
+						}
+					} while (event != EVENT_NETWORK_REQUEST_SUCCESSFUL
+							 && event != EVENT_NETWORK_REQUEST_FAILED);
+					break;
+
+				case EVENT_EXIT:
+					event = doExitConfirmation();
+					break;
+
+				default:
+					event = EVENT_NONE;
+					break;
+			}
+		} while (event != EVENT_NETWORK_REQUEST_SUCCESSFUL
+				 && event != EVENT_EXIT);
+
+		// Handle main menu screen.
+		if (event == EVENT_NETWORK_REQUEST_SUCCESSFUL) {
+			do {
+				MainMenuView mainMenu =
+					(MainMenuView) showView(VIEW_MAINMENU);
+
+				event = waitEvent();
+
+				switch (event) {
+					case EVENT_EXIT:
+						event = doExitConfirmation();
+						break;
+
+					case EVENT_SELECT:
+						switch (mainMenu.getSelectedIndex()) {
+							// Uploads
+							case 0:
+								doUploads();
+								break;
+
+							case 1:
+								doPreferences();
+								break;
+								
+							case 2:
+								doSnapshot();
+								break;
+
+							default:
+								event = EVENT_NONE;
+								break;
+						}
+
+						break;
+				}
+			} while (event != EVENT_EXIT);
+		}
+
+		this.midlet.notifyDestroyed();
+	}
+
+	private void doSnapshot()
+	{
+		int event;
+		SnapshotScreen view = (SnapshotScreen) showView(VIEW_SNAPSHOT);
+		
+		do {
+			event = waitEvent();
+			
+			switch (event) {
+				case EVENT_SELECT:
+					try
+					{
+						// TODO: Choose the best encoding instead of using the first.
+						String[] encodings = SnapshotScreen.getSnapshotEncodings();
+						byte[] image = view.getSnapshot(encodings[0]);
+		
+						// TODO: Is this the correct format for time? Is this correct for all locales? 
+						String modified = new Date().toString();
+						Upload upload = new Upload("image/jpeg", image, image, modified);
+						this.uploads.addElement(upload);
+		                this.commController.add(upload, this);
+					}
+					catch (MediaException e)
+					{
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					break;
+
+				case EVENT_BACK:
+					break;
+
+				default:
+					event = EVENT_NONE;
+					break;
+			}
+		} while (event != EVENT_BACK);
+	}
+	
+	private void doPreferences()
+	{
+		int event;
+		showView(VIEW_PREFERENCES);
+		
+		do {
+			event = waitEvent();
+
+			switch (event) {
+				case EVENT_BACK:
+					break;
+
+				default:
+					event = EVENT_NONE;
+					break;
+			}
+		} while (event != EVENT_BACK);
+	}
+
+	private int doExitConfirmation()
+	{
+		showView(ALERT_EXIT_CONFIRMATION);
+		return waitYesNo() == EVENT_YES ? EVENT_EXIT : EVENT_NONE;
+	}
+
+	public void doUploads()
+	{
+		int event;
+		showView(ALERT_WAIT);
+		this.commController.getIndex(this.uploads, this);
+		event = waitEvent();
+		
+		if (event == EVENT_NETWORK_REQUEST_SUCCESSFUL) {
+			do {
+				UploadsView view = (UploadsView) showView(VIEW_UPLOADS);
+				event = waitEvent();
+				
+				switch (event) {
+					case EVENT_SELECT:
+						doUploadDetails(view.getCurrentUpload());
+						break;
+	
+					case EVENT_DELETE:
+						showView(ALERT_UPLOADS_DELETE_CONFIRMATION);
+						if (waitYesNo() == EVENT_YES) {
+							showView(ALERT_WAIT);
+							this.commController.delete(view.getCurrentUpload().getId(), this);
+							event = waitEvent();
+						}
+						break;
+				}
+			} while (event != EVENT_BACK);
+		}
+	}
+
+	private void doUploadDetails(Upload upload)
+	{
+		int event;
+		DetailsView view = (DetailsView) showView(VIEW_DETAILS);
+		view.setUpload(upload);
+
+		do {
+			event = waitEvent();
+			
+			switch (event) {
+				case EVENT_DELETE:
+					showView(ALERT_UPLOADS_DELETE_CONFIRMATION);
+					if (waitYesNo() == EVENT_YES) {
+						showView(ALERT_WAIT);
+						this.commController.delete(upload.getId(), this);
+						event = waitEvent();
+
+						if (event == EVENT_NETWORK_REQUEST_SUCCESSFUL) {
+							event = EVENT_BACK;
+						}
+					}
+					break;
+			}
+		} while (event != EVENT_BACK);
+	}
+
+	public int waitOkCancel()
+	{
+		int event;
+
+		do {
+			event = waitEvent();
+		} while (event != EVENT_OK && event != EVENT_CANCEL);
+		
+		return EVENT_OK;
+	}
+
+	public int waitYesNo()
+	{
+		int event;
+
+		do {
+			event = waitEvent();
+		} while (event != EVENT_YES && event != EVENT_NO);
+		
+		return event;
+	}
+
+	private int waitEvent()
+	{
+		int event = EVENT_NONE;
+
+		do {
+			synchronized (this) {
+				try {
+					// Wait for notification for next event.
+					wait();
+	
+					event = this.nextEvent;
+					this.nextEvent = EVENT_NONE;
+				}
+				catch (InterruptedException e) {
+					// Ignore this.
+				}
+			}
+		} while (event == EVENT_NONE);
+
+		return event;
+	}
+
+	public void notifyEvent(int event)
+	{
+		synchronized (this) {
+			this.nextEvent = event;
+			notify();
+		}
 	}
 }

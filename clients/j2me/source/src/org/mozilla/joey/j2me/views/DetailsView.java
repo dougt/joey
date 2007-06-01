@@ -50,11 +50,14 @@ public class DetailsView
 {
     private Upload upload;
 
-	public DetailsView(Upload upload)
+	public DetailsView()
 	{
 		//#style detailsScreen
 		super(Locale.get("title.details"));
+	}
 
+	public void setUpload(Upload upload)
+	{
         this.upload = upload;
 		update();
 	}

@@ -216,7 +216,12 @@ public class CommunicationController
 
 	public void login(UserData userData, ResponseHandler handler)
 	{
-        LoginNetworkRequest nr = new LoginNetworkRequest(userData);
+		login(userData, handler, true);
+	}
+
+	public void login(UserData userData, ResponseHandler handler, boolean sendSuccessNotification)
+	{
+        LoginNetworkRequest nr = new LoginNetworkRequest(userData, sendSuccessNotification);
         nr.setResponseHandler(handler);
 
         addNextRequest(nr);

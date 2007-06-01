@@ -33,7 +33,7 @@ public class JoeyMIDlet extends MIDlet
      	throws MIDletStateChangeException
      {
     	 JoeyController controller = new JoeyController(this);
-    	 controller.startApp();
+    	 controller.start();
      }
 
      protected void pauseApp()

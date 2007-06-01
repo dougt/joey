@@ -171,4 +171,9 @@ public class UploadsView
 
 		return handled;
 	}
+
+	public Upload getCurrentUpload()
+	{
+		return (Upload) UiAccess.getAttribute(getCurrentItem(), JoeyController.ATTR_UPLOAD);
+	}
 }
