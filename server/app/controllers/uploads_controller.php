@@ -319,6 +319,12 @@ class UploadsController extends AppController
       $this->flash("{$_count} items deleted", '/uploads/index', 2);
     }
 
+    function deleteByFileID($id)
+    {
+      $_item = $this->File->findById($id);
+      $this->delete($_item['Upload']['id']);
+    }
+
     function delete($id)
     {
         if (!is_numeric($id)) {
