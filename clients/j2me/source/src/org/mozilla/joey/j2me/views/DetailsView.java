@@ -98,11 +98,18 @@ public class DetailsView
         	try {
                 Player player;
                 player = Manager.createPlayer(new ByteArrayInputStream(this.upload.getData()), "audio/mpeg");
+
                 player.realize();
                 player.prefetch();
                 player.start();
             }
-            catch(Throwable t) {
+            catch(Exception t) {
+
+                //#style input
+                item = new StringItem(null, "Could not create player for audio/mpeg");
+                append(item);
+
+                t.printStackTrace();
                 System.out.println("assertion: " + t);
             }
 
@@ -126,7 +133,12 @@ public class DetailsView
                 player.prefetch();
                 player.start();
             }
-            catch(Throwable t) {
+            catch(Exception t) {
+                //#style input
+                item = new StringItem(null, "Could not create player for video");
+                append(item);
+                
+                t.printStackTrace();
                 System.out.println("assertion: " + t);
             }
         }

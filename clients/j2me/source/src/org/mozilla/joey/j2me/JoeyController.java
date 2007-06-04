@@ -545,6 +545,11 @@ public class JoeyController
 	private void doUploadDetails(Upload upload)
 	{
 		int event;
+
+		showView(ALERT_WAIT);
+		this.commController.get(upload, this);
+		event = waitEvent();
+
 		DetailsView view = (DetailsView) showView(VIEW_DETAILS);
 		view.setUpload(upload);
 

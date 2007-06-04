@@ -128,7 +128,7 @@ public class CommunicationController
             in = connection.openDataInputStream();
             nr.responseCode = connection.getHeaderFieldInt("X-joey-status", -1);
 
-            /* Debug code to dump all headers for testing.             
+            /* 
 
             int i = 0; 
             String header;
@@ -162,6 +162,7 @@ public class CommunicationController
             int ch;
 
             while ((ch = in.read()) != -1) {
+
                 dos.write((byte) ch);
                 total++;
                 if (--counter == 0)
@@ -171,11 +172,14 @@ public class CommunicationController
                 }
             }
             nr.data = baos.toByteArray();
+
+            // System.out.println(new String (nr.data));
+
         }
         catch (EOFException e)
         {
             //#debug debug
-            System.out.println("Data read.");
+            System.out.println("EOFException:  Data read.");
         }
         /*
           @todo 
@@ -187,7 +191,7 @@ public class CommunicationController
         */
         catch (Exception e)
         {
-
+            e.printStackTrace();
             System.out.println(e);
 
             //#debug error
@@ -251,9 +255,9 @@ public class CommunicationController
         addRequest(nr);
 	}
 	
-    public void get(String id, ResponseHandler handler)
+    public void get(Upload upload, ResponseHandler handler)
     {
-        GetNetworkRequest nr = new GetNetworkRequest(id);
+        GetNetworkRequest nr = new GetNetworkRequest(upload);
         nr.setResponseHandler(handler);
 
         this.addRequest(nr);

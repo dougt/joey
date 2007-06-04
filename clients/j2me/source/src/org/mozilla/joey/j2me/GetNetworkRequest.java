@@ -27,10 +27,29 @@ package org.mozilla.joey.j2me;
 public class GetNetworkRequest
     extends NetworkRequest
 {
-    public GetNetworkRequest(String id)
+    
+    public Upload upload;
+
+    public GetNetworkRequest(Upload upload)
     {
-        this.requestURL = "/files/view/" + id;
+        this.upload = upload;
+
+        this.requestURL = "/files/view/" + upload.getId();
         this.contenttype = "application/x-www-form-urlencoded";
         this.postdata = "rest=1";
     }
+
+    public void onStop() {
+
+		if (this.responseCode == 200) {
+            // Forward the data from the network request to the
+            // Uploads object.
+            this.upload.setData(this.data);
+        }
+
+        if (this.handler != null) {
+            this.handler.notifyResponse(this);
+        }
+    }
+
 }
