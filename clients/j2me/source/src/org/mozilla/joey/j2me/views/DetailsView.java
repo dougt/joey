@@ -106,11 +106,10 @@ public class DetailsView
             catch(Exception t) {
 
                 //#style input
-                item = new StringItem(null, "Could not create player for audio/mpeg");
+                item = new StringItem(null, "Could not create player for audio/mpeg: " + t);
                 append(item);
 
                 t.printStackTrace();
-                System.out.println("assertion: " + t);
             }
 
         }
@@ -135,11 +134,10 @@ public class DetailsView
             }
             catch(Exception t) {
                 //#style input
-                item = new StringItem(null, "Could not create player for video");
+                item = new StringItem(null, "Could not create player for video: " + t);
                 append(item);
                 
                 t.printStackTrace();
-                System.out.println("assertion: " + t);
             }
         }
 //#endif
