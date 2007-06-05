@@ -79,13 +79,25 @@ public class IndexNetworkRequest
 
 			int count = Integer.parseInt((String) parsedData.get("count"));
             
+            //@todo make this so much smarter.
+
 			for (int i = 1; i <= count; i++) {
 				String id = (String) parsedData.get("id." + i);
 				String referrer = (String) parsedData.get("referrer." + i);
 				String preview = (String) parsedData.get("preview." + i);
 				String mimetype = (String) parsedData.get("type." + i);
 				String modified = (String) parsedData.get("modified." + i);
+
+                String deleted = (String) parsedData.get("deleted." + i);
                 
+                if (deleted != null && deleted.equals("1"))
+                {
+                    System.out.println("found deleted element (this is okay): " + id);
+
+                    //ignore for now.
+                    continue;
+                }
+
 				int foundIndex = -1;
                 
 				for (int j = 0; j < uploads.size(); j++) {

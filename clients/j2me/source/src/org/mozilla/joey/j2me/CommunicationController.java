@@ -150,28 +150,21 @@ public class CommunicationController
                 this.cookieStr = pos != -1 ? str.substring(0, pos) : str;
             }
             
-            // read everything in.
-            ByteArrayOutputStream baos = null;
-            DataOutputStream dos = null;
-            
-            baos = new ByteArrayOutputStream();
-            dos = new DataOutputStream(baos);
-            
-            int counter = this.progressBeforeNotification;
             long total = 0;
-            int ch;
+            int read = -1;
+            byte[] buffer = new byte[1000];
 
-            while ((ch = in.read()) != -1) {
+            ByteArrayOutputStream byteout = new ByteArrayOutputStream();
 
-                dos.write((byte) ch);
-                total++;
-                if (--counter == 0)
-                {
-                    nr.onProgress(total, -1);
-                    counter = this.progressBeforeNotification;
-                }
+            while ((read = in.read(buffer)) >= 0)
+            {
+                byteout.write(buffer, 0, read);
+            
+                total += read;
+                
+                nr.onProgress(total, -1);
             }
-            nr.data = baos.toByteArray();
+            nr.data = byteout.toByteArray();
 
             // System.out.println(new String (nr.data));
 
