@@ -110,6 +110,7 @@ CREATE TABLE `uploads` (
   `id` int(11) unsigned NOT NULL auto_increment,
   `title` varchar(255) NOT NULL default '',
   `referrer` varchar(255) NOT NULL default '',
+  `deleted` datetime default NULL,
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL,
   PRIMARY KEY  (`id`)

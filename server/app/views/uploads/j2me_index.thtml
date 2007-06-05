@@ -1,23 +1,24 @@
-count=<?php echo $count;?>
 
 <?php
+
+echo "count=" . $count . "\n";
 
 $i = 1;
 foreach ($uploads as $upload) {
-?>
-title.<?php echo $i;?>=<?php echo $upload['Upload']['title'];?>
+  
+  echo "id."       . $i . "=" . $upload['File']['id'] . "\n";
+  
+  if ($upload['Upload']['deleted'] != null) {
+    echo "deleted."  . $i . "=" . "1\n";
+  } else {
+    echo "title."    . $i . "=" . $upload['Upload']['title'] . "\n";
+    echo "referrer." . $i . "=" . $upload['Upload']['referrer'] . "\n";
+    echo "modified." . $i . "=" . $upload['Upload']['modified'] . "\n";
+    echo "type."     . $i        . "=" . $upload['type'] . "\n";
+    echo "preview."  . $i . "=" .   $upload['preview'] . "\n";
+  }
 
-referrer.<?php echo $i;?>=<?php echo $upload['Upload']['referrer'];?>
-
-modified.<?php echo $i;?>=<?php echo $upload['Upload']['modified'];?>
-
-id.<?php echo $i;?>=<?php echo $upload['File']['id'];?>
- 
-type.<?php echo $i;?>=<?php echo $upload['type'];?>
-
-preview.<?php echo $i;?>=<?php echo $upload['preview'];?>
-
-<?php
-$i = $i + 1;
+  $i = $i + 1;
 }
+
 ?>

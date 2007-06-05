@@ -440,6 +440,9 @@ class UploadsController extends AppController
             if (array_key_exists('limit',$_POST)) { $_options['limit'] = $_POST['limit']; }
             if (array_key_exists('start',$_POST)) { $_options['start'] = $_POST['start']; }
         
+            // the nbclient needs to see deleted items.
+            $_options['deleted'] = true;
+
             $data = $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options);
             
             $count = 0;

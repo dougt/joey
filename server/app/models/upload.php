@@ -62,6 +62,20 @@ class Upload extends AppModel
                          );
 
 
+    /** 
+     * We want to remember all things that have been delete
+     * so that we can sync between the server and various
+     * clients.  What we will do is null the model, but mark
+     * the model's deleted column.
+     */
+    function delete($id) {
+
+      if (is_numeric($id)) {
+        $this->execute("UPDATE uploads set title=null, referrer=null, deleted=NOW() where id={$id}");
+      }
+      return true;
+    }
+    
     /**
      * Cake isn't setup to handle a role defined in the relationship (mapping table).
      * That means we get to do custom queries anytime we care about the owner flag.
@@ -103,6 +117,7 @@ class Upload extends AppModel
         $_start = array_key_exists('start', $options) ? $options['start'] : null;
         $_types = array_key_exists('types', $options) ? $options['types'] : null;
         $_since = array_key_exists('since', $options) ? $options['since'] : null;
+        $_deleted = array_key_exists('deleted', $options) ? $options['deleted'] : null;
 
         $_query = "
             SELECT * FROM 
@@ -113,6 +128,11 @@ class Upload extends AppModel
             LEFT JOIN contentsourcetypes as Contentsourcetype ON Contentsource.contentsourcetype_id = Contentsourcetype.id
             WHERE uploads_users.user_id = {$id}
         ";
+
+        // user doesn't want to see deleted entries
+        if ($_deleted == null) {
+            $_query .= " AND Upload.deleted IS NULL";
+        }
 
         if ($_types != null) {
 
