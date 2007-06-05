@@ -415,21 +415,20 @@ class UploadsController extends AppController
 
     function index()
     {
+        $_options = array();
+      
+        if (array_key_exists('type',$_POST))
+        {
+          //@todo verify type
+          $_options['types'] = $this->filetypes[ $_POST['type'] ];
+        }
+
         // We are dealing with a J2ME client here
         if ($this->nbClient) {
 
-            $_options = array();
-
             if (array_key_exists('limit',$_POST)) { $_options['limit'] = $_POST['limit']; }
             if (array_key_exists('start',$_POST)) { $_options['start'] = $_POST['start']; }
-            
-
-            if (array_key_exists('type',$_POST))
-            {
-              //@todo verify type
-              $_options['types'] = $this->filetypes[ $_POST['type'] ];
-            }
-
+        
             $data = $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options);
             
             $count = 0;
@@ -471,9 +470,11 @@ class UploadsController extends AppController
             list(,$limit,$page) = $this->Pagination->init(array(), array(), $_pagination_options);
 
             // @todo need to calculate $start
-            $options = array( 'limit' => $limit, 'start' => (($page-1)*$limit) );
+            $_options['limit'] = $limit;
+            $_options['start'] = ($page-1)*$limit;
 
-            $data = $this->Upload->findAllUploadsForUserId($this->_user['id'], $options);
+
+            $data = $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options);
 
             $this->set('uploads', $data);
 
