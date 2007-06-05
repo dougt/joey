@@ -416,17 +416,23 @@ class UploadsController extends AppController
     function index()
     {
         $_options = array();
-      
+
+        // check to see if we have a filter "type"
         if (array_key_exists('type',$_POST))
-        {
-          //@todo verify type
           $_options['types'] = $this->filetypes[ $_POST['type'] ];
-        }
+        else if (array_key_exists('type',$_GET))
+          $_options['types'] = $this->filetypes[ $_GET['type'] ];
         else if (array_key_exists('type',$_GET))
         {
           //@todo verify type
           $_options['types'] = $this->filetypes[ $_GET['type'] ];
         }
+
+        // check to see if we have to deal with "since"
+        if (array_key_exists('since',$_POST))
+          $_options['since'] = $_POST['since'];
+        else if (array_key_exists('since',$_GET))
+          $_options['since'] = $_GET['since'];
 
         // We are dealing with a J2ME client here
         if ($this->nbClient) {

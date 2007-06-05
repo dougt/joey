@@ -93,7 +93,6 @@ class Upload extends AppModel
         return false;
     }
 
-
     function findAllUploadsForUserId($id, $options = array()) {
 
         if (!is_numeric($id)) {
@@ -103,6 +102,7 @@ class Upload extends AppModel
         $_limit = array_key_exists('limit', $options) ? $options['limit'] : null;
         $_start = array_key_exists('start', $options) ? $options['start'] : null;
         $_types = array_key_exists('types', $options) ? $options['types'] : null;
+        $_since = array_key_exists('since', $options) ? $options['since'] : null;
 
         $_query = "
             SELECT * FROM 
@@ -129,11 +129,17 @@ class Upload extends AppModel
             }
         }
 
+        if (is_numeric($_since)) {
+          $timestamp = date('Y-m-d H:i:s', $_since);
+          $_query .= " AND Upload.modified >= '$timestamp'";
+        }
+        
         if (is_numeric($_limit) && is_numeric($_start)) {
             $_query .= " LIMIT $_start, $_limit";
         } else if (is_numeric($_limit)) {
             $_query .= " LIMIT $_limit";
         }
+
 
         $data = $this->query($_query);
 
