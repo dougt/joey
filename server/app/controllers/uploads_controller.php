@@ -422,6 +422,11 @@ class UploadsController extends AppController
           //@todo verify type
           $_options['types'] = $this->filetypes[ $_POST['type'] ];
         }
+        else if (array_key_exists('type',$_GET))
+        {
+          //@todo verify type
+          $_options['types'] = $this->filetypes[ $_GET['type'] ];
+        }
 
         // We are dealing with a J2ME client here
         if ($this->nbClient) {
