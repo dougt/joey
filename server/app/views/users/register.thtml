@@ -1,4 +1,6 @@
 
+<div id="joey-general-frame">
+
 <h2>Register</h2>
 <p>All fields are required.</p>
 
@@ -68,3 +70,5 @@ By clicking to accept this Agreement or by downloading the associated software, 
 </div>
 
 </form>
+
+</div>
