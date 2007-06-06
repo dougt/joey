@@ -145,6 +145,7 @@ CREATE TABLE `users` (
   `phonenumber` varchar(255) NOT NULL default '',
   `notes` text,
   `disabled` int(1) NOT NULL default '0',
+  `administrator` int(1) NOT NULL default '0',
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL,
   PRIMARY KEY  (`id`),
