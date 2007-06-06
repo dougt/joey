@@ -136,7 +136,7 @@ class Upload extends AppModel
 
         if ($_types != null) {
 
-            $_query .= "AND";
+            $_query .= " AND";
 
             $i = 0;
             while (isset ($_types[$i])) {
