@@ -39,8 +39,13 @@
 
 <div id="header">
 
+
+
+
 	<div id="barleft">
 
+
+     <?php if ($this->controller->Session->check('User')) : ?>
     <p id="getsoftware" >
     <?php
 
@@ -53,34 +58,38 @@
     ?>
     </p>
 
+
+    <?php endif; ?>
+
 	<div id="barmiddle">
 
 	<div id="barright">
 
 	</div>
+
+     <?php if ($this->controller->Session->check('User')) : ?>
+
     <p>
     <?php
 
-        if ($this->controller->Session->check('User'))  {
             $user = $this->controller->Session->read('User');
 
             echo $html->link($user['username'],'/users/edit').' ( '.$html->link('Logout', '/users/logout').' )';
 
-        }
-	
     ?>
     </p>
 
+	<?php else: ?>
 
+	<p>Welcome!</p>
+
+	<?php endif; ?>
+
+	</div>
 	</div>
 
 
-	</div>
 
-
-<?php
-/*    echo $this->renderElement('navbar'); */
-?>
 
 </div>
 
