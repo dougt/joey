@@ -40,7 +40,7 @@
 
 <!-- start #footer -->
 <div id="footer">
-&copy; 2007 Mozilla - 
+&copy; 2007 Mozilla Foundation - 
 <?=$html->link('Legal','/terms')?>
 </div>
 <!-- end #footer -->
