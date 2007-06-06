@@ -22,16 +22,20 @@ div#container {
 }
 
 .joey-label-large, .joey-label-medium, .joey-label-small {
-    border-bottom: 1px dashed #eee;
+    border-bottom: 1px dashed #666666;
     float: left;
 }
 
+input {
+	background-color:#aaaaaa;
+}
+
 .joey-label-large {
-    width: 14em;
+    width: 10em;
 }
 
 .joey-label-medium {
-    width: 10em;
+    width: 8em;
 }
 
 .joey-label-small {
