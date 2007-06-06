@@ -1,4 +1,8 @@
 
+<div id="joey-login-frame">
+
+<div id="joey-login-content">
+
 <?php if (isset($error_mesg)) : ?>
     <div class="error_message"><?=$error_mesg?></div>
 <?php endif; ?>
@@ -32,4 +36,7 @@
 
 <div>
 <?=$html->link('Forgot Password?', 'resetpasswordemail')?>
+</div>
+
+</div>
 </div>
