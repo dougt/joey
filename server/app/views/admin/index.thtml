@@ -10,5 +10,14 @@
          <?php echo "Upload count == " . $summary['upload_count']; ?>
        </div>
 
+
+       <div>
+         <?php echo "New User count == " . $summary['new_user_count']; ?>
+       </div>
+
+       <div>
+         <?php echo "New Upload count == " . $summary['new_upload_count']; ?>
+       </div>
+
 </div>
 

@@ -57,6 +57,17 @@ class AdminController extends AppController
       $_summary["upload_count"] = $this->Upload->findCOunt();
 
 
+      //Last 24 hours
+      $timestamp = date('Y-m-d H:i:s', (time() - 86400));
+
+      $result = $this->User->query("SELECT count(*) from users WHERE created >= '{$timestamp}';");
+      $_summary["new_user_count"] = $result[0][0]["count(*)"];
+
+
+      $result = $this->Upload->query("SELECT count(*) from uploads WHERE created >= '{$timestamp}'");
+      $_summary["new_upload_count"] = $result[0][0]["count(*)"];
+
+
       $this->set('summary', $_summary);
 
     }
