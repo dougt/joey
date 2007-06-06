@@ -1,4 +1,16 @@
 <div id='pagination'>
+
+<div id='pagination-pagesize'>
+<?php
+    if($pagination->setPaging($paging)):
+
+    $pages = $pagination->pageNumbers(" | ");
+
+    echo "Page size: ".$pagination->resultsPerPage(NULL, ' ');
+    endif;
+?>
+</div>
+
 <?php
     if($pagination->setPaging($paging)):
     // $leftArrow = $html->image("nav/arrowleft.gif", Array('height'=>15));
@@ -14,7 +26,8 @@
     echo $pagination->result()."<br/>";
     // echo $prev." ".$pages." ".$next."<br/>";
     echo "Go to page: ".$pages."<br/>";
-    echo "Page size: ".$pagination->resultsPerPage(NULL, ' ');
     endif;
 ?>
 </div>
+
+
