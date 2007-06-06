@@ -79,9 +79,13 @@
     ?>
     </p>
 
-	<?php else: ?>
+	<?php elseif ($flowContext=="resetpassword" ) : ?>
 
-	<p>Welcome!</p>
+		<p>Reset password</p>
+
+	<?php else :?>
+
+		<p>Welcome!</p>
 
 	<?php endif; ?>
 
