@@ -291,6 +291,13 @@ height:130px;
 
 }
 
+#pagination {
+	max-width:670px;
+}
+#pagination-pagesize {
+ float:right;
+}
+
 #footer {
 background: black url(style/border-shade.jpg) no-repeat 0 0; 
 
