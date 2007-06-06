@@ -383,6 +383,11 @@ class UsersController extends AppController
     // Ask the username / email to reset password
     function resetpasswordemail()
     {
+
+        $this->pageTitle = 'Reset your password';
+	$this->set('flowContext',"resetpassword");
+
+
       // If a user has submitted form data:
       if (!empty($this->data)) {
        
