@@ -1,0 +1,14 @@
+
+<br>
+
+<div>
+       <div>
+         <?php echo "User count == " . $summary['user_count']; ?>
+       </div>
+
+       <div>
+         <?php echo "Upload count == " . $summary['upload_count']; ?>
+       </div>
+
+</div>
+
