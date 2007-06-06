@@ -39,6 +39,8 @@
 
 <div id="header">
 
+	<div id="barleft">
+
     <p id="getsoftware" >
     <?php
 
@@ -50,8 +52,6 @@
 
     ?>
     </p>
-
-	<div id="barleft">
 
 	<div id="barmiddle">
 
