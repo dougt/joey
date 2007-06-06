@@ -1,18 +1,30 @@
+<div id="joey-upload-frame">
+
 <h1>Joey! Uploads</h1>
 
 <?php if (empty($uploads)) : ?>
 
-<div>
+<div class="joey-message" >
 You have no uploads yet.
 </div>
 
 <?php else: ?>
+
 <div>
-<?php echo $html->link( "Delete All", "/uploads/deleteAll"); ?>
+
+<?php echo $html->link( "Delete All", "/uploads/deleteAll"); ?> 
+<?php echo $html->link( "video", "/uploads/index?type=videos"); ?> 
+<?php echo $html->link( "audio", "/uploads/index?type=audio"); ?> 
+<?php echo $html->link( "images", "/uploads/index?type=images"); ?> 
+<?php echo $html->link( "rss", "/uploads/index?type=rss"); ?> 
+<?php echo $html->link( "microsummaries", "/uploads/index?type=microsummaries"); ?> 
+<?php echo $html->link( "text", "/uploads/index?type=text"); ?> 
+
 </div>
 
+<table cellspacing="0"  cellpadding="0" ><tr><td valign="top">
 
-<div class="joey-upload">
+<div class="joey-upload" >
 
 
 <?php
@@ -20,29 +32,61 @@ You have no uploads yet.
 
 ?>
 
+<!-- this is the image table list --> 
 
-<?php foreach ($uploads as $upload): 
-?>
 
-    <div>
-    <div class="joey-upload-preview">
+<table class="joey-upload-list" cellspacing="0"  cellpadding="0" border="0" width="100%"  >
+
+<?php foreach ($uploads as $upload): ?>
+
+	<tr>
+
+	<td class="joey-item-control" width="1" >
+
+        <?php echo $html->link( "Delete", "/uploads/delete/" . $upload['Upload']['id']) ?>
+	<div class="joey-upload-mediaicon"><?php echo $upload['File']['type'] ?></div>
+		
+	</td>
+
+	<td class="joey-item-thumb" width="1" >
+
 
         <?php if (!empty($upload['File']['name'])) : ?>
             <?php 
                 if (!empty($upload['File']['preview_name'])) :
                 
-                    echo $html->link( '<img src="'.$html->url("/files/view/{$upload['File']['id']}/preview").'" alt="Upload Preview" />', "/files/view/{$upload['File']['id']}",false,false,false );
+                    echo $html->link( '<img class="joey-upload-preview-thumb"   src="'.$html->url("/files/view/{$upload['File']['id']}/preview").'" alt="Upload Preview" />', "/files/view/{$upload['File']['id']}",false,false,false );
 
                 elseif (!empty($upload['Contentsource']['id']) || empty($upload['File']['preview_name'])) : 
             ?>
 
-                     <iframe width="<?php echo $upload_preview_width?> "
+
+		<?php if($upload['File']['type']=='image/png') :?>
+
+                     <img class="joey-upload-image-thumb"   
+                             src="<?php echo "/files/view/" . $upload['File']['id'] ?>">
+
+		<?php endif; ?>
+
+		<?php if($upload['File']['type']=='text/plain') :?>
+
+                     <img class="joey-upload-image-thumb"   
+                             src="/css/style/media-text.jpg"
+                      </img >
+
+		<?php endif; ?>
+
+
+<!--
+
+                     <iframe class="joey-upload-image-thumb"  width="<?php echo $upload_preview_width?> "
                              height="<?php echo $upload_preview_height?>"
                              scrolling="auto"
                              frameborder="1"
                              src="<?php echo "/files/view/" . $upload['File']['id']?>>"
                       </iframe>
 
+-->
             <?php 
                 else :
 
@@ -54,25 +98,44 @@ You have no uploads yet.
             <?=$html->image('na.png'); ?>
         <?php endif; ?>
 
-    </div>
 
-    <div>
-    <h3><?php echo $html->link( $upload['Upload']['title'], $upload['Upload']['referrer']) ?></h3>
+	</td>
+
+	<td  class="joey-item-information" >
+
+    <span class="titleupload"><?php echo $html->link( $upload['Upload']['title'], $upload['Upload']['referrer']) ?></span>
     <ul>
         <li>Size:  <?php echo $number->toReadableSize($upload['File']['size']); ?></li>
         <li>Uploaded <?php echo $time->niceShort($upload['Upload']['created']); ?></li>
         <li><?php echo $html->link( "Original", "/files/view/" . $upload['File']['id'] . "/original") ?></li>
-        <li><?php echo $html->link( "Delete", "/uploads/deleteByFileID/" . $upload['File']['id']) ?></li>
     </ul>
-    </div>
-        
-    <div class="clearboth"></div>
 
-   </div>
+	</td>
+
+</tr>
+        
 <?php endforeach; ?>
 
+</table>
 
+
+</div>
+</td>
+<td valign=" top" width="200" >
+<img src="/css/style/banner-filters.jpg" >
+</td>
+</tr>
+</table>
+
+
+<div id="footer-pagination">
 <?php echo $this->renderElement('pagination'); ?> 
 </div>
 
 <?php endif; ?>
+
+</div>
+
+
+
+
