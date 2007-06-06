@@ -37,5 +37,9 @@
  * ***** END LICENSE BLOCK ***** */
 ?>
 
+<p id="joeyserverlink" >
 <?php echo $html->link('/JOEY.LABS.MOZILLA.COM/', '/'); ?>
+</p>
+
+
 
