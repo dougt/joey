@@ -45,7 +45,7 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <link rel="shortcut icon" href="<?=$html->url('/img/favicon.ico', null, false)?>" type="image/x-icon" />
-    <?php echo $html->css('cake.generic'); ?>
+    <?php echo $html->css('green'); ?>
     <?php echo $html->css('joey'); ?>
 	<title><?=$title_for_layout?></title>
 </head>
@@ -53,11 +53,29 @@
 
 <body id="">
 
-<?=$this->renderElement('header')?>
+<center>
 
+<div class="framecontent">
+
+<div id="topbanner"  >
+  <?=$this->renderElement('green_banner')?>
+</div>
+
+<?=$this->renderElement('green_header')?>
+
+<div id="innercontent">
 <?=$content_for_layout ?>
+</div>
 
-<?=$this->renderElement('footer')?>
+<?=$this->renderElement('green_footer')?>
+
+
+
+</div>
+</div>
+
+</center>
+
 
 </body>
 </html>
