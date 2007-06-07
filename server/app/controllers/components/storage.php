@@ -169,7 +169,7 @@ class StorageComponent extends Object
       if (empty($_owner)) { return false; }
       
       // check to see if we should do anything
-      if ($forceUpdate == false) 
+      if (false && $forceUpdate == false) 
       {
         $expiry = strtotime($_upload['File']['modified'] . " + " . CONTENTSOURCE_REFRESH_TIME . " minutes");
         $nowstamp = strtotime("now");
@@ -195,11 +195,9 @@ class StorageComponent extends Object
                     return false;
                 }
                 
-                $rss_result = "Channel Title: " . $rss->channel['title'] . "\n";
+                $rss_result = "RSS: " . $rss->channel['title'] . "\n\n";
                 foreach ($rss->items as $item) {
-                  //$href = $item['link'];
-                  $title = $item['title'];
-                  $rss_result = $rss_result . $title . "\n";
+                  $rss_result = $rss_result . "-----\n\n" . $item['title'] . "\n\n" . $item['description'] . "\n\n";
                 }
 
                 // does the user have enough space to proceed
