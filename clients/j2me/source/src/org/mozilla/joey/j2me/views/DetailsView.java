@@ -78,6 +78,7 @@ public class DetailsView
             this.upload.getMimetype().equals("microsummary/xml") ||
             this.upload.getMimetype().equals("rss-source/text")  )
         {
+            //#style textcontent
             item = new StringItem(null, new String(this.upload.getData()));
             append(item);
         }
@@ -97,10 +98,10 @@ public class DetailsView
         {
         	try {
                 Player player;
-                player = Manager.createPlayer(new ByteArrayInputStream(this.upload.getData()), "audio/mpeg");
+                player = Manager.createPlayer((InputStream) new ByteArrayInputStream(this.upload.getData()), "audio/mpeg");
 
                 player.realize();
-                player.prefetch();
+                //                player.prefetch();
                 player.start();
             }
             catch(Exception t) {
@@ -129,7 +130,7 @@ public class DetailsView
                     Item video = (Item)vc.initDisplayMode(GUIControl.USE_GUI_PRIMITIVE, null);
                     append(video);
                 }
-                player.prefetch();
+                //                player.prefetch();
                 player.start();
             }
             catch(Exception t) {

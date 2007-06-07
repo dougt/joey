@@ -188,6 +188,18 @@ focused {
 	layout: center;
 }
 
+.textcontent {
+	padding: 2;
+	background {
+		color: bgColorInput;
+		border-color: borderColorInput;
+	}
+	font-size: small;
+	font-color: textColorInput;
+	layout: expand;
+
+}
+
 menu {
 	margin-left: 4;
 	margin-right: 4;
