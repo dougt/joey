@@ -190,14 +190,23 @@ class StorageComponent extends Object
               case 'rss-source/text':
 
                 // Go get the rss feed.
-                $rss = fetch_rss( $_upload['Contentsource']['source'] );
+                $rss = fetch_rss( chop($_upload['Contentsource']['source']) );
                 if (empty($rss)) {
                     return false;
                 }
                 
                 $rss_result = "RSS: " . $rss->channel['title'] . "\n\n";
                 foreach ($rss->items as $item) {
-                  $rss_result = $rss_result . "-----\n\n" . $item['title'] . "\n\n" . $item['description'] . "\n\n";
+
+                  // fix up a bit
+                  //echo print_r($item);
+
+                  $rss_result = $rss_result . "-----\n\n" . $item['title'] . "\n\n";
+                  
+                  if (isset($item['description']))
+                  {
+                    $rss_result .= $item['description'] . "\n\n";
+                  }
                 }
 
                 // does the user have enough space to proceed
