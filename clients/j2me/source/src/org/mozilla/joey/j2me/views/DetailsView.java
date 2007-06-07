@@ -98,7 +98,7 @@ public class DetailsView
         {
         	try {
                 Player player;
-                player = Manager.createPlayer((InputStream) new ByteArrayInputStream(this.upload.getData()), "audio/mpeg");
+                player = Manager.createPlayer(new ByteArrayInputStream(this.upload.getData()), "audio/mpeg");
 
                 player.realize();
                 //                player.prefetch();
