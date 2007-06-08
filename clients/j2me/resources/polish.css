@@ -52,6 +52,7 @@ colors {
 	bgColorCommands: gray;
 
 	fontColor: black;
+	fontShadowColor: #eee;
 	screenColorTop1: black;
 	screenColorBottom1: black;
 	screenColorTop2: yellow;
@@ -85,8 +86,29 @@ focused {
 	background-color: bgColorFocused;
 }
 
+.screenTitle {
+	padding: 1;
+	font-face: proportional;
+	font-size: normal;
+	font-style: bold;
+	font-color: titleColor;
+	border: none;
+	layout: horizontal-center | horizontal-expand;
+	text-effect: shadow;
+	text-shadow-color: fontShadowColor;
+
+	background {
+		type: vertical-gradient;
+		top-color: #fff;
+		bottom-color: #ccc;
+		start: 2%;
+		end: 90%;
+	}
+}
+
 .inputScreen {
 	padding: 5;
+	title-style: screenTitle;
 
 	background {
 		image: url(joey.png);

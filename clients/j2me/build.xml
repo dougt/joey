@@ -146,7 +146,7 @@
 		 -->
 		<build
 			symbols="ExampleSymbol, AnotherExample"
-			fullscreen="menu"
+			fullscreen="true"
 			usePolishGui="true"
 			workDir="${dir.work}"
 		>
