@@ -7,6 +7,7 @@
 <!ENTITY options.optionTitle.label    "Options">
 <!ENTITY options.privacyTitle.label   "Privacy">
 <!ENTITY options.privacyButton.label  "Clear Login Data">
+<!ENTITY options.privacyFeed.label    "Clear Feed Data">
 <!ENTITY options.serverTitle.label    "Server URL:">
 
 <!ENTITY options.uploadOptions.label  "Upload Settings:" >

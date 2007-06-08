@@ -143,7 +143,10 @@ JoeyStreamListener.prototype =
 };
 
 
-function mocoJoey() {}
+function mocoJoey()
+{ 
+    this._init(); 
+}
 
 mocoJoey.prototype = 
 {	
@@ -284,9 +287,39 @@ mocoJoey.prototype =
     {
         this.joey_listener = listener;
     },
+    
+
+    _init: function()
+    {
+        const osvr = Components.classes['@mozilla.org/observer-service;1']
+                               .getService(Components.interfaces.nsIObserverService);
+        osvr.addObserver(this, "profile-change-teardown", false);
+    },
+
+    // nsIObserver implementation 
+    observe: function(subject, topic, data) 
+    {
+        switch(topic) {
+
+             case "profile-change-teardown": 
+             {
+                 // get rid of all of the rss prefs.
+
+                 try {
+                     var prefs = Components.classes["@mozilla.org/preferences-service;1"]
+                                           .getService(Components.interfaces.nsIPrefService)
+                                           .getBranch("joey.rss");
+                     prefs.deleteBranch("");
+                 }
+                 catch (a) {alert(a);}
+             }
+             break;
+        }
+    }, 
 
     QueryInterface: function (iid) {
         if (iid.equals(Components.interfaces.mocoJoey) ||
+            iid.equals(Components.interfaces.nsIObserver) ||
             iid.equals(Components.interfaces.nsISupports))
             return this;
 
@@ -359,7 +392,7 @@ mocoJoey.prototype =
         if (listener == null)
             return;
 
-        if (status == 200)
+        if (status == 200 || status == 519) // if all okay, or if there is a dup.
         {
             listener.onStatusChange("upload", 1);  // 1 = okay all good. 
             return;
@@ -432,10 +465,18 @@ mocoJoey.prototype =
                     createParam("data[Upload][title]", this.joey_title) +
                     createParam("data[Upload][referrer]", this.joey_url);
 
+        var endstring;
+
         if (fileBuffer == null)
         {
             start += createParam("data[Contentsourcetype][name]", this.joey_content_type) +
                      createParam("data[Contentsource][source]", this.joey_data);
+
+            endstring = "--"+BOUNDARY+"--\r\n";
+        }
+        else
+        {
+            endstring = "\r\n--"+BOUNDARY+"--\r\n";
         }
 
         preamble.setData(start, start.length);
@@ -462,7 +503,6 @@ mocoJoey.prototype =
         var postamble = Components.classes["@mozilla.org/io/string-input-stream;1"]
                                   .createInstance(Components.interfaces.nsIStringInputStream);
 
-        var endstring = "\r\n--"+BOUNDARY+"--\r\n";
         postamble.setData(endstring, endstring.length);
 
         mis.appendStream(postamble);

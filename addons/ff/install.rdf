@@ -7,7 +7,7 @@
                >
 		<em:id>joey@mozilla.corporation</em:id>
 		<em:name>Joey</em:name>
-		<em:version>0.2.1.1</em:version>
+		<em:version>0.2.1.3</em:version>
 		<em:description>Joey! allows you to pass data from your Firefox browser to cell phone.</em:description>
 		<em:creator>Doug Turner</em:creator>
 		<em:homepageURL>http://joey.labs.mozilla.com/</em:homepageURL>

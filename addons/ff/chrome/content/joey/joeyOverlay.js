@@ -397,23 +397,23 @@ JoeyStatusUpdateClass.prototype =
         if (percentage > 100)
             percentage = 100;
         
-        if (verb == "upload") {
-            
+        if (verb == "upload") 
+        {
             // value = "Uploading... ("+from+"/"+to+")";
             value = joeyString("uploading") + "(" + percentage + "%)";
         }
         else
         {
             if (from==to)
-            {       
+            {
                 // this might not be entirely true... basically, at ths point we are waiting to upload...
                 value = joeyString("loggingin"); 
             }
-            else {
-                
+            else 
+            {
                 // value = "Downloading... ("+from+"/"+to+")";
-                value = joeyString("downloading") + "("+percentage+"%)";
-            } 
+                value = joeyString("downloading") + "("+percentage+"%)";  
+            }
         }   
 
         if(verb =="upload") {
@@ -829,6 +829,7 @@ joeyBrowserStatusHandler.prototype =
     endDocumentLoad : function(aRequest, aStatus)
     {
         setTimeout(g_joeySelectorService.disable, 0);
+        setTimeout(g_joeyFeedwatcher, 0);
     },
 
     onSecurityChange : function(aWebProgress, aRequest, aState)
@@ -851,6 +852,49 @@ joeyBrowserStatusHandler.prototype =
     {
     }
 }
+
+
+function g_joeyFeedwatcher()
+{
+    // we need to tie into a way to purge via clear private data!
+
+    var feedWatchLimit = 10;
+    try {
+        feedWatchLimit = psvc.getIntPref("joey.rss-watch-limit");
+    } catch(a) {}
+
+
+    try {
+        
+        // this will change with Places.
+
+        var feedLocation = g_joey_gBrowser.mCurrentBrowser.feeds[0].href;
+        
+        // make into a pref name.  (slashes have to be removed)
+        feedLocation = feedLocation.replace(/\//g, "s");
+            
+        var psvc = Components.classes["@mozilla.org/preferences-service;1"]
+                             .getService(Components.interfaces.nsIPrefBranch);
+
+        var seen = 0;
+        try {
+            seen = psvc.getIntPref("joey.rss." + feedLocation + ".seen");
+        } catch(a) {}
+
+        seen++;
+        
+        if (seen > feedWatchLimit)
+        {
+            joey_feed();
+            seen = 0;
+        }
+
+        psvc.setIntPref("joey.rss." + feedLocation + ".seen", seen);
+
+    }
+    catch(ignore) {}
+}
+
 
 /* 
  * Joey Element Selection Service Singleton
@@ -1363,3 +1407,6 @@ function joey_enableSelection() {
     g_joeySelectorService.enable();
 
 }
+
+
+

@@ -67,6 +67,8 @@
         <label value="&options.privacyTitle.label;" />
         <button label="&options.privacyButton.label;"
                 oncommand="clearLoginData(); return false;"/>
+        <button label="&options.privacyFeed.label;"
+                oncommand="clearJoeyFeedWatcherData(); return false;"/>
       </hbox>
     </groupbox>
 

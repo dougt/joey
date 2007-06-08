@@ -43,6 +43,17 @@ function clearLoginData()
     }
 }
 
+function clearJoeyFeedWatcherData()
+{
+    try {
+        var prefs = Components.classes["@mozilla.org/preferences-service;1"]
+                              .getService(Components.interfaces.nsIPrefService)
+                              .getBranch("joey.rss");
+        prefs.deleteBranch("");
+    }
+    catch (a) {}
+}
+
 function restoreDefaults() {
 
     try {
