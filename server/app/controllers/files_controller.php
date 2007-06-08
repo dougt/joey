@@ -80,7 +80,6 @@ class FilesController extends AppController
     function delete($id)
     {
       $_item = $this->File->findById($id);
-      
       $this->redirect('/uploads/delete/'.$_item['Upload']['id']);
       exit();
     }

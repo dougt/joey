@@ -56,6 +56,7 @@ class AppController extends Controller
     var $ERROR_FILE       = "516";  //  File Access Error
     var $ERROR_NO_SPACE   = "517";  //  Out of Space for Upload
     var $ERROR_UPLOAD     = "518";  //  Generic Upload Error
+    var $ERROR_DUPLICATE  = "519";  //  Duplicate Found
 
     function __construct() {
 

@@ -201,6 +201,19 @@ class UploadsController extends AppController
                 $this->Upload->settings['throw_error'] = true;
                 $this->Contentsource->settings['throw_error'] = true;
 
+
+                // check for duplicates
+                $_contentdup = $this->Contentsource->findBySource($this->data['Contentsource']['source']);
+                if (!empty($_contentdup)) {
+                  
+                  if ($this->nbClient) {
+                    $this->returnJoeyStatusCode($this->ERROR_DUPLICATE);
+                  } else {
+                    $this->flash('Error - Duplicate found.', '/uploads/index');
+                  }
+                  return;
+                }
+
                 // Remote clients don't know the ID's ahead of time, so they will
                 // submit the type as a string.  Here we look for that, and look up
                 // the matching id.
@@ -487,6 +500,9 @@ class UploadsController extends AppController
             $_options['limit'] = $limit;
             $_options['start'] = ($page-1)*$limit;
 
+            // @todo sometimes this is neg -- why?
+            if ($_options['start'] < 0)
+              $_options['start'] = 0;
 
             $data = $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options);
 
