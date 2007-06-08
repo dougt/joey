@@ -192,3 +192,4 @@ INSERT INTO `operators` VALUES (9,'T-Mobile', 'tmomail.net','2007-03-18 09:19:04
 INSERT INTO `operators` VALUES (10,'Verizon PCS', 'vtext.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
 INSERT INTO `operators` VALUES (11,'Sprint PCS', 'messaging.sprintpcs.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
 
+INSERT INTO `phones` VALUES (1, 'Not Sure', 'en-us', '', '', 0, 0, 0, '2007-03-18 09:19:04','0000-00-00 00:00:00');
