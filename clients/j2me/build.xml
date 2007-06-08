@@ -207,9 +207,9 @@
 			<!-- debug settings: only include debug setting when the test-property is true -->
 			<debug if="test" showLogOnError="true" verbose="true" level="error">
 				<!--
+				-->
 				<filter pattern="org.mozilla.joey.j2me.*" level="info" />
 				<filter pattern="org.mozilla.joey.j2me.views.*" level="info" />
-				-->
 				<filter pattern="de.enough.polish.example.*" level="debug" />
 				<filter pattern="de.enough.polish.ui.*" level="warn" />
 			</debug>
