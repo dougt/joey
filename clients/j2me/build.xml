@@ -110,11 +110,11 @@
 	         You can also define localized attributes in the resources/messages.txt files -->
 		<info
 			name="Joey"
-			version="0.0.1"
+			version="0.1"
 			description=""
 			vendorName="Mozilla Foundation"
 			infoUrl="http://www.mozilla.com"
-			icon=""
+			icon="icon.png"
 			jarName="${polish.vendor}-${polish.name}-${polish.locale}-joey.jar" 
 			jarUrl="${deploy-url}${polish.jarName}"
 			copyright="Copyright 2004 Enough Software. All rights reserved."
