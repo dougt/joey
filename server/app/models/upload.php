@@ -107,6 +107,23 @@ class Upload extends AppModel
         return false;
     }
 
+    function findCountForUserId($id) {
+      if (!is_numeric($id)) {
+        return -1;
+      }
+
+      $_query = "
+            SELECT COUNT(*) FROM 
+            uploads_users 
+            WHERE uploads_users.user_id = {$id}
+        ";
+
+      $data = $this->query($_query);
+
+      
+      return $data[0][0]["COUNT(*)"];
+    }
+    
     function findAllUploadsForUserId($id, $options = array()) {
 
         if (!is_numeric($id)) {

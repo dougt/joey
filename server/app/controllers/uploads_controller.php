@@ -458,6 +458,8 @@ class UploadsController extends AppController
 
             $data = $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options);
             
+            $total_count = $this->Upload->findCountForUserId($this->_user['id']);
+
             $count = 0;
             foreach ($data as $row) {
 
@@ -480,6 +482,7 @@ class UploadsController extends AppController
             
             $this->set('uploads', $data);
             $this->set('count', $count);
+            $this->set('total_count', $total_count);
             $this->layout = NULL;
             $this->action = 'j2me_index';
             header("X-joey-status: 200");

@@ -1,6 +1,7 @@
 
 <?php
 
+echo "total_count=" . $total_count . "\n";
 echo "count=" . $count . "\n";
 
 $i = 1;
