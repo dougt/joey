@@ -215,7 +215,7 @@ public class JoeyController
 
 		case ALERT_WAIT:
 			//#style alertWait
-			alert = new Alert("Title", Locale.get("alert.wait.msg"), null, AlertType.INFO);
+			alert = new Alert(null, Locale.get("alert.wait.msg"), null, AlertType.INFO);
 			alert.setTimeout(Alert.FOREVER);
 			return alert;
 
