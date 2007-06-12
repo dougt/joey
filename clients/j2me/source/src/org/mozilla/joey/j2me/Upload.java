@@ -39,6 +39,13 @@ public class Upload
 	private byte[] data;
 	private String modified;
 	private String referrer;
+    private boolean deleted;
+
+	public Upload(String id, boolean deleted)
+	{
+		this(STATUS_LOCAL, id, null, null, "", null, null, null, null);
+        this.deleted = deleted;
+	}
 	
 	public Upload(String mimetype, byte[] preview, byte[] data, String modified)
 	{
@@ -60,8 +67,15 @@ public class Upload
 		this.preview = preview;
 		this.data = data;
 		this.modified = modified;
+        this.deleted = false;
+
 	}
 
+	public boolean isDeleted()
+	{
+		return this.deleted;
+	}
+	
 	public boolean isShared()
 	{
 		return this.status == STATUS_SHARED;

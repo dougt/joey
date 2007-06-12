@@ -96,6 +96,8 @@ public class IndexNetworkRequest
                 {
                     System.out.println("found deleted element (this is okay): " + id);
 
+                    // XXX
+                    this.uploads.addElement(new Upload(id, true));
                     //ignore for now.
                     continue;
                 }

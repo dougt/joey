@@ -124,7 +124,10 @@ public class UploadsView
 		for (int i = 0; i < uploads.size(); i++) {
 			Upload upload = (Upload) uploads.elementAt(i); 
 			Image image = null;
-			
+
+            if (upload.isDeleted() == true)
+                continue;
+
             try
             {
                 image = Image.createImage(new ByteArrayInputStream(upload.getPreview()));
