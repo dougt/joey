@@ -26,6 +26,7 @@ package org.mozilla.joey.j2me;
 
 import de.enough.polish.io.RedirectHttpConnection;
 import de.enough.polish.util.ArrayList;
+import de.enough.polish.util.TextUtil;
 
 import java.io.EOFException;
 import java.io.InputStream;
@@ -38,16 +39,25 @@ import javax.microedition.io.HttpConnection;
 public class CommunicationController
 	extends Thread
 {
-    private int    progressBeforeNotification = 4096;
-    //private String serverURL = "http://dougt.joey-dev.labs.mozilla.com";
-	private String serverURL = "http://joey.labs.mozilla.com";
+	//#if serverUrl:defined
+		//#= private String serverURL = "${serverUrl}";
+	//#else
+		private String serverURL = "http://joey.labs.mozilla.com";
+	//#endif
+
 	private String cookieStr;
 
     private ArrayList queue;
 
-	public CommunicationController()
+	public CommunicationController(UserData userData)
 	{
         this.queue = new ArrayList();
+
+        if (userData.isUseSsl()) {
+        	this.serverURL = TextUtil.replace(this.serverURL, "http:", "https:");
+        }
+
+        System.out.println("Michael: server url: " + this.serverURL);
 	}
 	
     

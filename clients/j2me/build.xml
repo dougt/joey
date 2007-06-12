@@ -63,6 +63,9 @@
 <property name="siemens.home" value="/" />
 
 <property name="locales" value="en_US, de_DE" />
+
+<property name="serverUrl" value="http://joey.labs.mozilla.com/"/>
+
 	
 <!-- Definition of the J2ME Polish task:                      -->
 
@@ -164,6 +167,7 @@
 				-->
 				<variable name="update-url" value="http://joey.labs.mozilla.com/update" />
 				<variable name="title" value="Joey" />
+				<variable name="serverUrl" value="${serverUrl}" />
 				<variable name="polish.rmi.synchrone" value="true" />
 				<variable name="polish.usePolishTitle" value="true" />
 				<variable name="polish.TextField.useDirectInput" value="true" unless="${ isOS( Windows ) } or polish.hasPointerEvents"/>

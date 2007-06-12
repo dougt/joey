@@ -127,7 +127,7 @@ public class JoeyController
 		}
 
 		this.commandListener = new ThreadedCommandListener(this);
-		this.commController = new CommunicationController();
+		this.commController = new CommunicationController(this.userdata);
 		this.commController.start();
 	}
 	
