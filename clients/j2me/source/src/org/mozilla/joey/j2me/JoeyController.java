@@ -90,7 +90,7 @@ public class JoeyController
 	public static final Command CMD_SELECT = List.SELECT_COMMAND;
 	public static final Command CMD_BACK = new Command(Locale.get("command.back"), Command.BACK, 1);
 	public static final Command CMD_LOGIN = new Command(Locale.get("command.login"), Command.SCREEN, 1);
-	public static final Command CMD_DELETE = new Command(Locale.get("command.delete"), Command.SCREEN, 1);
+	public static final Command CMD_DELETE = new Command(Locale.get("command.delete"), Command.SCREEN, 10);
 	public static final Command CMD_SNAPSHOT = new Command(Locale.get("command.snapshot"), Command.SCREEN, 1);
 	public static final Command CMD_YES = new Command(Locale.get("command.yes"), Command.SCREEN, 1);
 	public static final Command CMD_NO = new Command(Locale.get("command.no"), Command.BACK, 1);
