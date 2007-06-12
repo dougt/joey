@@ -57,13 +57,13 @@ public class LoginView
         this.mPasswordTextField.setString(userdata.getPassword());
         append(this.mPasswordTextField);
 
-        String[] test = { "Use SSL for data encryption" };
-        ChoiceGroup test2 = new ChoiceGroup(null, Choice.MULTIPLE, test, null);
-        append(test2);
-        
-        String[] optionStrings = { "Remember Me" };
+        String[] optionStrings = { "Use SSL for data encryption", "Remember Me" };
         this.mLoginOptionsChoiceGroup = new ChoiceGroup("", Choice.MULTIPLE, optionStrings, null);
-        // TODO: Read this option from userdata.
+		boolean[] flags = new boolean[2];
+		flags[0] = userdata.isUseSsl();
+		// TODO: Read this option from userdata.
+//		flags[1] = ;
+		this.mLoginOptionsChoiceGroup.setSelectedFlags(flags);
 
         //#style checkbox
         append(this.mLoginOptionsChoiceGroup);
@@ -79,5 +79,8 @@ public class LoginView
 	{
 		userData.setUsername(this.mUsernameTextField.getString());
 		userData.setPassword(this.mPasswordTextField.getString());
+		boolean[] flags = new boolean[2];
+		this.mLoginOptionsChoiceGroup.getSelectedFlags(flags);
+		userData.setUseSsl(flags[0]);
 	}
 }

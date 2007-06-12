@@ -31,15 +31,17 @@ public class UserData
 {
 	private String username;
 	private String password;
+	private boolean useSsl;
 
 	public UserData()
 	{
 	}
 
-	public UserData(String username, String password)
+	public UserData(String username, String password, boolean useSsl)
 	{
 		this.username = username;
 		this.password = password;
+		this.useSsl = useSsl;
 	}
 
 	public String getPassword()
@@ -60,5 +62,15 @@ public class UserData
 	public void setUsername(String username)
 	{
 		this.username = username;
+	}
+
+	public boolean isUseSsl()
+	{
+		return this.useSsl;
+	}
+
+	public void setUseSsl(boolean useSsl)
+	{
+		this.useSsl = useSsl;
 	}
 }
