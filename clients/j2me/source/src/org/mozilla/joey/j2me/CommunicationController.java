@@ -31,7 +31,6 @@ import java.io.EOFException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.util.Vector;
 
 import javax.microedition.io.HttpConnection;
@@ -224,9 +223,9 @@ public class CommunicationController
         addNextRequest(nr);
 	}
 
-	public void getIndex(Vector uploads, ResponseHandler handler)
+	public void getIndex(Vector uploads, ResponseHandler handler, int limit, int start)
 	{
-        IndexNetworkRequest nr = new IndexNetworkRequest(uploads);
+        IndexNetworkRequest nr = new IndexNetworkRequest(uploads, limit, start);
         nr.setResponseHandler(handler);
 
         addRequest(nr);

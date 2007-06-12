@@ -30,22 +30,24 @@ import java.util.Hashtable;
 import javax.microedition.io.HttpConnection;
 import org.bouncycastle.util.encoders.Base64;
 
-
 public class IndexNetworkRequest
     extends NetworkRequest
 {
-    public Vector uploads;
+    private Vector uploads;
+    private int count;
+    private int totalCount;
 
-    public IndexNetworkRequest(Vector uploads)
+    public IndexNetworkRequest(Vector uploads, int limit, int start)
     {
 		StringBuffer sb = new StringBuffer();
-		sb.append("rest=1&limit=5&start=0");
+		sb.append("rest=1&limit=");
+		sb.append(limit);
+		sb.append("&start=");
+		sb.append(start);
 
-        
         this.requestURL = "/uploads/index";
         this.contenttype = "application/x-www-form-urlencoded";
         this.postdata = sb.toString();
-
 
         this.uploads = uploads;
     }
@@ -58,8 +60,8 @@ public class IndexNetworkRequest
             
             StringBuffer sb = new StringBuffer();
 
-            for (int i=0; i<data.length; i++) {
-                char ch = (char) data[i];
+            for (int i = 0; i < this.data.length; i++) {
+                char ch = (char) this.data[i];
                 
                 if (ch == '\n') {
                     String line = sb.toString();
@@ -70,18 +72,18 @@ public class IndexNetworkRequest
                     }
                     sb.setLength(0);
                 }
-                else 
-                {
-                    sb.append((char) ch);
+                else {
+                    sb.append(ch);
                 }
             }
 
 
-			int count = Integer.parseInt((String) parsedData.get("count"));
+			this.count = Integer.parseInt((String) parsedData.get("count"));
+			this.totalCount = Integer.parseInt((String) parsedData.get("total_count"));
             
-            //@todo make this so much smarter.
+            // TODO: make this so much smarter.
 
-			for (int i = 1; i <= count; i++) {
+			for (int i = 1; i <= this.count; i++) {
 				String id = (String) parsedData.get("id." + i);
 				String referrer = (String) parsedData.get("referrer." + i);
 				String preview = (String) parsedData.get("preview." + i);
@@ -100,8 +102,8 @@ public class IndexNetworkRequest
 
 				int foundIndex = -1;
                 
-				for (int j = 0; j < uploads.size(); j++) {
-					Upload upload = (Upload) uploads.elementAt(j);
+				for (int j = 0; j < this.uploads.size(); j++) {
+					Upload upload = (Upload) this.uploads.elementAt(j);
                     
 					if (upload.isShared() && id.equals(upload.getId())) {
 						foundIndex = j;
@@ -110,7 +112,7 @@ public class IndexNetworkRequest
 				}
                 
 				if (foundIndex != -1) {
-					uploads.removeElementAt(foundIndex);
+					this.uploads.removeElementAt(foundIndex);
 				}
                 
                 // previews are optional.
@@ -119,11 +121,21 @@ public class IndexNetworkRequest
                     previewBytes = Base64.decode(preview);
                 } catch (Exception ex) {}
 
-				uploads.addElement(new Upload(id, mimetype, previewBytes, modified, referrer));
+				this.uploads.addElement(new Upload(id, mimetype, previewBytes, modified, referrer));
 			}
             
         }
         if (this.handler != null)
             this.handler.notifyResponse(this);
     }
+
+	public int getCount()
+	{
+		return this.count;
+	}
+
+	public int getTotalCount()
+	{
+		return this.totalCount;
+	}
 }

@@ -68,8 +68,9 @@ public class JoeyController
 	public static final int EVENT_SELECT = 7;
 	public static final int EVENT_DELETE = 8;
 
-	public static final int EVENT_NETWORK_REQUEST_SUCCESSFUL = 100;
-	public static final int EVENT_NETWORK_REQUEST_FAILED = 101;
+	public static final int EVENT_NETWORK_REQUEST_FAILED = 100;
+	public static final int EVENT_NETWORK_REQUEST_SUCCESSFUL = 101;
+	public static final int EVENT_NETWORK_REQUEST_SUCCESSFUL_PARTIALLY = 102;
 
 	private static final int VIEW_LOGIN = 1;
 	private static final int VIEW_MAINMENU = 2;
@@ -320,6 +321,15 @@ public class JoeyController
         	//#debug info
             System.out.println("IndexNetworkRequest request status: " + request.responseCode);
 
+            int numUploads = this.uploads.size();
+            IndexNetworkRequest indexRequest = (IndexNetworkRequest) request;
+
+            if (numUploads < indexRequest.getTotalCount()) {
+            	notifyEvent(EVENT_NETWORK_REQUEST_SUCCESSFUL_PARTIALLY);
+            	this.commController.getIndex(this.uploads, this, 5, numUploads);
+            	return;
+            }
+            
             notifyEvent(request.responseCode == 200 ? EVENT_NETWORK_REQUEST_SUCCESSFUL : EVENT_NETWORK_REQUEST_FAILED);
         }
         else if (request instanceof AddNetworkRequest)
@@ -516,8 +526,11 @@ public class JoeyController
 	{
 		int event;
 		showView(ALERT_WAIT);
-		this.commController.getIndex(this.uploads, this);
-		event = waitEvent();
+		this.commController.getIndex(this.uploads, this, 5, 0);
+
+		do {
+			event = waitEvent();
+		} while (event == EVENT_NETWORK_REQUEST_SUCCESSFUL_PARTIALLY);
 		
 		if (event == EVENT_NETWORK_REQUEST_SUCCESSFUL) {
 			do {
