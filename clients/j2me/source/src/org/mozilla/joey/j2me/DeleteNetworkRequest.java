@@ -29,7 +29,7 @@ public class DeleteNetworkRequest
 {
     public DeleteNetworkRequest(String id)
     {
-        this.requestURL = "/uploads/delete/" + id;
+        this.requestURL = "/uploads/deleteByFileID/" + id;
         this.contenttype = "application/x-www-form-urlencoded";
         this.postdata = "rest=1";
     }
