@@ -402,7 +402,8 @@ public class JoeyController
 								break;
 						}
 					} while (event != EVENT_NETWORK_REQUEST_SUCCESSFUL
-							 && event != EVENT_NETWORK_REQUEST_FAILED);
+							 && event != EVENT_NETWORK_REQUEST_FAILED
+							 && event != EVENT_NONE);
 					break;
 
 				case EVENT_EXIT:
