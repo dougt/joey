@@ -272,6 +272,9 @@ public class JoeyController
 				else if (command == CMD_YES) {
 					notifyEvent(EVENT_YES);
 				}
+				else if (command == CMD_DELETE) {
+					notifyEvent(EVENT_DELETE);
+				}
 				else {
 					//#debug info
 					System.out.println("Unknown command: " + command.getLabel());
@@ -562,10 +565,9 @@ public class JoeyController
 		this.commController.get(upload, this);
 		event = waitEvent();
 
-		DetailsView view = (DetailsView) showView(VIEW_DETAILS);
-		view.setUpload(upload);
-
 		do {
+			DetailsView view = (DetailsView) showView(VIEW_DETAILS);
+			view.setUpload(upload);
 			event = waitEvent();
 			
 			switch (event) {
