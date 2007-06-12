@@ -163,7 +163,8 @@ public class UploadsView
 
 		boolean handled = super.handleKeyPressed(keyCode, gameAction);
 
-		if (handled && this.currentlyActiveContainer == this.bottomFrame ) {
+		if (handled && this.container.size() > 0
+			&& this.currentlyActiveContainer == this.bottomFrame ) {
 			this.currentlyActiveContainer = this.container;
 			this.container.focus(0);
 			//#= this.bottomFrame.defocus(StyleSheet.commandsareaStyle);
