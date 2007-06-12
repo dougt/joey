@@ -204,6 +204,7 @@ class UploadsController extends AppController
 
                 // check for duplicates
                 $_contentdup = $this->Contentsource->findBySource($this->data['Contentsource']['source']);
+
                 if (!empty($_contentdup)) {
                   
                   if ($this->nbClient) {
@@ -449,6 +450,10 @@ class UploadsController extends AppController
 
         // We are dealing with a J2ME client here
         if ($this->nbClient) {
+
+          // testing $_GET is for testing really....
+            if (array_key_exists('limit',$_GET)) { $_options['limit'] = $_GET['limit']; }
+            if (array_key_exists('start',$_GET)) { $_options['start'] = $_GET['start']; }
 
             if (array_key_exists('limit',$_POST)) { $_options['limit'] = $_POST['limit']; }
             if (array_key_exists('start',$_POST)) { $_options['start'] = $_POST['start']; }
