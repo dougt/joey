@@ -4,9 +4,10 @@ title.snapshot=Schnappschuss
 title.uploads=Uploads
 title.details=Details
 
+polish.command.select=Ausw\u00e4hlen
+
 command.exit=Beenden
 command.back=Zur\u00fcck
-command.select=Ausw\u00e4hlen
 command.login=Anmelden
 command.delete=L\u00f6schen
 command.snapshot=Schnappschuss

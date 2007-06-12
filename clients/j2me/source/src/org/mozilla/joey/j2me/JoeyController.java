@@ -87,7 +87,6 @@ public class JoeyController
 	public static final String ATTR_UPLOAD = "upload";
 	
 	public static final Command CMD_EXIT = new Command(Locale.get("command.exit"), Command.EXIT, 1);
-//	public static final Command CMD_SELECT = new Command(Locale.get("command.select"), Command.SCREEN, 1);
 	public static final Command CMD_SELECT = List.SELECT_COMMAND;
 	public static final Command CMD_BACK = new Command(Locale.get("command.back"), Command.BACK, 1);
 	public static final Command CMD_LOGIN = new Command(Locale.get("command.login"), Command.SCREEN, 1);

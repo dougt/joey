@@ -4,9 +4,10 @@ title.snapshot=Snapshot
 title.uploads=Uploads
 title.details=Details
 
+polish.command.select=Select
+
 command.exit=Exit
 command.back=Back
-command.select=Select
 command.login=Login
 command.delete=Delete
 command.snapshot=Snapshot
