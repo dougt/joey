@@ -26,37 +26,28 @@
  * colors that are being reused.
  */
 colors {
-	titleColor: #002bc6;
-	bgColorFocused: #fabd23;
-	borderColorFocused: black;
-	
-	bgColor: white;
-	bgColorInput: white;
-	borderColorInput: gray;
-	bgColorInputFocused: bgColorFocused;
-	borderColorInputFocused: black;
-	
-	textColor: black;
-	
-	textColorInput: gray;
-	textColorInputFocused: black;
-	
-	activeTabColor: #002bc6; 
-	inactiveTabColor: silver;
-	
-	darkpink: rgb(185,26,138);
 
-	uploadBgColor: white;
-	uploadBgColorFocused: red;
-
-	bgColorCommands: gray;
+    yellowgreen: #ADFF2F;
 
 	fontColor: black;
-	fontShadowColor: #eee;
-	screenColorTop1: black;
-	screenColorBottom1: black;
-	screenColorTop2: yellow;
-	screenColorBottom2: yellow;
+	titleColor: gray;
+	bgColorFocused: gray;
+	borderColorFocused: yellowgreen;
+	
+	bgColor: black;
+	bgColorInput: gray;
+
+	borderColorInput: gray;
+	borderColorInputFocused: gray;
+	
+	textColor: black;
+	textColorInput: black;
+	textColorInputFocused: black;
+	
+	bgColorCommands: gray;
+	bgColorInputFocused: bgColorFocused;
+
+	fontShadowColor: gray;
 	focusedBackgroundColor: white;
 	focusedBorderColor: black;
 }
@@ -231,7 +222,7 @@ menu {
 	font-color: textColorInputFocused;
 	font-size: small;
 	view-type: slide-up;
-	background-color: yellow;
+	background-color: gray;
 
 	border {
 		type: drop-shadow;
@@ -345,5 +336,5 @@ alertWait {
 }
 
 .commandsitem:hover {
-	background-color: red;
+	background-color: yellowgreen;
 }

@@ -66,6 +66,8 @@ public class UploadsView
 
 		Image imgSelect = null;
 		Image imgDelete = null;
+		Image img1 = null;
+		Image img2 = null;
 		Image img3 = null;
 		Image img4 = null;
 		Image img5 = null;
@@ -75,12 +77,15 @@ public class UploadsView
 		{
 			imgSelect = Image.createImage("/icon_red.png");
 			imgDelete = Image.createImage("/icon_delete.png");
-			img3 = Image.createImage("/icon_green.png");
-			img4 = Image.createImage("/icon_blue.png");
-			img5 = Image.createImage("/icon_white.png");
-			img6 = Image.createImage("/icon_yellow.png");
+
+			img1 = Image.createImage("/video_16x16.png");
+			img2 = Image.createImage("/music_16x16.png");
+			img3 = Image.createImage("/pictures_16x16.png");
+			img4 = Image.createImage("/rss_16x16.png");
+			img5 = Image.createImage("/text_16x16.png");
+			img6 = Image.createImage("/ms_16x16.png");
 		}
-		catch (IOException e)
+		catch (Exception e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -94,6 +99,16 @@ public class UploadsView
 		//#style commandsitem
 		this.commands.append(null, imgDelete);
 		this.commands.setDefaultCommand(JoeyController.CMD_DELETE);
+		this.commands.setItemCommandListener(controller);
+
+		//#style commandsitem
+		this.commands.append(null, img1);
+		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
+		this.commands.setItemCommandListener(controller);
+
+		//#style commandsitem
+		this.commands.append(null, img2);
+		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
 		this.commands.setItemCommandListener(controller);
 
 		//#style commandsitem
