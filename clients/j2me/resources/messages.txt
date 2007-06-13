@@ -11,6 +11,7 @@ command.back=Back
 command.login=Login
 command.delete=Delete
 command.snapshot=Snapshot
+command.media_open=Open
 
 command.yes=Yes
 command.no=No
@@ -23,8 +24,11 @@ uploads.delete.msg=Do you really wanna delete this upload?
 
 form.login.login=Login
 
+media.browser.open=Open in browser
+
 form.preferences=Preferences
 
 alert.login.error=Cannot login into server. Username or password wrong?
 alert.exit.msg=Do you really want to exit Joey?
 alert.wait.msg=Please wait!
+alert.media.open.msg=The media could not be opened on your handset.  We blame Justin. Don't you?

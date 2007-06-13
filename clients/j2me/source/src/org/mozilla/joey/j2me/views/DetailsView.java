@@ -43,17 +43,21 @@ import javax.microedition.media.control.VideoControl;
 
 import de.enough.polish.browser.html.HtmlBrowser;
 
+import org.mozilla.joey.j2me.JoeyController;
 import org.mozilla.joey.j2me.Upload;
 
 public class DetailsView
 	extends Form
 {
     private Upload upload;
+    private JoeyController controller;
 
-	public DetailsView()
+	public DetailsView(JoeyController controller)
 	{
 		//#style detailsScreen
 		super(Locale.get("title.details"));
+
+        this.controller = controller;
 	}
 
 	public void setUpload(Upload upload)
@@ -96,50 +100,68 @@ public class DetailsView
 //#if polish.api.mmapi
         else if (this.upload.getMimetype().equals("audio/mpeg"))
         {
-        	try {
-                Player player;
-                player = Manager.createPlayer(new ByteArrayInputStream(this.upload.getData()), "audio/mpeg");
 
-                player.realize();
-                //                player.prefetch();
-                player.start();
+            if ( this.upload.getData() != null) {
+                try {
+                    Player player;
+                    player = Manager.createPlayer(new ByteArrayInputStream(this.upload.getData()), "audio/mpeg");
+                    player.realize();
+                    player.start();
+                }
+                catch(Exception t) {
+                    
+                    //#style input
+                    item = new StringItem(null, "Could not create player for audio/mpeg: " + t);
+                    append(item);
+                }
             }
-            catch(Exception t) {
-
-                //#style input
-                item = new StringItem(null, "Could not create player for audio/mpeg: " + t);
+            else
+            {
+                //#style button
+                item = new StringItem(null, Locale.get("media.browser.open"));
+                item.setDefaultCommand(JoeyController.CMD_MEDIA_OPEN);
+                item.setItemCommandListener(controller);
                 append(item);
-
-                t.printStackTrace();
             }
 
         }
         else if (this.upload.getMimetype().equals("video/3gpp"))
         {
-        	try {
-            	VideoControl vc;
-                Player player;
 
-                // create a player instance
-                player = Manager.createPlayer(new ByteArrayInputStream(this.upload.getData()), "video/3gpp");
+            if ( this.upload.getData() != null) {
 
-                // realize the player
-                player.realize();
-                vc = (VideoControl)player.getControl("VideoControl");
-                if(vc != null) {
-                    Item video = (Item)vc.initDisplayMode(GUIControl.USE_GUI_PRIMITIVE, null);
-                    append(video);
+                try {
+                    VideoControl vc;
+                    Player player;
+                    
+                    // create a player instance
+                    player = Manager.createPlayer(new ByteArrayInputStream(this.upload.getData()), "video/3gpp");
+                    
+                    // realize the player
+                    player.realize();
+                    vc = (VideoControl)player.getControl("VideoControl");
+                    if(vc != null) {
+                        Item video = (Item)vc.initDisplayMode(GUIControl.USE_GUI_PRIMITIVE, null);
+                        append(video);
+                    }
+                    player.start();
                 }
-                //                player.prefetch();
-                player.start();
+                catch(Exception t) {
+                    //#style input
+                    item = new StringItem(null, "Could not create player for video: " + t);
+                    append(item);
+                }
             }
-            catch(Exception t) {
-                //#style input
-                item = new StringItem(null, "Could not create player for video: " + t);
+            else
+            {
+                //#style button
+                item = new StringItem(null, Locale.get("media.browser.open"));
+                item.setDefaultCommand(JoeyController.CMD_MEDIA_OPEN);
+                item.setItemCommandListener(controller);
                 append(item);
-                
-                t.printStackTrace();
             }
+
+
         }
 //#endif
         else if (this.upload.getMimetype().equals("widget/joey"))

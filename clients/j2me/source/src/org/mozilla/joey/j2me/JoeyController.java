@@ -67,6 +67,7 @@ public class JoeyController
 	public static final int EVENT_EXIT = 6;
 	public static final int EVENT_SELECT = 7;
 	public static final int EVENT_DELETE = 8;
+	public static final int EVENT_MEDIA_OPEN = 9;
 
 	public static final int EVENT_NETWORK_REQUEST_FAILED = 100;
 	public static final int EVENT_NETWORK_REQUEST_SUCCESSFUL = 101;
@@ -83,6 +84,7 @@ public class JoeyController
 	private static final int ALERT_EXIT_CONFIRMATION = 8;
 	private static final int ALERT_LOGIN_ERROR = 9;
 	private static final int ALERT_WAIT = 10;
+    private static final int ALERT_MEDIA_OPEN_ERROR = 11;
 
 	public static final String ATTR_UPLOAD = "upload";
 	
@@ -94,6 +96,7 @@ public class JoeyController
 	public static final Command CMD_SNAPSHOT = new Command(Locale.get("command.snapshot"), Command.SCREEN, 1);
 	public static final Command CMD_YES = new Command(Locale.get("command.yes"), Command.SCREEN, 1);
 	public static final Command CMD_NO = new Command(Locale.get("command.no"), Command.BACK, 1);
+	public static final Command CMD_MEDIA_OPEN = new Command(Locale.get("command.media_open"), Command.SCREEN, 1);
 
 	private static final String RMS_USERDATA = "userdata";
 
@@ -182,9 +185,10 @@ public class JoeyController
 			return view;
 
         case VIEW_DETAILS:
-            view = new DetailsView();
+            view = new DetailsView(this);
             view.addCommand(CMD_BACK);
 			view.addCommand(CMD_DELETE);
+			view.addCommand(CMD_MEDIA_OPEN);
             view.setCommandListener(this.commandListener);
             return view;
             
@@ -217,6 +221,14 @@ public class JoeyController
 			//#style alertWait
 			alert = new Alert(null, Locale.get("alert.wait.msg"), null, AlertType.INFO);
 			alert.setTimeout(Alert.FOREVER);
+			return alert;
+
+		case ALERT_MEDIA_OPEN_ERROR:
+			//#style alertWait
+			alert = new Alert(null, Locale.get("alert.media.open.msg"), null, AlertType.ERROR);
+			alert.setTimeout(Alert.FOREVER);
+			alert.addCommand(CMD_YES);
+			alert.setCommandListener(this.commandListener);
 			return alert;
 
 		default:
@@ -275,6 +287,9 @@ public class JoeyController
 				else if (command == CMD_DELETE) {
 					notifyEvent(EVENT_DELETE);
 				}
+                else if (command == CMD_MEDIA_OPEN) {
+					notifyEvent(EVENT_MEDIA_OPEN);
+                }
 				else {
 					//#debug info
 					System.out.println("Unknown command: " + command.getLabel());
@@ -405,6 +420,7 @@ public class JoeyController
 							 && event != EVENT_NETWORK_REQUEST_FAILED
 							 && event != EVENT_NONE);
 					break;
+
 
 				case EVENT_EXIT:
 					event = doExitConfirmation();
@@ -561,10 +577,29 @@ public class JoeyController
 	private void doUploadDetails(Upload upload)
 	{
 		int event;
+        boolean fetchData = true;
 
-		showView(ALERT_WAIT);
-		this.commController.get(upload, this);
-		event = waitEvent();
+
+
+        //#if polish.api.mmapi
+
+        // we need to make a decision here if we should
+        // fetch the data before showing the details view.
+        // For now, lets assume we can't because we haven't
+        // been able to.
+
+        if (upload.getMimetype().equals("video/3gpp") ||
+            upload.getMimetype().equals("audio/mpeg")) {
+            fetchData = false;
+        }
+        //#endif
+
+
+        if (fetchData == true) {
+            showView(ALERT_WAIT);
+            this.commController.get(upload, this);
+            event = waitEvent();
+        }
 
 		do {
 			DetailsView view = (DetailsView) showView(VIEW_DETAILS);
@@ -572,6 +607,18 @@ public class JoeyController
 			event = waitEvent();
 			
 			switch (event) {
+                case EVENT_MEDIA_OPEN:
+                    try {
+                        String requestURL = this.commController.getRawMediaURLFor(upload.getId());
+                        this.midlet.platformRequest(requestURL);
+                    }
+                    catch (Exception t) {
+                        showView(ALERT_MEDIA_OPEN_ERROR);
+                        waitYesNo();
+                        event = EVENT_BACK;
+                    }
+                    break;
+
 				case EVENT_DELETE:
 					showView(ALERT_UPLOADS_DELETE_CONFIRMATION);
 					if (waitYesNo() == EVENT_YES) {
