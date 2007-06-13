@@ -96,6 +96,7 @@ CREATE TABLE `phones` (
   `screen_width` int(8) unsigned NOT NULL,
   `screen_height` int(8) unsigned NOT NULL,
   `screen_bitdepth` int(8) unsigned NOT NULL,
+  `browser_ua` text,
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL,
   PRIMARY KEY  (`id`)
