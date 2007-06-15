@@ -193,4 +193,35 @@ INSERT INTO `operators` VALUES (9,'T-Mobile', 'tmomail.net','2007-03-18 09:19:04
 INSERT INTO `operators` VALUES (10,'Verizon PCS', 'vtext.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
 INSERT INTO `operators` VALUES (11,'Sprint PCS', 'messaging.sprintpcs.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
 
+INSERT INTO `operators` VALUES (12,'Alaska Communications Systems', 'msg.acsalaska.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (13,'Alltel Wireless', 'message.alltel.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (14,'Bell Mobility & Solo Mobile', 'txt.bell.ca','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (15,'AT&T Wireless', 'txt.att.net','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (16,'Boost Mobile', 'myboostmobile.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (17,'Centennial Wireless', 'cwemail.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (18,'Comcel', 'comcel.com.co','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (19,'Cricket', 'mms.mycricket.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (20,'CTI', 'sms.ctimovil.com.ar','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (21,'Emtel', 'emtelworld.net','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (22,'Globalstar', 'msg.globalstarusa.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (23,'Fido', 'fido.ca','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (24,'Helio', 'messaging.sprintpcs.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (25,'Presidents Choice', 'txt.bell.ca','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (26,'Movicom', 'movimensaje.com.ar','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (27,'Movistar', 'movistar.com.co','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (28,'Qwest', 'qwestmp.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (29,'Rogers', 'pcs.rogers.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (30,'7-11 Speakout',  'cingularme.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (31,'Suncom', 'tms.suncom.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (32,'Tigo', 'sms.tigo.com.co','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (33,'Telus Mobility', 'msg.telus.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (34,'Tracfone',  'cingularme.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (35,'US Cellular', 'email.uscc.net','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (36,'YCC', 'sms.ycc.ru','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (37,'Virgin Mobile', 'vmobl.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (38,'Vodacom', 'voda.co.za','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (39,'WEBTEXT', 'webtext.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (40,'IPIPI.COM', 'opensms.ipipi.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (41,'CLARO', 'ideasclaro-ca.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
+
 INSERT INTO `phones` VALUES (1, 'Not Sure', 'en-us', '', '', 0, 0, 0, '2007-03-18 09:19:04','0000-00-00 00:00:00');
