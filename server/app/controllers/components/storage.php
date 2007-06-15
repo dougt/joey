@@ -188,9 +188,13 @@ class StorageComponent extends Object
 
               case 'rss-source/text':
 
+                $useragent = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-US; rv:1.8.1.4) Gecko/20070515 Firefox/2.0.0.4";
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, chop($_upload['Contentsource']['source']));
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); // return into a variable
+                curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, 5);
+                curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
+
                 $result = curl_exec($ch);
                 curl_close($ch);
 
