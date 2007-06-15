@@ -36,7 +36,6 @@
  * ***** END LICENSE BLOCK ***** */
 
 
-vendor('magpierss/rss_fetch.inc');
 vendor('microsummary');
 vendor('joeywidget');
 
@@ -189,36 +188,14 @@ class StorageComponent extends Object
 
               case 'rss-source/text':
 
-                // Go get the rss feed.
-                $rss = fetch_rss( chop($_upload['Contentsource']['source']) );
-                if (empty($rss)) {
-                    return false;
-                }
-                
-                $rss_result = "RSS: " . $rss->channel['title'] . "\n\n";
-                foreach ($rss->items as $item) {
-
-                  // fix up a bit
-                  //echo print_r($item);
-
-                  $rss_result = $rss_result . "-----\n\n" . $item['title'] . "\n\n";
-                  
-                  if (isset($item['description']))
-                  {
-                    $rss_result .= $item['description'] . "\n\n";
-                  }
-                }
-
-                // does the user have enough space to proceed
-                if ($this->controller->Storage->hasAvailableSpace($_owner['User']['id'],
-                                                                  strlen($rss_result) - filesize($_filename)) == false) 
-                {
-                  $this->log("User " . $_owner['User']['id'] . " is out of space.");
-                  return false;
-                }
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, chop($_upload['Contentsource']['source']));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); // return into a variable
+                $result = curl_exec($ch);
+                curl_close($ch);
 
                 // write the file.
-                if (!file_put_contents($_filename, $rss_result)) {
+                if (!file_put_contents($_filename, $result)) {
                   $this->log("file_put_contents failed for " . $_filename);
                   return false;
                 }
