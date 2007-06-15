@@ -29,7 +29,6 @@ import de.enough.polish.ui.UiAccess;
 import de.enough.polish.util.Locale;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.Vector;
 
 import javax.microedition.lcdui.Canvas;
@@ -66,24 +65,24 @@ public class UploadsView
 
 		Image imgSelect = null;
 		Image imgDelete = null;
-		Image img1 = null;
-		Image img2 = null;
-		Image img3 = null;
-		Image img4 = null;
-		Image img5 = null;
-		Image img6 = null;
+		Image imgVideo = null;
+		Image imgMusic = null;
+		Image imgPictures = null;
+		Image imgRss = null;
+		Image imgText = null;
+		Image imgMs = null;
 		
 		try
 		{
 			imgSelect = Image.createImage("/icon_red.png");
 			imgDelete = Image.createImage("/icon_delete.png");
 
-			img1 = Image.createImage("/video_16x16.png");
-			img2 = Image.createImage("/music_16x16.png");
-			img3 = Image.createImage("/pictures_16x16.png");
-			img4 = Image.createImage("/rss_16x16.png");
-			img5 = Image.createImage("/text_16x16.png");
-			img6 = Image.createImage("/ms_16x16.png");
+			imgVideo = Image.createImage("/video_16x16.png");
+			imgMusic = Image.createImage("/music_16x16.png");
+			imgPictures = Image.createImage("/pictures_16x16.png");
+			imgRss = Image.createImage("/rss_16x16.png");
+			imgText = Image.createImage("/text_16x16.png");
+			imgMs = Image.createImage("/ms_16x16.png");
 		}
 		catch (Exception e)
 		{
@@ -102,32 +101,32 @@ public class UploadsView
 		this.commands.setItemCommandListener(controller);
 
 		//#style commandsitem
-		this.commands.append(null, img1);
+		this.commands.append(null, imgVideo);
 		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
 		this.commands.setItemCommandListener(controller);
 
 		//#style commandsitem
-		this.commands.append(null, img2);
+		this.commands.append(null, imgMusic);
 		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
 		this.commands.setItemCommandListener(controller);
 
 		//#style commandsitem
-		this.commands.append(null, img3);
+		this.commands.append(null, imgPictures);
 		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
 		this.commands.setItemCommandListener(controller);
 		
 		//#style commandsitem
-		this.commands.append(null, img4);
+		this.commands.append(null, imgRss);
 		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
 		this.commands.setItemCommandListener(controller);
 		
 		//#style commandsitem
-		this.commands.append(null, img5);
+		this.commands.append(null, imgText);
 		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
 		this.commands.setItemCommandListener(controller);
 		
 		//#style commandsitem
-		this.commands.append(null, img6);
+		this.commands.append(null, imgMs);
 		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
 		this.commands.setItemCommandListener(controller);
 	}
