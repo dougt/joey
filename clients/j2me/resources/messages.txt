@@ -3,6 +3,7 @@ title.mainmenu=Main menu
 title.snapshot=Snapshot
 title.uploads=Uploads
 title.details=Details
+title.rssitem=RSS
 
 polish.command.select=Select
 

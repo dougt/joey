@@ -121,6 +121,9 @@ focused {
 .detailsScreen extends inputScreen {
 }
 
+.rssItemScreen extends inputScreen {
+}
+
 .uploadItem {
 	padding: 1;
 	border-width: 1;
@@ -341,4 +344,23 @@ alertWait {
 
 .commandsitem:hover {
 	background-color: yellowgreen;
+}
+
+
+.rssDescriptionAlert {
+	font-size: small;
+}
+
+.browserText {
+	font-size: small;
+}
+
+.browserLink {
+	font-size: small;
+	font-color: textColorInput;
+}
+
+.openLink {
+	font-size: small;
+	font-color: textColorInput;
 }
