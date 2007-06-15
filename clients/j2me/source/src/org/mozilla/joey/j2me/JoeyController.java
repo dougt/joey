@@ -45,6 +45,7 @@ import org.mozilla.joey.j2me.views.MainMenuView;
 import org.mozilla.joey.j2me.views.PreferencesView;
 import org.mozilla.joey.j2me.views.UploadsView;
 import org.mozilla.joey.j2me.views.DetailsView;
+import org.mozilla.joey.j2me.views.RssItemView;
 
 //#if polish.api.mmapi
 import de.enough.polish.ui.SnapshotScreen;
@@ -68,6 +69,7 @@ public class JoeyController
 	public static final int EVENT_SELECT = 7;
 	public static final int EVENT_DELETE = 8;
 	public static final int EVENT_MEDIA_OPEN = 9;
+	public static final int EVENT_RSS_ITEM = 10;
 
 	public static final int EVENT_NETWORK_REQUEST_FAILED = 100;
 	public static final int EVENT_NETWORK_REQUEST_SUCCESSFUL = 101;
@@ -79,12 +81,14 @@ public class JoeyController
 	private static final int VIEW_SNAPSHOT = 4;
 	private static final int VIEW_UPLOADS = 5;
 	private static final int VIEW_DETAILS = 6;
+	private static final int VIEW_RSS_ITEM = 7;
 
-	private static final int ALERT_UPLOADS_DELETE_CONFIRMATION = 7;
-	private static final int ALERT_EXIT_CONFIRMATION = 8;
-	private static final int ALERT_LOGIN_ERROR = 9;
-	private static final int ALERT_WAIT = 10;
-    private static final int ALERT_MEDIA_OPEN_ERROR = 11;
+	private static final int ALERT_UPLOADS_DELETE_CONFIRMATION = 8;
+	private static final int ALERT_EXIT_CONFIRMATION = 9;
+	private static final int ALERT_LOGIN_ERROR = 10;
+	private static final int ALERT_WAIT = 11;
+    private static final int ALERT_MEDIA_OPEN_ERROR = 12;
+
 
 	public static final String ATTR_UPLOAD = "upload";
 	
@@ -188,10 +192,19 @@ public class JoeyController
             view = new DetailsView(this);
             view.addCommand(CMD_BACK);
 			view.addCommand(CMD_DELETE);
-			view.addCommand(CMD_MEDIA_OPEN);
             view.setCommandListener(this.commandListener);
             return view;
-            
+
+        case VIEW_RSS_ITEM:
+
+            DetailsView dv = (DetailsView) this.currentView;
+            String description = dv.getDescription();
+
+			view = new RssItemView(description);
+			view.addCommand(CMD_BACK);
+			view.setCommandListener(this.commandListener);
+			return view;
+
 		case ALERT_EXIT_CONFIRMATION:
 			//#style alertConfirmation
 			alert = new Alert(null, Locale.get("alert.exit.msg"), null, AlertType.CONFIRMATION);
@@ -607,6 +620,13 @@ public class JoeyController
 			event = waitEvent();
 			
 			switch (event) {
+
+                case EVENT_RSS_ITEM:
+                    showView(VIEW_RSS_ITEM);
+                    while (waitEvent() != EVENT_BACK)
+                        ; //spin
+                    break;
+
                 case EVENT_MEDIA_OPEN:
                     try {
                         String requestURL = this.commController.getRawMediaURLFor(upload.getId());

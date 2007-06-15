@@ -32,6 +32,8 @@ import javax.microedition.lcdui.Form;
 import javax.microedition.lcdui.Image;
 import javax.microedition.lcdui.ImageItem;
 import javax.microedition.lcdui.Item;
+import javax.microedition.lcdui.Displayable;
+import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.StringItem;
 
 //#if polish.api.mmapi
@@ -41,16 +43,48 @@ import javax.microedition.media.control.GUIControl;
 import javax.microedition.media.control.VideoControl;
 //#endif
 
+import de.enough.polish.ui.UiAccess;
+
 import de.enough.polish.browser.html.HtmlBrowser;
+import de.enough.polish.browser.rss.*;
 
 import org.mozilla.joey.j2me.JoeyController;
 import org.mozilla.joey.j2me.Upload;
+
+
+
+class RssItemCommandListener extends DefaultRssItemCommandListener {
+ 
+    private JoeyController controller;
+    private DetailsView view;
+
+    public void setController(DetailsView view, JoeyController controller) {
+        this.controller = controller;
+        this.view = view;
+    }
+
+    public void commandAction(Command command, Displayable displayable) {}
+
+    public void commandAction(Command command, Item item) {
+        
+		if (command == RssTagHandler.CMD_RSS_ITEM_SELECT) {
+            
+            RssItem rssItem = (RssItem) UiAccess.getAttribute(item, RssTagHandler.ATTR_RSS_ITEM);
+            
+			if (rssItem != null) {
+                this.view.setDescription(rssItem.getDescription());
+                this.controller.notifyEvent(JoeyController.EVENT_RSS_ITEM);
+			}
+		}
+    }
+}
 
 public class DetailsView
 	extends Form
 {
     private Upload upload;
     private JoeyController controller;
+    private String description;
 
 	public DetailsView(JoeyController controller)
 	{
@@ -60,6 +94,16 @@ public class DetailsView
         this.controller = controller;
 	}
 
+    public String getDescription()
+    {
+        return description;
+    }
+
+    public void setDescription(String description)
+    {
+        this.description = description;
+    }
+
 	public void setUpload(Upload upload)
 	{
         this.upload = upload;
@@ -68,22 +112,34 @@ public class DetailsView
 
 	public void update()
 	{
+        setDescription(null);
 		deleteAll();
 
-		//#style input
-		Item item = new StringItem(null, this.upload.getId());
-		append(item);
+        if (this.upload.getMimetype().equals("rss-source/text") )
+        {
+            try {
 
-        //#style input
-        item = new StringItem(null, this.upload.getMimetype());
-        append(item);
+                RssItemCommandListener listener = new RssItemCommandListener();
+                listener.setController(this, this.controller);
 
-        if (this.upload.getMimetype().equals("text/plain") ||
-            this.upload.getMimetype().equals("microsummary/xml") ||
-            this.upload.getMimetype().equals("rss-source/text")  )
+                RssBrowser rb = new RssBrowser(listener);
+                
+                removeCommand(RssTagHandler.CMD_GO_TO_ARTICLE);
+
+                rb.loadPage( new ByteArrayInputStream( this.upload.getData() ));
+                append(rb);
+            }
+            catch(Exception e) {
+                //#style input
+                Item item = new StringItem(null, "Could not create the viewer");
+                append(item);
+            }
+        }
+        else if (this.upload.getMimetype().equals("text/plain") ||
+                 this.upload.getMimetype().equals("microsummary/xml") )
         {
             //#style textcontent
-            item = new StringItem(null, new String(this.upload.getData()));
+            Item item = new StringItem(null, new String(this.upload.getData()));
             append(item);
         }
         else if (this.upload.getMimetype().substring(0,5).equals("image"))
@@ -94,7 +150,7 @@ public class DetailsView
                 image = Image.createImage(new ByteArrayInputStream(this.upload.getData()));
             } catch (Exception ignored) {}
 
-            item = new ImageItem(null, image, ImageItem.LAYOUT_CENTER, this.upload.getId());
+            Item item = new ImageItem(null, image, ImageItem.LAYOUT_CENTER, this.upload.getId());
             append(item);
         }
 //#if polish.api.mmapi
@@ -111,14 +167,14 @@ public class DetailsView
                 catch(Exception t) {
                     
                     //#style input
-                    item = new StringItem(null, "Could not create player for audio/mpeg: " + t);
+                    Item item = new StringItem(null, "Could not create player for audio/mpeg: " + t);
                     append(item);
                 }
             }
             else
             {
                 //#style button
-                item = new StringItem(null, Locale.get("media.browser.open"));
+                Item item = new StringItem(null, Locale.get("media.browser.open"));
                 item.setDefaultCommand(JoeyController.CMD_MEDIA_OPEN);
                 item.setItemCommandListener(controller);
                 append(item);
@@ -148,14 +204,14 @@ public class DetailsView
                 }
                 catch(Exception t) {
                     //#style input
-                    item = new StringItem(null, "Could not create player for video: " + t);
+                    Item item = new StringItem(null, "Could not create player for video: " + t);
                     append(item);
                 }
             }
             else
             {
                 //#style button
-                item = new StringItem(null, Locale.get("media.browser.open"));
+                Item item = new StringItem(null, Locale.get("media.browser.open"));
                 item.setDefaultCommand(JoeyController.CMD_MEDIA_OPEN);
                 item.setItemCommandListener(controller);
                 append(item);
@@ -180,7 +236,7 @@ public class DetailsView
         }
         else
         {
-            item = new StringItem(null, "Mime type not supported yet (" + this.upload.getMimetype() + ")");
+            Item item = new StringItem(null, "Mime type not supported yet (" + this.upload.getMimetype() + ")");
             append(item);
         }
 	}
