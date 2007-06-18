@@ -43,7 +43,7 @@ class UsersController extends AppController
 {
     var $name = 'Users';
     var $uses = array('Operator', 'Phone', 'User');
-    var $helpers = array('Form','Html');
+    var $helpers = array('Form','Html','Javascript');
 
 
     function getSoftware() {
