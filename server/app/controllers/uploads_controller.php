@@ -42,12 +42,15 @@ class UploadsController extends AppController
 {
     var $name = 'Uploads';
 
-    var $components = array('Joey', 'Pagination', 'Session', 'Storage');
+    // ajax
+    var $components = array('Joey', 'Pagination', 'Session', 'Storage', 'RequestHandler');
 
 //@todo review these
     var $uses = array('Phone', 'Contentsource', 'Contentsourcetype', 'File', 'Upload','User');
 
-    var $helpers = array('Number','Time', 'Pagination');
+    // now with ajax
+
+    var $helpers = array('Number','Time', 'Pagination', 'Ajax', 'Javascript');
 
     // maybe move this to the storage component or into a table
     var $filetypes = array (
@@ -408,7 +411,14 @@ class UploadsController extends AppController
             if ($this->nbClient) {
                 $this->returnJoeyStatusCode($this->SUCCESS);
             } else {
-                $this->flash('Upload Deleted', '/uploads/index',2);
+
+              //  $this->flash('Upload Deleted', '/uploads/index',2);
+
+	      // ajax
+
+	      #this->render('ajaxdeleted','ajax');
+
+
             }
         } else {
             if ($this->nbClient) {
