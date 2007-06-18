@@ -1,3 +1,5 @@
+<div id="content">
+
 <div id="joey-upload-frame">
 
 <h1>Joey! Uploads</h1>
@@ -61,18 +63,12 @@ You have no uploads yet.
             ?>
 
 
-		<?php if($upload['File']['type']=='image/png') :?>
-
-                     <img class="joey-upload-image-thumb"   
-                             src="<?php echo "/files/view/" . $upload['File']['id'] ?>">
-
-		<?php endif; ?>
-
 		<?php if($upload['File']['type']=='text/plain') :?>
 
-                     <img class="joey-upload-image-thumb"   
-                             src="/css/style/media-text.jpg"
-                      </img >
+                     <div class="joey-upload-image-thumb"   
+                          <div class="joey-mediaicon-text">
+		          </div>
+                      </div >
 
 		<?php endif; ?>
 
@@ -134,6 +130,7 @@ You have no uploads yet.
 
 <?php endif; ?>
 
+</div>
 </div>
 
 
