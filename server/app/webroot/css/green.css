@@ -3,6 +3,11 @@ html {
 	background-color:black;
 }
 
+
+#messagesBar {
+	padding-top:.5em;
+}
+
 *{
 margin:0;
 padding:0;
@@ -304,9 +309,6 @@ div#container {
 }
 
 #content{
-clear:both;
-background-color: #fff;
-color: #333;
 }
 
 #footer-pagination{
