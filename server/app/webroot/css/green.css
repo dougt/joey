@@ -34,6 +34,7 @@ table { width:100% }
 }
 
 
+
 /*
 
 */
@@ -44,6 +45,31 @@ table { width:100% }
 	color:gray;
 	float:left;
 }
+
+
+
+
+
+
+
+ey-mediaicon-video {
+        background: #333333 url(/css/style/media-video.jpg) 0 0 no-repeat;
+        width:100px;
+        height:80px;
+}
+
+.joey-mediaicon-audio {
+        background: #333333 url(/css/style/media-audio.jpg) 0 0 no-repeat;
+        width:100px;
+        height:80px;
+}
+
+.joey-mediaicon-text {
+        background: #333333 url(/css/style/media-text.jpg) 0 0 no-repeat;
+        width:100px;
+        height:80px;
+}
+
 
 .joey-upload-preview {
 
