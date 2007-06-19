@@ -65,6 +65,11 @@ class StorageComponent extends Object
                          "widget/joey" => "jwt");
 
 
+    function storage_log($msg) {
+
+      file_put_contents(LOGS . "storage_log" , $msg . "\r\n", FILE_APPEND | LOCK_EX);
+    }
+
     /**
      * Save a reference to the controller on startup
      * @param object &$controller the controller using this component
@@ -86,6 +91,9 @@ class StorageComponent extends Object
 
       // $additional and $totalused is in bytes, MAX_DISK_USAGE is in MB
       if ( ($additional + $totalused) > (MAX_DISK_USAGE * 1024 * 1024)) {
+
+        $this->storage_log($userid . " hasAvailableSpace failed");
+
         return false;
       }
       
@@ -138,6 +146,7 @@ class StorageComponent extends Object
      */
     function updateFileByUploadId($id, $forceUpdate)
     {
+      $this->storage_log("Createfileforuploadid");
 
       $_upload = $this->controller->Upload->FindDataById($id);
 
@@ -210,7 +219,7 @@ class StorageComponent extends Object
 
                 // write the file.
                 if (!file_put_contents($_filename, $result)) {
-                  $this->log("file_put_contents failed for " . $_filename);
+                  $this->storage_log("file_put_contents failed for " . $_filename);
                   return false;
                 }
 
@@ -247,7 +256,7 @@ class StorageComponent extends Object
                 unlink($tmpname);
 
                 if ($_ret !== 0) {
-                  $this->log("transcodeImage failed: " . $_cmd);
+                  $this->storage_log("transcodeImage failed: " . $_cmd);
                   return false;
                 }
 
@@ -281,19 +290,19 @@ class StorageComponent extends Object
 
                   if (empty($ms->result)) {
                       $ms->result = "XPATH is broken..  this feature doesn't work for the content you have selected. ";
-                      $this->log("Microsummary ". $_upload['Contentsource']['id'] . "does not have an xpath result");
+                      $this->storage_log("Microsummary ". $_upload['Contentsource']['id'] . "does not have an xpath result");
                   }
 
                   // does the user have enough space to proceed
                   if ($this->controller->Storage->hasAvailableSpace($_owner['User']['id'],
                                                                     strlen($ms->result) - filesize($_filename)) == false) {
-                    $this->log("User " . $_owner['User']['id'] . " is out of space.");
+                    $this->storage_log("User " . $_owner['User']['id'] . " is out of space.");
                     return false;
                   }
 
                   // write the file.
                   if (!file_put_contents($_filename, $ms->result)) {
-                    $this->log("file_put_contents failed for " . $_filename);
+                    $this->storage_log("file_put_contents failed for " . $_filename);
                     return false;
                   }
 
@@ -313,11 +322,11 @@ class StorageComponent extends Object
 
                     // write the file.
                     if (!file_put_contents($_filename, $jw->content)) {
-                      $this->log("file_put_contents failed for " . $_filename);
+                      $this->storage_log("file_put_contents failed for " . $_filename);
                       return false;
                     }
                     if (!file_put_contents($_previewname, $jw->preview)) {
-                      $this->log("file_put_contents failed for " . $_previewname);
+                      $this->storage_log("file_put_contents failed for " . $_previewname);
                       return false;
                     }
                     
@@ -352,7 +361,7 @@ class StorageComponent extends Object
     $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_fromName} {$_toName}";    
     exec($_cmd, $_out, $_ret);
     if ($_ret !== 0) {
-      $this->log("transcodeImage failed: " . $_cmd);
+      $this->storage_log("transcodeImage failed: " . $_cmd);
       return false;
     }
     
@@ -362,7 +371,7 @@ class StorageComponent extends Object
     $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_toName} {$_previewName}";    
     exec($_cmd, $_out, $_ret);
     if ($_ret !== 0) {
-      $this->log("transcodeImage failed: " . $_cmd);
+      $this->storage_log("transcodeImage failed: " . $_cmd);
       return false;
     }
     
@@ -382,7 +391,7 @@ class StorageComponent extends Object
     $_cmd = FFMPEG_CMD . " -y -i {$_fromName} -ab 32 -b 15000 -ac 1 -ar 8000 -vcodec h263 -s qcif -r 12 {$_toName}";
     exec($_cmd, $_out, $_ret);
     if ($_ret !== 0) {
-      $this->log("transcodeVideo failed: " . $_cmd);
+      $this->storage_log("transcodeVideo failed: " . $_out);
       return false;
     }
     
@@ -391,7 +400,7 @@ class StorageComponent extends Object
     $_cmd = FFMPEG_CMD . " -i {$_fromName} -ss 5 -s '{$width}x{$height}' -vframes 1 -f mjpeg {$_previewName}";
     exec($_cmd, $_out, $_ret);
     if ($_ret !== 0) {
-      $this->log("transcodeVideo failed: " . $_cmd);
+      $this->storage_log("transcodeVideo failed: " . $_out);
       return false;
     }
     
