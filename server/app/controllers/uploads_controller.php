@@ -354,7 +354,6 @@ class UploadsController extends AppController
 
         $_item = $this->Upload->findById($id, null,null,2);//@todo this pulls way too much data
 
-
         if (!empty($_item['Upload']['deleted']))
           return; // do nothing (hide) for deleted items.
 
@@ -368,6 +367,7 @@ class UploadsController extends AppController
                 $this->flash('Delete failed', '/uploads/index',2);
             }
         }
+
 
         $this->Upload->begin();
 
@@ -410,6 +410,12 @@ class UploadsController extends AppController
                     }
                 }
             }
+
+            
+            // Delete the file record.
+            $_file_id = $_item['File'][0]['id'];
+            $this->File->delete($_file_id);
+
 
             $this->Upload->commit();
             if ($this->nbClient) {

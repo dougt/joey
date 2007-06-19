@@ -146,8 +146,6 @@ class StorageComponent extends Object
      */
     function updateFileByUploadId($id, $forceUpdate)
     {
-      $this->storage_log("Createfileforuploadid");
-
       $_upload = $this->controller->Upload->FindDataById($id);
 
       // This Upload doesn't have a contentsource
