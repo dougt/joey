@@ -315,11 +315,17 @@ function joey_feed()
      */
     
     var feedLocation = g_joey_gBrowser.mCurrentBrowser.feeds[0].href;
-    
-    g_joey_data = feedLocation;
+    var baseTitle = g_joey_gBrowser.mCurrentBrowser.feeds[0].title || feedLocation;
+    var icon = g_joey_gBrowser.mCurrentBrowser.mIconURL;
+
+    g_joey_data = "rss=" + feedLocation + "\r\n";
+
+    if (icon != null)
+        g_joey_data = g_joey_data + "icon=" + icon + "\r\n";
+
     g_joey_isfile = false;
     g_joey_content_type = "rss-source/text";
-    g_joey_title = "Feed / We can put a title in it with one more client call. ";
+    g_joey_title = baseTitle;
     g_joey_url  = feedLocation;
     uploadDataFromGlobals(false);
 }
@@ -998,7 +1004,9 @@ var g_joeySelectorService = {
                                                 ,deltaCall 
                                                 ,false);
 
-        this.removeBox();
+        if (this.removeBox)
+            this.removeBox();
+
         this.associatedDocument    = null;   
         this.currentEvent          = null;
         this.previousTargetElement = null;
@@ -1407,6 +1415,4 @@ function joey_enableSelection() {
     g_joeySelectorService.enable();
 
 }
-
-
 
