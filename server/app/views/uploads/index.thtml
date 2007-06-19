@@ -75,6 +75,11 @@ You have no uploads yet.
                      <div class="joey-upload-image-thumb"
                           <div class="joey-mediaicon-video">
 <a href="javascript:" onclick="resize('expandItem-<?php echo $upload['Upload']['id'] ?>');videoPlay('<?php echo "/files/view/" . $upload['File']['id'] . "/original" ?>');return false">play</a>
+
+                <?php echo $html->link( '<img class="joey-upload-preview-thumb"   src="'.$html->url("/files/view/{$upload['File']['id']}/preview").'" alt="Upload Preview" />', "/files/view/{$upload['File']['id']}",false,false,false ); ?>
+
+
+
                           </div>
 
                       </div >
