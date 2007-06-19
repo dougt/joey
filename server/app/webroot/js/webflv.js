@@ -1,10 +1,23 @@
 /* by Mgalli, for the JOey projext, this is to be kept with the same MPL */
 
 
+function joeyHide(refElement) {
 
+	var el = document.getElementById(refElementTo);
+
+	el.style.display="none";
+
+}
 
 function resize(refElementTo){
 
+
+	var el = document.getElementById(refElementTo);
+
+	el.style.display="block";
+	el.style.height="240px";
+	el.style.width="320px";
+	el.innerHTML="<a href='javascript:' onclick='joeyHide(\""+refElementTo+"\");return false;'>[x]</a>";
 
 
 	if(!document.all) {
