@@ -25,7 +25,6 @@ table { width:100% }
 
 #joey-general-frame {
 	width:100%;
-	padding:1em;
 
 }
 
@@ -139,7 +138,7 @@ td.joey-item-thumb {
 
 
 .framecontent {
-	max-width:933px;
+	max-width:880px;
 	text-align:left;
  	background-color:rgb(15,14,16);
 }
@@ -318,6 +317,7 @@ div#container {
 }
 
 #footer-pagination{
+margin:0px;
 padding:1em;
 padding-top:0em;
 text-align: left;
@@ -334,10 +334,11 @@ height:140px;
 }
 
 #footer {
-background: black url(style/border-shade.jpg) no-repeat 0 0; 
-
+background: black url(style/bottombanner.jpg) no-repeat 0 0; 
+height:2em;
 color:gray;
 margin:0px;
+margin-top:1px;
 padding:1em;
 text-align: center;
 }
