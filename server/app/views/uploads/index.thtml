@@ -74,7 +74,7 @@ You have no uploads yet.
 
                      <div class="joey-upload-image-thumb"
                           <div class="joey-mediaicon-video">
-<a href="javascript:" onclick="resize();videoPlay('<?php echo "/files/view/" . $upload['File']['id'] . "/original" ?>');return false">play</a>
+<a href="javascript:" onclick="resize('expandItem-<?php echo $upload['Upload']['id'] ?>');videoPlay('<?php echo "/files/view/" . $upload['File']['id'] . "/original" ?>');return false">play</a>
                           </div>
 
                       </div >
@@ -126,12 +126,17 @@ You have no uploads yet.
 
 	<td  class="joey-item-information" >
 
+
     <span class="titleupload"><?php echo $html->link( $upload['Upload']['title'], $upload['Upload']['referrer']) ?></span>
     <ul>
         <li>Size:  <?php echo $number->toReadableSize($upload['File']['size']); ?></li>
         <li>Uploaded <?php echo $time->niceShort($upload['Upload']['created']); ?></li>
         <li><?php echo $html->link( "Original", "/files/view/" . $upload['File']['id'] . "/original") ?></li>
     </ul>
+
+    <!-- used by the ajax video player . just a container --> 
+
+    <div id="expandItem-<?php echo $upload['Upload']['id'] ?>"> </div>
 
 	</td>
 
@@ -147,9 +152,13 @@ You have no uploads yet.
 <td valign=" top" width="200" >
 <img src="/css/style/banner-filters.jpg" >
 
+
+<div id="singleVideo" style="position:absolute;left:-100px;top:-100px" >
 <object align="middle" codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=7,0,0,0" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" id="videoplayerobject" width="100" height="90"><param value="/app/webroot/vendor/webflv.swf" name="movie"><param value="high" name="quality"><param value="true" name="swLiveConnect"><param value="#ffffff" name="bgcolor">
 <embed pluginspage="http://www.macromedia.com/go/getflashplayer" type="application/x-shockwave-flash" allowScriptAccess="sameDomain" align="middle" bgcolor="#ffffff" swLiveConnect="true" quality="high" src="/app/webroot/vendor/webflv.swf" mayscript="true" id="videoplayerembed" width="100" height="90"></embed>
 </object>
+</div>
+
 
 </td>
 </tr>
