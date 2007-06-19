@@ -28,6 +28,11 @@ You have no uploads yet.
 
 </div>
 
+<!-- these are temporary repositories to the ajax messages -->
+<div id="messagesBar" > </div>
+<div id="loading" class="joey-message"  style="display:none" >Working...</div>
+
+
 <table cellspacing="0"  cellpadding="0" ><tr><td valign="top">
 
 <div class="joey-upload" >
@@ -51,6 +56,9 @@ You have no uploads yet.
 
         <?php echo $html->link( "Delete", "/uploads/delete/" . $upload['Upload']['id']) ?>
 	<div class="joey-upload-mediaicon"><?php echo $upload['File']['type'] ?></div>
+        <?php echo $ajax->link( "Delete", "/uploads/delete/" . $upload['Upload']['id'] , array('update' => 'messagesBar', "loading"=>"Element.show('loading');", "complete" => "Element.hide('loading');Element.hide('innerItem-" . $upload['Upload']['id'] ."');alert(1)" ) ) ?>
+
+
 		
 	</td>
 
