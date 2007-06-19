@@ -36,8 +36,8 @@ function resize(refElementTo){
 
  	var pos=findPos(document.getElementById(refElementTo));
 
-	document.getElementById("singleVideo").style.left=pos[0]+"px";
-	document.getElementById("singleVideo").style.top=pos[1]+24+"px";
+	document.getElementById("singleVideo").style.left=pos[0]+20+"px";
+	document.getElementById("singleVideo").style.top=pos[1]+"px";
 
 }
 
