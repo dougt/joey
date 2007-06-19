@@ -162,8 +162,13 @@ You have no uploads yet.
         <li>Size:  <?php echo $number->toReadableSize($upload['File']['size']); ?></li>
         <li>Uploaded <?php echo $time->niceShort($upload['Upload']['created']); ?></li>
         <li><?php echo $html->link( "Original", "/files/view/" . $upload['File']['id'] . "/original") ?>         
+
+
+                <?php if($upload['File']['original_type']=='video/flv') : ?>
+
 <a href="javascript:" onclick="resize('expandItem-<?php echo $upload['Upload']['id'] ?>');videoPlay('<?php echo "/files/view/" . $upload['File']['id'] . "/original" ?>');return false">play</a>
 
+		<?php endif; ?>
 </li>
     </ul>
 
