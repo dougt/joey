@@ -3,9 +3,12 @@
 
 function joeyHide(refElement) {
 
-	var el = document.getElementById(refElementTo);
+	var el = document.getElementById(refElement);
 
 	el.style.display="none";
+
+	document.getElementById("singleVideo").style.left="-400px";
+	document.getElementById("singleVideo").style.top="-400px";
 
 }
 
@@ -15,8 +18,8 @@ function resize(refElementTo){
 	var el = document.getElementById(refElementTo);
 
 	el.style.display="block";
-	el.style.height="240px";
-	el.style.width="320px";
+	el.style.height="260px";
+	el.style.width="360px";
 	el.innerHTML="<a href='javascript:' onclick='joeyHide(\""+refElementTo+"\");return false;'>[x]</a>";
 
 
@@ -34,7 +37,7 @@ function resize(refElementTo){
  	var pos=findPos(document.getElementById(refElementTo));
 
 	document.getElementById("singleVideo").style.left=pos[0]+"px";
-	document.getElementById("singleVideo").style.top=pos[1]+"px";
+	document.getElementById("singleVideo").style.top=pos[1]+24+"px";
 
 }
 
