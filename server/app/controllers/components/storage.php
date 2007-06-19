@@ -110,9 +110,9 @@ class StorageComponent extends Object
         $_file->set('name', basename($_filename));
         $_file->set('size', 0);
         $_file->set('type', "text/html"); //@todo dougt: why is this text/html?
-        //$_file->set('preview_name', basename($_previewname));
-        //$_file->set('preview_type', "image/png");
-        //$_file->set('preview_size', 0);
+        $_file->set('preview_name', basename($_previewname));
+        $_file->set('preview_type', "image/png");
+        $_file->set('preview_size', 0);
 
         if (!$_file->save()) {
           return false;
@@ -181,6 +181,8 @@ class StorageComponent extends Object
       $_filename = UPLOAD_DIR."/{$_owner['User']['id']}/{$_upload['File']['name']}";
       $_previewname = UPLOAD_DIR."/{$_owner['User']['id']}/previews/{$_upload['File']['preview_name']}";
 
+
+      
       if (!empty($_upload['Contentsource']['source'])) {
 
           // Depending on the type, update the file
@@ -188,9 +190,17 @@ class StorageComponent extends Object
 
               case 'rss-source/text':
 
+
+                preg_match("/rss=(.*)\r\n/", $_upload['Contentsource']['source'], $rss_url);
+                preg_match("/icon=(.*)\r\n/", $_upload['Contentsource']['source'], $icon_url);
+                
+                $rss_url = $rss_url[1];
+                $icon_url = $icon_url[1];
+
+                // Grab the rss content.
                 $useragent = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-US; rv:1.8.1.4) Gecko/20070515 Firefox/2.0.0.4";
                 $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, chop($_upload['Contentsource']['source']));
+                curl_setopt($ch, CURLOPT_URL, $rss_url);
                 curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); // return into a variable
                 curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, 5);
                 curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
@@ -203,11 +213,49 @@ class StorageComponent extends Object
                   $this->log("file_put_contents failed for " . $_filename);
                   return false;
                 }
+
+                // Grab the icon content.
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $icon_url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); // return into a variable
+                curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, 5);
+                curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
+                $result = curl_exec($ch);
+                curl_close($ch);
+
+                // this is a ICO file (probably).  We need to convert to a PNG.                
+
+                /// raw content...
+
+                // figure out the extension of the favicon
                 
+                $url = pathinfo($icon_url);
+                $extension = $url["extension"];
+
+                if (empty($extension))
+                  $extension = "tmp";
+
+                $tmpname = $_previewname . "." .$extension;
+
+                if (!file_put_contents($tmpname, $result)) {
+                  echo ("file_put_contents failed for " . $tmpname);
+                  return false;
+                }
+
+                $_cmd = CONVERT_CMD . " -geometry 16x16 {$extension}:{$tmpname} {$_previewname}";    
+                exec($_cmd, $_out, $_ret);
+                unlink($tmpname);
+
+                if ($_ret !== 0) {
+                  $this->log("transcodeImage failed: " . $_cmd);
+                  return false;
+                }
+
                 // need to update the size and date in the db.
                 $this->controller->File->id = $_upload['File']['id'];
                 $this->controller->File->saveField('size',filesize($_filename));
-                
+                $this->controller->File->saveField('preview_size',filesize($_previewname));
+
                 break;
 
               case 'microsummary/xml':

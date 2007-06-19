@@ -354,6 +354,10 @@ class UploadsController extends AppController
 
         $_item = $this->Upload->findById($id, null,null,2);//@todo this pulls way too much data
 
+
+        if (!empty($_item['Upload']['deleted']))
+          return; // do nothing (hide) for deleted items.
+
         $_owner = $this->Upload->findOwnerDataFromUploadId($id);
 
         // Check for access
