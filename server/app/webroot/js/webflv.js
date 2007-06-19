@@ -1,6 +1,9 @@
 /* by Mgalli, for the JOey projext, this is to be kept with the same MPL */
 
-function resize(){
+
+
+
+function resize(refElementTo){
 
 
 
@@ -15,9 +18,27 @@ function resize(){
 	}
 
 
+ 	var pos=findPos(document.getElementById(refElementTo));
+
+	document.getElementById("singleVideo").style.left=pos[0]+"px";
+	document.getElementById("singleVideo").style.top=pos[1]+"px";
+
 }
 
 
+
+function findPos(obj) {
+	var curleft = curtop = 0;
+	if (obj.offsetParent) {
+		curleft = obj.offsetLeft
+		curtop = obj.offsetTop
+		while (obj = obj.offsetParent) {
+			curleft += obj.offsetLeft
+			curtop += obj.offsetTop
+		}
+	}
+	return [curleft,curtop];
+}
 
 var form_playURL = null;
 var oldX=0;
