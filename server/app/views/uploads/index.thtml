@@ -50,13 +50,13 @@ You have no uploads yet.
 
 <?php foreach ($uploads as $upload): ?>
 
-	<tr>
+	<tr id="innerItem-<?php echo $upload['Upload']['id'] ?>" >
 
 	<td class="joey-item-control" width="1" >
 
         <?php echo $html->link( "Delete", "/uploads/delete/" . $upload['Upload']['id']) ?>
 	<div class="joey-upload-mediaicon"><?php echo $upload['File']['type'] ?></div>
-        <?php echo $ajax->link( "Delete", "/uploads/delete/" . $upload['Upload']['id'] , array('update' => 'messagesBar', "loading"=>"Element.show('loading');", "complete" => "Element.hide('loading');Element.hide('innerItem-" . $upload['Upload']['id'] ."');alert(1)" ) ) ?>
+        <?php echo $ajax->link( "Delete", "/uploads/delete/" . $upload['Upload']['id'] , array('update' => 'messagesBar', "loading"=>"Element.show('loading');", "complete" => "Element.hide('loading');Element.hide('innerItem-" . $upload['Upload']['id'] ."');" ) ) ?>
 
 
 		
