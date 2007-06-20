@@ -61,6 +61,20 @@ class File extends AppModel
                          );
 
 
+    /** 
+     * We want to remember all things that have been delete
+     * so that we can sync between the server and various
+     * clients.  What we will do is null the model, but mark
+     * the model's deleted column.
+     */
+    function delete($id) {
+
+      if (is_numeric($id)) {
+        $this->execute("UPDATE files set name=null, size=0, type=null, original_name=null, original_type=null, original_size=0, preview_name=null, preview_type=null, preview_size=null, deleted=NOW() where id={$id}");
+      }
+      return true;
+    }
+
     function findOwnerDataFromFileId($id) {
         if (is_numeric($id)) {
 
