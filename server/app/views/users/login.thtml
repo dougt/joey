@@ -8,7 +8,18 @@
     <div class="error_message"><?=$error_mesg?></div>
 <?php endif; ?>
 
+
 <h2>Login</h2>
+
+
+<br>
+<br>
+<i>
+If you created an account in the past, please recreate your
+account.  Sorry for this, and thanks for testing!
+</i>
+<br>
+<br>
 
 <form action="" method="post" class="joey-form" />
     <div>
