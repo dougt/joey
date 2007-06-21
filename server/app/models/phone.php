@@ -51,5 +51,6 @@ class Phone extends AppModel
                             'name'  => VALID_NOT_EMPTY
                          );
 
+    var $cacheQueries = false;
 }
 ?>

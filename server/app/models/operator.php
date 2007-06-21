@@ -51,5 +51,6 @@ class Operator extends AppModel
                             'provider'    => VALID_NOT_EMPTY
                          );
 
+    var $cacheQueries = false;
 }
 ?>
