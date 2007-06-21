@@ -54,13 +54,8 @@ class UsersController extends AppController
       // What kind of phone does the user have.
       $phone = $this->Phone->findById($this->_user['phone_id']);
 
-      // the name in the db is human readable (friendly),
-      // the name of the files aren't as friendly to read.
-      $phonename = str_replace(" - ", "-", $phone['Phone']['name']);
-      $phonename = str_replace(" ", "", $phonename);
-
       $http_url = str_replace("https://", "http://", FULL_BASE_URL);
-      $http_url = $http_url.'/app/webroot/ff/'.$phonename.".jad";
+      $http_url = $http_url.'/app/webroot/ff/'. $phone['Phone']['jar_name'];
 
       $this->set('url_to_jad', $http_url);
 

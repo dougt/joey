@@ -224,4 +224,5 @@ INSERT INTO `operators` VALUES (39,'WEBTEXT', 'webtext.com','2007-03-18 09:19:04
 INSERT INTO `operators` VALUES (40,'IPIPI.COM', 'opensms.ipipi.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
 INSERT INTO `operators` VALUES (41,'CLARO', 'ideasclaro-ca.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
 
-INSERT INTO `phones` VALUES (1, 'Not Sure', 'en-us', '', '', 0, 0, 0, '2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `phones` VALUES (1, 'Not Sure', 'en-us', '', '', 0, 0, 0, '', '2007-03-18 09:19:04','0000-00-00 00:00:00');
+
