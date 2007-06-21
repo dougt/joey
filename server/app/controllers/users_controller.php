@@ -145,7 +145,7 @@ class UsersController extends AppController
 
         $this->_user = $this->Session->read('User');
 
-        $this->set('phones', $this->Phone->generateList(null,null,null,'{n}.Phone.id','{n}.Phone.name'));
+        $this->set('phones', $this->Phone->generateList("Phone.locale='en_US'",null,null,'{n}.Phone.id','{n}.Phone.name'));
         $this->set('operators', $this->Operator->generateList(null,null,null,'{n}.Operator.id','{n}.Operator.provider'));
 
         // If they just show up here, prefill the data and return
