@@ -386,7 +386,9 @@ class StorageComponent extends Object
     $_toName      = escapeshellarg($toName);
     $_previewName = escapeshellarg($previewName);
     
-    $_cmd = FFMPEG_CMD . " -y -i {$_fromName} -ab 32 -b 15000 -ac 1 -ar 8000 -vcodec h263 -s qcif -r 12 {$_toName}";
+    // ffmpeg -i video_clip.mpg -s qcif -vcodec h263 -acodec mp3 -ac 1 -ar 8000 -ab 32 -y clip.3gp
+
+    $_cmd = FFMPEG_CMD . " -i {$_fromName} -s qcif -vcodec h263 -acodec mp3 -ac 1 -ar 8000 -ab 32 -y {$_toName}";
     exec($_cmd, $_out, $_ret);
     if ($_ret !== 0) {
       $this->storage_log("transcodeVideo failed: " . $_out);
@@ -395,13 +397,15 @@ class StorageComponent extends Object
     
     $width = intval($width / 2);
     $height = intval($height / 2);
-    $_cmd = FFMPEG_CMD . " -i {$_fromName} -ss 5 -s '{$width}x{$height}' -vframes 1 -f mjpeg {$_previewName}";
+    $_cmd = FFMPEG_CMD . " -i {$_fromName} -ss 5 -vcodec png -vframes 1 -an -f rawvideo -s '{$width}x{$height}' {$_previewName}";
+
+
+    $this->storage_log(">: " . $_cmd);
     exec($_cmd, $_out, $_ret);
     if ($_ret !== 0) {
       $this->storage_log("transcodeVideo failed: " . $_out);
       return false;
     }
-    
     return true;
   }
 
