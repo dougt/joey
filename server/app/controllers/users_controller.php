@@ -55,7 +55,7 @@ class UsersController extends AppController
       $phone = $this->Phone->findById($this->_user['phone_id']);
 
       $http_url = str_replace("https://", "http://", FULL_BASE_URL);
-      $http_url = $http_url.'/app/webroot/ff/'. $phone['Phone']['jar_name'];
+      $http_url = $http_url.'/app/webroot/ff/'. $phone['Phone']['jad_name'];
 
       $this->set('url_to_jad', $http_url);
 
