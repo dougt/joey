@@ -29,9 +29,9 @@ import org.bouncycastle.util.encoders.Base64;
 public class AddNetworkRequest
     extends NetworkRequest
 {
-    public AddNetworkRequest(Upload uploadData)
+    public AddNetworkRequest(String title, byte[] data)
     {
-        String content = new String(Base64.encode(uploadData.getData()));
+        String content = new String(data);
 
         StringBuffer sb = new StringBuffer();
 
@@ -39,7 +39,7 @@ public class AddNetworkRequest
         sb.append("Content-disposition: form-data;name=\"rest\"\r\n\r\n1\r\n");
         sb.append("--111222111\r\n");
         sb.append("Content-disposition: form-data;name=\"data[Upload][title]\"\r\n\r\n");
-        sb.append(uploadData.getName());
+        sb.append(title);
         sb.append("\r\n--111222111\r\n");
         sb.append("Content-disposition: form-data;name=\"data[Upload][referrer]\"\r\n\r\n");
         sb.append("http://www.mozilla.org/\r\n");

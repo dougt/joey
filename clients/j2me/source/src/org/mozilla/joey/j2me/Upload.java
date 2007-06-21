@@ -26,14 +26,8 @@ package org.mozilla.joey.j2me;
 
 public class Upload
 {
-	private static final int STATUS_SHARED = 0;
-	private static final int STATUS_LOCAL = 1;
-	private static final int STATUS_EDITED = 2;
-
-	private int status;
 	private String id;
-	private String name;
-	private String description;
+	private String title;
 	private String mimetype;
 	private byte[] preview;
 	private byte[] data;
@@ -43,54 +37,26 @@ public class Upload
 
 	public Upload(String id, boolean deleted)
 	{
-		this(STATUS_LOCAL, id, null, null, "", null, null, null, null);
+		this(id, null, "", null, null, null, null);
         this.deleted = deleted;
 	}
 	
-	public Upload(String mimetype, byte[] preview, byte[] data, String modified)
+	public Upload(String id, String mimetype, String title, byte[] preview, byte[] data, String modified, String referrer)
 	{
-		this(STATUS_LOCAL, null, null, null, mimetype, preview, data, modified, null);
-	}
-
-	public Upload(String id, String mimetype, byte[] preview, String modified, String referrer)
-	{
-		this(STATUS_SHARED, id, null, null, mimetype, preview, null, modified, referrer);
-	}
-
-	public Upload(int status, String id, String name, String description, String mimetype, byte[] preview, byte[] data, String modified, String referrer)
-	{
-		this.status = status;
 		this.id = id;
-		this.name = name;
-		this.description = description;
+		this.title = title;
 		this.mimetype = mimetype;
 		this.preview = preview;
 		this.data = data;
 		this.modified = modified;
         this.deleted = false;
-
-	}
+    }
 
 	public boolean isDeleted()
 	{
 		return this.deleted;
 	}
 	
-	public boolean isShared()
-	{
-		return this.status == STATUS_SHARED;
-	}
-	
-	public boolean isLocal()
-	{
-		return this.status == STATUS_LOCAL;
-	}
-	
-	public boolean isEdited()
-	{
-		return this.status == STATUS_EDITED;
-	}
-
 	public String getId()
 	{
 		return this.id;
@@ -111,24 +77,14 @@ public class Upload
 		this.data = data;
 	}
 
-	public String getDescription()
+	public String getTitle()
 	{
-		return this.description;
+		return this.title;
 	}
 
-	public void setDescription(String description)
+	public void setTitle(String title)
 	{
-		this.description = description;
-	}
-
-	public String getName()
-	{
-		return this.name;
-	}
-
-	public void setName(String name)
-	{
-		this.name = name;
+		this.title = title;
 	}
 
 	public String getMimetype()

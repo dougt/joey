@@ -124,15 +124,22 @@ focused {
 .rssItemScreen extends inputScreen {
 }
 
+.rssUploadItem {
+	padding: 1;
+	border-width: 1;
+	layout: expand | center;
+}
+
+.rssUploadItem:hover {
+	background {
+		color: bgColorFocused;
+	}
+}
+
 .uploadItem {
 	padding: 1;
 	border-width: 1;
 	layout: expand | center;
-	/*
-	background {
-		color: bgColor;
-	}
-	*/
 }
 
 .uploadItem:hover {

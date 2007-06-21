@@ -241,9 +241,9 @@ public class CommunicationController
         addRequest(nr);
 	}
 
-	public void add(Upload upload, ResponseHandler handler)
+	public void add(String title, byte[] data, ResponseHandler handler)
 	{
-        AddNetworkRequest nr = new AddNetworkRequest(upload);
+        AddNetworkRequest nr = new AddNetworkRequest(title, data);
         nr.setResponseHandler(handler);
 
         addRequest(nr);

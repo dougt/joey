@@ -89,6 +89,7 @@ public class IndexNetworkRequest
 				String preview = (String) parsedData.get("preview." + i);
 				String mimetype = (String) parsedData.get("type." + i);
 				String modified = (String) parsedData.get("modified." + i);
+				String title = (String) parsedData.get("title." + i);
 
                 String deleted = (String) parsedData.get("deleted." + i);
                 
@@ -107,7 +108,7 @@ public class IndexNetworkRequest
 				for (int j = 0; j < this.uploads.size(); j++) {
 					Upload upload = (Upload) this.uploads.elementAt(j);
                     
-					if (upload.isShared() && id.equals(upload.getId())) {
+					if (id.equals(upload.getId())) {
 						foundIndex = j;
 						break;
 					}
@@ -121,9 +122,15 @@ public class IndexNetworkRequest
                 byte[] previewBytes = null;
                 try {
                     previewBytes = Base64.decode(preview);
-                } catch (Exception ex) {}
+                } 
+                catch (Exception ex) 
+                {
+                    System.out.println("Base64 decode failed " + ex);
+                }
 
-				this.uploads.addElement(new Upload(id, mimetype, previewBytes, modified, referrer));
+                System.out.println("Creating upload: " + id + " " + mimetype  + " " + title);
+
+				this.uploads.addElement(new Upload(id, mimetype, title, previewBytes, null, modified, referrer));
 			}
             
         }

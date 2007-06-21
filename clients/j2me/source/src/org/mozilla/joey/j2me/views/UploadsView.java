@@ -26,6 +26,7 @@ package org.mozilla.joey.j2me.views;
 
 import de.enough.polish.ui.FramedForm;
 import de.enough.polish.ui.UiAccess;
+import de.enough.polish.ui.Container;
 import de.enough.polish.util.Locale;
 
 import java.io.ByteArrayInputStream;
@@ -48,23 +49,42 @@ public class UploadsView
 {
 	private ChoiceGroup commands;
 
+    private JoeyController controller;
+    private Vector uploads;
+
+
+	public static final int COMMAND_ID_VIDEOS = 0;
+	public static final int COMMAND_ID_MUSIC = 1;
+	public static final int COMMAND_ID_PICTURES = 2;
+	public static final int COMMAND_ID_RSS = 3;
+	public static final int COMMAND_ID_TEXT = 4;
+	public static final int COMMAND_ID_MICROSUM = 5;
+
+
 	public UploadsView(JoeyController controller, Vector uploads)
 	{
 		//#style uploadScreen
 		super(Locale.get("title.uploads"));
 
-		initCommandsArea(controller);
-		update(controller, uploads);
+        this.controller = controller;
+        this.uploads = uploads;
+
+		initCommandsArea();
+		update();
 	}
 
-	private void initCommandsArea(JoeyController controller)
+	private void initCommandsArea()
 	{
+
+        // Order of the elements matter.  If you change
+        // them, be sure to change the values above
+
+
 		//#style commandsarea
 		this.commands = new ChoiceGroup(null, Choice.EXCLUSIVE);
+
 		append(Graphics.BOTTOM, this.commands);
 
-		Image imgSelect = null;
-		Image imgDelete = null;
 		Image imgVideo = null;
 		Image imgMusic = null;
 		Image imgPictures = null;
@@ -74,10 +94,7 @@ public class UploadsView
 		
 		try
 		{
-			imgSelect = Image.createImage("/icon_red.png");
-			imgDelete = Image.createImage("/icon_delete.png");
-
-			imgVideo = Image.createImage("/video_16x16.png");
+            imgVideo = Image.createImage("/video_16x16.png");
 			imgMusic = Image.createImage("/music_16x16.png");
 			imgPictures = Image.createImage("/pictures_16x16.png");
 			imgRss = Image.createImage("/rss_16x16.png");
@@ -89,16 +106,6 @@ public class UploadsView
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
-		//#style commandsitem
-		this.commands.append(null, imgSelect);
-		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
-		this.commands.setItemCommandListener(controller);
-		
-		//#style commandsitem
-		this.commands.append(null, imgDelete);
-		this.commands.setDefaultCommand(JoeyController.CMD_DELETE);
-		this.commands.setItemCommandListener(controller);
 
 		//#style commandsitem
 		this.commands.append(null, imgVideo);
@@ -131,43 +138,148 @@ public class UploadsView
 		this.commands.setItemCommandListener(controller);
 	}
 
-	public void update(JoeyController controller, Vector uploads)
+
+    private Item getImagePrviewForUpdate(Upload upload)
+    {
+
+        Image image = null;
+        try
+        {
+            image = Image.createImage(new ByteArrayInputStream(upload.getPreview()));
+
+            //#style uploadItem
+            return new ImageItem(null, image, ImageItem.LAYOUT_CENTER, upload.getId());
+
+        }
+        catch (Exception e)
+        {
+            //@todo localize.
+
+            //#style uploadItem
+            return new StringItem(null, "Could not display image");
+        }
+    }
+
+	public void update()
 	{
 		this.container.clear();
 
-		for (int i = 0; i < uploads.size(); i++) {
-			Upload upload = (Upload) uploads.elementAt(i); 
-			Image image = null;
 
+        int commandid = this.commands.getSelectedIndex();
+
+
+
+        // Set up the background.  
+        switch (commandid) 
+        {
+        case COMMAND_ID_VIDEOS:
+            break;
+            
+        case COMMAND_ID_MUSIC:
+            break;
+            
+        case COMMAND_ID_PICTURES:
+            break;
+            
+        case COMMAND_ID_RSS:
+            break;
+            
+        case COMMAND_ID_TEXT:
+            break;
+            
+        case COMMAND_ID_MICROSUM:
+            break;
+            
+        default:
+        }
+        
+
+        Item command = new StringItem(null, new Integer(commandid).toString());
+        append(command);
+
+		for (int i = 0; i < uploads.size(); i++) 
+        {
+
+			Upload upload = (Upload) uploads.elementAt(i); 
             if (upload.isDeleted() == true)
                 continue;
 
-            try
+            Item uploadItem = null;
+            switch (commandid) 
             {
-                image = Image.createImage(new ByteArrayInputStream(upload.getPreview()));
+
+                case COMMAND_ID_VIDEOS:
+                    if (upload.getMimetype().equals("video/3gpp")) 
+                    {
+                        uploadItem = getImagePrviewForUpdate(upload);
+                    }
+                    break;
+
+                case COMMAND_ID_MUSIC:
+                    if (upload.getMimetype().substring(0,5).equals("audio")) 
+                    {
+                        //#style uploadItem
+                        uploadItem = new StringItem(null, upload.getTitle());
+                    }
+                    break;
+
+                case COMMAND_ID_PICTURES:
+                    if (upload.getMimetype().substring(0,5).equals("image")) 
+                    {
+                        uploadItem = getImagePrviewForUpdate(upload);
+                    }
+                    break;
+
+
+                case COMMAND_ID_RSS:
+                    if (upload.getMimetype().substring(0,3).equals("rss")) 
+                    {
+                        //#style rssUploadItem
+                        Container c = new Container(false);
+                        c.setAppearanceMode(Item.BUTTON);
+
+                        //#style uploadItem
+                        Item title = new StringItem(null, upload.getTitle());
+                        c.add( title );
+                        c.add( getImagePrviewForUpdate(upload));
+                        uploadItem = c;
+                    }
+                    break;
+
+                case COMMAND_ID_TEXT:
+                    if (upload.getMimetype().substring(0,4).equals("text")) 
+                    {
+                        //#style uploadItem
+                        uploadItem = new StringItem(null, upload.getTitle());
+                    }
+                    break;
+
+                case COMMAND_ID_MICROSUM:
+                    if (upload.getMimetype().substring(0,9).equals("microsumm")) 
+                    {
+                        //#style uploadItem
+                        uploadItem = new StringItem(null, upload.getTitle());
+                    }
+                    break;
+
+                default:
+                {
+                    //@todo localize
+
+                    //#style uploadItem
+                    uploadItem = new StringItem(null, "mime type not supported yet.");
+                }
             }
-            catch (Exception e)
-            {
-                // this is going to fail for string data.
-			}
 
-			Item item;
+            if (uploadItem == null)
+                continue;
 
-			if (image != null) {
-				//#style uploadItem
-				item = new ImageItem(null, image, ImageItem.LAYOUT_CENTER, upload.getId());
-			}
-			else {
-				//#style uploadItem
-                item = new StringItem(null, upload.getId());
-			}
+			uploadItem.setDefaultCommand(JoeyController.CMD_SELECT);
+			uploadItem.setItemCommandListener(controller);
+			UiAccess.setAttribute(uploadItem, JoeyController.ATTR_UPLOAD, upload);
+			append(uploadItem);
 
-			item.setDefaultCommand(JoeyController.CMD_SELECT);
-			item.addCommand(JoeyController.CMD_DELETE);
-			item.setItemCommandListener(controller);
-			UiAccess.setAttribute(item, JoeyController.ATTR_UPLOAD, upload);
-			append(item);
-		}
+        }
 	}
 
 	protected boolean handleKeyPressed(int keyCode, int gameAction)
@@ -175,7 +287,10 @@ public class UploadsView
 		if ((gameAction == LEFT && keyCode != Canvas.KEY_NUM4)
 			|| (gameAction == RIGHT && keyCode != Canvas.KEY_NUM6) 
 			|| (gameAction == FIRE && keyCode != Canvas.KEY_NUM5)) {
-			return UiAccess.handleKeyPressed( this.commands, keyCode, gameAction);
+			UiAccess.handleKeyPressed( this.commands, keyCode, gameAction);
+
+            update();
+            return true;
 		}
 
 		boolean handled = super.handleKeyPressed(keyCode, gameAction);
@@ -186,7 +301,6 @@ public class UploadsView
 			this.container.focus(0);
 			//#= this.bottomFrame.defocus(StyleSheet.commandsareaStyle);
 		}
-
 		return handled;
 	}
 

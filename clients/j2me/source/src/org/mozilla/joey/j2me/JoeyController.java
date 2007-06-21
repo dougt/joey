@@ -348,13 +348,14 @@ public class JoeyController
         }
         else if (request instanceof IndexNetworkRequest)
         {
-        	//#debug info
-            System.out.println("IndexNetworkRequest request status: " + request.responseCode);
-
             int numUploads = this.uploads.size();
             IndexNetworkRequest indexRequest = (IndexNetworkRequest) request;
+            int totalCount = indexRequest.getTotalCount();
 
-            if (numUploads < indexRequest.getTotalCount()) {
+        	//#debug info
+            System.out.println("IndexNetworkRequest request status: " + request.responseCode + " (" + numUploads + "/" + totalCount + ")");
+
+            if (numUploads < totalCount && numUploads > 0) {
             	notifyEvent(EVENT_NETWORK_REQUEST_SUCCESSFUL_PARTIALLY);
             	this.commController.getIndex(this.uploads, this, 5, numUploads);
             	return;
@@ -506,9 +507,11 @@ public class JoeyController
 		
 						// TODO: Is this the correct format for time? Is this correct for all locales? 
 						String modified = new Date().toString();
-						Upload upload = new Upload("image/jpeg", image, image, modified);
-						this.uploads.addElement(upload);
-		                this.commController.add(upload, this);
+
+                        // TODO: Send this to the server, then do an an update.
+                        //						Upload upload = new Upload("image/jpeg", image, image, modified);
+                        //						this.uploads.addElement(upload);
+		                //                      this.commController.add(upload, this);
 					}
 					catch (MediaException e)
 					{
@@ -572,15 +575,6 @@ public class JoeyController
 				switch (event) {
 					case EVENT_SELECT:
 						doUploadDetails(view.getCurrentUpload());
-						break;
-	
-					case EVENT_DELETE:
-						showView(ALERT_UPLOADS_DELETE_CONFIRMATION);
-						if (waitYesNo() == EVENT_YES) {
-							showView(ALERT_WAIT);
-							this.commController.delete(view.getCurrentUpload().getId(), this);
-							event = waitEvent();
-						}
 						break;
 				}
 			} while (event != EVENT_BACK);
