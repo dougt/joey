@@ -9,6 +9,16 @@
 
 <h1>Joey! Uploads</h1>
 
+
+
+<div" > 
+<p> <br>
+Yo!  If you haven't done so already, download the software for your phone.  
+<p> <br>
+Click <?php echo $html->link( "here", "/users/edit");?> to edit which phone you have,
+then go <?php echo $html->link( "here", "/users/getSoftware");?> to the download software.
+</div>
+
 <?php if (empty($uploads)) : ?>
 
 <div class="joey-message" >

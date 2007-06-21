@@ -68,6 +68,9 @@ class AdminController extends AppController
       $_summary["new_upload_count"] = $result[0][0]["count(*)"];
 
 
+      $result = $this->User->query("SELECT count(*) from users WHERE confirmationcode is not NULL");
+      $_summary["new_upload_count"] = $result[0][0]["count(*)"];
+
       $this->set('summary', $_summary);
 
     }

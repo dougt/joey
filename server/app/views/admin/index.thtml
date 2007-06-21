@@ -19,5 +19,11 @@
          <?php echo "New Upload count == " . $summary['new_upload_count']; ?>
        </div>
 
+
+       <div>
+         <?php echo "Users with pending confirmations == " . $summary['pending_users_count']; ?>
+       </div>
+
+
 </div>
 
