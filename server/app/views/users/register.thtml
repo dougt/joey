@@ -1,5 +1,10 @@
 
+<div id="content">
+
 <div id="joey-general-frame">
+
+<div id="joey-registration-content">
+
 
 <h2>Register</h2>
 <p>All fields are required.</p>
@@ -70,5 +75,10 @@ By clicking to accept this Agreement or by downloading the associated software, 
 </div>
 
 </form>
+
+</div>
+</div>
+<div id="footer-pagination">
+</div>
 
 </div>
