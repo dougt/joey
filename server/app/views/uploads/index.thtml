@@ -11,7 +11,7 @@
 
 
 
-<div" > 
+<div > 
 <p> <br>
 
 <b>Yo!</b> <i> If you haven't done so already, download the software for your phone.  
@@ -216,12 +216,14 @@ You have no uploads yet.
 </table>
 
 
+
+
+</div>
+
 <div id="footer-pagination">
 <?php echo $this->renderElement('pagination'); ?> 
 </div>
 
-
-</div>
 </div>
 
 
