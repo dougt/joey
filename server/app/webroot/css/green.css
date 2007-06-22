@@ -334,7 +334,7 @@ height:140px;
 }
 
 #footer {
-background: black url(style/bottombanner.jpg) no-repeat 0 0; 
+background: black url(style/bottombanner.jpg) no-repeat 50% 0; 
 height:2em;
 color:gray;
 margin:0px;
