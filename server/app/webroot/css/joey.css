@@ -15,7 +15,7 @@ div#container {
 }
 
 .joey-form div {
-    margin: 1em 0;
+    margin: 1.3em 0;
 }
 
 .joey-submit {
@@ -32,16 +32,25 @@ div#container {
 }
 
 .joey-label-large, .joey-label-medium, .joey-label-small {
-    border-bottom: 1px dashed #666666;
+    border-top: 1px dotted #444444;
+    padding-bottom:.5em;
     float: left;
 }
 
+select {
+
+	background-color:#aaaaaa;
+}
 input {
+	
 	background-color:#aaaaaa;
 }
 
 .joey-label-large {
-    width: 10em;
+    width: 16em; 
+    padding:5px;
+
+   padding-left:0px;
 }
 
 .joey-label-medium {
