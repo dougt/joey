@@ -115,6 +115,12 @@ public class DetailsView
         setDescription(null);
 		deleteAll();
 
+        if (this.upload.getData() == null)
+        {
+            //#style input
+            Item item = new StringItem(null, "Could not access data.");
+            append(item);
+        }
         if (this.upload.getMimetype().equals("rss-source/text") )
         {
             try {
@@ -150,6 +156,7 @@ public class DetailsView
                 image = Image.createImage(new ByteArrayInputStream(this.upload.getData()));
             } catch (Exception ignored) {}
 
+            //#style imagecontent
             Item item = new ImageItem(null, image, ImageItem.LAYOUT_CENTER, this.upload.getId());
             append(item);
         }
@@ -165,7 +172,7 @@ public class DetailsView
                     player.start();
                 }
                 catch(Exception t) {
-                    
+                
                     //#style input
                     Item item = new StringItem(null, "Could not create player for audio/mpeg: " + t);
                     append(item);
@@ -200,9 +207,14 @@ public class DetailsView
                         Item video = (Item)vc.initDisplayMode(GUIControl.USE_GUI_PRIMITIVE, null);
                         append(video);
                     }
+
+                    player.realize();        
+                    player.prefetch();
                     player.start();
                 }
                 catch(Exception t) {
+                    t.printStackTrace();
+
                     //#style input
                     Item item = new StringItem(null, "Could not create player for video: " + t);
                     append(item);

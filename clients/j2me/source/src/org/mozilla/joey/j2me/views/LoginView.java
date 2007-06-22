@@ -57,6 +57,7 @@ public class LoginView
         this.mPasswordTextField.setString(userdata.getPassword());
         append(this.mPasswordTextField);
 
+        // TODO: Localize
         String[] optionStrings = { "Use SSL for data encryption", "Remember Me" };
         this.mLoginOptionsChoiceGroup = new ChoiceGroup("", Choice.MULTIPLE, optionStrings, null);
 		boolean[] flags = new boolean[2];

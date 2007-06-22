@@ -61,17 +61,21 @@ public class UploadsView
 	public static final int COMMAND_ID_MICROSUM = 5;
 
 
-	public UploadsView(JoeyController controller, Vector uploads)
+	public UploadsView(JoeyController controller)
 	{
 		//#style uploadScreen
 		super(Locale.get("title.uploads"));
 
         this.controller = controller;
-        this.uploads = uploads;
 
 		initCommandsArea();
-		update();
 	}
+
+    public void setUploads(Vector uploads)
+    {
+        this.uploads = uploads;
+        this.update();
+    }
 
 	private void initCommandsArea()
 	{
@@ -168,33 +172,38 @@ public class UploadsView
         int commandid = this.commands.getSelectedIndex();
 
 
-
+        String categoryTitle;
         // Set up the background.  
         switch (commandid) 
         {
         case COMMAND_ID_VIDEOS:
+            categoryTitle = "Joey Videos";
             break;
             
         case COMMAND_ID_MUSIC:
+            categoryTitle = "Joey Music";
             break;
             
         case COMMAND_ID_PICTURES:
+            categoryTitle = "Joey Pictures";
             break;
             
         case COMMAND_ID_RSS:
+            categoryTitle = "Joey RSS";
             break;
             
         case COMMAND_ID_TEXT:
+            categoryTitle = "Joey Text";
             break;
             
         case COMMAND_ID_MICROSUM:
+            categoryTitle = "Joey Microsummaries";
             break;
             
         default:
+            categoryTitle = "Joey has no idea what this is.";
         }
-        
-
-        Item command = new StringItem(null, new Integer(commandid).toString());
+        Item command = new StringItem(null, categoryTitle);
         append(command);
 
 		for (int i = 0; i < uploads.size(); i++) 
@@ -234,16 +243,31 @@ public class UploadsView
                 case COMMAND_ID_RSS:
                     if (upload.getMimetype().substring(0,3).equals("rss")) 
                     {
+
+                        // What I really want to do is
+                        // return a container of an ICON and
+                        // the Title for the RSS Feed, but I
+                        // can't -- for whatever reason, the
+                        // container icon doesn't get
+                        // selected.
+
+                        /*
                         //#style rssUploadItem
                         Container c = new Container(false);
-                        c.setAppearanceMode(Item.BUTTON);
+                        c.allowCycling = false;
 
                         //#style uploadItem
                         Item title = new StringItem(null, upload.getTitle());
                         c.add( title );
                         c.add( getImagePrviewForUpdate(upload));
                         uploadItem = c;
+
+                        */
+
+                        uploadItem = getImagePrviewForUpdate(upload);
                     }
+                    this.container.focus(0);
+
                     break;
 
                 case COMMAND_ID_TEXT:
@@ -284,25 +308,30 @@ public class UploadsView
 
 	protected boolean handleKeyPressed(int keyCode, int gameAction)
 	{
-		if ((gameAction == LEFT && keyCode != Canvas.KEY_NUM4)
-			|| (gameAction == RIGHT && keyCode != Canvas.KEY_NUM6) 
-			|| (gameAction == FIRE && keyCode != Canvas.KEY_NUM5)) {
+
+        boolean handled = false;
+
+		if ((gameAction == LEFT && keyCode != Canvas.KEY_NUM4) ||
+            (gameAction == RIGHT && keyCode != Canvas.KEY_NUM6)) {
+
 			UiAccess.handleKeyPressed( this.commands, keyCode, gameAction);
 
             update();
-            return true;
+            handled = true;
 		}
+        else if ((gameAction == UP && keyCode != Canvas.KEY_NUM2) || 
+                 (gameAction == DOWN && keyCode != Canvas.KEY_NUM8)) {
 
-		boolean handled = super.handleKeyPressed(keyCode, gameAction);
+            UiAccess.handleKeyPressed(this.container, keyCode, gameAction);
+            handled = true;
+        }
 
-		if (handled && this.container.size() > 0
-			&& this.currentlyActiveContainer == this.bottomFrame ) {
-			this.currentlyActiveContainer = this.container;
-			this.container.focus(0);
-			//#= this.bottomFrame.defocus(StyleSheet.commandsareaStyle);
-		}
-		return handled;
-	}
+
+        this.currentlyActiveContainer = this.container;
+        this.container.focus(0);
+        return handled;
+    }
+
 
 	public Upload getCurrentUpload()
 	{

@@ -114,6 +114,8 @@ public class JoeyController
 	private CommandListener commandListener;
 	private CommunicationController commController;
 
+    private Displayable uploadsView;
+
 	public JoeyController(MIDlet midlet)
 	{
 		this.midlet = midlet;
@@ -136,6 +138,8 @@ public class JoeyController
 		this.commandListener = new ThreadedCommandListener(this);
 		this.commController = new CommunicationController(this.userdata);
 		this.commController.start();
+
+        this.uploadsView = null;
 	}
 	
 	private Displayable showView(int viewId)
@@ -177,10 +181,16 @@ public class JoeyController
 		//#endif
 			
 		case VIEW_UPLOADS:
-			view = new UploadsView(this, this.uploads);
-			view.addCommand(CMD_BACK);
-			view.setCommandListener(this.commandListener);
-			return view;
+            
+            if (this.uploadsView == null)
+            {
+                this.uploadsView = new UploadsView(this);
+                this.uploadsView.addCommand(CMD_BACK);
+                this.uploadsView.setCommandListener(this.commandListener);
+            }
+
+            ((UploadsView)this.uploadsView).setUploads(this.uploads);
+            return this.uploadsView;
 
 		case VIEW_PREFERENCES:
 			view = new PreferencesView();
@@ -571,7 +581,7 @@ public class JoeyController
 			do {
 				UploadsView view = (UploadsView) showView(VIEW_UPLOADS);
 				event = waitEvent();
-				
+
 				switch (event) {
 					case EVENT_SELECT:
 						doUploadDetails(view.getCurrentUpload());
