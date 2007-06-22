@@ -21,17 +21,10 @@ then go <?php echo $html->link( "here", "/users/getSoftware");?> to the download
 </i>
 </div>
 
-<?php if (empty($uploads)) : ?>
-
-<div class="joey-message" >
-You have no uploads yet.
-</div>
-
-<?php else: ?>
 
 <div>
 
-<?php echo $html->link( "Delete All", "/uploads/deleteAll"); ?> 
+<?php echo $html->link( "all", "/uploads/index?type=all"); ?> 
 <?php echo $html->link( "video", "/uploads/index?type=videos"); ?> 
 <?php echo $html->link( "audio", "/uploads/index?type=audio"); ?> 
 <?php echo $html->link( "images", "/uploads/index?type=images"); ?> 
@@ -50,6 +43,14 @@ You have no uploads yet.
 
 <div class="joey-upload" >
 
+<?php if (empty($uploads)) : ?>
+
+<div class="joey-message" >
+You have no uploads yet.
+</div>
+
+<?php endif; ?>
+
 
 <?php
    $pagination->setPaging($paging); // Initialize the pagination variables
@@ -67,7 +68,6 @@ You have no uploads yet.
 
 	<td class="joey-item-control" width="1" valign="top" >
 
-        <?php echo $html->link( "Delete", "/uploads/delete/" . $upload['Upload']['id']) ?>
 	<div class="joey-upload-mediaicon"><?php echo $upload['File']['type'] ?></div>
         <?php echo $ajax->link( "Delete", "/uploads/delete/" . $upload['Upload']['id'] , array('update' => 'messagesBar', "loading"=>"Element.show('loading');", "complete" => "Element.hide('loading');Element.hide('innerItem-" . $upload['Upload']['id'] ."');" ) ) ?>
 
@@ -88,7 +88,7 @@ You have no uploads yet.
                      <div class="joey-upload-image-thumb"
                           <div class="joey-mediaicon-video">
 
-                <?php echo $html->link( '<img class="joey-upload-preview-thumb"   src="'.$html->url("/files/view/{$upload['File']['id']}/preview").'" alt="Upload Preview" />', "/files/view/{$upload['File']['id']}",false,false,false ); ?>
+                <?php echo $html->link( '<img class="joey-upload-preview-thumb"  height=35 width=55 src="'.$html->url("/files/view/{$upload['File']['id']}/preview").'" alt="Upload Preview" />', "/files/view/{$upload['File']['id']}",false,false,false ); ?>
 
 
 
@@ -220,7 +220,6 @@ You have no uploads yet.
 <?php echo $this->renderElement('pagination'); ?> 
 </div>
 
-<?php endif; ?>
 
 </div>
 </div>
