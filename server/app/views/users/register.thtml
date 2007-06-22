@@ -58,7 +58,7 @@ Please tell us!  Join the conversation on the <a href="https://labs.mozilla.com/
 </div>
 
 <div>
-        <label class="joey-label-large" for="LegalStuff">Important Legal Stuff.</label>
+        <label for="LegalStuff" style="font-weight:bold;" >Important Legal Stuff:</label>
 <br>
 <br>    <?php echo $html->link('Terms of Use',               FULL_BASE_URL . '/terms/termsofservice') ?> 
 <br>    <?php echo $html->link('End User License Agreement', FULL_BASE_URL . '/terms/EULA') ?> 
