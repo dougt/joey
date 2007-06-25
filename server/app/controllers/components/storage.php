@@ -66,7 +66,6 @@ class StorageComponent extends Object
 
 
     function storage_log($msg) {
-
       file_put_contents(LOGS . "storage_log" , $msg . "\r\n", FILE_APPEND | LOCK_EX);
     }
 

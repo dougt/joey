@@ -80,6 +80,18 @@ class UploadsController extends AppController
         $this->_user = $this->Session->read('User');
     }
 
+
+    function add_rss()
+    {
+      $this->layout = NULL;
+
+      echo "Hi Mom, this is the rss you wanted \n\n";
+      echo $_GET['rss'];
+      exit();
+
+
+    }
+
     /**
      * After add(), the UPLOADDIR has the following files:
      *   random.orig.sfx: The original uploaded file. The .sfx indicates the file type. This file name and file type are saved in db ONLY IF there is no transcoded file for this upload.
@@ -88,7 +100,6 @@ class UploadsController extends AppController
      */
     function add()
     {
-
         $this->pageTitle = 'Add an upload';
 
         $this->set('contentsourcetypes', $this->Contentsourcetype->generateList(null,null,null,'{n}.Contentsourcetype.id','{n}.Contentsourcetype.name'));

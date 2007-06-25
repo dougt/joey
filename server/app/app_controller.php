@@ -42,7 +42,7 @@ class AppController extends Controller
      * Is the request coming from a non-browser client? Set in the constructor.
      */
     var $nbClient = false;
-    
+
 
     //@ todo maybe we should change these value so that they
     //do not resemble http status codes?
@@ -100,7 +100,6 @@ class AppController extends Controller
         }
     }
 
-
     /**
      * Check if the session is active or not.  If it's not, redirect to the login page
      */
@@ -110,8 +109,34 @@ class AppController extends Controller
             if ($this->nbClient) {
                 $this->returnJoeyStatusCode($this->ERROR_NO_SESSION);
             }
+
+            // If multiple requests come in, we only want to
+            // remember the first one as the login_referrer.
+            // What can happen is that the first (real)
+            // request occurs, then we get extra requests
+            // for the favicon and stuff like that. We want
+            // to ignore the fluff.
+
+            $ref = $this->Session->read('login_referrer');
+
+            if (empty($ref)) {              
+
+              // Cake hides this from us.  We want to remember
+              // the full request URI including any query
+              // string.
+              $ref = $_SERVER['REQUEST_URI'];
+              
+              if (!strcmp($ref, "/site/") || !strcmp($ref, "/img/favicon.ico"))
+              {
+                // we really don't care about these sorts of references.
+              }
+              else if (!empty($ref))
+              {
+                $this->Session->write('login_referrer', $ref);
+              }
+            }
+
             $this->redirect('/users/login');
-            exit();
         }
     }
 

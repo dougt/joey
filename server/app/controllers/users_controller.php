@@ -45,7 +45,6 @@ class UsersController extends AppController
     var $uses = array('Operator', 'Phone', 'User');
     var $helpers = array('Form','Html','Javascript');
 
-
     function getSoftware() {
 
       // Set the local user variable to the Session's User
@@ -252,7 +251,6 @@ class UsersController extends AppController
         if (strncmp(FULL_BASE_URL, "https://", 8) == -1) 
           $this->set('secure_page', str_replace("http://", "https://", FULL_BASE_URL));
 
-
         // Remove their old session
         $this->Session->delete('User');
 
@@ -274,8 +272,17 @@ class UsersController extends AppController
                         if ($this->nbClient) {
                             $this->returnJoeyStatusCode($this->SUCCESS);
                         } else {
-                            $this->redirect('/uploads/index');
+
+                          $ref = $this->Session->read('login_referrer');
+                          if (!empty($ref))
+                          {
+                            $this->Session->delete('login_referrer');
+                            $this->redirect($ref);
                             exit();
+                          }
+                          
+                          $this->redirect('/uploads/index');
+                          exit();
                         }
                     } else {
                         // This is a password error
