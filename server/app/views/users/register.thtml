@@ -9,7 +9,7 @@
 <h2>Register</h2>
 <p>All fields are required.</p>
 
-<form action="" method="post" class="joey-form" />
+<form action="" method="post" class="joey-form" >
 
 <div>
     <label class="joey-label-large" for="UserUsername">User Name:</label>
@@ -53,16 +53,16 @@
 </div>
 
 <div>
-<i> Don't see your phone or cell operator? </i> <br>
+<i> Don't see your phone or cell operator? </i> <br />
 Please tell us!  Join the conversation on the <a href="https://labs.mozilla.com/forum/index.php?board=3.0">Joey Forum</a>.
 </div>
 
 <div>
         <label for="LegalStuff" style="font-weight:bold;" >Important Legal Stuff:</label>
-<br>
-<br>    <?php echo $html->link('Terms of Use',               FULL_BASE_URL . '/terms/termsofservice') ?> 
-<br>    <?php echo $html->link('End User License Agreement', FULL_BASE_URL . '/terms/EULA') ?> 
-<br>    <?php echo $html->link('Privacy Policy',             FULL_BASE_URL . '/terms/privacypolicy') ?> 
+<br />
+<br />    <?php echo $html->link('Terms of Use',               FULL_BASE_URL . '/terms/termsofservice') ?> 
+<br />    <?php echo $html->link('End User License Agreement', FULL_BASE_URL . '/terms/EULA') ?> 
+<br />    <?php echo $html->link('Privacy Policy',             FULL_BASE_URL . '/terms/privacypolicy') ?> 
 
 </div>
 

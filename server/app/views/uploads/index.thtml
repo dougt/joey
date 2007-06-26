@@ -11,14 +11,10 @@
 
 
 
-<div > 
-<p> <br>
-
-<b>Yo!</b> <i> If you haven't done so already, download the software for your phone.  
-<p> <br>
-Click <?php echo $html->link( "here", "/users/edit");?> to edit which phone you have,
-then go <?php echo $html->link( "here", "/users/getSoftware");?> to the download software.
-</i>
+<?php //@todo remove this temporary message ?>
+<div style="font-style: italic;"> 
+    <p><b>Yo!</b> If you haven't done so already, download the software for your phone.</p><br />
+    <p> Click <?php echo $html->link( "here", "/users/edit");?> to edit which phone you have, then go <?php echo $html->link( "here", "/users/getSoftware");?> to the download software.</p>
 </div>
 
 
@@ -201,7 +197,7 @@ You have no uploads yet.
 </div>
 </td>
 <td valign="top" width="200" >
-<img src="/css/style/banner-filters.jpg" >
+<img src="/css/style/banner-filters.jpg" alt="" />
 
 
 <div id="singleVideo" style="position:absolute;left:-400px;top:-400px" class="videoPlayer">

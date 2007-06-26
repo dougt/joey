@@ -2,7 +2,7 @@
 <h2>Edit User</h2>
 <p>All fields are required.</p>
 
-<form action="" method="post" class="joey-form" />
+<form action="" method="post" class="joey-form" >
 
 <div>
     <label class="joey-label-large" for="UserUsername">User Name:</label>

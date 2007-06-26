@@ -50,7 +50,6 @@
 	<title><?=$title_for_layout?></title>
 
 	<!-- this first should be just for the uploads view, blame marcio here or help him -->
-
 	<?php echo $javascript->link('webflv.js') ?>
 
 	<!-- this is the cake compliant ajax infra -->
@@ -59,31 +58,27 @@
 </head>
 
 
-<body id="">
+<body>
 
-<center>
+    <center>
 
-<div class="framecontent">
+    <div class="framecontent">
 
-<div id="topbanner"  >
-  <?=$this->renderElement('green_banner')?>
-</div>
+        <div id="topbanner"  >
+          <?=$this->renderElement('green_banner')?>
+        </div>
 
-<?=$this->renderElement('green_header')?>
+        <?=$this->renderElement('green_header')?>
 
-<div id="innercontent">
-<?=$content_for_layout ?>
-</div>
+        <div id="innercontent">
+        <?=$content_for_layout ?>
+        </div>
 
-<?=$this->renderElement('green_footer')?>
+        <?=$this->renderElement('green_footer')?>
 
+    </div>
 
-
-</div>
-</div>
-
-</center>
-
+    </center>
 
 </body>
 </html>

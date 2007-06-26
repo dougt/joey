@@ -11,7 +11,7 @@
 <h3> Joey! Addon for your phone </h3>
 <p>Pressing this button will send an email to your phone.  This might cost you something, but you already know that.</p>
 
-<form action="" method="post" class="joey-form" />
+<form action="" method="post" class="joey-form">
    <input type="hidden" name="joey" value="joey"/>
    <div class="button-box">
      <?=$html->submit('Send SMS to your phone with this download link', array('class' => 'joey-submit')); ?>

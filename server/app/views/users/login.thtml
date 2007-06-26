@@ -11,17 +11,10 @@
 
 <h2>Login</h2>
 
+<?php //@todo remove this temporary message ?>
+<p style="font-style:italic;"> If you created an account in the past, please recreate your account.  Sorry for this, and thanks for testing!</p>
 
-<br>
-<br>
-<i>
-If you created an account in the past, please recreate your
-account.  Sorry for this, and thanks for testing!
-</i>
-<br>
-<br>
-
-<form action="" method="post" class="joey-form" />
+<form action="" method="post" class="joey-form" >
     <div>
         <label class="joey-label-large" for="UserUsername">User Name:</label>
         <?=$html->input('User/username')?>
