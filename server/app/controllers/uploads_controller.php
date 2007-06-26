@@ -85,15 +85,13 @@ class UploadsController extends AppController
     {
       $this->layout = NULL;
 
-      echo "Hi Mom, this is the rss you wanted \n\n";
       $rss_source = $_GET['rss'];
-      echo $rss_source;
 
+      // put this rss link into a format that we care about.
       $rss_source = "rss=" . $rss_source . "\r\n";
 
       // Fill in the user_id FK.  Cake needs this doubled up for the HABTM relationship
       $this->data['User']['User']['id'] = $this->_user['id'];
-
 
       $this->Upload->settings['throw_error'] = true;
       $this->Contentsource->settings['throw_error'] = true;

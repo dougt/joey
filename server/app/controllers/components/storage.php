@@ -209,17 +209,21 @@ class StorageComponent extends Object
 
                 $result = curl_exec($ch);
                 curl_close($ch);
-
-                // write the file.
-                //                if (!file_put_contents($_filename, $result)) {
-                //                  $this->log("file_put_contents failed for " . $_filename);
-                //                  return false;
-                //                }
+                
+                $output = "rss does not exists for this any longer. try again later";
 
                 $rss = new MagpieRSS( $result );
                 if ( $rss and !$rss->ERROR) {
 
-                  $output = "Channel Title: " . $rss->channel['title'];
+
+                  $title = $rss->channel['title'];
+
+                  // reset the upload's title to this.                  
+                  $_title = mysql_real_escape_string($title);
+                  $this->controller->Upload->id = $id;
+                  $this->controller->Upload->saveField('title', $_title);
+
+                  $output = "Channel Title: " . $title;
                   $output .= "<ul>";
 
                   foreach ($rss->items as $item) {
@@ -238,6 +242,8 @@ class StorageComponent extends Object
                     $output .= "</li>";
                   }
                 }
+
+                // echo print_r($rss); exit();
 
                 if (!file_put_contents($_filename, $output)) {
                   $this->log("file_put_contents failed for " . $_filename);
