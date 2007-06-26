@@ -350,7 +350,9 @@ class UploadsController extends AppController
     function deleteByFileID($id)
     {
       $_item = $this->File->findById($id);
-      $this->delete($_item['Upload']['id']);
+      if (is_numeric($_item['Upload']['id'])) {
+          $this->delete($_item['Upload']['id']);
+      }
     }
 
     function delete($id)
@@ -463,13 +465,9 @@ class UploadsController extends AppController
         $_options = array();
 
         // check to see if we have a filter "type"
-        if (array_key_exists('type',$_POST))
+        if (array_key_exists('type',$_POST)) {
           $_options['types'] = $this->filetypes[ $_POST['type'] ];
-        else if (array_key_exists('type',$_GET))
-          $_options['types'] = $this->filetypes[ $_GET['type'] ];
-        else if (array_key_exists('type',$_GET))
-        {
-          //@todo verify type
+        } else if (array_key_exists('type',$_GET)) {
           $_options['types'] = $this->filetypes[ $_GET['type'] ];
         }
 

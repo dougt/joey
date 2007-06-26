@@ -170,7 +170,9 @@ class Upload extends AppModel
 
         if (is_numeric($_since)) {
           $timestamp = date('Y-m-d H:i:s', $_since);
-          $_query .= " AND Upload.modified >= '$timestamp'";
+          if ($timestamp !== false) {
+              $_query .= " AND Upload.modified >= '$timestamp'";
+          }
         }
         
         if (is_numeric($_limit) && is_numeric($_start)) {

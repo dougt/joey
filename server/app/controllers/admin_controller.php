@@ -60,6 +60,7 @@ class AdminController extends AppController
       //Last 24 hours
       $timestamp = date('Y-m-d H:i:s', (time() - 86400));
 
+    //@todo queries go in the model.  These need to be moved.
       $result = $this->User->query("SELECT count(*) from users WHERE created >= '{$timestamp}';");
       $_summary["new_user_count"] = $result[0][0]["count(*)"];
 

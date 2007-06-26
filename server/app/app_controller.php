@@ -137,6 +137,7 @@ class AppController extends Controller
             }
 
             $this->redirect('/users/login');
+            exit;
         }
     }
 

@@ -3,7 +3,7 @@
 
 <div>
 <h3> Joey! Addon for Firefox </h3>
-<p> You will want to get this so that you can grab stuff from the web and sent it to Joe.... </p>
+<p> You will want to get this so that you can grab stuff from the web and send it to Joe.... </p>
 <br><?php echo $html->link('Download Joey Addon for Firefox', $url_to_xpi); ?>
 </div>
 
