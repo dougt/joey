@@ -71,6 +71,12 @@ define('UPLOAD_DIR', '');
 define('CONTENTSOURCE_REFRESH_TIME', 15);
 
 /**
+ * If set to true, we will always update content source
+ * uploads.
+ */
+define('CONTENTSOURCE_REFRESH_ALWAYS', false);
+
+/**
  * Upload limit or each user in MBs
  */
 define('MAX_DISK_USAGE', 20);

@@ -15,7 +15,7 @@
 * magpierss-general@lists.sourceforge.net
 *
 * @author           Kellan Elliott-McCrea <kellan@protest.net>
-* @version          0.7a
+* @version          0.7a (with enclosures)
 * @license          GPL
 *
 */
@@ -33,7 +33,6 @@ require_once (MAGPIE_DIR . 'rss_utils.inc');
 */
 class MagpieRSS {
     var $parser;
-    
     var $current_item   = array();  // item currently being parsed
     var $items          = array();  // collection of parsed items
     var $channel        = array();  // hash of channel fields
@@ -60,6 +59,7 @@ class MagpieRSS {
     var $incontent          = false; // if in Atom <content mode="xml"> field 
     var $intextinput        = false;
     var $inimage            = false;
+    var $current_field      = '';
     var $current_namespace  = false;
     
 
@@ -205,7 +205,14 @@ class MagpieRSS {
         {
             $this->inimage = true;
         }
-        
+        elseif (
+            $this->feed_type == RSS and
+            $el == 'enclosure' )
+        {
+            $this->current_item[$el][] = $attrs;
+            $this->incontent = $el;
+        }
+
         # handle atom content constructs
         elseif ( $this->feed_type == ATOM and in_array($el, $this->_CONTENT_CONSTRUCTS) )
         {
@@ -389,7 +396,7 @@ class MagpieRSS {
                 
                 $atom_date = (isset($item['issued']) ) ? $item['issued'] : $item['modified'];
                 if ( $atom_date ) {
-                    $epoch = @parse_w3cdtf($atom_date);
+                    $epoch = @parse_w3cdtf($item['modified']);
                     if ($epoch and $epoch > 0) {
                         $item['date_timestamp'] = $epoch;
                     }

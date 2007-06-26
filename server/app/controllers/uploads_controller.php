@@ -86,10 +86,91 @@ class UploadsController extends AppController
       $this->layout = NULL;
 
       echo "Hi Mom, this is the rss you wanted \n\n";
-      echo $_GET['rss'];
-      exit();
+      $rss_source = $_GET['rss'];
+      echo $rss_source;
+
+      $rss_source = "rss=" . $rss_source . "\r\n";
+
+      // Fill in the user_id FK.  Cake needs this doubled up for the HABTM relationship
+      $this->data['User']['User']['id'] = $this->_user['id'];
 
 
+      $this->Upload->settings['throw_error'] = true;
+      $this->Contentsource->settings['throw_error'] = true;
+
+      // check for duplicates
+      $_contentdup = $this->Contentsource->findBySource($rss_source);
+      
+      // Allow for now!
+      //      if (!empty($_contentdup)) {
+      //        $this->flash('Error - Duplicate found.', '/uploads/index');
+      //        return;
+      //      }
+
+      // Hard coded.  These values must match your db.  if
+      // you didn't change anything in
+      // app/config/sql/joey.sql, you should be golden.
+
+      $this->data['Contentsourcetype']['id'] = 2;
+      $this->data['Contentsourcetype']['name'] = "rss-source/text"; 
+
+      $this->data['Upload']['title'] = "rss-source/text"; 
+      $this->data['Upload']['referrer'] = "rss-source/text"; 
+
+      $this->data['Contentsource']['source'] = $rss_source;
+
+
+      if (!$this->Upload->validates($this->data) || !$this->Contentsource->validates($this->data) || !$this->Contentsourcetype->validates($this->data)) 
+      {
+          $this->flash('RSS Add Failed. Upload could not ve validated', '/uploads/index');
+          return;
+      }
+
+      // Start our transaction.  
+      $this->Upload->begin();
+
+      if ($this->Upload->save($this->data) == false)
+      {
+          $this->Upload->rollback();
+          $this->flash('RSS Add Failed. Upload could not be saved', '/uploads/index');
+          return;
+      }
+
+      // Create a new file row
+      if (($_file_id = $this->Storage->createFileForUploadId($this->Upload->id, $this->data['Contentsourcetype']['name'])) == false) 
+      {
+        $this->Upload->rollback();
+        $this->flash('RSS Add Failed.  Could not create file for upload.', '/uploads/index');
+        return;
+      }
+
+      // gg cake
+      $this->data['Contentsource']['file_id']              = $_file_id;
+      $this->data['Contentsource']['contentsourcetype_id'] = $this->data['Contentsourcetype']['id'];
+      
+      if ($this->Contentsource->save($this->data) == false) 
+      {
+          $this->Upload->rollback();
+          $this->flash('RSS Add Failed. Could not save content source', '/uploads/index');
+          return;
+      }
+
+      if ($this->Upload->setOwnerForUploadIdAndUserId($this->Upload->id, $this->_user['id']) == false)
+      {
+        $this->Upload->rollback();
+        $this->flash('RSS Add Failed. Could not set owner of upload.', '/uploads/index');
+        return;
+      }
+
+      if ($this->Storage->updateFileByUploadId($this->Upload->id, true) == false)
+      {
+        $this->Upload->rollback();
+        $this->flash('RSS Add Failed. Could not update file.', '/uploads/index');
+        return;
+      }
+
+      $this->Upload->commit();
+      $this->flash('RSS Added.', '/uploads/index');
     }
 
     /**
@@ -155,8 +236,8 @@ class UploadsController extends AppController
                     $_ret = $this->Storage->processUpload($this->data['File']['Upload']['tmp_name'], $this->_user['id'], $this->data['File']['Upload']['type'], $_width, $_height);
                     
                     if ($_ret == null) {
-                            $this->File->invalidate('Upload');
-                            $this->set('error_fileupload', 'Could not move uploaded file.');
+                      $this->File->invalidate('Upload');
+                      $this->set('error_fileupload', 'Could not move uploaded file.');
                     }
                     
                     $this->data['File']['name'] = basename($_ret['default_name']);
@@ -215,7 +296,6 @@ class UploadsController extends AppController
                 $this->Upload->settings['throw_error'] = true;
                 $this->Contentsource->settings['throw_error'] = true;
 
-
                 // check for duplicates
                 $_contentdup = $this->Contentsource->findBySource($this->data['Contentsource']['source']);
 
@@ -260,7 +340,6 @@ class UploadsController extends AppController
 
                     // This shouldn't ever fail, since we validated it
                     if ($this->Upload->save($this->data)) {
-
                         // Create a new file row
                         if (($_file_id = $this->Storage->createFileForUploadId($this->Upload->id, $this->data['Contentsourcetype']['name'])) !== false) {
 

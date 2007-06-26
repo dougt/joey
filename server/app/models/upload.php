@@ -100,12 +100,22 @@ class Upload extends AppModel
 
     function setOwnerForUploadIdAndUserId($upload_id, $user_id) {
         if (is_numeric($upload_id) && is_numeric($user_id)) {
+          // For the love of god, why do I have to do this?
+          $_query = "
+            SELECT COUNT(*) FROM 
+            uploads_users 
+            WHERE upload_id={$upload_id} AND user_id={$user_id}";
 
+          $data = $this->query($_query);
+
+          if ($data[0][0]["COUNT(*)"] == 0)
+            $this->execute("INSERT INTO uploads_users (upload_id, user_id, owner, created, modified) VALUES ({$upload_id}, {$user_id}, 1, NOW(), NOW())");
+          else
             $this->execute("UPDATE uploads_users SET owner=1, modified=NOW() WHERE upload_id='{$upload_id}' AND user_id='{$user_id}'");
-            
-            return true;
+          return true;
         }
 
+        echo "WTF";
         return false;
     }
 

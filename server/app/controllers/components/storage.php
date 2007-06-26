@@ -38,7 +38,7 @@
 
 vendor('microsummary');
 vendor('joeywidget');
-
+vendor('magpierss/rss_fetch.inc');
 /**
  * Some mildly associated functions for storing files on the disk.  Maybe there is a
  * better place for this?
@@ -64,11 +64,6 @@ class StorageComponent extends Object
                          "microsummary/xml" => "mcs",
                          "widget/joey" => "jwt");
 
-
-    function storage_log($msg) {
-      file_put_contents(LOGS . "storage_log" , $msg . "\r\n", FILE_APPEND | LOCK_EX);
-    }
-
     /**
      * Save a reference to the controller on startup
      * @param object &$controller the controller using this component
@@ -91,7 +86,7 @@ class StorageComponent extends Object
       // $additional and $totalused is in bytes, MAX_DISK_USAGE is in MB
       if ( ($additional + $totalused) > (MAX_DISK_USAGE * 1024 * 1024)) {
 
-        $this->storage_log($userid . " hasAvailableSpace failed");
+        $this->log($userid . " hasAvailableSpace failed");
 
         return false;
       }
@@ -149,13 +144,11 @@ class StorageComponent extends Object
 
       // This Upload doesn't have a contentsource
       if (empty($_upload['Contentsourcetype']['name'])) {
-
           return false;
       }
 
       if (empty($_upload['File']))
       {
-
           if ($this->createFileForUploadId($id, $_upload['Contentsourcetype']['name']) == false) {
               return false;
           }
@@ -174,7 +167,7 @@ class StorageComponent extends Object
       if (empty($_owner)) { return false; }
       
       // check to see if we should do anything
-      if (false && $forceUpdate == false) 
+      if (! CONTENTSOURCE_REFRESH_ALWAYS && $forceUpdate == false) 
       {
         $expiry = strtotime($_upload['File']['modified'] . " + " . CONTENTSOURCE_REFRESH_TIME . " minutes");
         $nowstamp = strtotime("now");
@@ -196,12 +189,15 @@ class StorageComponent extends Object
 
               case 'rss-source/text':
 
-
                 preg_match("/rss=(.*)\r\n/", $_upload['Contentsource']['source'], $rss_url);
                 preg_match("/icon=(.*)\r\n/", $_upload['Contentsource']['source'], $icon_url);
                 
                 $rss_url = $rss_url[1];
-                $icon_url = $icon_url[1];
+
+                if (!empty($icon_url))
+                  $icon_url = $icon_url[1];
+                else
+                  unset($icon_url);
 
                 // Grab the rss content.
                 $useragent = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-US; rv:1.8.1.4) Gecko/20070515 Firefox/2.0.0.4";
@@ -215,52 +211,85 @@ class StorageComponent extends Object
                 curl_close($ch);
 
                 // write the file.
-                if (!file_put_contents($_filename, $result)) {
-                  $this->storage_log("file_put_contents failed for " . $_filename);
+                //                if (!file_put_contents($_filename, $result)) {
+                //                  $this->log("file_put_contents failed for " . $_filename);
+                //                  return false;
+                //                }
+
+                $rss = new MagpieRSS( $result );
+                if ( $rss and !$rss->ERROR) {
+
+                  $output = "Channel Title: " . $rss->channel['title'];
+                  $output .= "<ul>";
+
+                  foreach ($rss->items as $item) {
+
+                    if (isset($item['link']))
+                    {
+                      $href = $item['link'];
+                      $output .= "<li> <a href=" . $href . ">" . $item['title'] . "</a>";
+                    }
+                    else
+                    {
+                      $output .= "<li> ".$item['title'];
+                    }
+                    if (isset($item['description']))
+                      $output .= "<br>" . $item['description'];
+                    $output .= "</li>";
+                  }
+                }
+
+                if (!file_put_contents($_filename, $output)) {
+                  $this->log("file_put_contents failed for " . $_filename);
                   return false;
                 }
 
-                // Grab the icon content.
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $icon_url);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); // return into a variable
-                curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, 5);
-                curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
-                $result = curl_exec($ch);
-                curl_close($ch);
-
-                // this is a ICO file (probably).  We need to convert to a PNG.                
-
-                /// raw content...
-
-                // figure out the extension of the favicon
-                
-                $url = pathinfo($icon_url);
-                $extension = $url["extension"];
-
-                if (empty($extension))
-                  $extension = "tmp";
-
-                $tmpname = $_previewname . "." .$extension;
-
-                if (!file_put_contents($tmpname, $result)) {
-                  echo ("file_put_contents failed for " . $tmpname);
-                  return false;
-                }
-
-                $_cmd = CONVERT_CMD . " -geometry 16x16 {$extension}:{$tmpname} {$_previewname}";    
-                exec($_cmd, $_out, $_ret);
-                unlink($tmpname);
-
-                if ($_ret !== 0) {
-                  $this->storage_log("transcodeImage failed: " . $_cmd);
-                  return false;
+                if (isset($icon_url))
+                {
+                  // Grab the icon content.
+                  $ch = curl_init();
+                  curl_setopt($ch, CURLOPT_URL, $icon_url);
+                  curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); // return into a variable
+                  curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, 5);
+                  curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
+                  $result = curl_exec($ch);
+                  curl_close($ch);
+                  
+                  // this is a ICO file (probably).  We need to convert to a PNG.                
+                  
+                  /// raw content...
+                  
+                  // figure out the extension of the favicon
+                  
+                  $url = pathinfo($icon_url);
+                  $extension = $url["extension"];
+                  
+                  if (empty($extension))
+                    $extension = "tmp";
+                  
+                  $tmpname = $_previewname . "." .$extension;
+                  
+                  if (!file_put_contents($tmpname, $result)) {
+                    echo ("file_put_contents failed for " . $tmpname);
+                    return false;
+                  }
+                  
+                  $_cmd = CONVERT_CMD . " -geometry 16x16 {$extension}:{$tmpname} {$_previewname}";    
+                  exec($_cmd, $_out, $_ret);
+                  unlink($tmpname);
+                  
+                  if ($_ret !== 0) {
+                    $this->log("transcodeImage failed: " . $_cmd);
+                    return false;
+                  }
                 }
 
                 // need to update the size and date in the db.
                 $this->controller->File->id = $_upload['File']['id'];
                 $this->controller->File->saveField('size',filesize($_filename));
-                $this->controller->File->saveField('preview_size',filesize($_previewname));
+
+                if (isset($icon_url))
+                  $this->controller->File->saveField('preview_size',filesize($_previewname));
 
                 break;
 
@@ -287,19 +316,19 @@ class StorageComponent extends Object
 
                   if (empty($ms->result)) {
                       $ms->result = "XPATH is broken..  this feature doesn't work for the content you have selected. ";
-                      $this->storage_log("Microsummary ". $_upload['Contentsource']['id'] . "does not have an xpath result");
+                      $this->log("Microsummary ". $_upload['Contentsource']['id'] . "does not have an xpath result");
                   }
 
                   // does the user have enough space to proceed
                   if ($this->controller->Storage->hasAvailableSpace($_owner['User']['id'],
                                                                     strlen($ms->result) - filesize($_filename)) == false) {
-                    $this->storage_log("User " . $_owner['User']['id'] . " is out of space.");
+                    $this->log("User " . $_owner['User']['id'] . " is out of space.");
                     return false;
                   }
 
                   // write the file.
                   if (!file_put_contents($_filename, $ms->result)) {
-                    $this->storage_log("file_put_contents failed for " . $_filename);
+                    $this->log("file_put_contents failed for " . $_filename);
                     return false;
                   }
 
@@ -319,11 +348,11 @@ class StorageComponent extends Object
 
                     // write the file.
                     if (!file_put_contents($_filename, $jw->content)) {
-                      $this->storage_log("file_put_contents failed for " . $_filename);
+                      $this->log("file_put_contents failed for " . $_filename);
                       return false;
                     }
                     if (!file_put_contents($_previewname, $jw->preview)) {
-                      $this->storage_log("file_put_contents failed for " . $_previewname);
+                      $this->log("file_put_contents failed for " . $_previewname);
                       return false;
                     }
                     
@@ -358,7 +387,7 @@ class StorageComponent extends Object
     $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_fromName} {$_toName}";    
     exec($_cmd, $_out, $_ret);
     if ($_ret !== 0) {
-      $this->storage_log("transcodeImage failed: " . $_cmd);
+      $this->log("transcodeImage failed: " . $_cmd);
       return false;
     }
     
@@ -368,7 +397,7 @@ class StorageComponent extends Object
     $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_toName} {$_previewName}";    
     exec($_cmd, $_out, $_ret);
     if ($_ret !== 0) {
-      $this->storage_log("transcodeImage failed: " . $_cmd);
+      $this->log("transcodeImage failed: " . $_cmd);
       return false;
     }
     
@@ -390,7 +419,7 @@ class StorageComponent extends Object
     $_cmd = FFMPEG_CMD . " -i {$_fromName} -s qcif -vcodec h263 -acodec mp3 -ac 1 -ar 8000 -ab 32 -y {$_toName}";
     exec($_cmd, $_out, $_ret);
     if ($_ret !== 0) {
-      $this->storage_log("transcodeVideo failed: " . $_out);
+      $this->log("transcodeVideo failed: " . $_out);
       return false;
     }
     
@@ -399,10 +428,10 @@ class StorageComponent extends Object
     $_cmd = FFMPEG_CMD . " -i {$_fromName} -ss 5 -vcodec png -vframes 1 -an -f rawvideo -s '{$width}x{$height}' {$_previewName}";
 
 
-    $this->storage_log(">: " . $_cmd);
+    $this->log(">: " . $_cmd);
     exec($_cmd, $_out, $_ret);
     if ($_ret !== 0) {
-      $this->storage_log("transcodeVideo failed: " . $_out);
+      $this->log("transcodeVideo failed: " . $_out);
       return false;
     }
     return true;
