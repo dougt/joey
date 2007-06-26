@@ -70,9 +70,11 @@ class File extends AppModel
     function delete($id) {
 
       if (is_numeric($id)) {
-        $this->execute("UPDATE files set name=null, size=0, type=null, original_name=null, original_type=null, original_size=0, preview_name=null, preview_type=null, preview_size=null, deleted=NOW() where id={$id}");
+        $this->execute("UPDATE files set name=null, size=0, type=null, original_name=null, original_type=null, original_size=0, preview_name=null, preview_type=null, preview_size=null, deleted=NOW() where id='{$id}'");
+        return true;
       }
-      return true;
+
+      return false;
     }
 
     function findOwnerDataFromFileId($id) {
@@ -88,7 +90,7 @@ class File extends AppModel
                 WHERE 
                     uploads_users.upload_id = uploads.id
                     AND files.upload_id = uploads.id
-                    AND files.id = {$id}
+                    AND files.id = '{$id}'
                     AND uploads_users.owner=1
                         ";
 

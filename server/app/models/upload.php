@@ -71,9 +71,11 @@ class Upload extends AppModel
     function delete($id) {
 
       if (is_numeric($id)) {
-        $this->execute("UPDATE uploads set title=null, referrer=null, deleted=NOW() where id={$id}");
+        $this->execute("UPDATE uploads set title=null, referrer=null, deleted=NOW() where id='{$id}'");
+        return true;
       }
-      return true;
+
+      return false;
     }
     
     /**
@@ -99,7 +101,7 @@ class Upload extends AppModel
     function setOwnerForUploadIdAndUserId($upload_id, $user_id) {
         if (is_numeric($upload_id) && is_numeric($user_id)) {
 
-            $this->execute("UPDATE uploads_users SET owner=1, modified=NOW() WHERE upload_id={$upload_id} AND user_id={$user_id}");
+            $this->execute("UPDATE uploads_users SET owner=1, modified=NOW() WHERE upload_id='{$upload_id}' AND user_id='{$user_id}'");
             
             return true;
         }
@@ -115,7 +117,7 @@ class Upload extends AppModel
       $_query = "
             SELECT COUNT(*) FROM 
             uploads_users 
-            WHERE uploads_users.user_id = {$id}
+            WHERE uploads_users.user_id = '{$id}'
         ";
 
       $data = $this->query($_query);
@@ -143,7 +145,7 @@ class Upload extends AppModel
             JOIN files as File ON Upload.id = File.upload_id
             LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
             LEFT JOIN contentsourcetypes as Contentsourcetype ON Contentsource.contentsourcetype_id = Contentsourcetype.id
-            WHERE uploads_users.user_id = {$id}
+            WHERE uploads_users.user_id = '{$id}'
         ";
 
         // user doesn't want to see deleted entries
