@@ -392,6 +392,7 @@ class microsummary {
     curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); // return into a variable
     curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept-Charset:utf-8')); 
     curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); 
     $result = curl_exec($ch);
     if (curl_errno($ch)) {
       return false;

@@ -61,6 +61,7 @@ class UploadsController extends AppController
                             "text"             => array("text/plain"),
                             "microsummaries"   => array("microsummary/xml"),
                             "widgets"          => array("widget/joey"),
+                            "all"              => array("*"),
                             );
 
     /**
@@ -83,8 +84,6 @@ class UploadsController extends AppController
 
     function add_rss()
     {
-      $this->layout = NULL;
-
       $rss_source = $_GET['rss'];
 
       // put this rss link into a format that we care about.
@@ -112,8 +111,8 @@ class UploadsController extends AppController
       $this->data['Contentsourcetype']['id'] = 2;
       $this->data['Contentsourcetype']['name'] = "rss-source/text"; 
 
-      $this->data['Upload']['title'] = "rss-source/text"; 
-      $this->data['Upload']['referrer'] = "rss-source/text"; 
+      $this->data['Upload']['title']    = "RSS. Updating title...."; 
+      $this->data['Upload']['referrer'] = "n/a"; 
 
       $this->data['Contentsource']['source'] = $rss_source;
 
@@ -582,11 +581,37 @@ class UploadsController extends AppController
                 }
                 
                 // left joins bring back null rows
-                if (array_key_exists('id',$row['Contentsource']) && !empty($row['Contentsource']['id'])) {
+                if (array_key_exists('id',$row['Contentsource']) && !empty($row['Contentsource']['id'])) 
+                {
+
+                  // RSS can result in differnt output. For
+                  // example, an RSS with an enclosure may
+                  // result in a video, or mp3, or even an
+                  // image.  What we want to do here is
+                  // ensure that the right mime type is
+                  // sent.  However, if the mime type is
+                  // "just" text/html, we want to preserve
+                  // the "rss-source/text" so that we can
+                  // special treat this text on j2me midlet.
+                  //
+                  // this is a bit nasty, it might be better
+                  // to have a tag or category attribute so
+                  // that we do not have to over load the
+                  // meaning of content type.
+
+                  if ($row['Contentsourcetype']['name'] == "rss-source/text"  && $row['File']['type'] != "text/html")
+                    $data[$count]['type'] = $row['File']['type'];
+                  else
                     $data[$count]['type'] = $row['Contentsourcetype']['name'];
-                } else {
+                } 
+                else 
+                {
                     $data[$count]['type'] = $row['File']['type'];
                 }
+
+
+                echo $row['Contentsourcetype']['name'] . "\n";
+                echo $row['File']['type'];
                 
                 $count++;
             }

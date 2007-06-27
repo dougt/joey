@@ -163,7 +163,7 @@ class Upload extends AppModel
             $_query .= " AND Upload.deleted IS NULL";
         }
 
-        if ($_types != null) {
+        if ($_types != null && $_types[0] != "*") {
 
             $_query .= " AND";
 

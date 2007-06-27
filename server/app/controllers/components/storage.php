@@ -82,15 +82,11 @@ class StorageComponent extends Object
     function hasAvailableSpace($userid, $additional) {
       
       $totalused = $this->controller->User->totalSpaceUsedByUserId($userid);
-
       // $additional and $totalused is in bytes, MAX_DISK_USAGE is in MB
       if ( ($additional + $totalused) > (MAX_DISK_USAGE * 1024 * 1024)) {
-
         $this->log($userid . " hasAvailableSpace failed");
-
         return false;
       }
-      
       return true;
     }
 
@@ -111,7 +107,12 @@ class StorageComponent extends Object
         $_file->set('upload_id', $id);
         $_file->set('name', basename($_filename));
         $_file->set('size', 0);
-        $_file->set('type', "text/html"); //@todo dougt: why is this text/html?
+        $_file->set('type', "text/html"); // text/html because we will update this later.
+
+        $_file->set('original_name', basename($_previewname));
+        $_file->set('original_type', "text/html"); // text/html because we will update this later.
+        $_file->set('original_size', 0);
+
         $_file->set('preview_name', basename($_previewname));
         $_file->set('preview_type', "image/png");
         $_file->set('preview_size', 0);
@@ -179,8 +180,7 @@ class StorageComponent extends Object
       // These are the file to operate on:
       $_filename = UPLOAD_DIR."/{$_owner['User']['id']}/{$_upload['File']['name']}";
       $_previewname = UPLOAD_DIR."/{$_owner['User']['id']}/previews/{$_upload['File']['preview_name']}";
-
-
+      $_orignalname = UPLOAD_DIR."/{$_owner['User']['id']}/originals/{$_upload['File']['original_name']}";
       
       if (!empty($_upload['Contentsource']['source'])) {
 
@@ -188,115 +188,10 @@ class StorageComponent extends Object
           switch ($_upload['Contentsourcetype']['name']) {
 
               case 'rss-source/text':
-
-                preg_match("/rss=(.*)\r\n/", $_upload['Contentsource']['source'], $rss_url);
-                preg_match("/icon=(.*)\r\n/", $_upload['Contentsource']['source'], $icon_url);
-                
-                $rss_url = $rss_url[1];
-
-                if (!empty($icon_url))
-                  $icon_url = $icon_url[1];
-                else
-                  unset($icon_url);
-
-                // Grab the rss content.
-                $useragent = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-US; rv:1.8.1.4) Gecko/20070515 Firefox/2.0.0.4";
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $rss_url);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); // return into a variable
-                curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, 5);
-                curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
-
-                $result = curl_exec($ch);
-                curl_close($ch);
-                
-                $output = "rss does not exists for this any longer. try again later";
-
-                $rss = new MagpieRSS( $result );
-                if ( $rss and !$rss->ERROR) {
-
-
-                  $title = $rss->channel['title'];
-
-                  // reset the upload's title to this.                  
-                  $_title = mysql_real_escape_string($title);
-                  $this->controller->Upload->id = $id;
-                  $this->controller->Upload->saveField('title', $_title);
-
-                  $output = "Channel Title: " . $title;
-                  $output .= "<ul>";
-
-                  foreach ($rss->items as $item) {
-
-                    if (isset($item['link']))
-                    {
-                      $href = $item['link'];
-                      $output .= "<li> <a href=" . $href . ">" . $item['title'] . "</a>";
-                    }
-                    else
-                    {
-                      $output .= "<li> ".$item['title'];
-                    }
-                    if (isset($item['description']))
-                      $output .= "<br>" . $item['description'];
-                    $output .= "</li>";
-                  }
-                }
-
-                // echo print_r($rss); exit();
-
-                if (!file_put_contents($_filename, $output)) {
-                  $this->log("file_put_contents failed for " . $_filename);
+                if (!$this->handleRssUpdate($_upload, $_filename, $_previewname, $_orignalname))
+                {
                   return false;
                 }
-
-                if (isset($icon_url))
-                {
-                  // Grab the icon content.
-                  $ch = curl_init();
-                  curl_setopt($ch, CURLOPT_URL, $icon_url);
-                  curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); // return into a variable
-                  curl_setopt ($ch, CURLOPT_CONNECTTIMEOUT, 5);
-                  curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
-                  $result = curl_exec($ch);
-                  curl_close($ch);
-                  
-                  // this is a ICO file (probably).  We need to convert to a PNG.                
-                  
-                  /// raw content...
-                  
-                  // figure out the extension of the favicon
-                  
-                  $url = pathinfo($icon_url);
-                  $extension = $url["extension"];
-                  
-                  if (empty($extension))
-                    $extension = "tmp";
-                  
-                  $tmpname = $_previewname . "." .$extension;
-                  
-                  if (!file_put_contents($tmpname, $result)) {
-                    echo ("file_put_contents failed for " . $tmpname);
-                    return false;
-                  }
-                  
-                  $_cmd = CONVERT_CMD . " -geometry 16x16 {$extension}:{$tmpname} {$_previewname}";    
-                  exec($_cmd, $_out, $_ret);
-                  unlink($tmpname);
-                  
-                  if ($_ret !== 0) {
-                    $this->log("transcodeImage failed: " . $_cmd);
-                    return false;
-                  }
-                }
-
-                // need to update the size and date in the db.
-                $this->controller->File->id = $_upload['File']['id'];
-                $this->controller->File->saveField('size',filesize($_filename));
-
-                if (isset($icon_url))
-                  $this->controller->File->saveField('preview_size',filesize($_previewname));
-
                 break;
 
               case 'microsummary/xml':
@@ -514,5 +409,251 @@ class StorageComponent extends Object
         }
   }
 
+  function fetchURL($url)
+  {
+    $useragent = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-US; rv:1.8.1.4) Gecko/20070515 Firefox/2.0.0.4";
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_HEADER, 0);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); // return into a variable
+    curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); 
+    $result = curl_exec($ch);
+
+    //    print_r( curl_getInfo( $ch ) );
+    curl_close($ch);
+    return $result;
+  }
+
+  function handleRssUpdate($_upload, $_filename, $_previewname, $_orignalname)
+  {
+    // Parse out the two parts of an rss content source: the rss url, and the icon url.
+    preg_match("/rss=(.*)\r\n/", $_upload['Contentsource']['source'], $rss_url);
+    preg_match("/icon=(.*)\r\n/", $_upload['Contentsource']['source'], $icon_url);
+    
+    $rss_url = $rss_url[1];
+    
+    // the icon url is optional.
+    if (!empty($icon_url))
+      $icon_url = $icon_url[1];
+    else
+      unset($icon_url);
+    
+    $result = $this->fetchURL($rss_url);
+
+    if (!file_put_contents($_orignalname, $result)) {
+      $this->log("file_put_contents failed for " . $_orignalname);
+      return false;
+    }
+
+    // default error output.
+    $output = "rss does not exists for this any longer. try again later";
+    
+    $rss = new MagpieRSS( $result );
+    if ( !$rss or $rss->ERROR) 
+      return false;
+    
+    $title = $rss->channel['title'];
+      
+    // reset the upload's title to this.                  
+    $_title = mysql_real_escape_string($title);
+    $this->controller->Upload->id = $_upload['Upload']['id'];
+    $this->controller->Upload->saveField('title', $_title);
+    
+    
+    // Okay, check to see if this is a podcast
+    // (something that contains a audio
+    // enclosure).  If it is, then we treat it
+    // as updatable media file.  If it doesn't
+    // include an enclosure, then we treat it
+    // as a simple rss feed.
+    
+    if ($rss->incontent == "enclosure")
+    {
+      // Podcast!
+      $lastpubdate = 0;
+      foreach ($rss->items as $item) {
+        // the RSS pubDate must be an RFC-822 date-time
+        $pubdate = strtotime($item['pubdate']);
+        if ($pubdate > $lastpubdate || $lastpubdate == 0)
+        {
+          $lastitem = $item;
+          $lastpubdate = $pubdate;
+        }
+      }
+      
+      $podcast = $item['enclosure'][0];
+      
+      // these are big files, do not fetch if the file has
+      // not change.  if the file exists and the dates
+      // match, we can return early.
+      if (file_exists($_filename) && filemtime($_filename) == $lastpubdate)
+        return false;
+      
+      /*
+      $src = fopen($podcast['url'], 'r');
+      $dest = fopen($_filename, 'w');
+      stream_copy_to_stream($src, $dest);
+      fclose($src);
+      fclose($dest);
+      */
+
+      $output = $this->fetchURL($podcast['url']);
+
+      $filelen = file_put_contents($_filename, $output);
+      if ($filelen <= 0) {
+        $this->log("file_put_contents failed for " . $_filename);
+        return false;
+      }
+      
+      if (isset($lastpubdate))
+        touch($_filename, $lastpubdate);
+
+      // need to update the size and date in the db.
+      $this->controller->File->id = $_upload['File']['id'];
+      $this->controller->File->saveField('size', $filelen);
+      $this->controller->File->saveField('original_size',filesize($_orignalname));
+
+      // There is no preview for this rss.  Remove any
+      // preview name so that the view can use the default
+      // image/icon.
+      $this->controller->File->saveField('preview_name', "");      
+      
+      // This is sort of messy.  What is going to happen
+      // is that we are going to have a file that has a
+      // extension of .rss, but have a type of some other
+      // media format.  Now, this isn't terrible, it is
+      // just inconsistent with what other content source
+      // uploads are doing.
+      //
+      // For example, you will see something like:
+      //  File.name: joey-46829d7e3921a.rss
+      //  File.type: audio/mpeg 
+      
+      $this->controller->File->saveField('type', $podcast['type']);
+      
+      // all done.
+      return true;
+    }
+
+    
+    // this is a "normal" rss feed
+
+    // @todo This is really something that should be in a view.
+    $output = "Channel Title: " . $title;
+    $output .= "<ul>";
+    foreach ($rss->items as $item) {
+      if (isset($item['link']))
+      {
+        $href = $item['link'];
+        $output .= "<li> <a href=" . $href . ">" . $item['title'] . "</a>";
+      }
+      else
+      {
+        $output .= "<li> ".$item['title'];
+      }
+      if (isset($item['description']))
+        $output .= "<br>" . $item['description'];
+      $output .= "</li>";
+    }
+   
+  
+    if (!file_put_contents($_filename, $output)) {
+      $this->log("file_put_contents failed for " . $_filename);
+      return false;
+    }
+    
+    if (!file_exists($_previewname))
+    {
+      // we probably only should do the stuff below if
+      // the preview is missing.
+      
+      if (!isset($icon_url))
+      {
+        // lets try to guess what it is.  This
+        // doesn't always work, but it shows a
+        // need for a generic way to get a
+        // graphical icon for a given web
+        // resource.
+        
+        $guess = parse_url($rss_url, PHP_URL_HOST);
+        $result = $this->fetchURL($guess);
+        
+        // load into new dom document, and look for something that looks like:
+        //
+        // <link rel="icon" href="/favicon.ico"
+        
+        $d = new DOMDocument();
+        $d->preserveWhiteSpace = false;
+        $d->resolveExternals = true; // for character entities
+        @ $d->loadHTML($result);
+        
+        $links = $d->getElementsByTagName('link');
+        
+        for ($i = 0; $i < $links->length; $i++) {
+          $value = $links->item($i)->nodeValue;
+          $rel = $links->item($i)->getAttribute('rel');
+          if ($rel == "icon")
+          {
+            $href = $links->item($i)->getAttribute('href');
+            $icon_url = $guess . $href;
+            
+            //done.
+            $i = $links->length;
+          }
+        }
+      }
+      
+      if (isset($icon_url))
+      {
+        // Grab the icon content.
+        $result = $this->fetchURL($icon_url);
+        
+        // this is a ICO file (probably).  We need to convert to a PNG.                
+        
+        // figure out the extension of the favicon
+        $url = pathinfo($icon_url);
+        $extension = $url["extension"];
+        
+        if (empty($extension))
+          $extension = "tmp";
+        
+        $tmpname = $_previewname . "." .$extension;
+        
+        if (!file_put_contents($tmpname, $result)) {
+          echo ("file_put_contents failed for " . $tmpname);
+          return false;
+        }
+        
+        $_cmd = CONVERT_CMD . " -geometry 16x16 {$extension}:{$tmpname} {$_previewname}";    
+        exec($_cmd, $_out, $_ret);
+        unlink($tmpname);
+        
+        if ($_ret !== 0) {
+          $this->log("transcodeImage failed: " . $_cmd);
+          return false;
+        }
+      }
+      
+      // need to update the size and date in the db.
+      $this->controller->File->id = $_upload['File']['id'];
+      $this->controller->File->saveField('size',filesize($_filename));
+      $this->controller->File->saveField('original_size',filesize($_orignalname));
+
+      if (isset($icon_url))
+      {
+        $this->controller->File->saveField('preview_size',filesize($_previewname));
+      }
+      else
+      {
+        // There is no preview for this rss.  Remove any
+        // preview name so that the view can use the default
+        // image/icon.
+        $this->controller->File->saveField('preview_name', "");      
+      }
+    }
+    return true;
+  }
+  
 }
 ?>
