@@ -48,7 +48,7 @@ public class LoginView
 		super(Locale.get("title.login"));
 
 		//#style input
-		this.mUsernameTextField = new TextField("LoginID:", "", 10, TextField.ANY | TextField.NON_PREDICTIVE);
+		this.mUsernameTextField = new TextField("Username:", "", 10, TextField.ANY | TextField.NON_PREDICTIVE);
 		this.mUsernameTextField.setString(userdata.getUsername());
 		append(this.mUsernameTextField);
 

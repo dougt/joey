@@ -267,6 +267,6 @@ public class CommunicationController
 
     public String getRawMediaURLFor(String id)
     {
-        return this.serverURL + "files/view/" + id;
+        return this.serverURL + "/files/view/" + id;
     }
 }

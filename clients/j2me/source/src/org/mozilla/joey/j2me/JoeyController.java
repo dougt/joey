@@ -607,7 +607,7 @@ public class JoeyController
 
         if (upload.getMimetype().equals("video/3gpp") ||
             upload.getMimetype().equals("audio/mpeg")) {
-            fetchData = false;
+            fetchData = true;
         }
         //#endif
 

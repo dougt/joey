@@ -107,6 +107,9 @@ focused {
 }
 
 .loginScreen extends inputScreen {
+
+	layout: vertical-center | vertical-expand;
+
 }
 
 .mainmenuScreen extends inputScreen {
