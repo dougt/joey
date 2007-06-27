@@ -333,12 +333,7 @@ function joey_feed()
 // Check XUL statusbar item
 function joey_launchPopup() 
 {
-
-  joeySetCurrentFeed();
   document.getElementById('joeyStatusPopup').showPopup(document.getElementById('joeyStatusButton'),-1,-1,'popup','topright', 'bottomright')
-
-
-
 }
 
 /* FIXME to be as an instance */
@@ -672,29 +667,6 @@ function joey_uploadFoundMedia() // refactor with joey_selectedImage
 	channel.asyncOpen(listener, null);
 }
 
-/* 
- * This refreshes feed information in the menu. 
- * The currentBrowser.feeds array is populated from the 
- * joeyLinkAddedHandler. 
- */
-
-function joeySetCurrentFeed()
-{
-	try
-    {
-		var currentFeedURI = g_joey_gBrowser.mCurrentBrowser.feeds;
-        
-		if(currentFeedURI ||currentFeedURI.length>0) 
-        {
-			document.getElementById("joey_activeRSSLink").setAttribute("hidden","false");
-		} 
-	} 
-    catch(i)
-    {
-		document.getElementById("joey_activeRSSLink").setAttribute("hidden","true");
-	} 
-}
-
 function joeyStartup()
 {
     var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
@@ -763,6 +735,24 @@ function joeyLaunchPreferences() {
         window.open("chrome://joey/content/joeyOptions.xul",
                     "welcome", 
                     "chrome,resizable=yes");
+}
+
+
+function joeyRegisterFeedListener() {
+
+    var psvc = Components.classes["@mozilla.org/preferences-service;1"]
+                         .getService(Components.interfaces.nsIPrefBranch);
+
+    var url = "https://joey.labs.mozilla.com";
+    if (psvc.prefHasUserValue("joey.service_url"))
+        url = psvc.getCharPref("joey.service_url");
+    
+
+    // https://dougt.joey-dev.labs.mozilla.com/uploads/add_rss?rss=http%3A%2F%2Fdigg.com%2Frss%2Findex.xml
+
+    navigator.registerContentHandler('application/vnd.mozilla.maybe.feed',
+                                     url + '/uploads/add_rss?rss=%s', 
+                                     'Joey!');
 }
 
 function joeyBrowserStatusHandler() {}
@@ -862,6 +852,10 @@ joeyBrowserStatusHandler.prototype =
 
 function g_joeyFeedwatcher()
 {
+
+    if (psvc.getBoolPref("joey.watchRSS") == false)
+        return;
+
     // we need to tie into a way to purge via clear private data!
 
     var feedWatchLimit = 10;

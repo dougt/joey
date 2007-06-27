@@ -102,12 +102,6 @@
                   hidden="true" 
                   oncommand="joey_uploadFoundMedia()" />
 
-        <menuitem id="joey_activeRSSLink" class="menuitem-iconic" 
-                  hidden="true"
-                  label="&overlay.menuRSS.label;"
-                  insertafter="context-stop"
-                  oncommand="joey_feed();"/>
-
         <menuitem id="joey_selectContextual"
                   label="&overlay.menuSummary.label;"
                   insertafter="context-stop"
@@ -118,6 +112,11 @@
                   insertafter="context-stop"
                   oncommand="joeyLaunchPreferences();"/>
         
+        <menuitem id="joey_registerFeedListener" 
+                  label="&overlay.registerFeedListener.label;"
+                  insertafter="context-stop"
+                  oncommand="joeyRegisterFeedListener();"/>
+
       </menupopup>
   </statusbarpanel>
 </statusbar>

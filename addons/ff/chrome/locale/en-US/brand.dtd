@@ -12,3 +12,4 @@
 <!ENTITY overlay.menuMedia.label        "Joey! Media on page">
 <!ENTITY overlay.menuRSS.label          "Joey! Current Feed">
 <!ENTITY overlay.menuSummary.label      "Joey! Summary Capture">
+<!ENTITY overlay.registerFeedListener.label      "Register Joey! Feed Reader">
