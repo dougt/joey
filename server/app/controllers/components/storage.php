@@ -439,7 +439,9 @@ class StorageComponent extends Object
     else
       unset($icon_url);
     
-    $result = $this->fetchURL($rss_url);
+    if (($result = $this->fetchURL($rss_url)) == false) {
+        return false;
+    }
 
     if (!file_put_contents($_orignalname, $result)) {
       $this->log("file_put_contents failed for " . $_orignalname);
@@ -475,6 +477,12 @@ class StorageComponent extends Object
       foreach ($rss->items as $item) {
         // the RSS pubDate must be an RFC-822 date-time
         $pubdate = strtotime($item['pubdate']);
+
+        //Invalid format
+        if ($pubdate === false) {
+            return false;
+        }
+
         if ($pubdate > $lastpubdate || $lastpubdate == 0)
         {
           $lastitem = $item;
@@ -498,7 +506,9 @@ class StorageComponent extends Object
       fclose($dest);
       */
 
-      $output = $this->fetchURL($podcast['url']);
+      if (($output = $this->fetchURL($podcast['url'])) == false) {
+        return false;
+      }
 
       $filelen = file_put_contents($_filename, $output);
       if ($filelen <= 0) {
@@ -624,8 +634,11 @@ class StorageComponent extends Object
           echo ("file_put_contents failed for " . $tmpname);
           return false;
         }
+
+        $_file_from = escapeshellarg("{$extension}:{$tmpname}");
+        $_file_to   = escapeshellarg("{$_previewname}");
         
-        $_cmd = CONVERT_CMD . " -geometry 16x16 {$extension}:{$tmpname} {$_previewname}";    
+        $_cmd = CONVERT_CMD . " -geometry 16x16 {$_file_from} {$_file_to}";    
         exec($_cmd, $_out, $_ret);
         unlink($tmpname);
         
