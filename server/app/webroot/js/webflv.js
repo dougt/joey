@@ -1,7 +1,15 @@
 /* by Mgalli, for the JOey projext, this is to be kept with the same MPL */
 
 
-function joeyMedia_hidePlayer(refElement,itemId) {
+
+var gCurrentControlId = null;
+var gCurrentElement = null;
+
+function joeyMedia_hidePlayer() {
+
+
+	var itemId = gCurrentControlId;
+	var refElement = gCurrentElement;
 
 	var el = document.getElementById(refElement);
 
@@ -13,20 +21,25 @@ function joeyMedia_hidePlayer(refElement,itemId) {
 	document.getElementById("joeyVideoPlayerController-"+itemId).innerHTML="play";
 	document.getElementById("joeyVideoCloseButton-"+itemId).innerHTML="";
 
-
 	videoTryPause();
+	form_playURL = null;
+
 
 }
 
-function joeyMedia_initPlayer(refElementTo,itemId){
+function joeyMedia_initPlayer(itemId){
 
 
-	var el = document.getElementById(refElementTo);
+	var el = document.getElementById("expandItem-"+itemId);
 
 	el.style.display="block";
 	el.style.height="260px";
 	el.style.width="360px";
-	document.getElementById("joeyVideoCloseButton-"+itemId).innerHTML="<a href='javascript:' onclick='joeyMedia_hidePlayer(\""+refElementTo+"\",\""+itemId+"\");return false;'> close</a>";
+
+        gCurrentControlId = itemId;
+	gCurrentElement = "expandItem-"+itemId;
+
+	document.getElementById("joeyVideoCloseButton-"+itemId).innerHTML="<a href='javascript:' onclick='joeyMedia_hidePlayer();return false;'> close</a>";
 
 
 	if(!document.all) {
@@ -40,7 +53,7 @@ function joeyMedia_initPlayer(refElementTo,itemId){
 	}
 
 
- 	var pos=findPos(document.getElementById(refElementTo));
+ 	var pos=findPos(document.getElementById(gCurrentElement));
 
 	document.getElementById("singleVideo").style.left=pos[0]+20+"px";
 	document.getElementById("singleVideo").style.top=pos[1]+"px";
@@ -122,57 +135,68 @@ function videoSeek(timePosition, videoid) {
 
 function videoTryPause() {
 	if(pauseFlop) { 
-		document.getElementById("button_playpause").innerHTML="Resume";
 		form_playing=false;
 		pauseFlop=false;
 		getFlash().SetVariable("vp_function_pauseresume","go");
 	}
 }
 
-function joeyMedia_videoPlayPause(videoId,controllerDivId) {
+function joeyMedia_videoPlayPause(videoId,itemId) {
 
 	if(gAllowPlay) {
 
-		// if submit a new movie, it has to change... and initialize the play aggain
-
-		if(videoId) {
 
 			if(form_playURL != videoId ) {
 
 				gCurrentPlaying = 0;
 
-			}	
+				if(form_playURL)  {
+
+					joeyMedia_hidePlayer();	
+
+				}
+				joeyMedia_initPlayer(itemId);
+				document.getElementById("joeyVideoPlayerController-"+gCurrentControlId).innerHTML="pause";
+				videoPlay(videoId);
+
+			} else {	
+
 			
-			videoPlay(videoId,gCurrentPlaying);
 
-			document.getElementById("joeyVideoPlayerController-"+controllerDivId).innerHTML="Pause";
+			if(form_playURL) {
+
+				videoPlayPause();
+
+			} else {
+				
+				videoPlay(videoId,0);
+
+			}
 
 
-		
-			pauseFlop = true;
-	
+			}
 
-		} else {
-			// also does play for second times. ..
-			videoPause();
 
-		}
 
 	} else {
-		alert("Woooha wait! I am not ready.  ");
+
+		joeyMedia_initPlayer(itemId);
+
+		joeyMedia_videoPlayPause(videoId,itemId);
+
 	}
 }
 
-function videoPause() {
+function videoPlayPause() {
 
     
 	if(pauseFlop) { 
-		document.getElementById("button_playpause").innerHTML="Resume";
+		document.getElementById("joeyVideoPlayerController-"+gCurrentControlId).innerHTML="play";	
 		form_playing=false;
 		pauseFlop=false;
 	} else {
-		document.getElementById("button_playpause").innerHTML="Pause";
 		form_playing=true;
+		document.getElementById("joeyVideoPlayerController-"+gCurrentControlId).innerHTML="pause";	
 		setTimeout("videoCheckTime()",1000);
 		pauseFlop=true;		
 	}
