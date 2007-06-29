@@ -13,6 +13,9 @@ function joeyMedia_hidePlayer(refElement,itemId) {
 	document.getElementById("joeyVideoPlayerController-"+itemId).innerHTML="play";
 	document.getElementById("joeyVideoCloseButton-"+itemId).innerHTML="";
 
+
+	videoTryPause();
+
 }
 
 function joeyMedia_initPlayer(refElementTo,itemId){
