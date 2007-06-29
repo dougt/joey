@@ -39,6 +39,9 @@ function resize(refElementTo){
 	document.getElementById("singleVideo").style.left=pos[0]+20+"px";
 	document.getElementById("singleVideo").style.top=pos[1]+"px";
 
+        gAllowPlay= true;
+
+
 }
 
 
@@ -63,6 +66,9 @@ var seekMax = 376;
 var pauseFlop = true;
 var form_headTime;
 var form_playing=false;
+
+
+
 
 function videoPlay(videoId,timeStamp) {
 
@@ -117,26 +123,36 @@ function videoTryPause() {
 	}
 }
 
-function videoPlayPause(videoId,timeStamp) {
+function joeyMedia_videoPlayPause(videoId) {
 
 	if(gAllowPlay) {
-		if(!form_playURL) {
+
+		// if submit a new movie, it has to change... and initialize the play aggain
+
+		if(form_playURL) {
+
+			if(form_playURL != videoId ) {
+
+				gCurrentPlaying = 0;
+
+			}	
+			
+			form_playURL = videoId;
 	
-			form_playURL = videoId+".flv";
-	
-			videoPlay(videoId,timeStamp);
+			videoPlay(videoId,gCurrentPlaying);
 	
 			document.getElementById("button_playpause").innerHTML="Pause";
 		
 			pauseFlop = true;
 	
 		} else {
-		
 			// also does play for second times. ..
 			videoPause();
+
 		}
+
 	} else {
-		alert("Have to wait full load! Calm tha function down! ");
+		alert("Woooha wait! I am not ready.  ");
 	}
 }
 
@@ -170,6 +186,10 @@ function init() {
 }	
 
 gAllowPlay= false;
+gCurrentPlaying = 0;
+gCurrentVideo = null;
+
+
 
 
 function init_seeker() {
@@ -249,14 +269,16 @@ function getFlash() {
       return document.getElementById(gBrowserFlashID);
 }
 
-function videoplayerembed_DoFSCommand(command, args) {
+function visinoteembed_DoFSCommand(command, args) {
 
 	if(command=="timeevent") {
 
-		visual_updateDisplay(args);
-		form_headTime=args;
-		seekerTryUpdate();
-		if(form_playing) {setTimeout("videoCheckTime()",1000);} 
+		gCurrentPlaying = args;
+
+		//visual_updateDisplay(args);
+		//form_headTime=args;
+		//seekerTryUpdate();
+		//if(form_playing) {setTimeout("videoCheckTime()",1000);} 
 
 	}
 
