@@ -175,7 +175,7 @@ You have no uploads yet.
 
                 <?php if($upload['File']['original_type']=='video/flv') : ?>
 
-<a href="javascript:" onclick="joeyMedia_initPlayer('expandItem-<?php echo $upload['Upload']['id'] ?>','<?php echo $upload['Upload']['id'] ?>');joeyMedia_videoPlayPause('<?php echo "/files/view/" . $upload['File']['id'] . "/original" ?>','<?php echo $upload['Upload']['id'] ?>');return false"  id="joeyVideoPlayerController-<?php echo $upload['Upload']['id'] ?>">play</a><span id='joeyVideoCloseButton-<?php echo $upload['Upload']['id'] ?>'></span>
+<a href="javascript:" onclick="joeyMedia_videoPlayPause('<?php echo "/files/view/" . $upload['File']['id'] . "/original" ?>','<?php echo $upload['Upload']['id'] ?>');return false"  id="joeyVideoPlayerController-<?php echo $upload['Upload']['id'] ?>">play</a><span id='joeyVideoCloseButton-<?php echo $upload['Upload']['id'] ?>'></span>
 
 		<?php endif; ?>
 </li>
