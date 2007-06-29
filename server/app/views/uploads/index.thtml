@@ -175,7 +175,7 @@ You have no uploads yet.
 
                 <?php if($upload['File']['original_type']=='video/flv') : ?>
 
-<a href="javascript:" onclick="resize('expandItem-<?php echo $upload['Upload']['id'] ?>');videoPlay('<?php echo "/files/view/" . $upload['File']['id'] . "/original" ?>');return false">play</a>
+<a href="javascript:" onclick="resize('expandItem-<?php echo $upload['Upload']['id'] ?>');joeyMedia_videoPlayPause('<?php echo "/files/view/" . $upload['File']['id'] . "/original" ?>');return false" id="button_playpause">play</a>
 
 		<?php endif; ?>
 </li>
