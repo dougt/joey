@@ -1,7 +1,7 @@
 /* by Mgalli, for the JOey projext, this is to be kept with the same MPL */
 
 
-function joeyHide(refElement) {
+function joeyMedia_hidePlayer(refElement,itemId) {
 
 	var el = document.getElementById(refElement);
 
@@ -10,9 +10,12 @@ function joeyHide(refElement) {
 	document.getElementById("singleVideo").style.left="-400px";
 	document.getElementById("singleVideo").style.top="-400px";
 
+	document.getElementById("joeyVideoPlayerController-"+itemId).innerHTML="play";
+	document.getElementById("joeyVideoCloseButton-"+itemId).innerHTML="";
+
 }
 
-function resize(refElementTo){
+function joeyMedia_initPlayer(refElementTo,itemId){
 
 
 	var el = document.getElementById(refElementTo);
@@ -20,7 +23,7 @@ function resize(refElementTo){
 	el.style.display="block";
 	el.style.height="260px";
 	el.style.width="360px";
-	el.innerHTML="<a href='javascript:' onclick='joeyHide(\""+refElementTo+"\");return false;'>[x]</a>";
+	document.getElementById("joeyVideoCloseButton-"+itemId).innerHTML="<a href='javascript:' onclick='joeyMedia_hidePlayer(\""+refElementTo+"\",\""+itemId+"\");return false;'> close</a>";
 
 
 	if(!document.all) {
@@ -123,13 +126,13 @@ function videoTryPause() {
 	}
 }
 
-function joeyMedia_videoPlayPause(videoId) {
+function joeyMedia_videoPlayPause(videoId,controllerDivId) {
 
 	if(gAllowPlay) {
 
 		// if submit a new movie, it has to change... and initialize the play aggain
 
-		if(form_playURL) {
+		if(videoId) {
 
 			if(form_playURL != videoId ) {
 
@@ -137,14 +140,15 @@ function joeyMedia_videoPlayPause(videoId) {
 
 			}	
 			
-			form_playURL = videoId;
-	
 			videoPlay(videoId,gCurrentPlaying);
-	
-			document.getElementById("button_playpause").innerHTML="Pause";
+
+			document.getElementById("joeyVideoPlayerController-"+controllerDivId).innerHTML="Pause";
+
+
 		
 			pauseFlop = true;
 	
+
 		} else {
 			// also does play for second times. ..
 			videoPause();
