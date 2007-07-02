@@ -32,16 +32,18 @@ public class UserData
 	private String username;
 	private String password;
 	private boolean useSsl;
+	private long updateInterval;
 
 	public UserData()
 	{
 	}
 
-	public UserData(String username, String password, boolean useSsl)
+	public UserData(String username, String password, boolean useSsl, long updateInterval)
 	{
 		this.username = username;
 		this.password = password;
 		this.useSsl = useSsl;
+		this.updateInterval = updateInterval;
 	}
 
 	public String getPassword()
@@ -72,5 +74,15 @@ public class UserData
 	public void setUseSsl(boolean useSsl)
 	{
 		this.useSsl = useSsl;
+	}
+
+	public long getUpdateInterval()
+	{
+		return this.updateInterval;
+	}
+
+	public void setUpdateInterval(long updateInterval)
+	{
+		this.updateInterval = updateInterval;
 	}
 }
