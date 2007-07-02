@@ -29,10 +29,13 @@ import java.util.Vector;
 
 import javax.microedition.io.HttpConnection;
 
+import org.bouncycastle.util.encoders.Base64;
+
 public class IndexUpdateNetworkRequest
 	extends NetworkRequest
 {
 	private Vector uploads;
+	private int count;
 
 	public IndexUpdateNetworkRequest(Vector uploads, long lastModified)
 	{
@@ -69,8 +72,59 @@ public class IndexUpdateNetworkRequest
                     sb.append(ch);
                 }
             }
-            
-            // TODO: Parse correctly but we should not duplicate code from IndexNetworkRequest here.
+
+			this.count = Integer.parseInt((String) parsedData.get("count"));
+
+			for (int i = 1; i <= this.count; i++) {
+				int foundIndex = -1;
+				String id = (String) parsedData.get("id." + i);
+
+				for (int j = 0; j < this.uploads.size(); j++) {
+					Upload upload = (Upload) this.uploads.elementAt(j);
+
+					if (id.equals(upload.getId())) {
+						foundIndex = j;
+						break;
+					}
+				}
+
+				if (foundIndex != -1) {
+					String deleted = (String) parsedData.get("deleted." + i);
+
+					if (deleted != null && deleted.equals("1")) {
+						//#debug info
+						System.out.println("found deleted element (this is okay): " + id);
+
+						// Delete upload.
+						this.uploads.removeElementAt(foundIndex);
+
+						// Continue with next upload.
+						continue;
+					}
+
+					String referrer = (String) parsedData.get("referrer." + i);
+					String preview = (String) parsedData.get("preview." + i);
+					String mimetype = (String) parsedData.get("type." + i);
+					String modified = (String) parsedData.get("modified." + i);
+					String title = (String) parsedData.get("title." + i);
+
+					// Previews are optional.
+					byte[] previewBytes = null;
+
+					try {
+						previewBytes = Base64.decode(preview);
+					} 
+					catch (Exception ex) {
+						System.out.println("Base64 decode failed " + ex);
+					}
+
+					//#debug info
+					System.out.println("Updating upload: " + id + " " + mimetype  + " " + title);
+
+					this.uploads.removeElementAt(foundIndex);
+					this.uploads.insertElementAt(new Upload(id, mimetype, title, previewBytes, null, modified, referrer), foundIndex);
+				}
+			}	
     	}
 
     	if (this.handler != null) {
