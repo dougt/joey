@@ -53,6 +53,8 @@ import de.enough.polish.ui.SnapshotScreen;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 
 public class JoeyController
@@ -113,8 +115,16 @@ public class JoeyController
 	private RmsStorage storage;
 	private CommandListener commandListener;
 	private CommunicationController commController;
-
     private Displayable uploadsView;
+
+	private TimerTask updateTask = new TimerTask()
+	{
+		public void run()
+		{
+			long lastModified = new Date().getTime() - JoeyController.this.userdata.getUpdateInterval();
+			JoeyController.this.commController.getIndexUpdate(JoeyController.this.uploads, JoeyController.this, lastModified);
+		}
+	};
 
 	public JoeyController(MIDlet midlet)
 	{
@@ -132,7 +142,7 @@ public class JoeyController
 			//#debug info
 			System.out.println("no user data stored in the record store");
 			
-			this.userdata = new UserData();
+			this.userdata = new UserData("", "", true, 20000);
 		}
 
 		this.commandListener = new ThreadedCommandListener(this);
@@ -457,6 +467,19 @@ public class JoeyController
 		} while (event != EVENT_NETWORK_REQUEST_SUCCESSFUL
 				 && event != EVENT_EXIT);
 
+		// We have now logged in and get now all known uploads and then start the
+		// continuous upload updates every 20 seconds.
+		this.commController.getIndex(this.uploads, this, 5, 0);
+		
+		do {
+			event = waitEvent();
+		} while (event != EVENT_NETWORK_REQUEST_SUCCESSFUL);
+		
+		Timer timer = new Timer();
+		// TODO: Version UserData and use updateInterval from UserDate here. 
+//		timer.schedule(this.updateTask, this.userdata.getUpdateInterval(), this.userdata.getUpdateInterval());
+		timer.schedule(this.updateTask, 20000, 20000);
+
 		// Handle main menu screen.
 		if (event == EVENT_NETWORK_REQUEST_SUCCESSFUL) {
 			do {
@@ -570,25 +593,17 @@ public class JoeyController
 	public void doUploads()
 	{
 		int event;
-		showView(ALERT_WAIT);
-		this.commController.getIndex(this.uploads, this, 5, 0);
 
 		do {
+			UploadsView view = (UploadsView) showView(VIEW_UPLOADS);
 			event = waitEvent();
-		} while (event == EVENT_NETWORK_REQUEST_SUCCESSFUL_PARTIALLY);
-		
-		if (event == EVENT_NETWORK_REQUEST_SUCCESSFUL) {
-			do {
-				UploadsView view = (UploadsView) showView(VIEW_UPLOADS);
-				event = waitEvent();
 
-				switch (event) {
-					case EVENT_SELECT:
-						doUploadDetails(view.getCurrentUpload());
-						break;
-				}
-			} while (event != EVENT_BACK);
-		}
+			switch (event) {
+				case EVENT_SELECT:
+					doUploadDetails(view.getCurrentUpload());
+					break;
+			}
+		} while (event != EVENT_BACK);
 	}
 
 	private void doUploadDetails(Upload upload)

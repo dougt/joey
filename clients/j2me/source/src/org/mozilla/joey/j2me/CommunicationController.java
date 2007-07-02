@@ -59,9 +59,8 @@ public class CommunicationController
 
         System.out.println("Michael: server url: " + this.serverURL);
 	}
-	
-    
-    public synchronized NetworkRequest getNextRequest() 
+
+	public synchronized NetworkRequest getNextRequest() 
     {
         try {
             while (this.queue.size() == 0) {
@@ -239,6 +238,14 @@ public class CommunicationController
         nr.setResponseHandler(handler);
 
         addRequest(nr);
+	}
+
+	public void getIndexUpdate(Vector uploads, ResponseHandler handler, long lastModified)
+	{
+		IndexUpdateNetworkRequest nr = new IndexUpdateNetworkRequest(uploads, lastModified);
+		nr.setResponseHandler(handler);
+
+		addRequest(nr);
 	}
 
 	public void add(String title, byte[] data, ResponseHandler handler)
