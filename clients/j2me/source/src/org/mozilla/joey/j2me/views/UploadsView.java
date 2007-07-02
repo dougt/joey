@@ -26,7 +26,6 @@ package org.mozilla.joey.j2me.views;
 
 import de.enough.polish.ui.FramedForm;
 import de.enough.polish.ui.UiAccess;
-import de.enough.polish.ui.Container;
 import de.enough.polish.util.Locale;
 
 import java.io.ByteArrayInputStream;
@@ -114,32 +113,32 @@ public class UploadsView
 		//#style commandsitem
 		this.commands.append(null, imgVideo);
 		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
-		this.commands.setItemCommandListener(controller);
+		this.commands.setItemCommandListener(this.controller);
 
 		//#style commandsitem
 		this.commands.append(null, imgMusic);
 		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
-		this.commands.setItemCommandListener(controller);
+		this.commands.setItemCommandListener(this.controller);
 
 		//#style commandsitem
 		this.commands.append(null, imgPictures);
 		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
-		this.commands.setItemCommandListener(controller);
+		this.commands.setItemCommandListener(this.controller);
 		
 		//#style commandsitem
 		this.commands.append(null, imgRss);
 		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
-		this.commands.setItemCommandListener(controller);
+		this.commands.setItemCommandListener(this.controller);
 		
 		//#style commandsitem
 		this.commands.append(null, imgText);
 		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
-		this.commands.setItemCommandListener(controller);
+		this.commands.setItemCommandListener(this.controller);
 		
 		//#style commandsitem
 		this.commands.append(null, imgMs);
 		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
-		this.commands.setItemCommandListener(controller);
+		this.commands.setItemCommandListener(this.controller);
 	}
 
 
@@ -203,13 +202,16 @@ public class UploadsView
         default:
             categoryTitle = "Joey has no idea what this is.";
         }
+
         Item command = new StringItem(null, categoryTitle);
         append(command);
 
-		for (int i = 0; i < uploads.size(); i++) 
+        int size = this.uploads.size();
+
+        for (int i = 0; i < size; i++) 
         {
 
-			Upload upload = (Upload) uploads.elementAt(i); 
+			Upload upload = (Upload) this.uploads.elementAt(i); 
             if (upload.isDeleted() == true)
                 continue;
 
@@ -299,7 +301,7 @@ public class UploadsView
                 continue;
 
 			uploadItem.setDefaultCommand(JoeyController.CMD_SELECT);
-			uploadItem.setItemCommandListener(controller);
+			uploadItem.setItemCommandListener(this.controller);
 			UiAccess.setAttribute(uploadItem, JoeyController.ATTR_UPLOAD, upload);
 			append(uploadItem);
 
