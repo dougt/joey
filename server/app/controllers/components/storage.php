@@ -309,19 +309,24 @@ class StorageComponent extends Object
    * Transcode the input video to 3GP and then generate a preview PNG.
    * The file type is implied in the file name suffix
    */
-  function transcodeVideo ($fromName, $toName, $previewName, $width, $height) {
+  function transcodeVideo ($fromName, $toName, $previewName, $width, $height, $userdir) {
    
     $_fromName    = escapeshellarg($fromName);
     $_toName      = escapeshellarg($toName);
     $_previewName = escapeshellarg($previewName);
     
     // ffmpeg -i video_clip.mpg -s qcif -vcodec h263 -acodec mp3 -ac 1 -ar 8000 -ab 32 -y clip.3gp
+    // ffmpeg -y -i joey-4679ffa2e0a2c.flv -ab 12.2k -ac 1 -acodec libamr_nb -ar 8000 -vcodec h263 -r 10 -s qcif -b 44K -pass 1 test.3gp
 
-    $_cmd = FFMPEG_CMD . " -i {$_fromName} -s qcif -vcodec h263 -acodec mp3 -ac 1 -ar 8000 -ab 32 -y {$_toName}";
+    $tmpfname = tempnam($userdir, "ffmpeg.log");
+
+    $_cmd = FFMPEG_CMD . " -y -i {$_fromName} -ab 12.2k -ac 1 -acodec libamr_nb -ar 8000 -vcodec h263 -r 10 -s qcif -b 44K -pass 1 -passlogfile " . $tmpfname . " {$_toName}";
     exec($_cmd, $_out, $_ret);
+
+    unlink($tmpfname);
+
     if ($_ret !== 0) {
       $this->log("transcodeVideo failed: " . $_out);
-      return false;
     }
     
     $width = intval($width / 2);
@@ -367,8 +372,14 @@ class StorageComponent extends Object
                 return null;
             }
 
-            if (!$this->transcodeVideo($_ret['original_name'], $_ret['default_name'], $_ret['preview_name'], $width, $height)) {
-                return null;
+            if (!$this->transcodeVideo($_ret['original_name'], 
+                                       $_ret['default_name'], 
+                                       $_ret['preview_name'], 
+                                       $width, 
+                                       $height,
+                                       UPLOAD_DIR."/{$userid}/")) 
+            {
+              return null;
             }
 
             return $_ret;
