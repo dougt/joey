@@ -121,7 +121,7 @@ public class JoeyController
 	{
 		public void run()
 		{
-			long lastModified = new Date().getTime() - JoeyController.this.userdata.getUpdateInterval();
+			long lastModified = (new Date().getTime() / 1000) - JoeyController.this.userdata.getUpdateInterval();
 			JoeyController.this.commController.getIndexUpdate(JoeyController.this.uploads, JoeyController.this, lastModified);
 		}
 	};
