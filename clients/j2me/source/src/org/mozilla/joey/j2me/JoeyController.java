@@ -61,6 +61,8 @@ public class JoeyController
 	extends Thread
 	implements CommandListener, ItemCommandListener, ResponseHandler
 {
+	private static final int DEFAULT_UPDATE_INTERVAL = 300;
+
 	public static final int EVENT_NONE = 0;
 	public static final int EVENT_NO = 1;
 	public static final int EVENT_YES = 2;
@@ -141,8 +143,10 @@ public class JoeyController
 		{
 			//#debug info
 			System.out.println("no user data stored in the record store");
-			
-			this.userdata = new UserData("", "", true, 20000);
+
+			// Create new UserData object using SSL and
+			// an update interval of 300 seconds.
+			this.userdata = new UserData("", "", true, DEFAULT_UPDATE_INTERVAL);
 		}
 
 		this.commandListener = new ThreadedCommandListener(this);
