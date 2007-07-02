@@ -28,7 +28,6 @@ import de.enough.polish.util.Locale;
 
 import javax.microedition.lcdui.Form;
 import javax.microedition.lcdui.Item;
-import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.StringItem;
 
 public class RssItemView

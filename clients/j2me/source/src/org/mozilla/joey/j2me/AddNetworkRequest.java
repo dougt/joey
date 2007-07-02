@@ -24,8 +24,6 @@
 
 package org.mozilla.joey.j2me;
 
-import org.bouncycastle.util.encoders.Base64;
-
 public class AddNetworkRequest
     extends NetworkRequest
 {
