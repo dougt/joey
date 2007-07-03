@@ -495,8 +495,7 @@ public class JoeyController
 		
 		Timer timer = new Timer();
 		// TODO: Version UserData and use updateInterval from UserDate here. 
-//		timer.schedule(this.updateTask, this.userdata.getUpdateInterval(), this.userdata.getUpdateInterval());
-		timer.schedule(this.updateTask, 20000, 20000);
+		timer.schedule(this.updateTask, this.userdata.getUpdateInterval() * 1000, this.userdata.getUpdateInterval() * 1000);
 
 		// Handle main menu screen.
 		if (event == EVENT_NETWORK_REQUEST_SUCCESSFUL) {
