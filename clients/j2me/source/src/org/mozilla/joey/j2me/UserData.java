@@ -33,12 +33,13 @@ import java.io.IOException;
 public class UserData
 	implements Externalizable
 {
-	private static final int SERIALIZATION_VERSION = 1;
+	private static final int SERIALIZATION_VERSION = 2;
 
 	private String username;
 	private String password;
 	private boolean useSsl;
 	private long updateInterval;
+    private boolean rememberMe;
 
 	public UserData()
 	{
@@ -82,6 +83,16 @@ public class UserData
 		this.useSsl = useSsl;
 	}
 
+	public boolean isRememberMe()
+	{
+		return this.rememberMe;
+	}
+
+	public void setRememberMe(boolean remember)
+	{
+		this.rememberMe = remember;
+	}
+
 	public long getUpdateInterval()
 	{
 		return this.updateInterval;
@@ -105,6 +116,7 @@ public class UserData
 		this.password = in.readUTF();
 		this.useSsl = in.readBoolean();
 		this.updateInterval = in.readLong();
+        this.rememberMe = in.readBoolean();
 	}
 
 	public void write(DataOutputStream out)
@@ -115,5 +127,6 @@ public class UserData
 		out.writeUTF(this.password);
 		out.writeBoolean(this.useSsl);
 		out.writeLong(this.updateInterval);
+        out.writeBoolean(this.rememberMe);
 	}
 }

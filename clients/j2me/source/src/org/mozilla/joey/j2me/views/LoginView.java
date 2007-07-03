@@ -62,8 +62,7 @@ public class LoginView
         this.mLoginOptionsChoiceGroup = new ChoiceGroup("", Choice.MULTIPLE, optionStrings, null);
 		boolean[] flags = new boolean[2];
 		flags[0] = userdata.isUseSsl();
-		// TODO: Read this option from userdata.
-//		flags[1] = ;
+		flags[1] = userdata.isRememberMe();
 		this.mLoginOptionsChoiceGroup.setSelectedFlags(flags);
 
         //#style checkbox
@@ -83,5 +82,6 @@ public class LoginView
 		boolean[] flags = new boolean[2];
 		this.mLoginOptionsChoiceGroup.getSelectedFlags(flags);
 		userData.setUseSsl(flags[0]);
+		userData.setRememberMe(flags[1]);
 	}
 }

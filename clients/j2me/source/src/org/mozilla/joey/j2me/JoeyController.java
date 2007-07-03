@@ -123,6 +123,7 @@ public class JoeyController
 	{
 		public void run()
 		{
+            System.out.println("Running Timer....");
 			long lastModified = (new Date().getTime() / 1000) - JoeyController.this.userdata.getUpdateInterval();
 			JoeyController.this.commController.getIndexUpdate(JoeyController.this.uploads, JoeyController.this, lastModified);
 		}
@@ -169,7 +170,8 @@ public class JoeyController
         //@todo check to see if this user want to remember the data.
         
         try {
-            this.storage.save(this.userdata, RMS_USERDATA);
+            if (this.userdata.isRememberMe())
+                this.storage.save(this.userdata, RMS_USERDATA);
         }
         catch (IOException e) {
             //#debug error
