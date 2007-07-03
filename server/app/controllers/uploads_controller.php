@@ -170,6 +170,7 @@ class UploadsController extends AppController
       $this->flash('RSS Added.', '/uploads/index');
     }
 
+
     /**
      * After add(), the UPLOADDIR has the following files:
      *   random.orig.sfx: The original uploaded file. The .sfx indicates the file type. This file name and file type are saved in db ONLY IF there is no transcoded file for this upload.
@@ -608,10 +609,6 @@ class UploadsController extends AppController
                 {
                     $data[$count]['type'] = $row['File']['type'];
                 }
-
-
-                echo $row['Contentsourcetype']['name'] . "\n";
-                echo $row['File']['type'];
                 
                 $count++;
             }
