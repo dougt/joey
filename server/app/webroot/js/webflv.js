@@ -22,14 +22,12 @@ function joeyMedia_destroyPlayer(itemId) {
 function joeyMedia_initPlayer(itemId){
 
 
- 	var strVideoEmbed = ' <div id="singleVideo" style="text-align:center;margin:.2em" class="videoPlayer"> <object align="middle" codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=7,0,0,0" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" id="videoplayerobject" width="320" height="240"><param value="/app/webroot/vendor/webflv.swf" name="movie"><param value="high" name="quality"><param value="true" name="swLiveConnect"><param value="#000000" name="bgcolor"> <embed pluginspage="http://www.macromedia.com/go/getflashplayer" type="application/x-shockwave-flash" allowScriptAccess="sameDomain" align="middle" bgcolor="#000000" swLiveConnect="true" quality="high" src="/app/webroot/vendor/webflv.swf" mayscript="true" id="videoplayerembed" width="320" height="240"></embed> </object> </div>' ;
+ 	var strVideoEmbed = ' <div id="singleVideo" style="text-align:center;" class="videoPlayer"> <object align="middle" codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=7,0,0,0" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" id="videoplayerobject" width="320" height="240"><param value="/app/webroot/vendor/webflv.swf" name="movie"><param value="high" name="quality"><param value="true" name="swLiveConnect"><param value="#000000" name="bgcolor"> <embed pluginspage="http://www.macromedia.com/go/getflashplayer" type="application/x-shockwave-flash" allowScriptAccess="sameDomain" align="middle" bgcolor="#000000" swLiveConnect="true" quality="high" src="/app/webroot/vendor/webflv.swf" mayscript="true" id="videoplayerembed" width="320" height="240"></embed> </object> </div>' ;
 
 
 	var el = document.getElementById("expandItem-"+itemId);
 
 	el.style.display="block";
-	el.style.height="244px";
-	el.style.width="334px";
 
         gCurrentControlId = itemId;
 	gCurrentElement = "expandItem-"+itemId;
