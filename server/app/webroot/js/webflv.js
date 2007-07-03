@@ -15,6 +15,7 @@ function joeyMedia_destroyPlayer(itemId) {
 	document.getElementById("joeyVideoPlayerController-"+itemId).innerHTML="play";
         document.getElementById("joeyVideoCloseButton-"+itemId).innerHTML="";
 
+	gJoeyMediaHash[itemId]=null;
 
 }
 
