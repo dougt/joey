@@ -24,15 +24,16 @@
 
 package org.mozilla.joey.j2me;
 
-import de.enough.polish.io.Serializable;
+import de.enough.polish.io.Externalizable;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 
 public class UserData
-	implements Serializable
+	implements Externalizable
 {
-
-	public static final int JOEY_RMS_VERSION = 1;
-
-    private int version;
+	private static final int SERIALIZATION_VERSION = 1;
 
 	private String username;
 	private String password;
@@ -41,7 +42,6 @@ public class UserData
 
 	public UserData()
 	{
-        this.version = JOEY_RMS_VERSION;
 	}
 
 	public UserData(String username, String password, boolean useSsl, long updateInterval)
@@ -50,13 +50,7 @@ public class UserData
 		this.password = password;
 		this.useSsl = useSsl;
 		this.updateInterval = updateInterval;
-        this.version = JOEY_RMS_VERSION;
 	}
-
-    public int getVersion()
-    {
-        return this.version;
-    }
 
 	public String getPassword()
 	{
@@ -96,5 +90,30 @@ public class UserData
 	public void setUpdateInterval(long updateInterval)
 	{
 		this.updateInterval = updateInterval;
+	}
+
+	public void read(DataInputStream in)
+		throws IOException
+	{
+		// Version is needed to handle reading different versions
+		// of UserData. When writing we will always write the newest
+		// version. This means downgrading the Joey J2ME client is
+		// not supported.
+		/* int version = */ in.readInt();
+
+		this.username = in.readUTF();
+		this.password = in.readUTF();
+		this.useSsl = in.readBoolean();
+		this.updateInterval = in.readLong();
+	}
+
+	public void write(DataOutputStream out)
+		throws IOException
+	{
+		out.writeInt(SERIALIZATION_VERSION);
+		out.writeUTF(this.username);
+		out.writeUTF(this.password);
+		out.writeBoolean(this.useSsl);
+		out.writeLong(this.updateInterval);
 	}
 }

@@ -147,33 +147,21 @@ public class JoeyController
     private void loadUserdata()
     {
 		this.storage = new RmsStorage();        
-		try
-		{
+
+		try {
 			this.userdata = (UserData) this.storage.read(RMS_USERDATA);
 
             //#debug info
-            System.out.println("Saved UserData version: " + this.userdata.getVersion());
+            System.out.println("Saved UserData");
 		}
-		catch (IOException e)
-		{
+		catch (IOException e) {
 			//#debug info
 			System.out.println("no user data stored in the record store");
-            this.userdata = null;
-		}
 
-        // check to see if the data stored out of date, we will blow it away
-        if (this.userdata != null &&
-            (this.userdata.getVersion() > UserData.JOEY_RMS_VERSION))
-        {
-            this.userdata = null;
-        }
-
-        if (this.userdata == null)
-        {
 			// Create new UserData object not using SSL and an
 			// default update interval.
 			this.userdata = new UserData("", "", false, DEFAULT_UPDATE_INTERVAL);
-        }
+		}
     }
 
     private void saveUserdata()
