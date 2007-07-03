@@ -120,6 +120,7 @@ padding:.5em;
 }
 
 .videoPlayer {
+	width:324px;
 	margin:4px;	
 	border:1px solid white;
 	padding:4px;
