@@ -75,6 +75,9 @@ public class IndexUpdateNetworkRequest
 
 			this.count = Integer.parseInt((String) parsedData.get("count"));
 
+			//#debug info
+			System.out.println("number of updated elements: " + this.count);
+
 			for (int i = 1; i <= this.count; i++) {
 				int foundIndex = -1;
 				String id = (String) parsedData.get("id." + i);
@@ -101,28 +104,41 @@ public class IndexUpdateNetworkRequest
 						// Continue with next upload.
 						continue;
 					}
+				}
 
-					String referrer = (String) parsedData.get("referrer." + i);
-					String preview = (String) parsedData.get("preview." + i);
-					String mimetype = (String) parsedData.get("type." + i);
-					String modified = (String) parsedData.get("modified." + i);
-					String title = (String) parsedData.get("title." + i);
+				String referrer = (String) parsedData.get("referrer." + i);
+				String preview = (String) parsedData.get("preview." + i);
+				String mimetype = (String) parsedData.get("type." + i);
+				String modified = (String) parsedData.get("modified." + i);
+				String title = (String) parsedData.get("title." + i);
 
-					// Previews are optional.
-					byte[] previewBytes = null;
+				// Previews are optional.
+				byte[] previewBytes = null;
 
-					try {
-						previewBytes = Base64.decode(preview);
-					} 
-					catch (Exception ex) {
-						System.out.println("Base64 decode failed " + ex);
-					}
+				try {
+					previewBytes = Base64.decode(preview);
+				} 
+				catch (Exception ex) {
+					System.out.println("Base64 decode failed " + ex);
+				}
 
+				//#debug info
+				System.out.println("Updating upload: " + id + " " + mimetype  + " " + title);
+
+				Upload upload = new Upload(id, mimetype, title, previewBytes, null, modified, referrer);
+				
+				if (foundIndex == -1) {
 					//#debug info
-					System.out.println("Updating upload: " + id + " " + mimetype  + " " + title);
-
+					System.out.println("added new element: " + id);
+					
+					this.uploads.addElement(upload);
+				}
+				else {
+					//#debug info
+					System.out.println("replace existing element: " + id);
+					
 					this.uploads.removeElementAt(foundIndex);
-					this.uploads.insertElementAt(new Upload(id, mimetype, title, previewBytes, null, modified, referrer), foundIndex);
+					this.uploads.insertElementAt(upload, foundIndex);
 				}
 			}	
     	}
