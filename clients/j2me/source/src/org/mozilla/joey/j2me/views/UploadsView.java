@@ -142,7 +142,7 @@ public class UploadsView
 	}
 
 
-    private Item getImagePrviewForUpdate(Upload upload)
+    private Item getImagePreviewForUpdate(Upload upload)
     {
 
         Image image = null;
@@ -156,10 +156,7 @@ public class UploadsView
         }
         catch (Exception e)
         {
-            //@todo localize.
-
-            //#style uploadItem
-            return new StringItem(null, "Could not display image");
+            return null;
         }
     }
 
@@ -222,7 +219,13 @@ public class UploadsView
                 case COMMAND_ID_VIDEOS:
                     if (upload.getMimetype().equals("video/3gpp")) 
                     {
-                        uploadItem = getImagePrviewForUpdate(upload);
+                        uploadItem = getImagePreviewForUpdate(upload);
+
+                        if (uploadItem == null)
+                        {
+                            //#style uploadItem
+                            uploadItem = new StringItem(null, upload.getTitle());
+                        }
                     }
                     break;
 
@@ -237,7 +240,14 @@ public class UploadsView
                 case COMMAND_ID_PICTURES:
                     if (upload.getMimetype().substring(0,5).equals("image")) 
                     {
-                        uploadItem = getImagePrviewForUpdate(upload);
+                        uploadItem = getImagePreviewForUpdate(upload);
+
+                        if (uploadItem == null)
+                        {
+                            //#style uploadItem
+                            uploadItem = new StringItem(null, upload.getTitle());
+                        }
+
                     }
                     break;
 
@@ -261,12 +271,19 @@ public class UploadsView
                         //#style uploadItem
                         Item title = new StringItem(null, upload.getTitle());
                         c.add( title );
-                        c.add( getImagePrviewForUpdate(upload));
+                        c.add( getImagePreviewForUpdate(upload));
                         uploadItem = c;
 
                         */
 
-                        uploadItem = getImagePrviewForUpdate(upload);
+                        uploadItem = getImagePreviewForUpdate(upload);
+
+                        if (uploadItem == null)
+                        {
+                            //#style uploadItem
+                            uploadItem = new StringItem(null, upload.getTitle());
+                        }
+
                     }
                     this.container.focus(0);
 

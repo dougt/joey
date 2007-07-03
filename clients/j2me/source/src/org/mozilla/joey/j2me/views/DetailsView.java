@@ -115,16 +115,10 @@ public class DetailsView
         setDescription(null);
 		deleteAll();
 
-        if (this.upload.getData() == null)
-        {
-            //#style input
-            Item item = new StringItem(null, "Could not access data.");
-            append(item);
-        }
+
         if (this.upload.getMimetype().equals("rss-source/text") )
         {
             try {
-
                 RssItemCommandListener listener = new RssItemCommandListener();
                 listener.setController(this, this.controller);
 
@@ -163,12 +157,10 @@ public class DetailsView
 //#if polish.api.mmapi
         else if (this.upload.getMimetype().equals("audio/mpeg"))
         {
-
-            if ( this.upload.getData() != null) {
+            if (this.upload.getData() != null) {
                 try {
                     Player player;
                     player = Manager.createPlayer(new ByteArrayInputStream(this.upload.getData()), "audio/mpeg");
-                    player.realize();
                     player.start();
                 }
                 catch(Exception t) {
@@ -186,7 +178,6 @@ public class DetailsView
                 item.setItemCommandListener(controller);
                 append(item);
             }
-
         }
         else if (this.upload.getMimetype().equals("video/3gpp"))
         {
@@ -202,19 +193,25 @@ public class DetailsView
                     
                     // realize the player
                     player.realize();
-                    vc = (VideoControl)player.getControl("VideoControl");
-                    if(vc != null) {
-                        Item video = (Item)vc.initDisplayMode(GUIControl.USE_GUI_PRIMITIVE, null);
-                        append(video);
-                    }
 
-                    player.realize();        
+                    vc = (VideoControl)player.getControl("VideoControl");
+                        
+                    vc.initDisplayMode(VideoControl.USE_DIRECT_VIDEO, this);
+                    
+                    // centre video, letting it be clipped if it's too big
+                    int canvasWidth = getWidth();
+                    int canvasHeight = getHeight();
+                    int displayWidth = vc.getDisplayWidth();
+                    int displayHeight = vc.getDisplayHeight();
+                    int x = (canvasWidth - displayWidth) / 2;
+                    int y = (canvasHeight - displayHeight) / 2;
+                    vc.setDisplayLocation(x, y);
+                    vc.setVisible(true);
+                    
                     player.prefetch();
                     player.start();
                 }
                 catch(Exception t) {
-                    t.printStackTrace();
-
                     //#style input
                     Item item = new StringItem(null, "Could not create player for video: " + t);
                     append(item);

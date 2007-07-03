@@ -46,18 +46,17 @@ public class CommunicationController
 	//#endif
 
 	private String cookieStr;
-
     private ArrayList queue;
+    private UserData userData;
 
 	public CommunicationController(UserData userData)
 	{
         this.queue = new ArrayList();
+        this.userData = userData;
 
-        if (userData.isUseSsl()) {
-        	this.serverURL = TextUtil.replace(this.serverURL, "http:", "https:");
-        }
-
-        System.out.println("Michael: server url: " + this.serverURL);
+        updateServerURL();
+        //#debug info
+        System.out.println("server url: " + this.serverURL);
 	}
 
 	public synchronized NetworkRequest getNextRequest() 
@@ -115,6 +114,8 @@ public class CommunicationController
         nr.onStart();
 
         try {
+
+            updateServerURL();
 
             //#debug info
             System.out.println("creating connection to: " + this.serverURL + nr.requestURL);
@@ -269,11 +270,28 @@ public class CommunicationController
         GetNetworkRequest nr = new GetNetworkRequest(upload);
         nr.setResponseHandler(handler);
 
-        this.addRequest(nr);
+        addRequest(nr);
     }
 
     public String getRawMediaURLFor(String id)
     {
-        return this.serverURL + "/files/view/" + id;
+        GetRawURLNetworkRequest nr = new GetRawURLNetworkRequest(id);
+        nr.setResponseHandler(null); // This is going to be a block operation.
+        addRequest(nr);
+
+        try {
+            // GetRawURLNetworkRequest will notify when it is done.
+            nr.wait();
+        } catch (InterruptedException ie) {}
+
+        return nr.raw_url;
+    }
+
+    private void updateServerURL()
+    {
+        if (this.userData.isUseSsl())
+        	this.serverURL = TextUtil.replace(this.serverURL, "http:", "https:");
+        else
+        	this.serverURL = TextUtil.replace(this.serverURL, "https:", "http:");
     }
 }

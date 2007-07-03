@@ -29,6 +29,11 @@ import de.enough.polish.io.Serializable;
 public class UserData
 	implements Serializable
 {
+
+	public static final int JOEY_RMS_VERSION = 1;
+
+    private int version;
+
 	private String username;
 	private String password;
 	private boolean useSsl;
@@ -36,6 +41,7 @@ public class UserData
 
 	public UserData()
 	{
+        this.version = JOEY_RMS_VERSION;
 	}
 
 	public UserData(String username, String password, boolean useSsl, long updateInterval)
@@ -44,7 +50,13 @@ public class UserData
 		this.password = password;
 		this.useSsl = useSsl;
 		this.updateInterval = updateInterval;
+        this.version = JOEY_RMS_VERSION;
 	}
+
+    public int getVersion()
+    {
+        return this.version;
+    }
 
 	public String getPassword()
 	{

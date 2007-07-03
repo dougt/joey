@@ -106,7 +106,7 @@ public class JoeyController
 	public static final Command CMD_NO = new Command(Locale.get("command.no"), Command.BACK, 1);
 	public static final Command CMD_MEDIA_OPEN = new Command(Locale.get("command.media_open"), Command.SCREEN, 1);
 
-	private static final String RMS_USERDATA = "userdata";
+	private static final String RMS_USERDATA = "joey_userdata";
 
 	private int nextEvent = EVENT_NONE;
 	private Displayable currentView;
@@ -133,21 +133,8 @@ public class JoeyController
 		this.midlet = midlet;
 		this.display = Display.getDisplay(midlet);
 		this.uploads = new Vector();
-		this.storage = new RmsStorage();
-		
-		try
-		{
-			this.userdata = (UserData) this.storage.read(RMS_USERDATA);
-		}
-		catch (IOException e)
-		{
-			//#debug info
-			System.out.println("no user data stored in the record store");
 
-			// Create new UserData object using SSL and
-			// an update interval of 300 seconds.
-			this.userdata = new UserData("", "", true, DEFAULT_UPDATE_INTERVAL);
-		}
+        loadUserdata();
 
 		this.commandListener = new ThreadedCommandListener(this);
 		this.commController = new CommunicationController(this.userdata);
@@ -155,7 +142,53 @@ public class JoeyController
 
         this.uploadsView = null;
 	}
-	
+
+    //@todo we should move this into the userdata class.	
+    private void loadUserdata()
+    {
+		this.storage = new RmsStorage();        
+		try
+		{
+			this.userdata = (UserData) this.storage.read(RMS_USERDATA);
+
+            //#debug info
+            System.out.println("Saved UserData version: " + this.userdata.getVersion());
+		}
+		catch (IOException e)
+		{
+			//#debug info
+			System.out.println("no user data stored in the record store");
+            this.userdata = null;
+		}
+
+        // check to see if the data stored out of date, we will blow it away
+        if (this.userdata != null &&
+            (this.userdata.getVersion() > UserData.JOEY_RMS_VERSION))
+        {
+            this.userdata = null;
+        }
+
+        if (this.userdata == null)
+        {
+			// Create new UserData object not using SSL and an
+			// default update interval.
+			this.userdata = new UserData("", "", false, DEFAULT_UPDATE_INTERVAL);
+        }
+    }
+
+    private void saveUserdata()
+    {
+        //@todo check to see if this user want to remember the data.
+        
+        try {
+            this.storage.save(this.userdata, RMS_USERDATA);
+        }
+        catch (IOException e) {
+            //#debug error
+            System.out.println("unable to write userdata to record store");
+        }
+    }
+
 	private Displayable showView(int viewId)
 	{
 		this.currentView = getView(viewId);
@@ -365,6 +398,9 @@ public class JoeyController
             	if (((LoginNetworkRequest) request).sendSuccessNotification()) {
             		notifyEvent(EVENT_NETWORK_REQUEST_SUCCESSFUL);
             	}
+
+                // after a successful login, save the user info.
+                saveUserdata();
             }
             else {
             	notifyEvent(EVENT_NETWORK_REQUEST_FAILED);
@@ -423,16 +459,6 @@ public class JoeyController
 				case EVENT_SELECT:
 					showView(ALERT_WAIT);
 					view.saveUserData(this.userdata);
-
-					try {
-						this.storage.save(this.userdata, RMS_USERDATA);
-					}
-					catch (IOException e) {
-						//#debug error
-						System.out.println("unable to write userdata to record store");
-									
-						e.printStackTrace();
-					}
 
 					// Send login request.
 					this.commController.login(this.userdata, this);
@@ -615,8 +641,6 @@ public class JoeyController
 		int event;
         boolean fetchData = true;
 
-
-
         //#if polish.api.mmapi
 
         // we need to make a decision here if we should
@@ -644,7 +668,7 @@ public class JoeyController
 			
 			switch (event) {
 
-                case EVENT_RSS_ITEM:
+                case EVENT_RSS_ITEM: 
                     showView(VIEW_RSS_ITEM);
                     while (waitEvent() != EVENT_BACK)
                         ; //spin
