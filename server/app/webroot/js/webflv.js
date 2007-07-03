@@ -5,60 +5,44 @@
 var gCurrentControlId = null;
 var gCurrentElement = null;
 
-function joeyMedia_hidePlayer() {
+function joeyMedia_destroyPlayer(itemId) {
 
+	//remove the player from the markup
+	document.getElementById("expandItem-"+itemId).innerHTML="";
+	document.getElementById("expandItem-"+itemId).style.display="none";
 
-	var itemId = gCurrentControlId;
-	var refElement = gCurrentElement;
-
-	var el = document.getElementById(refElement);
-
-	el.style.display="none";
-
-	document.getElementById("singleVideo").style.left="-400px";
-	document.getElementById("singleVideo").style.top="-400px";
-
+	
 	document.getElementById("joeyVideoPlayerController-"+itemId).innerHTML="play";
-	document.getElementById("joeyVideoCloseButton-"+itemId).innerHTML="";
-
-	videoTryPause();
-	form_playURL = null;
+        document.getElementById("joeyVideoCloseButton-"+itemId).innerHTML="";
 
 
 }
 
+
 function joeyMedia_initPlayer(itemId){
+
+
+ 	var strVideoEmbed = ' <div id="singleVideo" style="text-align:center;margin:.2em" class="videoPlayer"> <object align="middle" codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=7,0,0,0" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" id="videoplayerobject" width="320" height="240"><param value="/app/webroot/vendor/webflv.swf" name="movie"><param value="high" name="quality"><param value="true" name="swLiveConnect"><param value="#000000" name="bgcolor"> <embed pluginspage="http://www.macromedia.com/go/getflashplayer" type="application/x-shockwave-flash" allowScriptAccess="sameDomain" align="middle" bgcolor="#000000" swLiveConnect="true" quality="high" src="/app/webroot/vendor/webflv.swf" mayscript="true" id="videoplayerembed" width="320" height="240"></embed> </object> </div>' ;
 
 
 	var el = document.getElementById("expandItem-"+itemId);
 
 	el.style.display="block";
-	el.style.height="260px";
-	el.style.width="360px";
+	el.style.height="244px";
+	el.style.width="334px";
 
         gCurrentControlId = itemId;
 	gCurrentElement = "expandItem-"+itemId;
 
-	document.getElementById("joeyVideoCloseButton-"+itemId).innerHTML="<a href='javascript:' onclick='joeyMedia_hidePlayer();return false;'> close</a>";
+	el.innerHTML = strVideoEmbed;
 
+	document.getElementById("joeyVideoCloseButton-"+itemId).innerHTML="<a href='javascript:' onclick='joeyMedia_destroyPlayer(\""+itemId+"\");return false;'> close</a>";
 
-	if(!document.all) {
-		var embed = document.getElementById("videoplayerembed")
-	}
-	
 	if(document.all) { 
 			gBrowserFlashID="videoplayerobject";
 	} else {
 			gBrowserFlashID="videoplayerembed";	
 	}
-
-
- 	var pos=findPos(document.getElementById(gCurrentElement));
-
-	document.getElementById("singleVideo").style.left=pos[0]+20+"px";
-	document.getElementById("singleVideo").style.top=pos[1]+"px";
-
-        gAllowPlay= true;
 
 
 }
@@ -86,7 +70,16 @@ var pauseFlop = true;
 var form_headTime;
 var form_playing=false;
 
+function joeyMedia_delayedVideoPlay(videoId,itemId) {
 
+	gJoeyMediaHash[itemId]=1;
+
+	joeyMedia_updateControl(itemId,"pause");
+
+
+	setTimeout("videoPlay('"+videoId+"')",2000);
+
+}
 
 
 function videoPlay(videoId,timeStamp) {
@@ -97,12 +90,15 @@ function videoPlay(videoId,timeStamp) {
 
 	getFlash().SetVariable("form_bufferTime",5);
 
+	getFlash().SetVariable("form_seekPosition",0);
+	getFlash().SetVariable("vp_function_seek","go");
+
 	getFlash().SetVariable("vp_function_play","go");
 	getFlash().SetVariable("vp_function_seturl","go");
 
 	form_playing = true; 
 
-	setTimeout("videoCheckTime()",2000);
+//	setTimeout("videoCheckTime()",2000);
 
 
 }
@@ -141,66 +137,65 @@ function videoTryPause() {
 	}
 }
 
+
+var gJoeyMediaHash = new Array();
+var gCurrentVideoPlaying = null;
+
 function joeyMedia_videoPlayPause(videoId,itemId) {
 
-	if(gAllowPlay) {
+	if(  gJoeyMediaHash[itemId] > 0) {
 
+		videoPlayPause();
+		return;
 
-			if(form_playURL != videoId ) {
+	} 
 
-				gCurrentPlaying = 0;
+	if( !gCurrentVideoPlaying ) {
 
-				if(form_playURL)  {
+                joeyMedia_initPlayer(itemId);
+                joeyMedia_delayedVideoPlay(videoId,itemId);
+		gCurrentVideoPlaying = itemId;
 
-					joeyMedia_hidePlayer();	
-
-				}
-				joeyMedia_initPlayer(itemId);
-				document.getElementById("joeyVideoPlayerController-"+gCurrentControlId).innerHTML="pause";
-				videoPlay(videoId);
-
-			} else {	
-
-			
-
-			if(form_playURL) {
-
-				videoPlayPause();
-
-			} else {
-				
-				videoPlay(videoId,0);
-
-			}
-
-
-			}
-
-
-
+		
 	} else {
 
-		joeyMedia_initPlayer(itemId);
+		gJoeyMediaHash[gCurrentVideoPlaying]=null;
+		joeyMedia_destroyPlayer(gCurrentVideoPlaying);
 
-		joeyMedia_videoPlayPause(videoId,itemId);
+
+		gCurrentVideoPlaying = itemId;
+
+		joeyMedia_initPlayer(itemId);	
+		joeyMedia_delayedVideoPlay(videoId,itemId);
 
 	}
+	
+}
+
+function joeyMedia_updateControl(itemId,toString) {
+
+	  document.getElementById("joeyVideoPlayerController-"+itemId).innerHTML=toString;
+
 }
 
 function videoPlayPause() {
 
-    
-	if(pauseFlop) { 
+	if(gJoeyMediaHash[gCurrentControlId]==1) { 
+
 		document.getElementById("joeyVideoPlayerController-"+gCurrentControlId).innerHTML="play";	
-		form_playing=false;
-		pauseFlop=false;
+		gJoeyMediaHash[gCurrentControlId]=2;
+
+
 	} else {
-		form_playing=true;
+
 		document.getElementById("joeyVideoPlayerController-"+gCurrentControlId).innerHTML="pause";	
-		setTimeout("videoCheckTime()",1000);
-		pauseFlop=true;		
+		gJoeyMediaHash[gCurrentControlId]=1;
+
 	}
+
 	getFlash().SetVariable("vp_function_pauseresume","go");
+
+
 }
 
 function init() {
