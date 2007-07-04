@@ -288,7 +288,7 @@ class StorageComponent extends Object
     
     // /usr/local/bin/ffmpeg -i test.mp3 -ar 8000 -ac 1 -ab 7400 -f amr -acodec libamr_nb test.amr
 
-    $_cmd = FFMPEG_CMD . " -i {$_fromName}  -ar 8000 -ac 1 -ab 7400 -f amr {$_toName}  2>&1";    
+    $_cmd = FFMPEG_CMD . " -y -i {$_fromName}  -ar 8000 -ac 1 -ab 7400 -f amr {$_toName}  2>&1";    
     exec($_cmd, $_out, $_ret);
 
     if ($_ret !== 0) {
@@ -356,7 +356,7 @@ class StorageComponent extends Object
     
     $width = intval($width / 2);
     $height = intval($height / 2);
-    $_cmd = FFMPEG_CMD . " -i {$_fromName} -ss 5 -vcodec png -vframes 1 -an -f rawvideo -s '{$width}x{$height}' {$_previewName} 2>&1";
+    $_cmd = FFMPEG_CMD . " -y -i {$_fromName} -ss 5 -vcodec png -vframes 1 -an -f rawvideo -s '{$width}x{$height}' {$_previewName} 2>&1";
     
     
     $this->log(">: " . $_cmd);
@@ -531,10 +531,10 @@ class StorageComponent extends Object
         return false;
       }
       // .png/.rss comes in, append with the real suffix for this content.
-      unlink($_orignalname);
-      unlink($_filename);
-      $_orignalname .= "." . $this->suffix[ $podcast['type']];
-      $_filename .= ".amr";
+      //      unlink($_orignalname);
+      //      unlink($_filename);
+      $_orignalname = str_replace(".png", "." . $this->suffix[ $podcast['type']], $_orignalname);
+      $_filename = str_replace(".rss", ".amr", $_filename);
 
       $filelen = file_put_contents($_orignalname, $output);
       if ($filelen <= 0) {
