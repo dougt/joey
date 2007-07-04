@@ -110,13 +110,16 @@ public class UserData
 		// of UserData. When writing we will always write the newest
 		// version. This means downgrading the Joey J2ME client is
 		// not supported.
-		/* int version = */ in.readInt();
+		int version = in.readInt();
 
 		this.username = in.readUTF();
 		this.password = in.readUTF();
 		this.useSsl = in.readBoolean();
 		this.updateInterval = in.readLong();
-        this.rememberMe = in.readBoolean();
+
+		if (version >= 2) {
+			this.rememberMe = in.readBoolean();
+		}
 	}
 
 	public void write(DataOutputStream out)
