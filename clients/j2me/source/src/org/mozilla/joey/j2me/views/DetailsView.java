@@ -155,12 +155,12 @@ public class DetailsView
             append(item);
         }
 //#if polish.api.mmapi
-        else if (this.upload.getMimetype().equals("audio/mpeg"))
+        else if (this.upload.getMimetype().equals("audio/amr"))
         {
             if (this.upload.getData() != null) {
                 try {
                     Player player;
-                    player = Manager.createPlayer(new ByteArrayInputStream(this.upload.getData()), "audio/mpeg");
+                    player = Manager.createPlayer(new ByteArrayInputStream(this.upload.getData()), "audio/amr");
                     player.start();
                 }
                 catch(Exception t) {
@@ -184,6 +184,8 @@ public class DetailsView
 
             if ( this.upload.getData() != null) {
 
+                // it would be cool if j2me polish had a video item.
+
                 try {
                     VideoControl vc;
                     Player player;
@@ -198,7 +200,6 @@ public class DetailsView
                         
                     vc.initDisplayMode(VideoControl.USE_DIRECT_VIDEO, this);
                     
-                    // centre video, letting it be clipped if it's too big
                     int canvasWidth = getWidth();
                     int canvasHeight = getHeight();
                     int displayWidth = vc.getDisplayWidth();
