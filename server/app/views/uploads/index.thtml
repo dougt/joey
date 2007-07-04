@@ -104,15 +104,16 @@ You have no uploads yet.
 
 
 
-                <?php if($upload['File']['type']=='audio/mpeg') :?>
+                <?php if($upload['File']['original_type']=='audio/mpeg') :?>
 
 
                      <div class="joey-upload-image-thumb">
 
 <div style="float:right;margin-right:2px;margin-top:2px">
-<object  type="application/x-shockwave-flash" data="/app/webroot/vendor/musicplayer.swf?&song_url=<?php echo "/files/view/" . $upload['File']['id']  ?>&b_bgcolor=000000&b_fgcolor=77bb33&b_colors=77bb33,77bb33,77bb33,ff0000&" width="17" height="17">
+<object  type="application/x-shockwave-flash"
+         data="/app/webroot/vendor/musicplayer.swf?&song_url=<?php echo "/files/view/" . $upload['File']['id'] ."/original" ?>&b_bgcolor=000000&b_fgcolor=77bb33&b_colors=77bb33,77bb33,77bb33,ff0000&" width="17" height="17">
 <param name="bgcolor" value="#333333" >
-<param name="movie" value="/app/webroot/vendor/musicplayer.swf?&song_url=<?php echo "/files/view/" . $upload['File']['id']  ?>&b_bgcolor=000000&b_fgcolor=77bb33&b_colors=77bb33,77bb33,77bb33,ff0000&" >
+<param name="movie" value="/app/webroot/vendor/musicplayer.swf?&song_url=<?php echo "/files/view/" . $upload['File']['id'] ."/original" ?>&b_bgcolor=000000&b_fgcolor=77bb33&b_colors=77bb33,77bb33,77bb33,ff0000&" >
 <img src="noflash.gif" width="17" height="17" alt="" >
 </object>
 </div>
