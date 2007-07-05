@@ -91,8 +91,7 @@ public class JoeyController
 	private static final int ALERT_EXIT_CONFIRMATION = 9;
 	private static final int ALERT_LOGIN_ERROR = 10;
 	private static final int ALERT_WAIT = 11;
-    private static final int ALERT_MEDIA_OPEN_ERROR = 12;
-
+	private static final int ALERT_MEDIA_OPEN_ERROR = 12;
 
 	public static final String ATTR_UPLOAD = "upload";
 	
@@ -496,7 +495,6 @@ public class JoeyController
 		} while (event != EVENT_NETWORK_REQUEST_SUCCESSFUL);
 		
 		Timer timer = new Timer();
-		// TODO: Version UserData and use updateInterval from UserDate here. 
 		timer.schedule(this.updateTask, this.userdata.getUpdateInterval() * 1000, this.userdata.getUpdateInterval() * 1000);
 
 		// Handle main menu screen.
