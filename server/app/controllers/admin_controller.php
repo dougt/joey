@@ -49,7 +49,7 @@ class AdminController extends AppController
 
       if ($this->_user['administrator'] == 0)
       {
-        $this->flash('Permission Denined.', '/uploads/index');
+        $this->flash('Permission Denied.', '/uploads/index');
       }
 
   
