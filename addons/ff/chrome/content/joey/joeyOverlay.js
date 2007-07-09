@@ -746,12 +746,9 @@ function joeyRegisterFeedListener() {
     var url = "https://joey.labs.mozilla.com";
     if (psvc.prefHasUserValue("joey.service_url"))
         url = psvc.getCharPref("joey.service_url");
-    
-
-    // https://dougt.joey-dev.labs.mozilla.com/uploads/add_rss?rss=http%3A%2F%2Fdigg.com%2Frss%2Findex.xml
 
     navigator.registerContentHandler('application/vnd.mozilla.maybe.feed',
-                                     url + '/uploads/add_rss?rss=%s', 
+                                     url + '/uploads/add/rss/?source=%s', 
                                      'Joey!');
 }
 
