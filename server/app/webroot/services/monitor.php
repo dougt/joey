@@ -74,7 +74,7 @@ require_once '../../config/config.php';
     }
 
     echo '<hr />';
-    echo '<p>What are we actually testing? <a href="http://viewvc.svn.mozilla.org/vc/labs/joey/trunk/server/app/webroot/services/monitor.php">Check the source</a>';
+    echo '<p>What are we actually testing? <a href="http://viewvc.svn.mozilla.org/vc/labs/joey/trunk/server/app/webroot/services/monitor.php?view=markup">Check the source</a>';
 
 
 // Functions
