@@ -127,8 +127,7 @@ class StorageComponent extends Object
    * @param int ID of the Upload that is associated with the file to update
    * @return mixed true on success, false on failure
    */
-  function updateFileByUploadId($id, $forceUpdate)
-  {
+  function updateFileByUploadId($id, $forceUpdate) {
     $_upload = $this->controller->Upload->FindDataById($id);
     
     // This Upload doesn't have a contentsource

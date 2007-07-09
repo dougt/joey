@@ -81,106 +81,44 @@ class UploadsController extends AppController
     $this->_user = $this->Session->read('User');
   }
   
-  
-  function add_rss()
-  {
-    $rss_source = $_GET['rss'];
-    
-    // put this rss link into a format that we care about.
-    $rss_source = "rss=" . $rss_source . "\r\n";
-    
-    // Fill in the user_id FK.  Cake needs this doubled up for the HABTM relationship
-    $this->data['User']['User']['id'] = $this->_user['id'];
-    
-    // check for duplicates
-    $_contentdup = $this->Contentsource->findBySource($rss_source);
-    
-    // Allow for now!
-    //      if (!empty($_contentdup)) {
-    //        $this->flash('Error - Duplicate found.', '/uploads/index');
-    //        return;
-    //      }
-    
-    // Hard coded.  These values must match your db.  if
-    // you didn't change anything in
-    // app/config/sql/joey.sql, you should be golden.
-    
-    $this->data['Contentsourcetype']['id'] = 2;
-    $this->data['Contentsourcetype']['name'] = "rss-source/text"; 
-    
-    $this->data['Upload']['title']    = "RSS. Updating title...."; 
-    $this->data['Upload']['referrer'] = "n/a"; 
-    
-    $this->data['Contentsource']['source'] = $rss_source;
-    
-    
-    if (!$this->Upload->validates($this->data) || 
-        !$this->Contentsource->validates($this->data) || 
-        !$this->Contentsourcetype->validates($this->data)) 
-    {
-      $this->flash('RSS Add Failed. Upload could not ve validated', '/uploads/index');
-      return;
-    }
-    
-    // Start our transaction.  
-    $this->Upload->begin();
-    
-    if ($this->Upload->save($this->data) == false)
-    {
-      $this->Upload->rollback();
-      $this->flash('RSS Add Failed. Upload could not be saved', '/uploads/index');
-      return;
-    }
-    
-    // Create a new file row
-    if (($_file_id = $this->Storage->createFileForUploadId($this->Upload->id, $this->data['Contentsourcetype']['name'])) == false) 
-    {
-      $this->Upload->rollback();
-      $this->flash('RSS Add Failed.  Could not create file for upload.', '/uploads/index');
-      return;
-    }
-    
-    // gg cake
-    $this->data['Contentsource']['file_id']              = $_file_id;
-    $this->data['Contentsource']['contentsourcetype_id'] = $this->data['Contentsourcetype']['id'];
-    
-    if ($this->Contentsource->save($this->data) == false) 
-    {
-      $this->Upload->rollback();
-      $this->flash('RSS Add Failed. Could not save content source', '/uploads/index');
-      return;
-    }
-    
-    if ($this->Upload->setOwnerForUploadIdAndUserId($this->Upload->id, $this->_user['id']) == false)
-    {
-      $this->Upload->rollback();
-      $this->flash('RSS Add Failed. Could not set owner of upload.', '/uploads/index');
-      return;
-    }
-    
-    if ($this->Storage->updateFileByUploadId($this->Upload->id, true) == false)
-    {
-      $this->Upload->rollback();
-      $this->flash('RSS Add Failed. Could not update file.', '/uploads/index');
-      return;
-    }
-    
-    $this->Upload->commit();
-    $this->flash('RSS Added.', '/uploads/index');
-  }
-  
-  
   /**
    * After add(), the UPLOADDIR has the following files:
    *   random.orig.sfx: The original uploaded file. The .sfx indicates the file type. This file name and file type are saved in db ONLY IF there is no transcoded file for this upload.
    *   random.png OR random.3gp: The transcoded file for image or video. The name and type are saved in the db.
    *   previews/random.png: The preview. File name saved in db.
+   *
+   * @param string type - this is only used if we're adding an rss feed via the URL
+   * (no $_POST).  If it $type='rss' there also needs to be a $_GET['source'] with a
+   * urlencoded() url.  For example: * /uploads/add/rss/source=http%3a%2f%2fsite.com%2frss
+   *
    */
-  function add()
+  function add($type='')
   {
     $this->pageTitle = 'Add an upload';
     
     $this->set('contentsourcetypes', $this->Contentsourcetype->generateList(null,null,null,'{n}.Contentsourcetype.id','{n}.Contentsourcetype.name'));
+
+    // If they specify the type as RSS, and pass in a URL via $_GET, we'll fake the
+    // POST data, so we can add the new upload
+    //
+    // Cake has a weird problem specifying URLs in the URL:  
+    //          /uploads/add/rss/http%3A%2F%2Fdigg.com%2Frss%2Findex.xml
+    // gives an apache 404 error for some reason - I guess cake is decoding the %2F's
+    // for us...awesome.  We'll just use $_GET
+    if ($type == 'rss' && array_key_exists('source', $_GET)) {
+        $_types = $this->Contentsourcetype->findByName('rss-source/text', array('id'), null, 0);
+
+        $this->data['Contentsourcetype']['id']   = $_types['Contentsourcetype']['id'];
+        $this->data['Contentsourcetype']['name'] = 'rss-source/text'; 
+        
+        $this->data['Upload']['title']    = "RSS. Updating title...."; 
+
+        // @todo make sure the rss= stuff is the right way to handle this...
+        $this->data['Contentsource']['source'] = 'rss='.urldecode($_GET['source'])."\r\n";
+
+        unset ($_types);
+
+    }
     
     // They've submitted data
     if (!empty($this->data)) {
@@ -274,8 +212,8 @@ class UploadsController extends AppController
         // They uploaded a content source instead of a file
       } else if ( !empty($this->data['Contentsource']['source']) ) {
         
-// check for duplicates @todo - this doesn't check the user_id
-$_contentdup = $this->Contentsource->findBySource($this->data['Contentsource']['source']);
+        // check for duplicates @todo - this doesn't check the user_id (bug 387369)
+        $_contentdup = $this->Contentsource->findBySource($this->data['Contentsource']['source']);
         
         if (!empty($_contentdup)) {
           
@@ -396,7 +334,7 @@ $_contentdup = $this->Contentsource->findBySource($this->data['Contentsource']['
       $id = $row['id'];
       
       if ($this->delete($id) == false) {
-        $this->log("deleteAll: Delete of " . $id . " failed.");
+        $this->Error->addError("Tried to deleteAll for user ({$this->_user['id']}) but failed deleting upload with id ({$id}).", 'general', false, true);
       }  else {
         $_count++;
       }
@@ -461,24 +399,18 @@ $_contentdup = $this->Contentsource->findBySource($this->data['Contentsource']['
       // Delete the files if they exist
       if (array_key_exists(0,$_item['File'])) {
         if (!unlink(UPLOAD_DIR."/{$this->_user['id']}/{$_item['File'][0]['name']}")) {
-          // Don't make this fatal.  If we couldn't unlink, it is a warning
-          //$this->Upload->rollback();
-          //$this->flash('Delete failed', '/uploads/index',2);
+          $this->Error->addError('Could not delete file ('.UPLOAD_DIR."/{$this->_user['id']}/{$_item['File'][0]['name']}".')', 'general', false, true);
         }
         
         if (!empty($_item['File'][0]['original_name'])) {
           if (!unlink(UPLOAD_DIR."/{$this->_user['id']}/originals/{$_item['File'][0]['original_name']}")) {
-            // Don't make this fatal.  If we couldn't unlink, it is a warning
-            //$this->Upload->rollback();
-            //$this->flash('Delete failed', '/uploads/index',2);
+            $this->Error->addError('Could not delete file ('.UPLOAD_DIR."/{$this->_user['id']}/originals/{$_item['File'][0]['original_name']}".')', 'general', false, true);
           }
         }
         
         if (!empty($_item['File'][0]['preview_name'])) {
           if (!unlink(UPLOAD_DIR."/{$this->_user['id']}/previews/{$_item['File'][0]['preview_name']}")) {
-            // Don't make this fatal.  If we couldn't unlink, it is a warning
-            //$this->Upload->rollback();
-            //$this->flash('Delete failed', '/uploads/index',2);
+            $this->Error->addError('Could not delete file ('.UPLOAD_DIR."/{$this->_user['id']}/previews/{$_item['File'][0]['preview_name']}".')', 'general', false, true);
           }
         }
       }
@@ -494,12 +426,7 @@ $_contentdup = $this->Contentsource->findBySource($this->data['Contentsource']['
         $this->returnJoeyStatusCode($this->SUCCESS);
       } else {
         
-        //  $this->flash('Upload Deleted', '/uploads/index',2);
-        
-        // ajax
-        
-#this->render('ajaxdeleted','ajax');
-        
+        // @todo what happens here?  something with ajax? (this same something should happen in all the error conditions too) (bug 387366)
         
       }
     } else {
@@ -539,7 +466,7 @@ $_contentdup = $this->Contentsource->findBySource($this->data['Contentsource']['
     // We are dealing with a J2ME client here
     if ($this->nbClient) {
       
-      // testing $_GET is for testing really....
+      // $_GET is for testing really, because a J2ME client will only ever send POST
       if (array_key_exists('limit',$_GET)) { $_options['limit'] = $_GET['limit']; }
       if (array_key_exists('start',$_GET)) { $_options['start'] = $_GET['start']; }
       
@@ -564,10 +491,9 @@ $_contentdup = $this->Contentsource->findBySource($this->data['Contentsource']['
         }
         
         // left joins bring back null rows
-        if (array_key_exists('id',$row['Contentsource']) && !empty($row['Contentsource']['id'])) 
-        {
+        if (array_key_exists('id',$row['Contentsource']) && !empty($row['Contentsource']['id'])) {
           
-          // RSS can result in differnt output. For example,
+          // RSS can result in different output. For example,
           // an RSS with an enclosure may result in a video,
           // or mp3, or even an image.  What we want to do
           // here is ensure that the right mime type is
@@ -624,11 +550,11 @@ $_contentdup = $this->Contentsource->findBySource($this->data['Contentsource']['
       
       $this->set('uploads', $data);
       
-      $_phone = $this->Phone->findById($this->_user['phone_id'], null, null, 0);
+      $_phone = $this->User->getPhoneDataByUserId($this->_user['phone_id']);
       
       // Get desired width and height for the transcoded media file
-      $_width = intval($_phone['Phone']['screen_width']);
-      $_height = intval($_phone['Phone']['screen_height']);
+      $_width = intval($_phone['screen_width']);
+      $_height = intval($_phone['screen_height']);
       
       //@todo fix data?
       if ($_width < 1 || $_height < 1)
