@@ -146,7 +146,7 @@ class AppController extends Controller
         header ("X-joey-status: " . $statusCode, true);
 
         $this->layout = null;
-        exit();
+        exit;
     }
 
     function fromXMLString($in)

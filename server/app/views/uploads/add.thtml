@@ -1,8 +1,8 @@
 
 <h2>Upload new data</h2>
 
-<?php if (isset($error_mesg)) : ?>
-    <div class="error_message"><?=$error_mesg?></div>
+<?php if (!empty($errors['general'])) : ?>
+    <div class="error_message"><?=$errors['general']?></div>
 <?php endif; ?>
 
 <form action="" method="post" enctype="multipart/form-data" class="joey-form" />
@@ -23,7 +23,7 @@
 <div>
     <label class="joey-label-large" for="FileUpload">File to Upload:</label>
     <?=$html->file('File/Upload')?>
-    <?=$html->tagErrorMsg('File/Upload', isset($error_fileupload) ? $error_fileupload : 'A file is required.')?>
+    <?=$html->tagErrorMsg('File/Upload', isset($errors['File/Upload']) ? $errors['File/Upload'] : 'A file is required.')?>
 </div>
 <hr />
 <div>

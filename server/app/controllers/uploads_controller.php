@@ -43,7 +43,7 @@ class UploadsController extends AppController
   var $name = 'Uploads';
   
   // ajax
-  var $components = array('Joey', 'Pagination', 'Session', 'Storage', 'RequestHandler');
+  var $components = array('Error', 'Joey', 'Pagination', 'Session', 'Storage', 'RequestHandler');
   
   //@todo review these
   var $uses = array('Phone', 'Contentsource', 'Contentsourcetype', 'File', 'Upload','User');
@@ -191,28 +191,25 @@ class UploadsController extends AppController
       // Fill in the user_id FK.  Cake needs this doubled up for the HABTM relationship
       $this->data['User']['User']['id'] = $this->_user['id'];
       
-      // We've got two use cases.  First, let's check if they've uploaded a
-      // file successfully.
+      // We've got two use cases.  First, let's check if they've uploaded a file successfully.
       if ( !empty($this->data['File']) && $this->data['File']['Upload']['error'] == 0 ) {
         
         if (!is_uploaded_file($this->data['File']['Upload']['tmp_name'])) {
-          $this->File->invalidate('Upload');
-          $this->set('error_fileupload', 'Could not locate uploaded file.');
+          $this->Error->addError('Could not locate uploaded file.', 'File/Upload', true, true);
         }
         
         // Check to see if the user has any additonal space.
         $filesize = filesize($this->data['File']['Upload']['tmp_name']);
-        
-        if ($this->Storage->hasAvailableSpace($this->_user['id'], $filesize) == false) {
+        if (!$this->Storage->hasAvailableSpace($this->_user['id'], $filesize)) {
+
           if ($this->nbClient) {
             $this->returnJoeyStatusCode($this->ERROR_NO_SPACE);
-          } else {
-            $_used = $this->Joey->bytesToReadableSize($this->User->totalSpaceUsedByUserId($this->_user['id']));
-            $_max  = MAX_DISK_USAGE.' MB'; //this is already in MB
-            $_size = $this->Joey->bytesToReadableSize($filesize);
-            $this->set('error_fileupload', "You don't have enough space to save that file. You're using {$_used} out of {$_max} and your upload takes up {$_size}.");
           }
-          $this->File->invalidate('Upload');
+
+          $_used = $this->Joey->bytesToReadableSize($this->User->totalSpaceUsedByUserId($this->_user['id']));
+          $_max  = MAX_DISK_USAGE.' MB'; //this is already in MB
+          $_size = $this->Joey->bytesToReadableSize($filesize);
+          $this->Error->addError("You don't have enough space to save that file.  You're using {$_used} out of {$_max} and your upload takes up {$_size}.", 'File/Upload');
           unlink($this->data['File']['Upload']['tmp_name']);
         }
         
@@ -220,24 +217,11 @@ class UploadsController extends AppController
         // Upload and File models, (ie. are required fields filled in?)
         if ($this->Upload->validates($this->data) && $this->File->validates($this->data)) {
           
-          // Get desired width and height for the transcoded media file
-          $_phone = $this->Phone->findById($this->_user['phone_id']);
-          $_width = intval ($_phone['Phone']['screen_width']);
-          $_height = intval ($_phone['Phone']['screen_height']);
-          
-          // @todo fix data?
-          if ($_width < 1 || $_height < 1) {
-            // we have really no idea what the size should be, so lets just say
-            $_width  = 100;
-            $_height = 100;
-          }
-          
           // Put our file away, generate the transcode file for mobile, as well as the preview. 
-          $_ret = $this->Storage->processUpload($this->data['File']['Upload']['tmp_name'], $this->_user['id'], $this->data['File']['Upload']['type'], $_width, $_height);
+          $_ret = $this->Storage->processUpload($this->data['File']['Upload']['tmp_name'], $this->_user['id'], $this->data['File']['Upload']['type']);
           
           if ($_ret == null) {
-            $this->File->invalidate('Upload');
-            $this->set('error_fileupload', 'Could not move uploaded file.');
+            $this->Error->addError('Could not move uploaded file.', 'File/Upload', true, true);
           }
           
           $this->data['File']['name'] = basename($_ret['default_name']);
@@ -280,12 +264,12 @@ class UploadsController extends AppController
               
             } else {
               $this->Upload->rollback();
-              $this->set('error_mesg', 'Could not save your file.');
+              $this->Error->addError('Could not save your file.');
             }
             
           } else {
             $this->Upload->rollback();
-            $this->set('error_mesg', 'Could not save your upload.');
+            $this->Error->addError('Could not save your upload.');
           }
           
         }
@@ -293,27 +277,26 @@ class UploadsController extends AppController
         // They uploaded a content source instead of a file
       } else if ( !empty($this->data['Contentsource']['source']) ) {
         
-        $this->Upload->settings['throw_error'] = true;
-        $this->Contentsource->settings['throw_error'] = true;
+//@todo wtf is this?
+//$this->Upload->settings['throw_error'] = true;
+//$this->Contentsource->settings['throw_error'] = true;
         
-        // check for duplicates
-        $_contentdup = $this->Contentsource->findBySource($this->data['Contentsource']['source']);
+// check for duplicates @todo - this doesn't check the user_id
+$_contentdup = $this->Contentsource->findBySource($this->data['Contentsource']['source']);
         
         if (!empty($_contentdup)) {
           
           if ($this->nbClient) {
             $this->returnJoeyStatusCode($this->ERROR_DUPLICATE);
-          } else {
-            $this->flash('Error - Duplicate found.', '/uploads/index');
           }
-          return;
+
+          $this->Error->addError('Duplicate content detected - looks like you\'ve already uploaded this.');
         }
         
         // Remote clients don't know the ID's ahead of time, so they will
         // submit the type as a string.  Here we look for that, and look up
         // the matching id.
-        if (array_key_exists('name', $this->data['Contentsourcetype']) &&
-            !empty ($this->data['Contentsourcetype']['name'])) {
+        if (array_key_exists('name', $this->data['Contentsourcetype']) && !empty ($this->data['Contentsourcetype']['name'])) {
           
           $_contentsource = $this->Contentsourcetype->findByName($this->data['Contentsourcetype']['name'], array('id'), null, 0);
           
@@ -336,8 +319,7 @@ class UploadsController extends AppController
         
         if ($this->Upload->validates($this->data) && $this->Contentsource->validates($this->data) && $this->Contentsourcetype->validates($this->data)) {
           
-          // Start our transaction.  It doesn't matter what model we start
-          // or end it on, all saves will be a part of it.
+          // Start our transaction.  It doesn't matter what model we start or end it on, all saves will be a part of it.
           $this->Upload->begin();
           
           // This shouldn't ever fail, since we validated it
@@ -363,24 +345,30 @@ class UploadsController extends AppController
                 }
               } else {
                 $this->Upload->rollback();
-                $this->set('error_mesg', 'There was an error saving your upload.');
+                $this->Error->addError('There was an error saving your upload.');
               }
               
             } else {
               $this->Upload->rollback();
-              $this->set('error_mesg', 'There was an error saving your upload.');
+              // Chances are good they tried to upload an unsupported file type -
+              // perhaps we should provide a better error? @todo
+              $this->Error->addError('There was an error saving your upload.');
             }
             
           } else {
             $this->Upload->rollback();
-            $this->set('error_mesg', 'There was an error saving your upload.');
+            $this->Error->addError('There was an error saving your upload.');
           }
           
         }
       } else {
         // Something is wrong.  Either there was an error uploading the file, or
         // they sent an incomplete POST.  Either way, not much we can do.
-        $this->set('error_mesg', 'Failing: There was an error saving your upload.');
+        $this->Error->addError('Failing: There was an error saving your upload.', 'general');
+      }
+
+      if ($this->nbClient) {
+        $this->returnJoeyStatusCode($this->ERROR_UPLOAD);
       }
       
       //@todo Really, they only need a file OR a contentsource[type], but this
@@ -394,10 +382,7 @@ class UploadsController extends AppController
       
       // Send the errors to the form 
       $this->validateErrors($this->Upload, $this->File);
-      
-      if ($this->nbClient) {
-        $this->returnJoeyStatusCode($this->ERROR_UPLOAD);
-      }
+      $this->set('errors', $this->Error->errors);
       
     }
     

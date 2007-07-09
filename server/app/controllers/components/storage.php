@@ -91,12 +91,17 @@ class StorageComponent extends Object
   }
   
   /**
-   * @return mixed true on success, false on failure
+   * @return mixed id on success, false on failure
    */
   function createFileForUploadId($id, $type) {
     
-    if (!is_numeric($id)) { return false; }
-    if (empty($type))     { return false; }
+    if (!is_numeric($id) || empty($type)) { 
+        return false; 
+    }
+
+    if (!array_key_exists($type, $this->suffix)) {
+        return false;
+    }
     
     $rand = uniqid();
     
@@ -118,14 +123,13 @@ class StorageComponent extends Object
     $_file->set('preview_size', 0);
     
     if (!$_file->save()) {
-      return false;
+        return false;
     }
     
     
-    if ( !touch(UPLOAD_DIR."/{$this->controller->_user['id']}/{$_filename}")) {
-      return false;
+    if (!touch(UPLOAD_DIR."/{$this->controller->_user['id']}/{$_filename}")) {
+        return false;
     }
-    
     
     return $_file->getLastInsertId();
   }
@@ -147,9 +151,10 @@ class StorageComponent extends Object
     if (empty($_upload['Contentsourcetype']['name'])) {
       return false;
     }
+
+    //@todo add in a DEFINE to disable updates
     
-    if (empty($_upload['File']))
-    {
+    if (empty($_upload['File'])) {
       if ($this->createFileForUploadId($id, $_upload['Contentsourcetype']['name']) == false) {
         return false;
       }
@@ -369,7 +374,7 @@ class StorageComponent extends Object
   }
   
   
-  function processUpload($tmpfilename, $userid, $type, $width, $height) {
+  function processUpload($tmpfilename, $userid, $type) {
     if (!is_numeric($userid)) {
       return null;
     }
@@ -379,70 +384,50 @@ class StorageComponent extends Object
     if (!array_key_exists($type, $this->suffix)) {
       return null;
     }
-    
-    $_ret = array ('default_name' => '', 'default_type' => '', 'original_name' => '', 'original_type' => '', 'preview_name' => '', 'preview_type' => '');
+
+    $_phone_data = $this->controller->User->getPhoneDataByUserId($userid);
+
+    // @todo - this is totally arbitrary
+    if ($_phone_data['screen_width'] < 1 || $_phone_data['screen_height'] < 1) {
+        $_phone_data['screen_width'] = $_phone_data['screen_height'] = 100;
+    }
     
     $rand = uniqid();
     
-    if (strcasecmp($type, 'video/flv') == 0) {
+    $_ret = array();
+    $_ret['original_name'] = UPLOAD_DIR."/{$userid}/originals/joey-{$rand}.{$this->suffix[$type]}";
+    $_ret['original_type'] = $type;
+    $_ret['preview_name'] = UPLOAD_DIR."/{$userid}/previews/joey-{$rand}.png";
+    $_ret['preview_type'] = "image/png";
+
+    if (!move_uploaded_file($tmpfilename, $_ret['original_name'])) {
+        return null;
+    }
+
+    // If the upload is a video
+    if (in_array(strtolower($type), array('video/flv'))) {
       
-      $_ret['original_name'] = UPLOAD_DIR."/{$userid}/originals/"."joey-".$rand.".".$this->suffix[$type];
-      $_ret['original_type'] = $type;
-      $_ret['default_name'] = UPLOAD_DIR."/{$userid}/"."joey-".$rand.".3gp";
+      $_ret['default_name'] = UPLOAD_DIR."/{$userid}/joey-{$rand}.3gp";
       $_ret['default_type'] = "video/3gpp";
-      $_ret['preview_name'] = UPLOAD_DIR."/{$userid}/previews/"."joey-".$rand.".png";
-      $_ret['preview_type'] = "image/png";
       
-      if (!move_uploaded_file($tmpfilename, $_ret['original_name'])) {
-        return null;
-      }
+      $this->transcodeVideo($_ret['original_name'], $_ret['default_name'], $_ret['preview_name'], $width, $height, UPLOAD_DIR."/{$userid}");
       
-      if (!$this->transcodeVideo($_ret['original_name'], 
-                                 $_ret['default_name'], 
-                                 $_ret['preview_name'], 
-                                 $width, 
-                                 $height,
-                                 UPLOAD_DIR."/{$userid}")) 
-      {
-        return null;
-      }
+    // If the upload is an image
+    } else if (in_array(strtolower($type), array('image/png', 'image/jpeg', 'image/tiff', 'image/bmp', 'image/gif'))) {
       
-      return $_ret;
-      
-    } else if (strcasecmp($type, 'image/png') == 0 ||
-               strcasecmp($type, 'image/jpeg') == 0 ||
-               strcasecmp($type, 'image/tiff') == 0 ||
-               strcasecmp($type, 'image/bmp') == 0 ||
-               strcasecmp($type, 'image/gif') == 0) {
-      
-      $_ret['original_name'] = UPLOAD_DIR."/{$userid}/originals/"."joey-".$rand.".".$this->suffix[$type];
-      $_ret['original_type'] = $type;
-      $_ret['default_name'] = UPLOAD_DIR."/{$userid}/"."joey-".$rand.".png";
+      $_ret['default_name'] = UPLOAD_DIR."/{$userid}/joey-{$rand}.png";
       $_ret['default_type'] = "image/png";
-      $_ret['preview_name'] = UPLOAD_DIR."/{$userid}/previews/"."joey-".$rand.".png";
-      $_ret['preview_type'] = "image/png";
       
-      if (!move_uploaded_file($tmpfilename, $_ret['original_name'])) {
-        return null;
-      }
+      $this->transcodeImage($_ret['original_name'], $_ret['default_name'], $_ret['preview_name'], $width, $height);
       
-      if (!$this->transcodeImage($_ret['original_name'], $_ret['default_name'], $_ret['preview_name'], $width, $height)) {
-        return null;
-      }
-      
-      return $_ret;
-      
+    // If the upload is something else
     } else {
       
-      $_ret['default_name'] = UPLOAD_DIR."/{$userid}/"."joey-".$rand.".".$this->suffix[$type];
+      $_ret['default_name'] = UPLOAD_DIR."/{$userid}/joey-{$rand}.{$this->suffix[$type]}";
       $_ret['default_type'] = $type;
-      
-      if (!move_uploaded_file($tmpfilename, $_ret['default_name'])) {
-        return null;
-      }
-      
-      return $_ret;
     }
+
+    return $_ret;
   }
   
   function fetchURL($url)

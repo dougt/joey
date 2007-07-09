@@ -94,5 +94,17 @@ class User extends AppModel
         return $ret[0][0]['total'];
     }
 
+    function getPhoneDataByUserId($user_id)
+    {
+        if (!is_numeric($user_id)) {
+            return array();
+        }
+
+        $_result = $this->findById($user_id, null, null, 0);
+
+        return $result['Phone'];
+
+    }
+
 }
 ?>
