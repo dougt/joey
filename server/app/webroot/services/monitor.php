@@ -39,6 +39,8 @@
  * This is a lightweight page designed to be monitored with a program like nagios.
  * If there is a problem, this will throw a 500 error.
  *
+ * We're keeping file paths out of the error messages for security reasons.
+ *
  */
 
 // Never cache this page
@@ -55,12 +57,13 @@ require_once '../../config/config.php';
     unset ($dbh);
 
 // Verify commands exist
-    testo('Convert command exists ('.CONVERT_CMD.')', is_file(CONVERT_CMD));
-    testo('FFMPEG command exists ('.FFMPEG_CMD.')', is_file(FFMPEG_CMD));
+    testo('Convert command exists', is_file(CONVERT_CMD));
+    testo('FFMPEG command exists', is_file(FFMPEG_CMD));
 
 // Verify permissions are correct
-    testo('Upload directory exists ('.UPLOAD_DIR.')', is_dir(UPLOAD_DIR));
-    testo('Upload directory is writable ('.UPLOAD_DIR.')', is_writable(UPLOAD_DIR));
+    testo('Upload directory exists', is_dir(UPLOAD_DIR));
+    testo('Upload directory is writable', is_writable(UPLOAD_DIR));
+    testo('Cache directory is writable', is_writable(UPLOAD_DIR.'/cache'));
 
 // Print out all our results
     foreach ($results as $result) {
