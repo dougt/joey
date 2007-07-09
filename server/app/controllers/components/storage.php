@@ -45,6 +45,8 @@ vendor('magpierss/rss_fetch.inc');
  */
 class StorageComponent extends Object
 {
+
+  var $components = array('Transcode');
   
   var $suffix = array ("text/plain" => "txt",
                        "image/png" => "png",
@@ -70,24 +72,6 @@ class StorageComponent extends Object
    */
   function startup(&$controller) {
     $this->controller =& $controller;
-  }
-  
-  /**
-   * Check to see if the user has available space for the
-   * additional content.
-   * @param int user id
-   * @param int size (in bytes) of requested space
-   */
-  
-  function hasAvailableSpace($userid, $additional) {
-    
-    $totalused = $this->controller->User->totalSpaceUsedByUserId($userid);
-    // $additional and $totalused is in bytes, MAX_DISK_USAGE is in MB
-    if ( ($additional + $totalused) > (MAX_DISK_USAGE * 1024 * 1024)) {
-      $this->log($userid . " hasAvailableSpace failed");
-      return false;
-    }
-    return true;
   }
   
   /**
@@ -228,7 +212,7 @@ class StorageComponent extends Object
         }
         
         // does the user have enough space to proceed
-        if ($this->controller->Storage->hasAvailableSpace($userid,
+        if ($this->controller->User->hasAvailableSpace($userid,
                                                           strlen($ms->result) - filesize($_filename)) == false) {
           $this->log("User " . $userid . " is out of space.");
           return false;
@@ -282,96 +266,8 @@ class StorageComponent extends Object
   }
   
 
-  /*
-   * Transcode the input audio to AMR.
-   * The file type is implied in the file name suffix
-   */
-  function transcodeAudio ($fromName, $toName) {
-    
-    $_fromName    = escapeshellarg($fromName);
-    $_toName      = escapeshellarg($toName);
-    
-    // /usr/local/bin/ffmpeg -i test.mp3 -ar 8000 -ac 1 -ab 7400 -f amr -acodec libamr_nb test.amr
-
-    $_cmd = FFMPEG_CMD . " -y -i {$_fromName}  -ar 8000 -ac 1 -ab 7400 -f amr {$_toName}  2>&1";    
-    exec($_cmd, $_out, $_ret);
-
-    if ($_ret !== 0) {
-      echo "\n". $_cmd."\n";
-      $this->log("transcodeAudio failed: " . $_cmd);
-      return false;
-    }
-    
-    return true;
-  }
   
-  /*
-   * Transcode the input image to PNG and then generate a preview PNG.
-   * The file type is implied in the file name suffix.
-   */
-  function transcodeImage ($fromName, $toName, $previewName, $width, $height) {
-    
-    $_fromName    = escapeshellarg($fromName);
-    $_toName      = escapeshellarg($toName);
-    $_previewName = escapeshellarg($previewName);
-    
-    $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_fromName} {$_toName}";    
-    exec($_cmd, $_out, $_ret);
-    if ($_ret !== 0) {
-      $this->log("transcodeImage failed: " . $_cmd);
-      return false;
-    }
-    
-    // @todo why 1/2?
-    $width = intval($width / 2);
-    $height = intval($height / 2);
-    $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_toName} {$_previewName}";    
-    exec($_cmd, $_out, $_ret);
-    if ($_ret !== 0) {
-      $this->log("transcodeImage failed: " . $_cmd);
-      return false;
-    }
-    
-    return true;
-  }
   
-  /*
-   * Transcode the input video to 3GP and then generate a preview PNG.
-   * The file type is implied in the file name suffix
-   */
-  function transcodeVideo ($fromName, $toName, $previewName, $width, $height, $userdir) {
-    
-    $_fromName    = escapeshellarg($fromName);
-    $_toName      = escapeshellarg($toName);
-    $_previewName = escapeshellarg($previewName);
-    
-    // ffmpeg -i video_clip.mpg -s qcif -vcodec h263 -acodec mp3 -ac 1 -ar 8000 -ab 32 -y clip.3gp
-    // ffmpeg -y -i joey-4679ffa2e0a2c.flv -ab 12.2k -ac 1 -acodec libamr_nb -ar 8000 -vcodec h263 -r 10 -s qcif -b 44K -pass 1 test.3gp
-    
-    $tmpfname = tempnam($userdir, "ffmpeg.log");
-    
-    $_cmd = FFMPEG_CMD . " -y -i {$_fromName} -ab 12.2k -ac 1 -acodec libamr_nb -ar 8000 -vcodec h263 -r 10 -s qcif -b 44K -pass 1 -passlogfile " . $tmpfname . " {$_toName} 2>&1";
-    exec($_cmd, $_out, $_ret);
-    
-    unlink($tmpfname);
-    
-    if ($_ret !== 0) {
-      $this->log("transcodeVideo failed: " . $_out);
-    }
-    
-    $width = intval($width / 2);
-    $height = intval($height / 2);
-    $_cmd = FFMPEG_CMD . " -y -i {$_fromName} -ss 5 -vcodec png -vframes 1 -an -f rawvideo -s '{$width}x{$height}' {$_previewName} 2>&1";
-    
-    
-    $this->log(">: " . $_cmd);
-    exec($_cmd, $_out, $_ret);
-    if ($_ret !== 0) {
-      $this->log("transcodeVideo failed: " . $_out);
-      return false;
-    }
-    return true;
-  }
   
   
   function processUpload($tmpfilename, $userid, $type) {
@@ -410,7 +306,7 @@ class StorageComponent extends Object
       $_ret['default_name'] = UPLOAD_DIR."/{$userid}/joey-{$rand}.3gp";
       $_ret['default_type'] = "video/3gpp";
       
-      $this->transcodeVideo($_ret['original_name'], $_ret['default_name'], $_ret['preview_name'], $width, $height, UPLOAD_DIR."/{$userid}");
+      $this->Transcode->transcodeVideo($_ret['original_name'], $_ret['default_name'], $_ret['preview_name'], $_phone_data['screen_width'], $_phone_data['screen_height']);
       
     // If the upload is an image
     } else if (in_array(strtolower($type), array('image/png', 'image/jpeg', 'image/tiff', 'image/bmp', 'image/gif'))) {
@@ -418,7 +314,7 @@ class StorageComponent extends Object
       $_ret['default_name'] = UPLOAD_DIR."/{$userid}/joey-{$rand}.png";
       $_ret['default_type'] = "image/png";
       
-      $this->transcodeImage($_ret['original_name'], $_ret['default_name'], $_ret['preview_name'], $width, $height);
+      $this->Transcode->transcodeImage($_ret['original_name'], $_ret['default_name'], $_ret['preview_name'], $_phone_data['screen_width'], $_phone_data['screen_height']);
       
     // If the upload is something else
     } else {
@@ -527,7 +423,7 @@ class StorageComponent extends Object
         return false;
       }
 
-      $result = $this->transcodeAudio($_orignalname, $_filename);
+      $result = $this->Transcode->transcodeAudio($_orignalname, $_filename);
       if (!$result)
       {
         echo "transcodeAudio failed";

@@ -68,6 +68,41 @@ class User extends AppModel
                          );
 
     /**
+     * Retrieve basic phone information for the user.  This is just a shortcut
+     * function.
+     * @param int user_id
+     * @return array phone information
+     */
+    function getPhoneDataByUserId($user_id)
+    {
+        if (!is_numeric($user_id)) {
+            return array();
+        }
+
+        $_result = $this->findById($user_id, null, null, 0);
+
+        return $_result['Phone'];
+
+    }
+
+    /**
+     * Check to see if the user has available space for the
+     * additional content.
+     * @param int user id
+     * @param int size (in bytes) of requested space
+     */
+
+    function hasAvailableSpace($userid, $additional) {
+
+        $totalused = $this->totalSpaceUsedByUserId($userid);
+        // $additional and $totalused is in bytes, MAX_DISK_USAGE is in MB
+        if ( ($additional + $totalused) > (MAX_DISK_USAGE * 1024 * 1024)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Check the total space used for a user
      * @param int user id
      */
@@ -92,18 +127,6 @@ class User extends AppModel
         }
 
         return $ret[0][0]['total'];
-    }
-
-    function getPhoneDataByUserId($user_id)
-    {
-        if (!is_numeric($user_id)) {
-            return array();
-        }
-
-        $_result = $this->findById($user_id, null, null, 0);
-
-        return $result['Phone'];
-
     }
 
 }

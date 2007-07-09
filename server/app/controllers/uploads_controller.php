@@ -43,7 +43,7 @@ class UploadsController extends AppController
   var $name = 'Uploads';
   
   // ajax
-  var $components = array('Error', 'Joey', 'Pagination', 'Session', 'Storage', 'RequestHandler');
+  var $components = array('Error', 'Joey', 'Pagination', 'RequestHandler', 'Session', 'Storage', 'Transcode');
   
   //@todo review these
   var $uses = array('Phone', 'Contentsource', 'Contentsourcetype', 'File', 'Upload','User');
@@ -91,9 +91,6 @@ class UploadsController extends AppController
     
     // Fill in the user_id FK.  Cake needs this doubled up for the HABTM relationship
     $this->data['User']['User']['id'] = $this->_user['id'];
-    
-    $this->Upload->settings['throw_error'] = true;
-    $this->Contentsource->settings['throw_error'] = true;
     
     // check for duplicates
     $_contentdup = $this->Contentsource->findBySource($rss_source);
@@ -200,7 +197,7 @@ class UploadsController extends AppController
         
         // Check to see if the user has any additonal space.
         $filesize = filesize($this->data['File']['Upload']['tmp_name']);
-        if (!$this->Storage->hasAvailableSpace($this->_user['id'], $filesize)) {
+        if (!$this->User->hasAvailableSpace($this->_user['id'], $filesize)) {
 
           if ($this->nbClient) {
             $this->returnJoeyStatusCode($this->ERROR_NO_SPACE);
@@ -276,10 +273,6 @@ class UploadsController extends AppController
         
         // They uploaded a content source instead of a file
       } else if ( !empty($this->data['Contentsource']['source']) ) {
-        
-//@todo wtf is this?
-//$this->Upload->settings['throw_error'] = true;
-//$this->Contentsource->settings['throw_error'] = true;
         
 // check for duplicates @todo - this doesn't check the user_id
 $_contentdup = $this->Contentsource->findBySource($this->data['Contentsource']['source']);
