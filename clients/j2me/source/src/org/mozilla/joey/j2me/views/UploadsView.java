@@ -57,9 +57,11 @@ public class UploadsView
 	public static final int COMMAND_ID_PICTURES = 2;
 	public static final int COMMAND_ID_RSS = 3;
 	public static final int COMMAND_ID_TEXT = 4;
-	public static final int COMMAND_ID_MICROSUM = 5;
+    public static final int COMMAND_ID_MICROSUM = 5;
+    public static final int COMMAND_ID_CAMERA = 6;
+    public static final int COMMAND_ID_PREFS = 7;	
 
-
+    
 	public UploadsView(JoeyController controller)
 	{
 		//#style uploadScreen
@@ -94,7 +96,10 @@ public class UploadsView
 		Image imgRss = null;
 		Image imgText = null;
 		Image imgMs = null;
-		
+        
+        Image imgPrefs  = null;
+        Image imgCamera = null;
+
 		try
 		{
             imgVideo = Image.createImage("/video_16x16.png");
@@ -103,6 +108,11 @@ public class UploadsView
 			imgRss = Image.createImage("/rss_16x16.png");
 			imgText = Image.createImage("/text_16x16.png");
 			imgMs = Image.createImage("/ms_16x16.png");
+            imgPrefs = Image.createImage("/prefs_16x16.png");
+
+//#if polish.api.mmapi
+            imgCamera = Image.createImage("/camera_16x16.png");
+//#endif
 		}
 		catch (Exception e)
 		{
@@ -112,31 +122,36 @@ public class UploadsView
 
 		//#style commandsitem
 		this.commands.append(null, imgVideo);
-		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
-		this.commands.setItemCommandListener(this.controller);
 
 		//#style commandsitem
 		this.commands.append(null, imgMusic);
-		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
-		this.commands.setItemCommandListener(this.controller);
 
 		//#style commandsitem
 		this.commands.append(null, imgPictures);
-		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
-		this.commands.setItemCommandListener(this.controller);
 		
 		//#style commandsitem
 		this.commands.append(null, imgRss);
-		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
-		this.commands.setItemCommandListener(this.controller);
 		
 		//#style commandsitem
 		this.commands.append(null, imgText);
-		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
-		this.commands.setItemCommandListener(this.controller);
 		
 		//#style commandsitem
 		this.commands.append(null, imgMs);
+
+/*
+
+dougt -- not sure if we should have preferences and the
+camera here or in the MainMenu view.
+
+//#if polish.api.mmapi
+		//#style commandsitem
+		this.commands.append(null, imgCamera);
+//#endif
+
+		//#style commandsitem
+		this.commands.append(null, imgPrefs);
+
+*/
 		this.commands.setDefaultCommand(JoeyController.CMD_SELECT);
 		this.commands.setItemCommandListener(this.controller);
 	}
@@ -160,168 +175,164 @@ public class UploadsView
         }
     }
 
-	public void update()
-	{
-		this.container.clear();
-
-
-        int commandid = this.commands.getSelectedIndex();
-
-
-        String categoryTitle;
-        // Set up the background.  
-        switch (commandid) 
-        {
-        case COMMAND_ID_VIDEOS:
-            categoryTitle = "Joey Videos";
-            break;
-            
-        case COMMAND_ID_MUSIC:
-            categoryTitle = "Joey Music";
-            break;
-            
-        case COMMAND_ID_PICTURES:
-            categoryTitle = "Joey Pictures";
-            break;
-            
-        case COMMAND_ID_RSS:
-            categoryTitle = "Joey RSS";
-            break;
-            
-        case COMMAND_ID_TEXT:
-            categoryTitle = "Joey Text";
-            break;
-            
-        case COMMAND_ID_MICROSUM:
-            categoryTitle = "Joey Microsummaries";
-            break;
-            
-        default:
-            categoryTitle = "Joey has no idea what this is.";
-        }
-
-        Item command = new StringItem(null, categoryTitle);
+    private void updateDefaultUploadsView(String title, String mimeType)
+    {
+        Item command = new StringItem(null, title);
         append(command);
 
         int size = this.uploads.size();
-
         for (int i = 0; i < size; i++) 
         {
-
 			Upload upload = (Upload) this.uploads.elementAt(i); 
-            if (upload.isDeleted() == true)
+
+            if (upload.isDeleted() == true)  // todo this shoudl be removed since we should clear these out of RMS
                 continue;
-
+            
             Item uploadItem = null;
-            switch (commandid) 
+            if (upload.getMimetype().substring(0,mimeType.length()).equals(mimeType)) 
             {
-
-                case COMMAND_ID_VIDEOS:
-                    if (upload.getMimetype().equals("video/3gpp")) 
-                    {
-                        uploadItem = getImagePreviewForUpdate(upload);
-
-                        if (uploadItem == null)
-                        {
-                            //#style uploadItem
-                            uploadItem = new StringItem(null, upload.getTitle());
-                        }
-                    }
-                    break;
-
-                case COMMAND_ID_MUSIC:
-                    if (upload.getMimetype().substring(0,5).equals("audio")) 
-                    {
-                        //#style uploadItem
-                        uploadItem = new StringItem(null, upload.getTitle());
-                    }
-                    break;
-
-                case COMMAND_ID_PICTURES:
-                    if (upload.getMimetype().substring(0,5).equals("image")) 
-                    {
-                        uploadItem = getImagePreviewForUpdate(upload);
-
-                        if (uploadItem == null)
-                        {
-                            //#style uploadItem
-                            uploadItem = new StringItem(null, upload.getTitle());
-                        }
-
-                    }
-                    break;
-
-
-                case COMMAND_ID_RSS:
-                    if (upload.getMimetype().substring(0,3).equals("rss")) 
-                    {
-
-                        // What I really want to do is
-                        // return a container of an ICON and
-                        // the Title for the RSS Feed, but I
-                        // can't -- for whatever reason, the
-                        // container icon doesn't get
-                        // selected.
-
-                        /*
-                        //#style rssUploadItem
-                        Container c = new Container(false);
-                        c.allowCycling = false;
-
-                        //#style uploadItem
-                        Item title = new StringItem(null, upload.getTitle());
-                        c.add( title );
-                        c.add( getImagePreviewForUpdate(upload));
-                        uploadItem = c;
-
-                        */
-
-                        uploadItem = getImagePreviewForUpdate(upload);
-
-                        if (uploadItem == null)
-                        {
-                            //#style uploadItem
-                            uploadItem = new StringItem(null, upload.getTitle());
-                        }
-
-                    }
-                    this.container.focus(0);
-
-                    break;
-
-                case COMMAND_ID_TEXT:
-                    if (upload.getMimetype().substring(0,4).equals("text")) 
-                    {
-                        //#style uploadItem
-                        uploadItem = new StringItem(null, upload.getTitle());
-                    }
-                    break;
-
-                case COMMAND_ID_MICROSUM:
-                    if (upload.getMimetype().substring(0,9).equals("microsumm")) 
-                    {
-                        //#style uploadItem
-                        uploadItem = new StringItem(null, upload.getTitle());
-                    }
-                    break;
-
-                default:
+                uploadItem = getImagePreviewForUpdate(upload);
+                
+                if (uploadItem == null)
                 {
-                    //@todo localize
-
                     //#style uploadItem
-                    uploadItem = new StringItem(null, "mime type not supported yet.");
+                    uploadItem = new StringItem(null, upload.getTitle());
+                }
+
+                if (uploadItem == null)
+                    continue;
+                
+                uploadItem.setDefaultCommand(JoeyController.CMD_SELECT);
+                uploadItem.setItemCommandListener(this.controller);
+                UiAccess.setAttribute(uploadItem, JoeyController.ATTR_UPLOAD, upload);
+                append(uploadItem);
+            }
+        }
+    }
+
+    private void updateVideos()
+    {
+        updateDefaultUploadsView("Joey Videos", "video");
+    }
+
+    private void updateMusic()
+    {
+        updateDefaultUploadsView("Joey Music", "audio");
+    }
+
+    private void updatePictures()
+    {
+        updateDefaultUploadsView("Joey Pictures", "image");
+    }
+    
+    private void updateRSS()
+    {
+        updateDefaultUploadsView("Joey Pictures", "rss");
+
+        /*
+        Item command = new StringItem(null, "Joey RSS");
+        append(command);
+
+        int size = this.uploads.size();
+        for (int i = 0; i < size; i++) 
+        {
+			Upload upload = (Upload) this.uploads.elementAt(i); 
+
+            if (upload.isDeleted() == true)  // todo this shoudl be removed since we should clear these out of RMS
+                continue;
+            
+            Item uploadItem = null;
+            if (upload.getMimetype().substring(0,3).equals("rss")) 
+            {
+                //#style rssUploadItem
+                Container c = new Container(false);
+                c.allowCycling = false;
+                
+                //#style uploadItem
+                Item title = new StringItem(null, upload.getTitle());
+                c.add( title );
+                c.add( getImagePreviewForUpdate(upload));
+                uploadItem = c;
+                
+                uploadItem = getImagePreviewForUpdate(upload);
+                if (uploadItem == null)
+                {
+                    //#style uploadItem
+                    uploadItem = new StringItem(null, upload.getTitle());
                 }
             }
 
             if (uploadItem == null)
                 continue;
-
+            
 			uploadItem.setDefaultCommand(JoeyController.CMD_SELECT);
 			uploadItem.setItemCommandListener(this.controller);
 			UiAccess.setAttribute(uploadItem, JoeyController.ATTR_UPLOAD, upload);
 			append(uploadItem);
+        }
+     */
+    }
 
+    private void updateText()
+    {
+        updateDefaultUploadsView("Joey Text", "text");
+    }
+
+    private void updateMicrosummaries()
+    {
+        updateDefaultUploadsView("Joey Microsummaries", "microsumm");
+    }
+
+    private void updateCamera()
+    {
+        append(new StringItem(null, "Joey Camera"));
+    }
+
+    
+    private void updatePrefs()
+    {
+        append(new StringItem(null, "Joey Preferences"));
+    }
+
+	public void update()
+	{
+		this.container.clear();
+
+        int commandid = this.commands.getSelectedIndex();
+
+        switch (commandid) 
+        {
+        case COMMAND_ID_VIDEOS:
+            updateVideos();
+            break;
+            
+        case COMMAND_ID_MUSIC:
+            updateMusic();
+            break;
+            
+        case COMMAND_ID_PICTURES:
+            updatePictures();
+            break;
+            
+        case COMMAND_ID_RSS:
+            updateRSS();
+            break;
+            
+        case COMMAND_ID_TEXT:
+            updateText();
+            break;
+            
+        case COMMAND_ID_MICROSUM:
+            updateMicrosummaries();
+            break;
+
+        case COMMAND_ID_CAMERA:
+            updateCamera();
+            break;
+
+        case COMMAND_ID_PREFS:
+            updatePrefs();
+            break;
         }
 	}
 

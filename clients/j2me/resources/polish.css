@@ -135,7 +135,8 @@ focused {
 .rssUploadItem {
 	padding: 1;
 	border-width: 1;
-	layout: expand | center;
+    columns: 2;
+	layout: expand;
 }
 
 .rssUploadItem:hover {
