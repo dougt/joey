@@ -227,7 +227,7 @@ camera here or in the MainMenu view.
     
     private void updateRSS()
     {
-        updateDefaultUploadsView("Joey Pictures", "rss");
+        updateDefaultUploadsView("Joey RSS", "rss");
 
         /*
         Item command = new StringItem(null, "Joey RSS");
