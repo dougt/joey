@@ -40,7 +40,7 @@ class FilesController extends AppController
 {
     var $name = 'Files';
 
-    var $components = array('Session','Storage');
+    var $components = array('Session','Storage', 'Update');
 
     var $uses = array('Contentsource', 'Contentsourcetype', 'File', 'Upload', 'User');
 
@@ -106,7 +106,8 @@ class FilesController extends AppController
         }
 
         // before doing anything, see if we have to update the content.
-        $this->Storage->updateFileByUploadId($_item['File']['upload_id'], false);
+        // @todo - remove this.  This needs to happen offline (bug 386777)
+        $this->Update->updateContentSourceByUploadId($_item['File']['upload_id'], false);
 
         $this->layout = null;
 
