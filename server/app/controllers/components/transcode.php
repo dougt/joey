@@ -42,12 +42,69 @@
 class TranscodeComponent extends Object
 {
 
+    var $components = array('Storage');
+
     /**
      * Save a reference to the controller on startup
      * @param object &$controller the controller using this component
      */
     function startup(&$controller) {
         $this->controller =& $controller;
+    }
+
+    function transcodeFileById($id) {
+
+        if (!is_numeric($id)) {
+            return false;
+        }
+
+        $_target_dir = UPLOAD_DIR."/{$this->controller->_user['id']}";
+
+        if (!is_writable($_target_dir)) {
+            return false;
+        }
+
+        $_file = $this->controller->File->findById($id, null, null, 0);
+
+        $_phone_data = $this->controller->User->getPhoneDataByUserId($this->controller->_user['id']);
+
+        // Get the random name generated for the original file
+        preg_match('/^joey-([A-Za-z0-9-].*)\..*$/', $_file['File']['original_name'], $matches);
+        $_rand = $matches[1];
+        if (empty($_rand)) {
+            return false;
+        }
+
+        // @todo - this is totally arbitrary
+        if ($_phone_data['screen_width'] < 1 || $_phone_data['screen_height'] < 1) {
+            $_phone_data['screen_width'] = $_phone_data['screen_height'] = 100;
+        }
+
+        $_file['File']['preview_name'] = empty($_file['File']['preview_name']) ?  "joey-{$_rand}.png" : $_file['File']['preview_name'];
+        $_file['File']['preview_type'] = empty($_file['File']['preview_type']) ?  "image/png" : $_file['File']['preview_type'];
+
+        // If the upload is a video
+        if (in_array(strtolower($_file['File']['original_type']), array('video/flv'))) {
+            $_file['File']['name'] = empty($_file['File']['name']) ?  "joey-{$_rand}.3gp" : $_file['File']['name'];
+            $_file['File']['type'] = empty($_file['File']['type']) ?  "video/3gpp" : $_file['File']['type'];
+
+            $this->transcodeVideo("{$_target_dir}/originals/{$_file['File']['original_name']}", "{$_target_dir}/{$_file['File']['name']}", "{$_target_dir}/previews/{$_file['File']['preview_name']}", $_phone_data['screen_width'], $_phone_data['screen_height']);
+
+        // If the upload is an image
+        } else if (in_array(strtolower($_file['File']['original_type']), array('image/png', 'image/jpeg', 'image/tiff', 'image/bmp', 'image/gif'))) {
+
+            $_file['File']['name'] = empty($_file['File']['name']) ?  "joey-{$_rand}.png" : $_file['File']['name'];
+            $_file['File']['type'] = empty($_file['File']['type']) ?  "image/png" : $_file['File']['type'];
+
+            $this->transcodeImageAndPreview("{$_target_dir}/originals/{$_file['File']['original_name']}", "{$_target_dir}/{$_file['File']['name']}", "{$_target_dir}/previews/{$_file['File']['preview_name']}", $_phone_data['screen_width'], $_phone_data['screen_height']);
+        }
+
+        if ($this->controller->File->save($_file)) {
+            return true;
+        }
+
+        return false;
+
     }
 
     /*
@@ -71,14 +128,13 @@ class TranscodeComponent extends Object
     }
 
     /*
-     * Transcode the input image to PNG and then generate a preview PNG.
+     * Transcode the input image to PNG
      * The file type is implied in the file name suffix.
      */
-    function transcodeImage($fromName, $toName, $previewName, $width, $height) {
+    function transcodeImage($fromName, $toName, $width, $height) {
 
         $_fromName    = escapeshellarg($fromName);
         $_toName      = escapeshellarg($toName);
-        $_previewName = escapeshellarg($previewName);
 
         $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_fromName} {$_toName}";    
         exec($_cmd, $_out, $_ret);
@@ -87,13 +143,20 @@ class TranscodeComponent extends Object
             return false;
         }
 
-        // @todo why 1/2?
-        $width = intval($width / 2);
-        $height = intval($height / 2);
-        $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_toName} {$_previewName}";    
-        exec($_cmd, $_out, $_ret);
-        if ($_ret !== 0) {
-            $this->controller->Error->addError("transcodeImage preview error (".implode(',',$_out).") from the command ($_cmd)", 'general', false, true);
+        return true;
+    }
+
+    /*
+     * Transcode the input image to PNG and then generate a preview PNG.
+     * The file type is implied in the file name suffix.
+     */
+    function transcodeImageAndPreview($fromName, $toName, $previewName, $width, $height) {
+
+        if (!$this->transcodeImage($fromName, $toName, $width, $height)) {
+            return false;
+        }
+
+        if (!$this->transcodeImage($toName, $previewName, intval($width/2), intval($height/2))) {
             return false;
         }
 

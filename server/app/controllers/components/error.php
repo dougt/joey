@@ -74,7 +74,7 @@ class ErrorComponent extends Object {
         }
 
         if ($report) {
-            $this->log("Error: ({$field}) {$error}");
+            joeylog("({$field}) {$error}");
         }
 
     }
