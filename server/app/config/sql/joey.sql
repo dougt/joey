@@ -53,9 +53,9 @@ DROP TABLE IF EXISTS `files`;
 CREATE TABLE `files` (
   `id` int(11) unsigned NOT NULL auto_increment,
   `upload_id` int(11) unsigned NOT NULL,
-  `name` varchar(255) NOT NULL default '',
-  `size` int(11) unsigned NOT NULL default '0',
-  `type` varchar(255) NOT NULL default '',
+  `name` varchar(255),
+  `size` int(11) unsigned,
+  `type` varchar(255),
   `original_name` varchar(255),
   `original_type` varchar(255),
   `original_size` int(11) unsigned,
