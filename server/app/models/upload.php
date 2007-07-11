@@ -89,7 +89,7 @@ class Upload extends AppModel
 
             if (is_numeric($_ret[0]['uploads_users']['user_id'])) {
 
-                return $this->User->findById($_ret[0]['uploads_users']['user_id']);
+                return $this->User->findById($_ret[0]['uploads_users']['user_id'], null, null, 0);
             }
         }
 
