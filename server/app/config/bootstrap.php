@@ -53,4 +53,24 @@ require_once ROOT.DS.APP_DIR.DS.'config'.DS.'config.php';
 define('NB_CLIENT_ERROR_UPLOAD_FAIL', '-1');
 define('NB_CLIENT_ERROR_OUT_OF_SPACE', '-2');
 
+
+/**
+ * Cake has a class called 'File' that conflicts with our model called 'File'.
+ * This means the cake functions that use the File class don't work (but they
+ * also don't throw an error...grr...)  CakeLog is one of the classes that
+ * uses File.  As a temporary solution, I'm implementing logging with this
+ * function.  The only place that should be calling this is the Error
+ * component.
+ */
+function joeylog($message) {
+    if (!LOGGING_ENABLED)
+        return;
+    if (!is_writable(LOGS))
+        return;
+
+    $message = date('Y-m-d H:i:s') .": {$message}\n";
+
+    file_put_contents(LOGS.'/error.log', $message, FILE_APPEND);
+    
+}
 ?>
