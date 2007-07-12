@@ -134,7 +134,6 @@ class FilesController extends AppController
             $_filename = UPLOAD_DIR."/{$this->_user['id']}/originals/{$_item['File']['original_name']}";
             $_filetype = $_item['File']['original_type'];
             $_filesize = $_item['File']['original_size'];
-            
         } else {
             // Send the whole file
             $_filename = UPLOAD_DIR."/{$this->_user['id']}/{$_item['File']['name']}";

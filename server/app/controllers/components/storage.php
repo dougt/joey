@@ -101,7 +101,7 @@ class StorageComponent extends Object
     $_file->set('size', 0);
     $_file->set('type', "text/html"); // text/html because we will update this later.
     
-    $_file->set('original_name', basename($_previewname));
+    $_file->set('original_name', basename($_filename));
     $_file->set('original_type', "text/html"); // text/html because we will update this later.
     $_file->set('original_size', 0);
     

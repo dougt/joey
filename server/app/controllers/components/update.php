@@ -229,18 +229,26 @@ class UpdateComponent extends Object
         // Okay, check to see if this is a podcast (something
         // that contains a audio enclosure).  If it is, then we
         // treat it as updatable media file.
-        if ($rss->incontent == "enclosure"){
+        if ($rss->incontent == "enclosure")
+        {
             $this->updateRssEnclosureForUpload($upload, $rss);
         }
-
-        if (!file_put_contents($_originalname, $result)) {
+        else
+        {
+          
+          if (!file_put_contents($_originalname, $result)) {
             $this->controller->Error->addError("Failed to write original file ({$_originalname})", 'general', false, true);
             return false;
-        }
-
-        if (!file_put_contents($_filename, $this->_buildRssOutput($rss))) {
+          }
+          
+          if (!file_put_contents($_filename, $this->_buildRssOutput($rss))) {
             $this->controller->Error->addError("Failed to write file ({$_filename})", 'general', false, true);
             return false;
+          }
+
+          $this->controller->File->id = $upload['File']['id'];
+          $this->controller->File->saveField('size',filesize($_filename));
+          $this->controller->File->saveField('original_size',filesize($_originalname));
         }
 
         // If there is no preview, make one
@@ -252,9 +260,6 @@ class UpdateComponent extends Object
             $this->savePreviewForUploadFromUrl($upload, $_icon_url);
         }
 
-        $this->controller->File->id = $upload['File']['id'];
-        $this->controller->File->saveField('size',filesize($_filename));
-        $this->controller->File->saveField('original_size',filesize($_originalname));
 
         return true;
     }
@@ -385,17 +390,26 @@ class UpdateComponent extends Object
             return false;
         }
 
+        /*
+        echo print_r($_podcast);
+        echo print_r($this->Storage->suffix);
+        exit();
+
         if (!array_key_exists($_podcast['url'], $this->Storage->suffix)) {
             $this->controller->Error->addError("Attempt to save unsupported RSS enclosure type ({$_podcast['url']})", 'general', false, true);
             return false;
         }
-
+        */
         if (!file_put_contents($_originalname, $_output)) {
             $this->controller->Error->addError("Failed to write original file ({$_originalname})", 'general', false, true);
         }
 
-        // @todo - I don't see why this is useful, so I'm leaving it commented out.  Should probably revisit this after testing. :)
-        //$_orignalname = str_replace(".png", "." . $this->suffix[ $podcast['type']], $_orignalname);
+        // transcoding requires that the file suffix used
+        // match the file's actual content.  If we leave the
+        // original file as .rss, transcoding will fail.
+        $oldname = $_originalname;
+        $_originalname = str_replace(".rss", "." . $this->Storage->suffix[ $_podcast['type']], $_originalname);
+        rename($oldname, $_originalname);
 
         // Remove the old file and s/rss/amr/ for the new filename
         unlink($_filename);
@@ -410,12 +424,14 @@ class UpdateComponent extends Object
         $this->controller->File->saveField('size', filesize($_filename));
         $this->controller->File->saveField('name', basename($_filename));
         $this->controller->File->saveField('type',"audio/amr");
-
-        $this->controller->File->saveField('original_size',filesize($_orignalname));
-        $this->controller->File->saveField('original_name',basename($_orignalname));
-        $this->controller->File->saveField('original_type', $podcast['type']);
+        
+        $this->controller->File->saveField('original_size',filesize($_originalname));
+        $this->controller->File->saveField('original_name',basename($_originalname));
+        $this->controller->File->saveField('original_type', $_podcast['type']);
 
         $this->controller->File->saveField('preview_name', "");      
+        $this->controller->File->saveField('preview_type', "");      
+        $this->controller->File->saveField('preview_size', 0);      
 
         return true;
     }

@@ -101,7 +101,7 @@ class TranscodeComponent extends Object
 
         // update all of the file sizes
         $_file['File']['size'] = filesize("{$_target_dir}/{$_file['File']['name']}");
-        $_file['File']['original_size'] = filesize("{$_target_dir}/previews/{$_file['File']['original_name']}");
+        $_file['File']['original_size'] = filesize("{$_target_dir}/originals/{$_file['File']['original_name']}");
         $_file['File']['preview_size'] = filesize("{$_target_dir}/previews/{$_file['File']['preview_name']}");
 
         if ($this->controller->File->save($_file)) {
