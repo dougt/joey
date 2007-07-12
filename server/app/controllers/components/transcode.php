@@ -96,8 +96,13 @@ class TranscodeComponent extends Object
             $_file['File']['name'] = empty($_file['File']['name']) ?  "joey-{$_rand}.png" : $_file['File']['name'];
             $_file['File']['type'] = empty($_file['File']['type']) ?  "image/png" : $_file['File']['type'];
 
-            $this->transcodeImageAndPreview("{$_target_dir}/originals/{$_file['File']['original_name']}", "{$_target_dir}/{$_file['File']['name']}", "{$_target_dir}/previews/{$_file['File']['preview_name']}", $_phone_data['screen_width'], $_phone_data['screen_height']);
+            $this->transcodeImageAndPreview("{$_target_dir}/originals/{$_file['File']['original_name']}","{$_target_dir}/{$_file['File']['name']}", "{$_target_dir}/previews/{$_file['File']['preview_name']}", $_phone_data['screen_width'], $_phone_data['screen_height']);
         }
+
+        // update all of the file sizes
+        $_file['File']['size'] = filesize("{$_target_dir}/{$_file['File']['name']}");
+        $_file['File']['original_size'] = filesize("{$_target_dir}/previews/{$_file['File']['original_name']}");
+        $_file['File']['preview_size'] = filesize("{$_target_dir}/previews/{$_file['File']['preview_name']}");
 
         if ($this->controller->File->save($_file)) {
             return true;
