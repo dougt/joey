@@ -126,7 +126,7 @@ class AppController extends Controller
               // string.
               $ref = $_SERVER['REQUEST_URI'];
               
-              if (!strcmp($ref, "/site/") || !strcmp($ref, "/img/favicon.ico"))
+              if (!strcmp($ref, '/') || !strcmp($ref, '/img/favicon.ico'))
               {
                 // we really don't care about these sorts of references.
               }
