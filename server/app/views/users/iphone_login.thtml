@@ -1,0 +1,23 @@
+<?php if (isset($error_mesg)) : ?>
+    <div class="error_message"><?=$error_mesg?></div>
+<?php endif; ?>
+
+<div class="toolbar">
+  <h1 id="pageTitle"></h1>
+  <a id="backButton" class="button" href="#"></a>
+</div>
+    
+<form action="<?=$html->url('/users/login')?>" method="post" selected="true">
+  <h2>Joey Login</h2>
+  <fieldset>
+    <div class="row">
+      <label>username</label>
+      <?=$html->input('User/username')?>
+    </div>
+    <div class="row">
+      <label>Password</label>
+      <?=$html->password('User/password')?>
+    </div>
+  </fieldset>
+  <input type="submit" value="Login"/>
+</form>

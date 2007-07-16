@@ -1,0 +1,127 @@
+<script type="application/x-javascript" src="/app/webroot/vendor/iui/iui.js"></script>
+
+<div title="Login" class="toolbar">
+  <h1 id="pageTitle"></h1>
+  <a id="backButton" class="button" href="#"></a>
+</div>
+
+
+<ul id="home" title="Main"  selected="true">
+  <li><a href="#browser">Browser stuff</a></li>
+  <li><a href="#videos">Videos</a></li>
+  <li><a href="#images">Images</a></li>
+  <li><a href="#audio">Audio</a></li>
+  <li><a href="#rss">RSS</a></li>
+  <li><a href="#text">Text</a></li>
+</ul>
+
+
+<ul id="browser" title="Firefox stuff">
+<?php 
+foreach ($browserstuff as $item): 
+  echo "<li><a href=\"".FULL_BASE_URL."/files/wrapper/".$item['File']['id']."\">".$item['Upload']['title']."</a></li>";
+endforeach;
+if (empty($browserstuff))
+  echo "<h2> Empty </h2>";
+?>
+</ul>
+
+<ul id="videos" title="Videos">
+<?php
+foreach ($videos as $item): 
+   echo "<li><a href=\"#i" . $item['File']['id'] . "\">" . str_replace("\"", "", $item['Upload']['title']) . "</a></li>";
+endforeach;
+if (empty($videos))
+  echo "<h2> Empty </h2>";
+?>
+</ul>
+
+<ul id="audio" title="Audio">
+<?php 
+foreach ($audio as $item): 
+  echo "<li><a href=\"#i" . $item['File']['id'] . "\">" . str_replace("\"", "", $item['Upload']['title']) . "</a></li>";
+endforeach;
+if (empty($audio))
+  echo "<h2> Empty </h2>";
+?>
+</ul>
+
+<ul id="images" title="Images">
+<?php 
+foreach ($images as $item): 
+  echo "<li><a href=\"".FULL_BASE_URL."/files/wrapper/".$item['File']['id']."\">".$item['Upload']['title']."</a></li>";
+endforeach;
+if (empty($images))
+  echo "<h2> Empty </h2>";
+?>
+</ul>
+
+<ul id="rss" title="RSS">
+<?php 
+foreach ($rss as $item): 
+  echo "<li><a href=\"".FULL_BASE_URL."/files/view/".$item['File']['id']."\">".$item['Upload']['title']."</a></li>";
+endforeach;
+
+foreach ($microsummaries as $item): 
+  echo "<li><a href=\"".FULL_BASE_URL."/files/wrapper/".$item['File']['id']."\">".$item['Upload']['title']."</a></li>";
+endforeach;
+
+if (empty($rss) && empty($microsummaries))
+  echo "<h2> Empty </h2>";
+?>
+</ul>
+
+<ul id="text" title="Text">
+<?php
+foreach ($text as $item): 
+  echo "<li><a href=\"".FULL_BASE_URL."/files/wrapper/".$item['File']['id']."/original\">".$item['Upload']['title']."</a></li>";
+endforeach;
+if (empty($text))
+  echo "<h2> Empty </h2>";
+?>
+</ul>
+
+
+<?php 
+  //todo How do we delay the actual loading if this...
+foreach ($uploads as $item): 
+
+   echo "<div id=\"i" . $item['File']['id'] . "\" class=\"panel\" title=\"" . str_replace("\"", "", $item['Upload']['title']) . "\">";
+
+   if (!strcmp($item['File']['type'], "audio/amr"))
+   {
+     echo "<h2>This is an audio file.  Not sure what to do with it</h2>";
+   }
+   else if (!strcmp($item['File']['type'], "video/3gpp"))
+   {
+     echo "<h2>This is an video file.  Not sure what to do with it</h2>";
+   }
+   else
+   {
+     echo "<h2>This is an unknown file.  Not sure what to do with it</h2>";
+   }
+
+   echo "<br>Debug view of item:";
+   echo "<pre>";
+   print_r($item);
+   echo "</pre>";
+
+   echo "</div>";
+endforeach;
+?>
+    
+<div id="settings" title="Settings" class="panel">
+  
+  <h2>Playback</h2>
+  <fieldset>
+    <div class="row">
+      <label>Repeat</label>
+      <div class="toggle" onclick=""><span class="thumb"></span><span class="toggleOn">ON</span><span class="toggleOff">OFF</span></div>
+    </div>
+    <div class="row">
+      <label>Shuffle</label>
+      <div class="toggle" onclick="" toggled="true"><span class="thumb"></span><span class="toggleOn">ON</span><span class="toggleOff">OFF</span></div>
+    </div>
+  </fieldset>
+</div>
+
