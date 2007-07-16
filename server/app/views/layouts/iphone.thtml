@@ -1,0 +1,13 @@
+<html xmlns="http://www.w3.org/1999/xhtml" version="-//W3C//DTD XHTML 1.1//EN" xml:lang="en" lang="en" dir="ltr">
+<head>
+    <meta name="viewport" content="width=320;initial-scale=1.0;maximum-scale=1.0;user-scalable=0;"/>
+    <style type="text/css" media="screen">
+      @import "/app/webroot/vendor/iui/iui.css";</style>
+	<title><?=$title_for_layout?></title>
+</head>
+
+<body>
+<?=$content_for_layout ?>
+</body>
+</html>
+
