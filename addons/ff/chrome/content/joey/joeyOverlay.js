@@ -52,6 +52,8 @@ var g_joey_bundleElement = null;
 
 var g_joey_mediaContentTypes = ['flv','mov','wmv','avi','mpeg','mp3','wav']; 
 
+var g_joey_tab_upload_timer = null;
+
 function joeyString(ref) {
 
      return g_joey_bundleElement.getString(ref);
@@ -290,6 +292,63 @@ function joey_selectedText()
 
     uploadDataFromGlobals(false);
 }
+
+function joey_currentTabs()
+{
+    // Loop through all of the windows looking and tabs.
+
+    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                      .getService(Components.interfaces.nsIWindowMediator);
+
+    var windows = wm.getEnumerator(null);
+
+    var window_count = 1; // silly humans like 1 based counters.
+
+    var upload_content = "<ul>";
+
+    while (windows.hasMoreElements()) {
+
+        upload_content += "<li><h2>Browser Window #" + window_count + "</h2></li><ul>";
+
+        var tabs = windows.getNext().getBrowser().mTabs;
+
+        for (var i=0; i<tabs.length; i++)
+        {
+            var title = tabs[i].linkedBrowser.contentTitle || tabs[i].linkedBrowser.currentURI.spec;
+
+            upload_content += "<li><a href='" + tabs[i].linkedBrowser.currentURI.spec + "'>"+title+"</a></li>";
+        }
+
+        upload_content += "</ul>";
+        window_count++;
+    }
+
+    upload_content += "</ul>";
+
+    var file = Components.classes["@mozilla.org/file/directory_service;1"]
+                         .getService(Components.interfaces.nsIProperties)
+                         .get("TmpD", Components.interfaces.nsIFile);
+    file.append("joey-selected-text.tmp");
+    file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0664);
+
+    // file is nsIFile, data is a string
+    var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"]
+                             .createInstance(Components.interfaces.nsIFileOutputStream);
+
+    // use 0x02 | 0x10 to open file for appending.
+    foStream.init(file, 0x02 | 0x08 | 0x20, 0664, 0); // write, create, truncate
+    foStream.write(upload_content, upload_content.length);
+    foStream.close();
+
+    g_joey_file = file;
+    g_joey_isfile = true;
+    g_joey_content_type = "browser/stuff";
+    g_joey_title = "Current Tabs";
+    g_joey_url  = "about:CurrentTabs";
+
+    uploadDataFromGlobals(false);
+}
+
 
 
 function joey_selected()
@@ -709,6 +768,29 @@ function joeyStartup()
     g_joey_bundleElement = document.getElementById("joey_properties");
     // We can use now joeyString to get strings...     
 
+    
+    // kick off the tab uploading thread:
+    g_run_tab_upload();
+}
+
+
+function g_run_tab_upload()
+{
+    var enabled = false;
+    var timeout = 300000; // 5min
+    try {
+        timeout = psvc.getIntPref("joey.tab.upload.timeout");
+        enabled = psvc.getBoolPref("joey.tab.upload.enabled");
+    } catch(i) { joeyDumpToConsole(i) } 
+
+
+    // only run if the timer is active.  this allows us to
+    // simple call this function to kick of the thread and
+    // not have to do a upload right when we start.
+    if (g_joey_tab_upload_timer != null && enabled == true)
+        joey_currentTabs();
+
+    g_joey_tab_upload_timer = setTimeout("g_run_tab_upload()", timeout);
 }
 
 
@@ -1406,4 +1488,7 @@ function joey_enableSelection() {
     g_joeySelectorService.enable();
 
 }
+
+
+
 

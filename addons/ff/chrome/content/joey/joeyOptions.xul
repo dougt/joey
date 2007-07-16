@@ -80,6 +80,9 @@
 
         <checkbox label="&options.watchRSS.label;"
                 id="WatchRSS" preference="joey.watchRSS"/>
+
+        <checkbox label="&options.tab.upload.enabled.label;"
+                id="TabUploadEnabled" preference="joey.tab.upload.enabled"/>
       </vbox>
     </groupbox>
 

@@ -13,6 +13,7 @@
 <!ENTITY options.uploadOptions.label  "Upload Settings:" >
 <!ENTITY options.askForTitle.label    "Always ask for a title when uploading items" >
 <!ENTITY options.watchRSS.label       "Upload RSS of frequently visited sites" >
+<!ENTITY options.tab.upload.enabled.label "Upload current tabs frequently" >
 <!ENTITY options.restoreButton.label  "Restore Defaults" >
 
 <!ENTITY overlay.menuPreferences.label "Joey! Preferences...">

@@ -157,7 +157,6 @@ mocoJoey.prototype =
 	joey_content_type: "",
 	joey_title: "",
 	joey_url: "",
-	xmlhttp: null,
 
     setLoginInfo: function()
     {
