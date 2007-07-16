@@ -306,14 +306,16 @@ class UsersController extends AppController
             }
         }
 
-        if (BrowserAgent::isMobile()) {
+        if (BrowserAgent::isIPhone()) {
+            $this->action = 'iphone_login';
+            $this->layout = 'iphone';
+        }
+        else if (BrowserAgent::isMobile()) {
             $this->action = 'mp_login';
             $this->layout = 'mp';
         } else {
             $this->action = 'login';
         }
-
-
     }
 
     /**

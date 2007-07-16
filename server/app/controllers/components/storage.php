@@ -64,7 +64,8 @@ class StorageComponent extends Object
                        "audio/mid" => "mid",
                        "rss-source/text" => "rss",
                        "microsummary/xml" => "mcs",
-                       "widget/joey" => "jwt");
+                       "widget/joey" => "jwt",
+                       "browser/stuff" => "bro");
   
   /**
    * Save a reference to the controller on startup

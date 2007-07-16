@@ -55,12 +55,13 @@ class UploadsController extends AppController
   // maybe move this to the storage component or into a table
   var $filetypes = array (
                           "videos"           => array("video/3gpp", "video/flv", "video/mpeg", "video/avi", "video/quicktime"),
-                          "audio"            => array("audio/x-wav", "audio/mpeg", "audio/mid"),
+                          "audio"            => array("audio/x-wav", "audio/mpeg", "audio/mid", "audio/amr"),
                           "images"           => array("image/png", "image/jpeg", "image/gif", "image/tiff", "image/bmp"),
                           "rss"              => array("rss-source/text"),
                           "text"             => array("text/plain"),
-                          "microsummaries"   => array("microsummary/xml"),
+                          "microsummaries"   => array("microsummary/xml", "text/html"),
                           "widgets"          => array("widget/joey"),
+                          "browserstuff"     => array("browser/stuff"),
                           "all"              => array("*"),
                           );
   
@@ -172,7 +173,7 @@ class UploadsController extends AppController
         }
 
     }
-
+    
     // handle XHTML MP browser
     if (BrowserAgent::isMobile()) {
         $this->action = 'mp_add';
@@ -426,7 +427,47 @@ class UploadsController extends AppController
       $this->set('upload_preview_width', $_width /2);
       $this->set('upload_preview_height', $_height/2);
       
-      if (BrowserAgent::isMobile()) {
+      if (BrowserAgent::isIPhone()) {
+
+        $_options['limit'] = 100; // no real reason for this limit.
+        $_options['start'] = 0;
+
+        $_options['types'] = $this->filetypes["all"];
+        $this->set("uploads", $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options));
+
+        // To make it easier on the view, break these all
+        // apart.  Maybe other views will want it this way
+        // too.
+        $_options['types'] = $this->filetypes["videos"];
+        $this->set("videos", $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options));
+
+        $_options['types'] = $this->filetypes["audio"];
+        $this->set("audio", $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options));
+
+        $_options['types'] = $this->filetypes["images"];
+        $this->set("images", $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options));
+
+
+        $_options['types'] = $this->filetypes["microsummaries"];
+        $this->set("microsummaries", $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options));
+
+        $_options['types'] = $this->filetypes["rss"];
+        $this->set("rss", $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options));
+
+
+        // Stuff below this we are about the original content, not the transcoded content.
+        $_options['original'] = "original";
+
+        $_options['types'] = $this->filetypes["browserstuff"];
+        $this->set("browserstuff", $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options));
+
+        $_options['types'] = $this->filetypes["text"];
+        $this->set("text", $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options));
+
+        $this->action = 'iphone_index';
+        $this->layout = 'iphone';
+      }
+      else if (BrowserAgent::isMobile()) {
         $this->action = 'mp_index';
         $this->layout = 'mp';
       } else {
@@ -562,6 +603,26 @@ class UploadsController extends AppController
             return false;
         }
 
+
+        // if the type is something that needs to prevent
+        // duplicates, AND the URL and type all match,
+        // we have a duplicate and we need to update.
+        // @todo: maybe move to update.php?
+          
+        if ($this->data['File']['Upload']['type'] == "browser/stuff")
+        {
+          $prior_upload = $this->Upload->findDataByTypeAndURL($this->data['File']['Upload']['type'],$this->data['Upload']['referrer']);          
+          $_destination_file = UPLOAD_DIR."/{$this->_user['id']}/originals/".$prior_upload['File']['original_name'];
+          
+          if (!move_uploaded_file($this->data['File']['Upload']['tmp_name'], $_destination_file)) {
+            $this->Error->addError('Failed to move uploaded file.', 'File/Upload', true, true);
+            return false;
+          }
+
+          $this->Transcode->transcodeFileById($prior_upload['File']['id']);
+          return true;
+        }
+        
         $_rand = uniqid('',true);
     
         $_destination_file = UPLOAD_DIR."/{$this->_user['id']}/originals/joey-{$_rand}.{$this->Storage->suffix[$this->data['File']['Upload']['type']]}";

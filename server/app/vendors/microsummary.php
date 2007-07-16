@@ -228,6 +228,10 @@ class microsummary {
     //    $str = str_replace("charset=iso-8859-1", "charset=utf-8", $str);
     $str = str_replace("", "", $str);
 
+    // no script is ever needed.
+    $str = preg_replace('/<script(.*?)<\\/script>/i', '', $str);
+
+
     // load into new dom document
     $d = new DOMDocument();
     $d->preserveWhiteSpace = false;
@@ -376,7 +380,6 @@ class microsummary {
       $ms->load($me_serialized);
       $ms->execute($applyTo, false);
       $summary = $ms->result;
-
     }
 
     $this->result = $summary;

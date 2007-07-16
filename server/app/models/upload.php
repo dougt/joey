@@ -132,6 +132,7 @@ class Upload extends AppModel
             return array();
         }
 
+        $_original = array_key_exists('original', $options) ? $options['original'] : null;
         $_limit = array_key_exists('limit', $options) ? $options['limit'] : null;
         $_start = array_key_exists('start', $options) ? $options['start'] : null;
         $_types = array_key_exists('types', $options) ? $options['types'] : null;
@@ -148,6 +149,16 @@ class Upload extends AppModel
             WHERE uploads_users.user_id = '{$id}'
         ";
 
+        // We create about the original file, not the transcoded file.
+        if (isset($_original))
+        {
+          $file_type = "File.original_type";
+        }
+        else
+        {
+          $file_type = "File.type";
+        }
+
         // user doesn't want to see deleted entries
         if ($_deleted == null) {
             $_query .= " AND Upload.deleted IS NULL";
@@ -163,7 +174,7 @@ class Upload extends AppModel
               if ($i > 0)
                 $_query .= " OR ";
 
-              $_query .= " File.type = '" . $_types[$i] . "'";
+              $_query .= " " . $file_type . " = '" . $_types[$i] . "'";
               $i++;
             }
             
@@ -213,8 +224,21 @@ class Upload extends AppModel
         $data = $this->query($_query);
 
         return $data[0];
-
     }
 
+
+    function findDataByTypeAndURL($type, $url)
+    {
+        $_query = "SELECT * FROM 
+                   uploads_users JOIN uploads as Upload ON uploads_users.upload_id = Upload.id
+                   LEFT JOIN files as File ON Upload.id = File.upload_id 
+                   LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
+                   LEFT JOIN contentsourcetypes as Contentsourcetype ON Contentsource.contentsourcetype_id = Contentsourcetype.id
+                   WHERE File.original_type = '{$type}' AND Upload.referrer = '{$url}'
+        ";
+
+        $data = $this->query($_query);
+        return $data[0];
+    }
 }
 ?>

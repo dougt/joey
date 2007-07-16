@@ -64,7 +64,7 @@ You have no uploads yet.
 
 	<td class="joey-item-control" width="1" valign="top" >
 
-	<div class="joey-upload-mediaicon"><?php echo $upload['File']['type'] ?></div>
+	<div class="joey-upload-mediaicon"><?php echo $upload['File']['original_type'] ?></div>
         <?php echo $ajax->link( "Delete", "/uploads/delete/" . $upload['Upload']['id'] , array('update' => 'messagesBar', "loading"=>"Element.show('loading');", "complete" => "Element.hide('loading');Element.hide('innerItem-" . $upload['Upload']['id'] ."');" ) ) ?>
 
 
@@ -73,95 +73,52 @@ You have no uploads yet.
 
 	<td class="joey-item-thumb" width="1" valign="top" >
 
-
         <?php if (!empty($upload['File']['name'])) : ?>
             <?php if (!empty($upload['File']['preview_name'])) : ?>
-                
-
                 <?php if($upload['File']['original_type']=='video/flv') : ?>
 
+                <div class="joey-upload-image-thumb">
+                  <div class="joey-mediaicon-video">
+                    <?php echo $html->link( '<img class="joey-upload-preview-thumb"  height=35 width=55 src="'.$html->url("/files/view/{$upload['File']['id']}/preview").'" alt="Upload Preview" />', "/files/view/{$upload['File']['id']}",false,false,false ); ?>
+                  </div>
+                </div >
 
-                     <div class="joey-upload-image-thumb"
-                          <div class="joey-mediaicon-video">
-
-                <?php echo $html->link( '<img class="joey-upload-preview-thumb"  height=35 width=55 src="'.$html->url("/files/view/{$upload['File']['id']}/preview").'" alt="Upload Preview" />', "/files/view/{$upload['File']['id']}",false,false,false ); ?>
-
-
-
-                          </div>
-
-                      </div >
-
-
-
-		<?php else : ?>
-
-		<?php echo $html->link( '<img class="joey-upload-preview-thumb"   src="'.$html->url("/files/view/{$upload['File']['id']}/preview").'" alt="Upload Preview" />', "/files/view/{$upload['File']['id']}",false,false,false ); ?>
-
+		        <?php else : ?>
+        		<?php echo $html->link( '<img class="joey-upload-preview-thumb"   src="'.$html->url("/files/view/{$upload['File']['id']}/preview").'" alt="Upload Preview" />', "/files/view/{$upload['File']['id']}",false,false,false ); ?>
                 <?php endif; ?>
 
-		<?php elseif (!empty($upload['Contentsource']['id']) || empty($upload['File']['preview_name'])) : ?>
-
-
-
+		    <?php elseif (!empty($upload['Contentsource']['id']) || empty($upload['File']['preview_name'])) : ?>
                 <?php if($upload['File']['original_type']=='audio/mpeg') :?>
-
-
-                     <div class="joey-upload-image-thumb">
-
-<div style="float:right;margin-right:2px;margin-top:2px">
-<object  type="application/x-shockwave-flash"
-         data="/app/webroot/vendor/musicplayer.swf?&song_url=<?php echo "/files/view/" . $upload['File']['id'] ."/original" ?>&b_bgcolor=000000&b_fgcolor=77bb33&b_colors=77bb33,77bb33,77bb33,ff0000&" width="17" height="17">
-<param name="bgcolor" value="#333333" >
-<param name="movie" value="/app/webroot/vendor/musicplayer.swf?&song_url=<?php echo "/files/view/" . $upload['File']['id'] ."/original" ?>&b_bgcolor=000000&b_fgcolor=77bb33&b_colors=77bb33,77bb33,77bb33,ff0000&" >
-<img src="noflash.gif" width="17" height="17" alt="" >
-</object>
-</div>
-
-                <div class="joey-mediaicon-audio">
-                </div>
-
-                        </div>
-
-
-
-
+                   <div class="joey-upload-image-thumb">
+                     <div style="float:right;margin-right:2px;margin-top:2px">
+                       <object  type="application/x-shockwave-flash"
+                                data="/app/webroot/vendor/musicplayer.swf?&song_url=<?php echo "/files/view/" . $upload['File']['id'] ."/original" ?>&b_bgcolor=000000&b_fgcolor=77bb33&b_colors=77bb33,77bb33,77bb33,ff0000&" width="17" height="17">
+                           <param name="bgcolor" value="#333333" >
+                           <param name="movie" value="/app/webroot/vendor/musicplayer.swf?&song_url=<?php echo "/files/view/" . $upload['File']['id'] ."/original" ?>&b_bgcolor=000000&b_fgcolor=77bb33&b_colors=77bb33,77bb33,77bb33,ff0000&" >
+                           <img src="noflash.gif" width="17" height="17" alt="" >
+                       </object>
+                     </div>
+                     <div class="joey-mediaicon-audio">
+                     </div>
+                   </div>
                 <?php endif; ?>
 
+		        <?php if($upload['File']['type']=='text/plain') :?>
+                  <div class="joey-upload-image-thumb">
+                    <div class="joey-mediaicon-text">
+		            </div>
+                  </div >
+		        <?php endif; ?>
 
-
-		<?php if($upload['File']['type']=='text/plain') :?>
-
-                     <div class="joey-upload-image-thumb"   
-                          <div class="joey-mediaicon-text">
-		          </div>
-                      </div >
-
-		<?php endif; ?>
-
-
-<!--
-
-                     <iframe class="joey-upload-image-thumb"  width="<?php echo $upload_preview_width?> "
-                             height="<?php echo $upload_preview_height?>"
-                             scrolling="auto"
-                             frameborder="1"
-                             src="<?php echo "/files/view/" . $upload['File']['id']?>>"
-                      </iframe>
-
--->
-            <?php 
+                <?php 
                 else :
-
-                    echo $html->link($html->image('na.png'), "/files/view/{$upload['File']['id']}", false, false, false);
-
+                   echo $html->link($html->image('na.png'), "/files/view/{$upload['File']['id']}", false, false, false);
                 endif; 
-            ?>
+                ?>
+
         <?php else : ?>
-            <?=$html->image('na.png'); ?>
+        <?php echo $html->link($html->image('na.png'), "/files/view/{$upload['File']['id']}/original", false, false, false); ?>
         <?php endif; ?>
-
-
 	</td>
 
 	<td  class="joey-item-information" valign="top">
@@ -172,14 +129,15 @@ You have no uploads yet.
         <li>Size:  <?php echo $number->toReadableSize($upload['File']['size']); ?></li>
         <li>Uploaded <?php echo $time->niceShort($upload['Upload']['created']); ?></li>
         <li><?php echo $html->link( "Original", "/files/view/" . $upload['File']['id'] . "/original") ?>         
+          
+          <?php if($upload['File']['original_type']=='video/flv') : ?>
 
+              <a href="javascript:" onclick="joeyMedia_videoPlayPause('<?php echo "/files/view/" . $upload['File']['id'] . "/original" ?>','<?php echo $upload['Upload']['id'] ?>');return false" 
+                 id="joeyVideoPlayerController-<?php echo $upload['Upload']['id'] ?>">play</a>
 
-                <?php if($upload['File']['original_type']=='video/flv') : ?>
-
-<a href="javascript:" onclick="joeyMedia_videoPlayPause('<?php echo "/files/view/" . $upload['File']['id'] . "/original" ?>','<?php echo $upload['Upload']['id'] ?>');return false"  id="joeyVideoPlayerController-<?php echo $upload['Upload']['id'] ?>">play</a><span id='joeyVideoCloseButton-<?php echo $upload['Upload']['id'] ?>'></span>
-
-		<?php endif; ?>
-</li>
+              <span id='joeyVideoCloseButton-<?php echo $upload['Upload']['id'] ?>'></span>
+          <?php endif; ?>
+        </li>
     </ul>
 
     <!-- used by the ajax video player . just a container --> 

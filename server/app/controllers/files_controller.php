@@ -84,6 +84,55 @@ class FilesController extends AppController
       exit();
     }
 
+    function wrapper($id)
+    {
+        $this->layout = null;
+
+        // Make a note if they are asking for the preview
+        if (array_key_exists(1,$this->params['pass']) && $this->params['pass'][1] == 'preview') {
+            $_preview = true;
+        } else {
+            $_preview = false;
+        }
+        
+        // Make a note if they are asking for the original
+        if (array_key_exists(1,$this->params['pass']) && $this->params['pass'][1] == 'original') {
+            $_original = true;
+        } else {
+            $_original = false;
+        }
+
+
+        // Must be careful with this because we aren't checking for ownership here.
+        $_item = $this->File->findById($id);
+
+        // maybe always return iframe?
+        if (false && strstr($_item['File']['type'], "image"))
+        { 
+          if ($_original == true)
+            $out = "<img src=\"".FULL_BASE_URL."/files/view/".$id."/original\">";
+          else if ($_preview == true)
+            $out = "<img src=\"".FULL_BASE_URL."/files/view/".$id."/preview\">";
+          else
+            $out = "<img src=\"".FULL_BASE_URL."/files/view/".$id."\">";
+        }
+        else
+        {
+          if ($_original == true)
+            $out =  "<iframe marginwidth=\"0\" marginheight=\"0\" frameborder=\"0\" vspace=\"0\" hspace=\"0\" style=\"width:100%; height:100%\" src=\"".FULL_BASE_URL."/files/view/".$id."/original\"></iframe>";
+          else if ($_preview == true)
+            $out =  "<iframe marginwidth=\"0\" marginheight=\"0\" frameborder=\"0\" vspace=\"0\" hspace=\"0\" style=\"width:100%; height:100%\" src=\"".FULL_BASE_URL."/files/view/".$id."/preview\"></iframe>";
+          else
+            $out =  "<iframe marginwidth=\"0\" marginheight=\"0\" frameborder=\"0\" vspace=\"0\" hspace=\"0\" style=\"width:100%; height:100%\" src=\"".FULL_BASE_URL."/files/view/".$id."\"></iframe>";
+        }
+        
+        // @todo use view?
+
+        echo $out;
+        exit(); // todo "return"-ing causes the default layout to render in the browser.  not sure why
+        return;
+    }
+
     function view($id)
     {
         $_associated_user = false;

@@ -97,6 +97,14 @@ class TranscodeComponent extends Object
             $_file['File']['type'] = empty($_file['File']['type']) ?  "image/png" : $_file['File']['type'];
 
             $this->transcodeImageAndPreview("{$_target_dir}/originals/{$_file['File']['original_name']}","{$_target_dir}/{$_file['File']['name']}", "{$_target_dir}/previews/{$_file['File']['preview_name']}", $_phone_data['screen_width'], $_phone_data['screen_height']);
+ 
+        } else if (in_array(strtolower($_file['File']['original_type']), array('browser/stuff'))) {
+
+          
+            $_file['File']['name'] = empty($_file['File']['name']) ?  "joey-{$_rand}.html" : $_file['File']['name'];
+            $_file['File']['type'] = empty($_file['File']['type']) ?  "text/html" : $_file['File']['type'];
+
+            $this->transcodeBrowserStuff("", "{$_target_dir}/originals/{$_file['File']['original_name']}","{$_target_dir}/{$_file['File']['name']}");
         }
 
         // update all of the file sizes
@@ -112,6 +120,12 @@ class TranscodeComponent extends Object
 
     }
 
+    function transcodeBrowserStuff($url, $fromName, $toName)
+    {
+      copy ($fromName, $toName);
+      return true;
+    }
+    
     /*
      * Transcode the input audio to AMR.
      * The file type is implied in the file name suffix
