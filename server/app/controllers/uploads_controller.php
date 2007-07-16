@@ -390,7 +390,7 @@ class UploadsController extends AppController
       $_pagination_options = array(
                                    'direction' => 'DESC',
                                    'sortBy'    => 'id',
-                                   'total'     => count($this->Upload->findAllUploadsForUserId($this->_user['id']))
+                                   'total'     => count($this->Upload->findAllUploadsForUserId($this->_user['id'],$_options))
                                    );
       
       list(,$limit,$page) = $this->Pagination->init(array(), array(), $_pagination_options);
