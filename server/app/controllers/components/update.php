@@ -263,7 +263,9 @@ class UpdateComponent extends Object
         // if the preview file is still empty, clear it from
         // the db so that we can use the default icon that
         // the view may provide
-        $this->controller->File->saveField('preview_name',"");
+        if (!file_exists($_previewname)) {
+          $this->controller->File->saveField('preview_name',"");
+        }
 
         return true;
     }
@@ -501,7 +503,9 @@ class UpdateComponent extends Object
         // if the preview file is still empty, clear it from
         // the db so that we can use the default icon that
         // the view may provide
-        $this->controller->File->saveField('preview_name',"");
+        if (!file_exists($_previewname)) {
+          $this->controller->File->saveField('preview_name',"");
+        }
 
         return true;
     }

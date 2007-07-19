@@ -80,6 +80,9 @@ class TranscodeComponent extends Object
             $_phone_data['screen_width'] = $_phone_data['screen_height'] = 100;
         }
 
+        $_file['File']['preview_name'] = empty($_file['File']['preview_name']) ?  "joey-{$_rand}.png" : $_file['File']['preview_name'];
+        $_file['File']['preview_type'] = empty($_file['File']['preview_type']) ?  "image/png" : $_file['File']['preview_type'];
+
         // If the upload is a video
         if (in_array(strtolower($_file['File']['original_type']), array('video/flv'))) {
             $_file['File']['name'] = empty($_file['File']['name']) ?  "joey-{$_rand}.3gp" : $_file['File']['name'];
