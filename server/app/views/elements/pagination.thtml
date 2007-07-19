@@ -1,7 +1,10 @@
+<?php if (!empty($uploads)) : ?>
+
+
 <div id='pagination'>
 
-<div id='pagination-pagesize'>
-<?php
+  <div id='pagination-pagesize'>
+    <?php
     if($pagination->setPaging($paging)):
 
     $pages = $pagination->pageNumbers(" | ");
@@ -9,9 +12,9 @@
     echo "Page size: ".$pagination->resultsPerPage(NULL, ' ');
     endif;
 ?>
-</div>
+  </div>
 
-<?php
+  <?php
     if($pagination->setPaging($paging)):
     // $leftArrow = $html->image("nav/arrowleft.gif", Array('height'=>15));
     // $rightArrow = $html->image("nav/arrowright.gif", Array('height'=>15));
@@ -31,3 +34,6 @@
 </div>
 
 
+
+
+<?php endif; ?>
