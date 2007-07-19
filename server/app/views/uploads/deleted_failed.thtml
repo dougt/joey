@@ -1,0 +1,6 @@
+<div id="innerContent" class="joey-message">
+
+Delete operation failed. 
+<?php if($deleted_message) echo $deleted_message ?>
+
+</div>

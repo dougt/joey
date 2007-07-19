@@ -1,0 +1,6 @@
+<div id="" class="joey-message">
+
+Deleted success. <?php echo $html->link( "Return to previous page", "/uploads/index?type=" . $pageinfo['type'] . "&page=" . $pageinfo['previous'] . "&show=" . $pageinfo['show']); ?>
+
+
+</div>
