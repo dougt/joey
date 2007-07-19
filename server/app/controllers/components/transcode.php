@@ -106,6 +106,14 @@ class TranscodeComponent extends Object
 
             $this->transcodeBrowserStuff("", "{$_target_dir}/originals/{$_file['File']['original_name']}","{$_target_dir}/{$_file['File']['name']}");
         }
+        else if (in_array(strtolower($_file['File']['original_type']), array('text/plain'))) {
+
+          
+            $_file['File']['name'] = empty($_file['File']['name']) ?  "joey-{$_rand}.txt" : $_file['File']['name'];
+            $_file['File']['type'] = empty($_file['File']['type']) ?  "text/plain" : $_file['File']['type'];
+
+            $this->transcodeText("{$_target_dir}/originals/{$_file['File']['original_name']}","{$_target_dir}/{$_file['File']['name']}");
+        }
 
         // update all of the file sizes
         $_file['File']['size'] = filesize("{$_target_dir}/{$_file['File']['name']}");
@@ -118,6 +126,12 @@ class TranscodeComponent extends Object
 
         return false;
 
+    }
+
+    function transcodeText($fromName, $toName)
+    {
+      copy ($fromName, $toName);
+      return true;
     }
 
     function transcodeBrowserStuff($url, $fromName, $toName)

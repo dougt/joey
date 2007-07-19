@@ -74,7 +74,7 @@ if (empty($rss) && empty($microsummaries))
 <ul id="text" title="Text">
 <?php
 foreach ($text as $item): 
-  echo "<li><a href=\"".FULL_BASE_URL."/files/wrapper/".$item['File']['id']."/original\">".$item['Upload']['title']."</a></li>";
+  echo "<li><a href=\"".FULL_BASE_URL."/files/wrapper/".$item['File']['id']."\">".$item['Upload']['title']."</a></li>";
 endforeach;
 if (empty($text))
   echo "<h2> Empty </h2>";
