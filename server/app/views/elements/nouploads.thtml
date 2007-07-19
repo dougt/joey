@@ -1,0 +1,9 @@
+
+        <?php if (empty($uploads)) : ?>
+
+        <div class="joey-message" >
+          You have no uploads yet.
+        </div>
+
+        <?php endif; ?>
+
