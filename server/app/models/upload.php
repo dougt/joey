@@ -229,12 +229,15 @@ class Upload extends AppModel
 
     function findDataByTypeAndURL($type, $url)
     {
+        $_type = $this->_sanitize->sql($type);
+        $_url = $this->_sanitize->sql($url);
+
         $_query = "SELECT * FROM 
                    uploads_users JOIN uploads as Upload ON uploads_users.upload_id = Upload.id
                    LEFT JOIN files as File ON Upload.id = File.upload_id 
                    LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
                    LEFT JOIN contentsourcetypes as Contentsourcetype ON Contentsource.contentsourcetype_id = Contentsourcetype.id
-                   WHERE File.original_type = '{$type}' AND Upload.referrer = '{$url}'
+                   WHERE File.original_type = '{$_type}' AND Upload.referrer = '{$_url}'
         ";
 
         $data = $this->query($_query);
