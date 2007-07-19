@@ -30,13 +30,8 @@
     <td valign="top">
       <div class="joey-upload" >
 
-
-        <?php if (empty($uploads)) : ?>
-        <div class="joey-message" >
-          You have no uploads yet.
-        </div>
-        <?php endif; ?>
-
+	<!-- display area for results -->  
+	<?php echo $this->renderElement('nouploads'); ?> 
 
         <?php $pagination->setPaging($paging); // Initialize the pagination variables
         ?>
@@ -145,7 +140,7 @@
 </table>
 </div>
 
-<div id="footer-pagination">
+<div id="footer-content">
 <?php echo $this->renderElement('pagination'); ?> 
 </div>
 
