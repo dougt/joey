@@ -456,7 +456,7 @@ class UploadsController extends AppController
 
 
         // Stuff below this we are about the original content, not the transcoded content.
-        $_options['original'] = "original";
+        $_options['original'] = "original";  // @todo, i think we can stop doing this.
 
         $_options['types'] = $this->filetypes["browserstuff"];
         $this->set("browserstuff", $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options));

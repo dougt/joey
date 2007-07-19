@@ -260,6 +260,10 @@ class UpdateComponent extends Object
             $this->savePreviewForUploadFromUrl($upload, $_icon_url);
         }
 
+        // if the preview file is still empty, clear it from
+        // the db so that we can use the default icon that
+        // the view may provide
+        $this->controller->File->saveField('preview_name',"");
 
         return true;
     }
@@ -484,6 +488,21 @@ class UpdateComponent extends Object
         // need to update the size and date in the db.
         $this->controller->File->id = $upload['File']['id'];
         $this->controller->File->saveField('size',filesize($_filename));
+
+        // If there is no preview, make one
+        if (!file_exists($_previewname)) {
+            if (empty($_icon_url)) {
+                $_icon_url = $this->getIconUrlForUrl($_rss_url);
+            }
+
+            $this->savePreviewForUploadFromUrl($upload, $_icon_url);
+        }
+
+        // if the preview file is still empty, clear it from
+        // the db so that we can use the default icon that
+        // the view may provide
+        $this->controller->File->saveField('preview_name',"");
+
         return true;
     }
 
