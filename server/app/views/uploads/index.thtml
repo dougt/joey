@@ -1,14 +1,11 @@
 <div id="content">
 <div id="joey-upload-frame">
+
 <h1>Joey! Uploads</h1>
 
+<!-- If you want you can kick messages to all users here --> 
 
-<?php //@todo remove this temporary message ?>
-<div style="font-style: italic;"> 
-    <p><b>Yo!</b> If you haven't done so already, download the software for your phone.</p><br />
-    <p> Click <?php echo $html->link( "here", "/users/edit");?> to edit which phone you have, then go <?php echo $html->link( "here", "/users/getSoftware");?> to the download software.</p>
-</div>
-
+<?php echo $this->renderElement('uploads/warningmessage'); ?>
 
 <div>
 <?php echo $html->link( "all", "/uploads/index?type=all"); ?> 
@@ -20,9 +17,14 @@
 <?php echo $html->link( "text", "/uploads/index?type=text"); ?> 
 </div>
 
+<!-- @todo - we need to fix namespaces for these AJAX ids --> 
 
-<!-- these are temporary repositories to the ajax messages -->
+<!-- the message area to the AJAX operations --> 
+
 <div id="messagesBar" > </div>
+
+<!-- the loading control area --> 
+
 <div id="loading" class="joey-message"  style="display:none" >Working...</div>
 
 <table cellspacing="0"  cellpadding="0" >
@@ -30,13 +32,11 @@
     <td valign="top">
       <div class="joey-upload" >
 
-	<!-- display area for results -->  
-	<?php echo $this->renderElement('nouploads'); ?> 
+	<!-- display area for results, or no results provided by the element nouploads -->   
 
-        <?php $pagination->setPaging($paging); // Initialize the pagination variables
-        ?>
+	<?php echo $this->renderElement('uploads/nouploads'); ?> 
 
-        <!-- this is the image table list --> 
+        <?php $pagination->setPaging($paging); ?>
 
         <table class="joey-upload-list" cellspacing="0"  cellpadding="0" border="0" width="100%">
           
@@ -141,7 +141,7 @@
 </div>
 
 <div id="footer-content">
-<?php echo $this->renderElement('pagination'); ?> 
+<?php echo $this->renderElement('uploads/pagination'); ?> 
 </div>
 
 </div>
