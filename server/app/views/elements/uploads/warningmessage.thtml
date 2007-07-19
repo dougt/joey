@@ -1,0 +1,10 @@
+
+<!-- this can be used to the uploads page - the message you put here shows up there --> 
+
+<div style="font-style: italic;">
+    <p><b>Yo!</b> If you haven't done so already, download the software for your phone.</p><br />
+    <p> Click <?php echo $html->link( "here", "/users/edit");?> to edit which phone you have, then go <?php echo $html->link( "here", "/users/getSoftware");?> to the download software.</p>
+</div>
+
+
+
