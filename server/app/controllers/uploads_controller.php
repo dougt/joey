@@ -211,11 +211,45 @@ class UploadsController extends AppController
   
   function delete($id)
   {
+
+    /* 
+     * This block detects if the Request has information from the previous page uploads. 
+     * In the full web mode, we use this sessionless data forward to pass along 
+     * the previous page info. So that after delete information can be produced
+     * and point the user to a nice follow up page ( back to the previous scope ) */
+
+    if (array_key_exists('previous',$_POST)) {
+      $pageinfo['previous']=$_POST['previous'];
+    } else if (array_key_exists('previous',$_GET)) {
+      $pageinfo['previous']=$_GET['previous'];
+    }
+    if (array_key_exists('show',$_POST)) {
+      $pageinfo['show']=$_POST['show'];
+    } else if (array_key_exists('show',$_GET)) {
+      $pageinfo['show']=$_GET['show'];
+    }
+    if (array_key_exists('type',$_POST)) {
+      $pageinfo['type']=$_POST['type'];
+    } else if (array_key_exists('type',$_GET)) {
+      $pageinfo['type']=$_GET['type'];
+    }
+
+    /* Delete view ( rendered stuff ) may use this */ 
+
+    $this->set('pageinfo',$pageinfo);
+
+    /* 
+     */ 
+
     if (!is_numeric($id)) {
       if ($this->nbClient) {
+
         $this->returnJoeyStatusCode($this->ERROR_DELETE);
+
       } else {
-        $this->flash('Delete failed', '/uploads/index',2);
+
+        $this->render('deleted_failed');
+
       }
     }
     
@@ -229,9 +263,13 @@ class UploadsController extends AppController
     // Check for access
     if (empty($_owner) || ($_owner['User']['id'] != $this->_user['id'])) {
       if ($this->nbClient) {
+
         $this->returnJoeyStatusCode($this->ERROR_NOAUTH);
+
       } else {
-        $this->flash('Delete failed', '/uploads/index',2);
+
+        $this->render('deleted_failed');
+
       }
     }
     
@@ -242,11 +280,18 @@ class UploadsController extends AppController
       $csid = $_item['File'][0]['Contentsource'][0]['id'];
       
       if (! $this->Contentsource->delete($csid)) {
+
         $this->Upload->rollback();
+
         if ($this->nbClient) {
+
           $this->returnJoeyStatusCode($this->ERROR_DELETE);
+
         } else { 
-          $this->flash('Content Source Delete Failed', '/uploads/index',2);
+
+	  $this->set('deleted_message','Content Source Delete Failed');
+	  $this->render('deleted_failed');
+
         }
       }
     }
@@ -279,19 +324,23 @@ class UploadsController extends AppController
       
       $this->Upload->commit();
       if ($this->nbClient) {
+
         $this->returnJoeyStatusCode($this->SUCCESS);
+
       } else {
         
-          // @todo It's kinda tacky to have a fancy ajax response for success, but
-          // do flash() stuff on failure (bug 387366)
-          $this->render('ajaxdeleted');
+          $this->render('deleted_success');
         
       }
     } else {
       if ($this->nbClient) {
+
         $this->returnJoeyStatusCode($this->ERROR_DELETE);
+
       } else {
-        $this->flash('Delete failed', '/uploads/index',2);
+
+          $this->render('deleted_failed');
+
       }
     }
   }
@@ -315,6 +364,8 @@ class UploadsController extends AppController
       $_options['types'] = $this->filetypes[ $_GET['type'] ];
     }
     
+   
+
     // check to see if we have to deal with "since"
     if (array_key_exists('since',$_POST))
       $_options['since'] = $_POST['since'];
@@ -384,7 +435,9 @@ class UploadsController extends AppController
       $this->action = 'j2me_index';
       header("X-joey-status: 200");
     } else {
+
       // Render a page for the browser client
+
       
       $this->pageTitle = 'Uploads';
       
@@ -407,7 +460,17 @@ class UploadsController extends AppController
       $data = $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options);
       
       $this->set('uploads', $data);
-      
+
+      /* Informs the view some page information. This will be used by the Delete and possibly AJAX elements. 
+         The view will format this variable as markup  */
+
+      $clientPageInfo['limit'] = $limit;
+      $clientPageInfo['type']  = $_options['types'];
+      $clientPageInfo['page']  = $page; 
+      $clientPageInfo['start'] = ($page-1)*$limit;
+
+      $this->set('pageinfo',$clientPageInfo);
+
       $_phone = $this->User->getPhoneDataByUserId($this->_user['phone_id']);
       
       // Get desired width and height for the transcoded media file
