@@ -32,6 +32,8 @@
 
 	<?php echo $this->renderElement('uploads/nouploads'); ?> 
 
+
+
         <?php $pagination->setPaging($paging); ?>
 
         <table class="joey-upload-list" cellspacing="0"  cellpadding="0" border="0" width="100%">
@@ -42,9 +44,11 @@
             
 	        <td class="joey-item-control" width="1" valign="top" >
 
-	          <div class="joey-upload-mediaicon">
-                <?php echo $upload['File']['original_type'] ?>
-              </div>
+		<div>
+			<?php echo $upload['File']['original_type'] ?>
+		</div>
+
+<?php echo $html->link( "Delete", "/uploads/delete/" . $upload['Upload']['id'] . "&previous=" . $pageinfo['page'] . "&show=" . $pageinfo['limit']  . "&type=" . $pageinfo['type']) ?>
 
 
               <?php 
@@ -59,7 +63,7 @@
 
 	        <td class="joey-item-thumb" width="1" valign="top" >
               
-              <?php if($upload['File']['original_type']=='video/flv') :?>
+<?php if($upload['File']['original_type']=='video/flv') :?>
 
               <div class="joey-upload-image-thumb">
                 <div class="joey-mediaicon-video">
@@ -74,7 +78,7 @@
               </div >
 
 
-              <?php elseif($upload['File']['original_type']=='audio/mpeg') :?>
+<?php elseif($upload['File']['original_type']=='audio/mpeg') :?>
 
               <div class="joey-upload-image-thumb">
                 <div style="float:right;margin-right:2px;margin-top:2px">
@@ -86,21 +90,31 @@
                     <img src="noflash.gif" width="17" height="17" alt="" >
                   </object>
                 </div>
-                <div class="joey-mediaicon-audio">
-                </div>
-              </div>
 
+                <div class="joey-mediaicon-audio">
+
+                </div>
+
+              </div>
               
-		      <?php elseif($upload['File']['type']=='text/plain') :?>
+<?php elseif($upload['File']['type']=='text/plain') :?>
+
               <div class="joey-upload-image-thumb">
-                <div class="joey-mediaicon-text">
-		        </div>
+		<div class="joey-mediaicon-text">
+		</div>
               </div >
 
+<?php elseif($upload['File']['original_type']=='rss-source/text') :?>
 
-              <?php else : ?>
+              <div class="joey-upload-image-thumb">
+		<div class="joey-mediaicon-rss">
+		</div>
+              </div >
+
+<?php else : ?>
               <?php echo $html->link($html->image('na.png'), "/files/view/{$upload['File']['id']}", false, false, false); ?>
-              <?php endif; ?>
+<?php endif; ?>
+
 	        </td>
 
 	        <td  class="joey-item-information" valign="top">
@@ -123,14 +137,17 @@
               <!-- used by the ajax video player . just a container --> 
               
               <div id="expandItem-<?php echo $upload['Upload']['id'] ?>"> </div>
+
 	        </td>
           </tr>
           <?php endforeach; ?>
         </table>
       </div>
     </td>
-    <td valign="top" width="200" >
-      <img src="/css/style/banner-filters.jpg" alt="" />
+    <td valign="top" >
+
+	<!-- this is an area on the right side, we had a vertical banner function here --> 
+
     </td>
   </tr>
 </table>
