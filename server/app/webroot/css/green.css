@@ -64,19 +64,31 @@ table { width:100% }
 
 
 .joey-mediaicon-video {
-        background: #333333 url(/css/style/media-video.jpg) 0 0 no-repeat;
+        background: #333333 url(/css/style/media-video.png) 0 0 no-repeat;
         width:100px;
         height:80px;
 }
 
 .joey-mediaicon-audio {
-        background: #333333 url(/css/style/media-audio.jpg) 0 0 no-repeat;
+        background: #333333 url(/css/style/media-music.png) 0 0 no-repeat;
         width:100px;
         height:80px;
 }
 
 .joey-mediaicon-text {
-        background: #333333 url(/css/style/media-text.jpg) 0 0 no-repeat;
+        background: #333333 url(/css/style/media-text.png) 0 0 no-repeat;
+        width:100px;
+        height:80px;
+}
+
+.joey-mediaicon-ms {
+        background: #333333 url(/css/style/media-ms.png) 0 0 no-repeat;
+        width:100px;
+        height:80px;
+}
+
+.joey-mediaicon-rss {
+        background: #333333 url(/css/style/media-rss.png) 0 0 no-repeat;
         width:100px;
         height:80px;
 }
