@@ -126,12 +126,7 @@ class AppController extends Controller
               // string.
               $ref = $_SERVER['REQUEST_URI'];
               
-              if (!strcmp($ref, '/') || !strcmp($ref, '/img/favicon.ico'))
-              {
-                // we really don't care about these sorts of references.
-              }
-              else if (!empty($ref))
-              {
+              if (!in_array($ref, array('','/','/img/favicon.ico','/users/login'))) {
                 $this->Session->write('login_referrer', $ref);
               }
             }
