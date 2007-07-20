@@ -1,4 +1,5 @@
 
+<div class="joey-warning" >
 <!-- this can be used to the uploads page - the message you put here shows up there --> 
 
 <div style="font-style: italic;">
@@ -7,4 +8,4 @@
 </div>
 
 
-
+</div>
