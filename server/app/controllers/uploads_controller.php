@@ -467,7 +467,14 @@ class UploadsController extends AppController
          The view will format this variable as markup  */
 
       $joeyClientPageInfo['limit'] = $limit;
-      $joeyClientPageInfo['type']  = $joeyClientPageInfoType;
+
+	if(!empty($joeyClientPageInfoType)) {
+		$joeyClientPageInfo['type']  = $joeyClientPageInfoType;
+
+	} else {
+		$joeyClientPageInfo['type'] = "";
+	} 
+
       $joeyClientPageInfo['page']  = $page; 
       $joeyClientPageInfo['start'] = ($page-1)*$limit;
 
