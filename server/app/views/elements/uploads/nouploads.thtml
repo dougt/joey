@@ -2,7 +2,7 @@
         <?php if (empty($uploads)) : ?>
 
         <div class="joey-message" >
-          You have no uploads yet.
+          You have no uploads results.
         </div>
 
         <?php endif; ?>
