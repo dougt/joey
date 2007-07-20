@@ -101,17 +101,32 @@
               
 <?php elseif($upload['File']['type']=='text/plain') :?>
 
-              <div class="joey-upload-image-thumb">
-		<div class="joey-mediaicon-text">
-		</div>
-              </div >
+          <div class="joey-upload-image-thumb">
+		    <div class="joey-mediaicon-text">
+		    </div>
+          </div >
 
 <?php elseif($upload['File']['original_type']=='rss-source/text') :?>
 
-              <div class="joey-upload-image-thumb">
-		<div class="joey-mediaicon-rss">
-		</div>
-              </div >
+           <div class="joey-upload-image-thumb">
+		     <div class="joey-mediaicon-rss">
+		     </div>
+           </div >
+
+<?php elseif($upload['File']['preview_name']!=null) :?>
+
+              <!-- todo marcio, can you center the preview
+              image on the media icon image -- or give the
+              preview image a similar background so that the
+              image looks consistent with the other upload items --> 
+
+          <div class="joey-upload-image-thumb">
+		     <div class="joey-mediaicon-image">
+            <a href=<?php echo "/files/view/{$upload['File']['id']}"?>>
+              <img src=<?php echo "/files/view/{$upload['File']['id']}/preview"?>>
+            </a>
+          </div >
+          </div >
 
 <?php else : ?>
               <?php echo $html->link($html->image('na.png'), "/files/view/{$upload['File']['id']}", false, false, false); ?>
