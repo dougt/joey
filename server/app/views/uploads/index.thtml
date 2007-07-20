@@ -1,4 +1,5 @@
 <div id="content">
+
 <div id="joey-upload-frame">
 
 <h1>Joey! Uploads</h1>
@@ -53,10 +54,10 @@
 
               <?php 
                  echo $ajax->link( "Delete",
-                                   "/uploads/delete/" . $upload['Upload']['id'] ,
+                                   "/uploads/delete/" . $upload['Upload']['id'] . "&previous=" . $pageinfo['page'] . "&show=" . $pageinfo['limit']  . "&type=" . $pageinfo['type'] ,
                                    array('update' =>'messagesBar',
                                          "loading"=>"Element.show('loading');", 
-                                         "complete"=>"Element.hide('loading');Element.hide('innerItem-" . $upload['Upload']['id'] ."');"))
+                                         "complete"=>"Element.hide('loading');Element.hide('innerItem-" . $upload['Upload']['id'] ."');  execJoey(document.getElementById('joeyEvent').innerHTML)"))
               ?>
 
 	        </td>
