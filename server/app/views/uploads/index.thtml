@@ -101,6 +101,7 @@
 
           <div class="joey-upload-image-thumb">
 		    <div class="joey-mediaicon-text">
+              TODO: marcio - need to link to /files/view/ $upload['File']['id']
 		    </div>
           </div >
 
