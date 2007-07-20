@@ -52,14 +52,16 @@
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
   >
 
-  <script type="application/x-javascript" src="chrome://joey/content/joeyCommon.js" />
+  <script type="application/x-javascript" src="chrome://joey/content/joeyCommon.js"   />
   <script type="application/x-javascript" src="chrome://joey/content/joeyOptions.js" />
 
   <prefpane id="joeyPrefPane" label="&options.optionTitle.label;" >
 
     <preferences>
-      <preference id="joey.service_url"    name="joey.service_url"    type="string" />
-      <preference id="joey.askForTitle"    name="joey.askForTitle"    type="bool" />
+      <preference id="joey.service_url"           name="joey.service_url"           type="string"    />
+      <preference id="joey.askForTitle"           name="joey.askForTitle"           type="bool"     />
+      <preference id="joey.watchRSS"              name="joey.watchRSS"              type="bool"    />
+      <preference id="joey.tab.upload.enabled"    name="joey.tab.upload.enabled"    type="bool"   />
     </preferences>
 
     <groupbox flex="1"   align="left">
