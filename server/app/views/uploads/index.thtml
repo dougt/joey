@@ -34,8 +34,6 @@
 
 	<?php echo $this->renderElement('uploads/nouploads'); ?> 
 
-
-
         <?php $pagination->setPaging($paging); ?>
 
         <table class="joey-upload-list" cellspacing="0"  cellpadding="0" border="0" width="100%">
@@ -106,19 +104,15 @@
 		    </div>
           </div >
 
-<?php elseif($upload['File']['original_type']=='rss-source/text') :?>
+<?php elseif($upload['File']['original_type']=='application/rss+xml') :?>
 
            <div class="joey-upload-image-thumb">
 		     <div class="joey-mediaicon-rss">
+              TODO: marcio - need to link to /files/view/ $upload['File']['id']
 		     </div>
            </div >
 
 <?php elseif($upload['File']['preview_name']!=null) :?>
-
-              <!-- todo marcio, can you center the preview
-              image on the media icon image -- or give the
-              preview image a similar background so that the
-              image looks consistent with the other upload items --> 
 
           <div class="joey-upload-image-thumb">
 		     <div class="joey-mediaicon-image">

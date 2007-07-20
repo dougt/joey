@@ -35,10 +35,6 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-
-vendor('microsummary');
-vendor('joeywidget');
-vendor('magpierss/rss_fetch.inc');
 /**
  * Some mildly associated functions for storing files on the disk.  Maybe there is a
  * better place for this?
@@ -103,6 +99,7 @@ class StorageComponent extends Object
     $_file->set('type', "text/html"); // text/html because we will update this later.
     
     $_file->set('original_name', basename($_filename));
+
     $_file->set('original_type', "text/html"); // text/html because we will update this later.
     $_file->set('original_size', 0);
     

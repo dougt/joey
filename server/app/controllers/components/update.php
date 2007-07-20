@@ -235,7 +235,6 @@ class UpdateComponent extends Object
         }
         else
         {
-          
           if (!file_put_contents($_originalname, $result)) {
             $this->controller->Error->addError("Failed to write original file ({$_originalname})", 'general', false, true);
             return false;
@@ -249,6 +248,7 @@ class UpdateComponent extends Object
           $this->controller->File->id = $upload['File']['id'];
           $this->controller->File->saveField('size',filesize($_filename));
           $this->controller->File->saveField('original_size',filesize($_originalname));
+          $this->controller->File->saveField('original_type',"application/rss+xml");
         }
 
         // If there is no preview, make one
