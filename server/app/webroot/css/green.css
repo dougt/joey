@@ -100,8 +100,13 @@ table { width:100% }
 /* Used by the system messages in panels such as the UPload */ 
 /* For example, uploads/index, You have no uploads yet. */
 
+.joey-warning {
+	padding:1em;
+	border:1px solid yellow;
+	background-color:#333300;
+}
+
 .joey-message {
-	
 	padding:1em;
 	border:1px solid gray;
 	background-color:#444444;
