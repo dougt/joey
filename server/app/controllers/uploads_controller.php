@@ -50,7 +50,7 @@ class UploadsController extends AppController
   
   // now with ajax
   
-  var $helpers = array('Number','Time', 'Pagination', 'Ajax', 'Javascript');
+  var $helpers = array('Number','Time', 'Pagination', 'Ajax', 'Javascript', 'Joeyajaxupdate' );
   
   // maybe move this to the storage component or into a table
   var $filetypes = array (
@@ -464,12 +464,12 @@ class UploadsController extends AppController
       /* Informs the view some page information. This will be used by the Delete and possibly AJAX elements. 
          The view will format this variable as markup  */
 
-      $clientPageInfo['limit'] = $limit;
-      $clientPageInfo['type']  = $_options['types'];
-      $clientPageInfo['page']  = $page; 
-      $clientPageInfo['start'] = ($page-1)*$limit;
+      $joeyClientPageInfo['limit'] = $limit;
+      $joeyClientPageInfo['type']  = $joeyClientPageInfoType;
+      $joeyClientPageInfo['page']  = $page; 
+      $joeyClientPageInfo['start'] = ($page-1)*$limit;
 
-      $this->set('pageinfo',$clientPageInfo);
+      $this->set('pageinfo',$joeyClientPageInfo);
 
       $_phone = $this->User->getPhoneDataByUserId($this->_user['phone_id']);
       
