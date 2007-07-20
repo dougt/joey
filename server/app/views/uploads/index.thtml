@@ -2,9 +2,6 @@
 
 <div id="joey-upload-frame">
 
-<!-- If you want you can kick messages to all users here --> 
-
-<?php echo $this->renderElement('uploads/warningmessage'); ?>
 
 <h1>Joey! Uploads <?php if(!empty($pageinfo['type']))  echo "( " . $pageinfo['type'] . " )"   ?></h1>
 
@@ -17,6 +14,10 @@
   <?php echo $html->link( "microsummaries", "/uploads/index?type=microsummaries"); ?> 
   <?php echo $html->link( "text", "/uploads/index?type=text"); ?> 
 </div>
+
+<!-- If you want you can kick messages to all users here --> 
+
+<?php echo $this->renderElement('uploads/warningmessage'); ?>
 
 <!-- We will need to dump this options basd on the actual options the user has. 
      Probably the findAll can return a hash array with the hasAll, hasVideo, etc. -->
@@ -100,17 +101,21 @@
 <?php elseif($upload['File']['type']=='text/plain') :?>
 
           <div class="joey-upload-image-thumb">
+
+		    <a href=<?php echo "/files/view/{$upload['File']['id']}"; ?>>
 		    <div class="joey-mediaicon-text">
-              TODO: marcio - need to link to /files/view/ $upload['File']['id']
 		    </div>
+	</a>
           </div >
 
 <?php elseif($upload['File']['original_type']=='application/rss+xml') :?>
 
            <div class="joey-upload-image-thumb">
+
+		    <a href=<?php echo "/files/view/{$upload['File']['id']}"; ?>>
 		     <div class="joey-mediaicon-rss">
-              TODO: marcio - need to link to /files/view/ $upload['File']['id']
 		     </div>
+</a>
            </div >
 
 <?php elseif($upload['File']['preview_name']!=null) :?>
