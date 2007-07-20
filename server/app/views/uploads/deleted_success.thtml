@@ -1,6 +1,9 @@
 <div id="" class="joey-message">
 
-Deleted success. <?php echo $html->link( "Return to previous page", "/uploads/index?type=" . $pageinfo['type'] . "&page=" . $pageinfo['previous'] . "&show=" . $pageinfo['show']); ?>
+<?php echo $html->link( "Media successfuly deleted" , "/uploads/index?type=" . $pageinfo['type'] . "&page=" . $pageinfo['previous'] . "&show=" . $pageinfo['show']); ?>
 
+<!-- this is written information to the lcient page, may have error codes, post-command codes, et --> 
+
+<?php echo $joeyajaxupdate->renderMarkup($pageinfo['show'],$pageinfo['type'],$pageinfo['previous'],'okay-reload') ?>
 
 </div>
