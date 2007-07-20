@@ -13,6 +13,8 @@ function execJoey(scriptInfo) {
 
 	if(command == "okay-reload") {
 
+	        new Ajax.Updater('content',"/uploads/index?show="+showLimit+"&page="+pageFrom+"&type="+pageType,{asynchronous:true,evalScripts:true, requestHeaders:['X-Update','content']});
+
 
 	} else {
 		alert('Opa! I believe Joey failed to delete - or something - please report this problem' );
