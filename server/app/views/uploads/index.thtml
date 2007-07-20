@@ -23,7 +23,7 @@
 
 
 <!-- AJAX containers. These elements can be populated  -->  
-<div id="messagesBar" > </div><div id="loading" class="joey-message"  style="display:none" >Working...</div>
+<div id="messagesBar" > </div><div id="loading" class="joey-message"  style="display:none" >Joey is thinking...</div>
 
 <table cellspacing="0"  cellpadding="0" >
   <tr>
