@@ -2,14 +2,11 @@
 
 <div id="joey-upload-frame">
 
-<h1>Joey! Uploads</h1>
-
 <!-- If you want you can kick messages to all users here --> 
 
 <?php echo $this->renderElement('uploads/warningmessage'); ?>
 
-<!-- We will need to dump this options basd on the actual options the user has. 
-     Probably the findAll can return a hash array with the hasAll, hasVideo, etc. -->
+<h1>Joey! Uploads <?php if(!empty($pageinfo['type']))  echo "( " . $pageinfo['type'] . " )"   ?></h1>
 
 <div>
   <?php echo $html->link( "all", "/uploads/index?type=all"); ?> 
@@ -20,6 +17,10 @@
   <?php echo $html->link( "microsummaries", "/uploads/index?type=microsummaries"); ?> 
   <?php echo $html->link( "text", "/uploads/index?type=text"); ?> 
 </div>
+
+<!-- We will need to dump this options basd on the actual options the user has. 
+     Probably the findAll can return a hash array with the hasAll, hasVideo, etc. -->
+
 
 <!-- AJAX containers. These elements can be populated  -->  
 <div id="messagesBar" > </div><div id="loading" class="joey-message"  style="display:none" >Working...</div>
