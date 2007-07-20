@@ -46,6 +46,8 @@ class FilesController extends AppController
 
     var $helpers = array('Number','Time');
 
+    var $securityLevel = 'low';
+
     /**
      * Set in the constructor.  This is just a friendlier way to say "no preview
      * available" - this must be a .png

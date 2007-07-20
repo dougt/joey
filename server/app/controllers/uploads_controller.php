@@ -69,6 +69,8 @@ class UploadsController extends AppController
    * Set in beforeFilter().  Will hold the session user data.
    */
   var $_user;
+
+  var $securityLevel = 'low';
   
   /**
    * You can thank https://trac.cakephp.org/ticket/1589 for not letting us put this

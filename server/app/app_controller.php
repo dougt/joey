@@ -43,7 +43,7 @@ class AppController extends Controller
      */
     var $nbClient = false;
 
-
+    var $components = array('Error');
     //@ todo maybe we should change these value so that they
     //do not resemble http status codes?
 
@@ -58,9 +58,19 @@ class AppController extends Controller
     var $ERROR_UPLOAD     = "518";  //  Generic Upload Error
     var $ERROR_DUPLICATE  = "519";  //  Duplicate Found
 
+    /**     
+     * Used to determine the current security level for the class
+     *          
+     * @var string 'high' or 'low'
+     */         
+    var $securityLevel = 'high';
+
+
     function __construct() {
 
         parent::__construct();
+
+        $this->setSecurityLevel($this->securityLevel);
 
         // Check both the POST and GET for this special key.
         // If it exists, the person is using a non-browser
@@ -118,7 +128,6 @@ class AppController extends Controller
             // to ignore the fluff.
 
             $ref = $this->Session->read('login_referrer');
-
             if (empty($ref)) {              
 
               // Cake hides this from us.  We want to remember
@@ -162,6 +171,32 @@ class AppController extends Controller
       $out = str_replace ("\'","&apos;", $out);
       $out = str_replace ("\"","&quot;", $out);
       return $out;
+    }
+
+    /**
+     * When CAKE_SECURITY is set to high, cake will automatically set
+     * session.referer_check to the current host.  This is good for some of our
+     * pages, but not good for others.  Since the Session component is
+     * automatically-included-no-matter-what, we can't override that, so we'll change
+     * the ini setting ourselves here.  Default is high, but we'll override it in all
+     * the controllers that can use a more relaxed level.
+     *
+     * @param string level to set the security at, 'low' or 'high'
+     * @return void
+     */ 
+    function setSecurityLevel($level) {
+        if (defined('CAKE_SECURITY')) return;
+        switch ($level) {
+    
+            case 'low':
+                    define('CAKE_SECURITY', 'low');
+                    break;
+
+            case 'high': 
+            default:
+                    define('CAKE_SECURITY', 'high');
+                    break;
+        }
     }
     
 

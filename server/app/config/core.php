@@ -97,7 +97,8 @@
  * Set level of Cake security.
  *
  */
-	define('CAKE_SECURITY', 'high');
+    // Set in app_controller
+	//define('CAKE_SECURITY', 'high');
 /**
  * Set Cake Session time out.
  * If CAKE_SECURITY define is set
