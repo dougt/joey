@@ -360,8 +360,10 @@ class UploadsController extends AppController
     // check to see if we have a filter "type"
     if (array_key_exists('type',$_POST)) {
       $_options['types'] = $this->filetypes[ $_POST['type'] ];
+      $joeyClientPageInfoType = $_POST['type'];
     } else if (array_key_exists('type',$_GET)) {
       $_options['types'] = $this->filetypes[ $_GET['type'] ];
+      $joeyClientPageInfoType = $_GET['type'];
     }
     
    
