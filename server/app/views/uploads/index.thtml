@@ -102,7 +102,7 @@
 
           <div class="joey-upload-image-thumb">
 
-		    <a href=<?php echo "/files/view/{$upload['File']['id']}"; ?>>
+		    <a href=<?php echo "/files/view/{$upload['File']['id']}"; ?> title="<?php echo $upload['Upload']['title'] ?>" alt="<?php echo $upload['Upload']['title'] ?>" >
 		    <div class="joey-mediaicon-text">
 		    </div>
 	</a>
@@ -112,7 +112,7 @@
 
            <div class="joey-upload-image-thumb">
 
-		    <a href=<?php echo "/files/view/{$upload['File']['id']}"; ?>>
+		    <a href=<?php echo "/files/view/{$upload['File']['id']}"; ?> title="<?php echo $upload['Upload']['title'] ?>"  alt="<?php echo $upload['Upload']['title'] ?>">
 		     <div class="joey-mediaicon-rss">
 		     </div>
 </a>
