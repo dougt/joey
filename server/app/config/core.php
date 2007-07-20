@@ -26,6 +26,11 @@
  * @lastmodified	$Date: 2006-05-25 17:12:33 -0500 (Thu, 25 May 2006) $
  * @license			http://www.opensource.org/licenses/mit-license.php The MIT License
  */
+
+if (file_exists(ROOT.DS.APP_DIR.DS.'config'.DS.'config-local.php')) {
+        require_once 'config-local.php';
+}
+
 /**
  * If you do not have mod rewrite on your system
  * or if you prefer to use CakePHP pretty urls.
@@ -49,6 +54,7 @@
  * With the other debug levels you get to click the "flash message" to continue.
  *
  */
+ if (!defined('DEBUG'))
 	define('DEBUG', 0);
 /**
  * Turn of caching checking wide.
