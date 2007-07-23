@@ -1,10 +1,8 @@
 <p>
-  <?php
-    if ($this->controller->Session->check('User'))  {
-      $user = $this->controller->Session->read('User');
-      echo $user['username'].' ['.$html->link('Upload', '/uploads/add').' | '.$html->link('Logout', '/users/logout').']';
-    }
-  ?>
+<?php
+if ($this->controller->Session->check('User'))  {
+  $user = $this->controller->Session->read('User');
+  echo $user['username'].' ['.$html->link('Upload', '/uploads/add').' | '.$html->link('Logout', '/users/logout').']';
+ }
+?>
 </p>
-
-<!-- container -->

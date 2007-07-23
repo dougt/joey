@@ -15,6 +15,7 @@ class BrowserAgent {
   }
 
   function isMobile () {
+
     if(isset($_SERVER["HTTP_USER_AGENT"]))
     {
       $agent=$_SERVER["HTTP_USER_AGENT"];

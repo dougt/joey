@@ -3,17 +3,16 @@
     <div class="error_message"><?=$error_mesg?></div>
 <?php endif; ?>
 
-<h2>Login</h2>
+<h2>Joey</h2>
 
 <form action="<?=$html->url('/users/login')?>" method="post">
 
-<p>
-Username:<br/>
+<p>You:<br/>
 <?=$html->input('User/username')?>
 </p>
 
 <p>
-Password:<br/>
+Pass:<br/>
 <?=$html->password('User/password')?>
 </p>
 

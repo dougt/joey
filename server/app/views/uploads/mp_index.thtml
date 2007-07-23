@@ -2,29 +2,37 @@
 $pagination->setPaging($paging); // Initialize the pagination variables
 $i = 0;
 foreach ($uploads as $upload): 
-  $i = $i + 1;
-  if ($i/2 == round($i/2)) {
-    $class = "oddrow";
-  } else {
-    $class = "evenrow";
-  }
+$i = $i + 1;
+if ($i/2 == round($i/2)) {
+  $class = "oddrow";
+ } else {
+  $class = "evenrow";
+ }
+
 ?>
 
 <div class="<?=$class?>">
+
 <span class="view">[<a href="../files/view/<?=$upload['File']['id']?>">View</a>]</span> 
+
 <?=$upload['Upload']['title']?>
+
 <span class="delete">[<a href="../uploads/delete/<?=$upload['Upload']['id']?>">Delete</a>]</span>
+
 <?php 
   $preview_name = $upload['File']['preview_name'];
   if (!empty($preview_name)) {
 ?>
+
 <br/>
 <a href="../files/view/<?=$upload['File']['id']?>">
   <img src="../files/view/<?=$upload['File']['id']?>/preview"/>
 </a>
+
 <?php
-  }
+}
 ?>
+
 </div>
 
 <?php endforeach; ?>
