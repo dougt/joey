@@ -686,23 +686,27 @@ class UploadsController extends AppController
         if ($this->data['File']['Upload']['type'] == "browser/stuff")
         {
           $prior_upload = $this->Upload->findDataByTypeAndURL($this->data['File']['Upload']['type'],$this->data['Upload']['referrer']);          
-          $_destination_file = UPLOAD_DIR."/{$this->_user['id']}/originals/".$prior_upload['File']['original_name'];
-          
-          if (!move_uploaded_file($this->data['File']['Upload']['tmp_name'], $_destination_file)) {
-            $this->Error->addError('Failed to move uploaded file.', 'File/Upload', true, true);
-            return false;
-          }
 
-          $this->Transcode->transcodeFileById($prior_upload['File']['id']);
-          return true;
+          if (!empty($prior_upload['File']['original_name']))
+          {
+            $_destination_file = UPLOAD_DIR."/{$this->_user['id']}/originals/".$prior_upload['File']['original_name'];
+            
+            if (!move_uploaded_file($this->data['File']['Upload']['tmp_name'], $_destination_file)) {
+              $this->Error->addError('Failed to move uploaded file. (' . $this->data['File']['Upload']['tmp_name'] . ' -> ' . $_destination_file . ')', 'File/Upload', true, true);
+              return false;
+            }
+            
+            $this->Transcode->transcodeFileById($prior_upload['File']['id']);
+            return true;
+          }
         }
-        
+
         $_rand = uniqid('',true);
     
         $_destination_file = UPLOAD_DIR."/{$this->_user['id']}/originals/joey-{$_rand}.{$this->Storage->suffix[$this->data['File']['Upload']['type']]}";
 
         if (!move_uploaded_file($this->data['File']['Upload']['tmp_name'], $_destination_file)) {
-            $this->Error->addError('Failed to move uploaded file.', 'File/Upload', true, true);
+            $this->Error->addError('Failed to move uploaded file. (' . $this->data['File']['Upload']['tmp_name'] . ' -> ' . $_destination_file . ')', 'File/Upload', true, true);
             return false;
         }
 
