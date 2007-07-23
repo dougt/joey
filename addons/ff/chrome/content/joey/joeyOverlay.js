@@ -296,60 +296,59 @@ function joey_selectedText()
 function joey_currentTabs()
 {
     // Loop through all of the windows looking and tabs.
-
-    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-                      .getService(Components.interfaces.nsIWindowMediator);
-
-    var windows = wm.getEnumerator(null);
-
-    var window_count = 1; // silly humans like 1 based counters.
-
-    var upload_content = "<ul>";
-
-    while (windows.hasMoreElements()) {
-
+    try {
+        var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                           .getService(Components.interfaces.nsIWindowMediator);
+        
+        var windows = wm.getEnumerator(null);
+        
+        var window_count = 1; // silly humans like 1 based counters.
+        
+        var upload_content = "<ul>";
+        
+        while (windows.hasMoreElements()) {
+            
         upload_content += "<li><h2>Browser Window #" + window_count + "</h2></li><ul>";
-
+        
         var tabs = windows.getNext().getBrowser().mTabs;
-
+        
         for (var i=0; i<tabs.length; i++)
         {
             var title = tabs[i].linkedBrowser.contentTitle || tabs[i].linkedBrowser.currentURI.spec;
-
+            
             upload_content += "<li><a href='" + tabs[i].linkedBrowser.currentURI.spec + "'>"+title+"</a></li>";
         }
-
+        
         upload_content += "</ul>";
         window_count++;
-    }
+        }
+        
+        upload_content += "</ul>";
+        
+        var file = Components.classes["@mozilla.org/file/directory_service;1"]
+                             .getService(Components.interfaces.nsIProperties)
+                             .get("TmpD", Components.interfaces.nsIFile);
+        file.append("joey-selected-text.tmp");
+        file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0664);
+        
+        // file is nsIFile, data is a string
+        var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"]
+                                 .createInstance(Components.interfaces.nsIFileOutputStream);
 
-    upload_content += "</ul>";
-
-    var file = Components.classes["@mozilla.org/file/directory_service;1"]
-                         .getService(Components.interfaces.nsIProperties)
-                         .get("TmpD", Components.interfaces.nsIFile);
-    file.append("joey-selected-text.tmp");
-    file.createUnique(Components.interfaces.nsIFile.NORMAL_FILE_TYPE, 0664);
-
-    // file is nsIFile, data is a string
-    var foStream = Components.classes["@mozilla.org/network/file-output-stream;1"]
-                             .createInstance(Components.interfaces.nsIFileOutputStream);
-
-    // use 0x02 | 0x10 to open file for appending.
-    foStream.init(file, 0x02 | 0x08 | 0x20, 0664, 0); // write, create, truncate
-    foStream.write(upload_content, upload_content.length);
-    foStream.close();
-
-    g_joey_file = file;
-    g_joey_isfile = true;
-    g_joey_content_type = "browser/stuff";
-    g_joey_title = "Current Tabs";
-    g_joey_url  = "about:CurrentTabs";
-
-    uploadDataFromGlobals(false);
+        // use 0x02 | 0x10 to open file for appending.
+        foStream.init(file, 0x02 | 0x08 | 0x20, 0664, 0); // write, create, truncate
+        foStream.write(upload_content, upload_content.length);
+        foStream.close();
+        
+        g_joey_file = file;
+        g_joey_isfile = true;
+        g_joey_content_type = "browser/stuff";
+        g_joey_title = "Current Tabs";
+        g_joey_url  = "about:CurrentTabs";
+        
+        uploadDataFromGlobals(false);
+    } catch(e) {}
 }
-
-
 
 function joey_selected()
 {
@@ -669,31 +668,35 @@ function rev(str)
  }
 
 
+
 var httpscanner = {
   observe: function(subject,topic,data){
-        var response=subject.QueryInterface(Components.interfaces.nsIHttpChannel);
-	    var contentType=response.getResponseHeader('Content-Type');         
 
-        function testContentType(types){
+        try {
+            var response=subject.QueryInterface(Components.interfaces.nsIHttpChannel);
+            var contentType=response.getResponseHeader('Content-Type');         
+            
+            function testContentType(types){
                 var isMediaFile = false;
                 for(var i=types.length;i>=0;i--){
 					if(contentType.indexOf(types[i])>-1 || mediaLocation.indexOf('.'+types[i])>-1) isMediaFile = true;
                 }
                 return isMediaFile;
-        }
-
-        if(contentType.indexOf('video')>-1 || contentType.indexOf('audio')>-1 || contentType.indexOf('octet')>-1){
+            }
+            
+            if(contentType.indexOf('video')>-1 || contentType.indexOf('audio')>-1 || contentType.indexOf('octet')>-1){
                 var mediaLocation = subject.QueryInterface(Components.interfaces.nsIChannel).URI;
-                        mediaLocation=mediaLocation.prePath+mediaLocation.path;
-
+                mediaLocation=mediaLocation.prePath+mediaLocation.path;
+                
                 if(testContentType(g_joey_mediaContentTypes)){
-                        joeyDumpToConsole("media content found: "+ mediaLocation);
-                        document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
-                        g_joey_media_type = contentType;
-                        g_joey_media_url = mediaLocation;
+                    joeyDumpToConsole("media content found: "+ mediaLocation);
+                    document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
+                    g_joey_media_type = contentType;
+                    g_joey_media_url = mediaLocation;
                 }
-        }
-	}
+            }
+        } catch (e) {}
+    }
 }
 var observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
 	observerService.addObserver(httpscanner,"http-on-examine-response",false);
@@ -776,13 +779,18 @@ function joeyStartup()
 
 function g_run_tab_upload()
 {
+
+    var psvc = Components.classes["@mozilla.org/preferences-service;1"]
+                         .getService(Components.interfaces.nsIPrefBranch);
+
     var enabled = false;
     var timeout = 300000; // 5min
-    try {
-        timeout = psvc.getIntPref("joey.tab.upload.timeout");
-        enabled = psvc.getBoolPref("joey.tab.upload.enabled");
-    } catch(i) { joeyDumpToConsole(i) } 
 
+    if (psvc.prefHasUserValue("joey.tab.upload.timeout"))
+        timeout = psvc.getIntPref("joey.tab.upload.timeout");
+
+    if (psvc.prefHasUserValue("joey.tab.upload.enabled"))
+        enabled = psvc.getBoolPref("joey.tab.upload.enabled");
 
     // only run if the timer is active.  this allows us to
     // simple call this function to kick of the thread and
@@ -931,6 +939,9 @@ joeyBrowserStatusHandler.prototype =
 
 function g_joeyFeedwatcher()
 {
+
+    var psvc = Components.classes["@mozilla.org/preferences-service;1"]
+                         .getService(Components.interfaces.nsIPrefBranch);
 
     if (psvc.getBoolPref("joey.watchRSS") == false)
         return;
