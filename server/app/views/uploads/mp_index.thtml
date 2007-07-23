@@ -11,16 +11,16 @@ foreach ($uploads as $upload):
 ?>
 
 <div class="<?=$class?>">
-<span class="view">[<a href="../files/view/<?=$upload['File'][0]['id']?>">View</a>]</span> 
+<span class="view">[<a href="../files/view/<?=$upload['File']['id']?>">View</a>]</span> 
 <?=$upload['Upload']['title']?>
 <span class="delete">[<a href="../uploads/delete/<?=$upload['Upload']['id']?>">Delete</a>]</span>
 <?php 
-  $preview_name = $upload['File'][0]['preview_name'];
+  $preview_name = $upload['File']['preview_name'];
   if (!empty($preview_name)) {
 ?>
 <br/>
-<a href="../files/view/<?=$upload['File'][0]['id']?>">
-  <img src="../files/view/<?=$upload['File'][0]['id']?>/preview"/>
+<a href="../files/view/<?=$upload['File']['id']?>">
+  <img src="../files/view/<?=$upload['File']['id']?>/preview"/>
 </a>
 <?php
   }
