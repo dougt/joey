@@ -1,3 +1,7 @@
+
+/* Joey Bag - JavaScript functions to support the Joey Inner-Browsing Experience */
+
+
 /* 
  *  Joey Ajax and control functions
  */ 
@@ -329,8 +333,10 @@ function visinoteembed_DoFSCommand(command, args) {
  * stringXMLtemplate. 
  */
 
-function joeyMedia_rssfetch(targetDoc, targetElement, refDocument) {
+function joeyMedia_rssfetch(targetDoc, targetElementId, refDocument, itemId) {
 
+
+       
 	var stringXMLtemplate = '<'+'xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rss="http://purl.org/rss/1.0/" > <xsl:output method="html" indent="yes"/> <xsl:template match="/"> <div>  <xsl:for-each select="/rdf:RDF/rss:channel"> <div id="pagetitle" style="display:none"><xsl:value-of select="rss:title"/></div> </xsl:for-each> <xsl:for-each select="/rdf:RDF/rss:channel"> <div style="padding:.3em;"><xsl:value-of select="rss:description"/></div> </xsl:for-each> <xsl:for-each select="/rdf:RDF/rss:item"> <div class="item"> <a> <xsl:attribute name="href"> <xsl:value-of select="rss:link"/> </xsl:attribute> 	<xsl:value-of select="rss:title"/> </a> </div> </xsl:for-each> <xsl:for-each select="/rss/channel/title"> <div id="pagetitle" style="display:none"><xsl:value-of select="."/></div> </xsl:for-each> <xsl:for-each select="/rss/channel/description"> <div style="padding:.3em;"><xsl:value-of select="."/></div> </xsl:for-each> <xsl:for-each select="/rss/channel/item"> <div class="item"> <a> <xsl:attribute name="href"> <xsl:value-of select="link"/> </xsl:attribute> 	<xsl:value-of select="title"/> </a> </div> </xsl:for-each> </div> </xsl:template> </xsl:stylesheet>' ;
 
 	var testLoad=new blenderObject();
@@ -339,7 +345,22 @@ function joeyMedia_rssfetch(targetDoc, targetElement, refDocument) {
 	testLoad.xslSerialize(stringXMLtemplate);
 
 	testLoad.setTargetDocument(targetDoc);
-	testLoad.setTargetElement(targetElement);
+	testLoad.setTargetElement(document.getElementById(targetElementId));
+
+	
+
+
+	testLoad.setCallback(function () { 
+
+
+		var elementCloseButton = document.getElementById("joeyPlayerCloseButton-"+itemId);
+		elementCloseButton.innerHTML="<a href='javascript;' >close</a>";
+		elementCloseButton.setAttribute("onclick","document.getElementById('"+targetElementId+"').innerHTML='';document.getElementById('"+targetElementId+"').style.display='none';return false;");
+
+
+ 
+
+	});
 
 	testLoad.run();
 
@@ -373,7 +394,13 @@ function blenderObject() {
 blenderObject.prototype.xmlLoaded = function () {
 	this.xmlLoadedState=true;
 	this.apply();
-alert(1);;
+}
+
+blenderObject.prototype.setCallback = function (callbackRefFunction) {
+
+	this.callbackRefFunction = callbackRefFunction;
+	
+
 }
 
 blenderObject.prototype.xslSerialize = function (stringXML) {
@@ -412,12 +439,20 @@ blenderObject.prototype.apply = function () {
 		try {
 			xsltProcessor.importStylesheet(this.xslRef);
 			htmlFragment = xsltProcessor.transformToFragment(this.xmlRef, this.targetDocument);
+
+			this.targetElement.setAttribute("style","display:block;overflow:scroll;width:90%;height:320px;border:1px solid gray;background-color:#444444;padding:1em;margin:.5em;");
+  		      this.targetElement.appendChild(htmlFragment.firstChild);
+
+			this.callbackRefFunction();
+
 		} catch (e) {
+
+			// This can dispatch event in case of some failure in the processing...
+
 		}
 
 
-	this.targetElement.setAttribute("style","overflow:scroll;width:90%;height:320px;border:1px solid gray;background-color:#444444;padding:1em;margin:.5em;");
-        this.targetElement.appendChild(htmlFragment.firstChild);
+
 
 	}
 }
@@ -440,7 +475,10 @@ blenderObject.prototype.run = function () {
 
 
 	} catch (e) {
-		alert(e);
+
+	
+
+
 	}
 
 }
