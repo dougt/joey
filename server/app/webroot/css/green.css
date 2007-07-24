@@ -1,4 +1,16 @@
 
+/* For the RSS Visualizer function - check joebag.js inline XSLT template */
+
+.item { margin:4px; background-color:#777777; padding:.2em;-moz-border-radius:4px }
+
+.item a {
+  text-decoration:none;
+  color:white;
+}
+
+
+/* .. */
+
 .highlight {
 	background-color:#666666;
 	padding: .3em;
@@ -107,6 +119,7 @@ table { width:100% }
 /* For example, uploads/index, You have no uploads yet. */
 
 .joey-warning {
+        margin-top:.5em;
 	padding:1em;
 	border:1px solid #666600;
 	background-color:#333300;
