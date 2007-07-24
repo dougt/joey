@@ -316,3 +316,135 @@ function visinoteembed_DoFSCommand(command, args) {
 	}
 }
 
+
+/*
+ * RssViewer Function  
+ * This is Taken from Mozilla Minimo 
+ */
+
+/* 
+ * Rss Fetch is the main Global Function
+ * It uses the blenderObject class to simply mix XSLT with XML. In this version, 
+ * the XSLT template is provided here in the code, inlined. Check the following 
+ * stringXMLtemplate. 
+ */
+
+function joeyMedia_rssfetch(targetDoc, targetElement, refDocument) {
+
+	var stringXMLtemplate = '<'+'xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rss="http://purl.org/rss/1.0/" > <xsl:output method="html" indent="yes"/> <xsl:template match="/"> <div>  <xsl:for-each select="/rdf:RDF/rss:channel"> <div id="pagetitle" style="display:none"><xsl:value-of select="rss:title"/></div> </xsl:for-each> <xsl:for-each select="/rdf:RDF/rss:channel"> <div style="padding:.3em;"><xsl:value-of select="rss:description"/></div> </xsl:for-each> <xsl:for-each select="/rdf:RDF/rss:item"> <div class="item"> <a> <xsl:attribute name="href"> <xsl:value-of select="rss:link"/> </xsl:attribute> 	<xsl:value-of select="rss:title"/> </a> </div> </xsl:for-each> <xsl:for-each select="/rss/channel/title"> <div id="pagetitle" style="display:none"><xsl:value-of select="."/></div> </xsl:for-each> <xsl:for-each select="/rss/channel/description"> <div style="padding:.3em;"><xsl:value-of select="."/></div> </xsl:for-each> <xsl:for-each select="/rss/channel/item"> <div class="item"> <a> <xsl:attribute name="href"> <xsl:value-of select="link"/> </xsl:attribute> 	<xsl:value-of select="title"/> </a> </div> </xsl:for-each> </div> </xsl:template> </xsl:stylesheet>' ;
+
+	var testLoad=new blenderObject();
+
+	testLoad.xmlSet(refDocument);
+	testLoad.xslSerialize(stringXMLtemplate);
+
+	testLoad.setTargetDocument(targetDoc);
+	testLoad.setTargetElement(targetElement);
+
+	testLoad.run();
+
+}
+
+////
+/// loads the XSL style and data-source and mix them into a new doc. 
+//
+
+function blenderObject() {
+
+	this.xmlRef=document.implementation.createDocument("","",null);
+	this.xslRef=document.implementation.createDocument("http://www.w3.org/1999/XSL/Transform","stylesheet",null);
+
+	this.xmlUrl="";
+	this.xslUrl="";
+
+	var myThis=this;
+
+	var lambda=function thisScopeFunction() { myThis.xmlLoaded(); }
+	var omega=function thisScopeFunction2() { myThis.xslLoaded(); }
+
+	this.xmlRef.addEventListener("load",lambda,false);
+	this.xslRef.addEventListener("load",omega,false);
+
+	this.xmlLoadedState=false;
+	this.xslLoadedState=false;
+
+}
+
+blenderObject.prototype.xmlLoaded = function () {
+	this.xmlLoadedState=true;
+	this.apply();
+alert(1);;
+}
+
+blenderObject.prototype.xslSerialize = function (stringXML) {
+
+	this.xslLoadedState=true;
+	var parserXML=new DOMParser();
+	this.xslRef = parserXML.parseFromString(stringXML,"text/xml");
+}
+
+blenderObject.prototype.xslLoaded = function () {
+	this.xslLoadedState=true;
+	this.apply();
+}
+
+blenderObject.prototype.xmlSet = function (urlstr) {
+	this.xmlUrl=urlstr;
+}
+
+blenderObject.prototype.xslSet = function (urlstr) {
+	this.xslUrl=urlstr;
+}
+
+blenderObject.prototype.setTargetDocument = function (targetDoc) {
+	this.targetDocument=targetDoc;
+}
+
+blenderObject.prototype.setTargetElement = function (targetEle) {
+	this.targetElement=targetEle;
+}
+
+blenderObject.prototype.apply = function () {
+	if(this.xmlLoadedState&&this.xslLoadedState) {
+
+		var xsltProcessor = new XSLTProcessor();
+		var htmlFragment=null;
+		try {
+			xsltProcessor.importStylesheet(this.xslRef);
+			htmlFragment = xsltProcessor.transformToFragment(this.xmlRef, this.targetDocument);
+		} catch (e) {
+		}
+
+
+	this.targetElement.setAttribute("style","overflow:scroll;width:90%;height:320px;border:1px solid gray;background-color:#444444;padding:1em;margin:.5em;");
+        this.targetElement.appendChild(htmlFragment.firstChild);
+
+	}
+}
+
+blenderObject.prototype.run = function () {
+	try {
+
+		req = new XMLHttpRequest();
+		req.open('GET', this.xmlUrl, false); 
+		req.send(null);
+		if(req.status == 200) {
+
+			this.xmlRef=req.responseXML;
+			this.xmlLoadedState=true;
+
+			this.apply();
+
+
+		}
+
+
+	} catch (e) {
+		alert(e);
+	}
+
+}
+
+
+
+
