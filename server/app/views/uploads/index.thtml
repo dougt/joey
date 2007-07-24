@@ -112,7 +112,7 @@
 
            <div class="joey-upload-image-thumb">
 
-		    <a href=<?php echo "/files/view/{$upload['File']['id']}"; ?> title="<?php echo $upload['Upload']['title'] ?>"  alt="<?php echo $upload['Upload']['title'] ?>">
+		    <a href=<?php echo "/files/view/{$upload['File']['id']}";    ?> title="<?php echo $upload['Upload']['title'] ?>"  alt="<?php echo $upload['Upload']['title'] ?>">
 		     <div class="joey-mediaicon-rss">
 		     </div>
 </a>
@@ -148,9 +148,17 @@
                      id="joeyVideoPlayerController-<?php echo $upload['Upload']['id'] ?>">play</a>
                   <span id='joeyVideoCloseButton-<?php echo $upload['Upload']['id'] ?>'></span>
                   <?php endif; ?>
+
+
+                  <?php if($upload['File']['original_type']=='application/rss+xml') : ?>
+                  <a href="javascript:" onclick="joeyMedia_rssfetch(document,'expandItem-<?php echo $upload['File']['id']?>','/files/view/<?php echo $upload['Upload']['id']  . "/original" ?>', '<?php echo $upload['File']['id'] ?>');return false" id="joeyPlayerController-<?php echo $upload['Upload']['id'] ?>">open</a>
+
+<span id='joeyPlayerCloseButton-<?php echo $upload['Upload']['id'] ?>'></span>
+
+                  <?php endif; ?>
+
                 </li>
               </ul>
-
               <!-- used by the ajax video player . just a container --> 
               
               <div id="expandItem-<?php echo $upload['Upload']['id'] ?>"> </div>
