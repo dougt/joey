@@ -131,7 +131,6 @@
 
 	<?php if($upload['File']['original_type']=='image/jpeg') :?>
 
-marcio
           <div class="joey-upload-image-thumb">
 		     <div class="joey-mediaicon-image">
             <a href=<?php echo "/files/view/{$upload['File']['id']}"?> onclick="joeyMedia_imageShow('<?php echo "/files/view/{$upload['File']['id']}"?>/original','<?php echo "{$upload['Upload']['id']}"?>');return false" id="iconhandler-<?php echo $upload['Upload']['id'] ?>" >
