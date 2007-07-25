@@ -69,12 +69,20 @@
               <div class="joey-upload-image-thumb">
                 <div class="joey-mediaicon-video">
 
-                  <?php echo $html->link('<img class="joey-upload-preview-thumb"
-                                               height=35 width=55
-                                               src="'.$html->url("/files/view/{$upload['File']['id']}/preview").'"
-                                               alt="Upload Preview" />', "/files/view/{$upload['File']['id']}",
-                                         false,false,false); 
-                  ?>
+
+		  <!-- this is a comment line, the video thumbnail on the left -->
+
+                  <?php // $html->link('<img class="joey-upload-preview-thumb" height=35 width=55 src="'.$html->url("/files/view/{$upload['File']['id']}/preview").'" alt="Upload Preview" />', "/files/view/{$upload['File']['id']}", false,false,false); ?>
+
+		  <!-- this is the new thumbnail with the JS handler -->
+
+                    <a href=<?php echo "/files/view/{$upload['File']['id']}/preview"; ?> title="<?php echo $upload['Upload']['title'] ?>" alt="<?php echo $upload['Upload']['title'] ?>" onclick="joeyMedia_videoPlayPause('<?php echo "/files/view/" . $upload['File']['id'] . "/original" ?>','<?php echo $upload['Upload']['id'] ?>');return false;" >
+                    <div class="joey-mediaicon-video" style='background:url(<?php echo "/files/view/{$upload['File']['id']}/preview"; ?>) 50% 50%' >
+                    </div>
+        </a>
+
+
+
                 </div>
               </div >
 
