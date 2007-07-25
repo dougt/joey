@@ -120,7 +120,7 @@
 
            <div class="joey-upload-image-thumb">
 
-		    <a href=<?php echo "/files/view/{$upload['File']['id']}";    ?> title="<?php echo $upload['Upload']['title'] ?>"  alt="<?php echo $upload['Upload']['title'] ?>" onclick="joeyMedia_rssfetch(document,'expandItem-<?php echo $upload['Upload']['id']?>','/files/view/<?php echo $upload['File']['id']  . "/original" ?>', '<?php echo $upload['Upload']['id'] ?>');return false" >
+		    <a  href=<?php echo "/files/view/{$upload['File']['id']}";?> title="<?php echo $upload['Upload']['title'] ?>"  alt="<?php echo $upload['Upload']['title'] ?>" onclick="joeyMedia_rssfetch(document,'expandItem-<?php echo $upload['Upload']['id']?>','/files/view/<?php echo $upload['File']['id']  . "/original" ?>', '<?php echo $upload['Upload']['id'] ?>');return false" >
 		     <div class="joey-mediaicon-rss">
 		     </div>
 </a>
@@ -132,8 +132,8 @@
 	<?php if($upload['File']['original_type']=='image/jpeg') :?>
 
           <div class="joey-upload-image-thumb">
-            <a href=<?php echo "/files/view/{$upload['File']['id']}"?> title="Open image"  onclick="joeyMedia_imageShow('<?php echo "/files/view/{$upload['File']['id']}"?>/original','<?php echo "{$upload['Upload']['id']}"?>');return false" id="iconhandler-<?php echo $upload['Upload']['id'] ?>" >
-		     <div class="joey-mediaicon-image" style="background-color:#666666;background-image:url(<?php echo "/files/view/{$upload['File']['id']}/preview"?>);background-position: 50% 50%;background-repeat: no-repeat">
+            <a  href=<?php echo "/files/view/{$upload['File']['id']}"?> title="Open image"  onclick="joeyMedia_imageShow('<?php echo "/files/view/{$upload['File']['id']}"?>/original','<?php echo "{$upload['Upload']['id']}"?>');return false" id="iconhandler-<?php echo $upload['Upload']['id'] ?>" >
+		     <div class="joey-mediaicon-image" style="background-color:#656565;background-image:url(<?php echo "/files/view/{$upload['File']['id']}/preview"?>);background-position: 50% 50%;background-repeat: no-repeat">
           </div >
             </a>
           </div >
@@ -164,6 +164,11 @@
                 <li>Size:  <?php echo $number->toReadableSize($upload['File']['size']); ?></li>
                 <li>Uploaded <?php echo $time->niceShort($upload['Upload']['created']); ?></li>
                 <li><?php echo $html->link( "Original", "/files/view/" . $upload['File']['id'] . "/original") ?>         
+
+
+		<!-- this slot can be used from joeyMedia events -->
+
+		<span id='controlOptions-<?php echo $upload['Upload']['id'] ?>' />
           
 
                   <?php if($upload['File']['original_type']=='video/flv') : ?>
