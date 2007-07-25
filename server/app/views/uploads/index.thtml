@@ -132,11 +132,10 @@
 	<?php if($upload['File']['original_type']=='image/jpeg') :?>
 
           <div class="joey-upload-image-thumb">
-		     <div class="joey-mediaicon-image">
-            <a href=<?php echo "/files/view/{$upload['File']['id']}"?> onclick="joeyMedia_imageShow('<?php echo "/files/view/{$upload['File']['id']}"?>/original','<?php echo "{$upload['Upload']['id']}"?>');return false" id="iconhandler-<?php echo $upload['Upload']['id'] ?>" >
-              <img src=<?php echo "/files/view/{$upload['File']['id']}/preview"?>>
-            </a>
+            <a href=<?php echo "/files/view/{$upload['File']['id']}"?> title="Open image"  onclick="joeyMedia_imageShow('<?php echo "/files/view/{$upload['File']['id']}"?>/original','<?php echo "{$upload['Upload']['id']}"?>');return false" id="iconhandler-<?php echo $upload['Upload']['id'] ?>" >
+		     <div class="joey-mediaicon-image" style="background-color:#666666;background-image:url(<?php echo "/files/view/{$upload['File']['id']}/preview"?>);background-position: 50% 50%;background-repeat: no-repeat">
           </div >
+            </a>
           </div >
 
 
