@@ -120,7 +120,7 @@
 
            <div class="joey-upload-image-thumb">
 
-		    <a href=<?php echo "/files/view/{$upload['File']['id']}";    ?> title="<?php echo $upload['Upload']['title'] ?>"  alt="<?php echo $upload['Upload']['title'] ?>" onclick="joeyMedia_rssfetch(document,'expandItem-<?php echo $upload['Upload']['id']?>','/files/view/<?php echo $upload['Upload']['id']  . "/original" ?>', '<?php echo $upload['Upload']['id'] ?>');return false" >
+		    <a href=<?php echo "/files/view/{$upload['File']['id']}";    ?> title="<?php echo $upload['Upload']['title'] ?>"  alt="<?php echo $upload['Upload']['title'] ?>" onclick="joeyMedia_rssfetch(document,'expandItem-<?php echo $upload['Upload']['id']?>','/files/view/<?php echo $upload['File']['id']  . "/original" ?>', '<?php echo $upload['Upload']['id'] ?>');return false" >
 		     <div class="joey-mediaicon-rss">
 		     </div>
 </a>
@@ -178,7 +178,7 @@
 
                   <?php if($upload['File']['original_type']=='application/rss+xml') : ?>
 
-                  <a href="javascript:" onclick="joeyMedia_rssfetch(document,'expandItem-<?php echo $upload['Upload']['id']?>','/files/view/<?php echo $upload['Upload']['id']  . "/original" ?>', '<?php echo $upload['Upload']['id'] ?>');return false" id="joeyPlayerController-<?php echo $upload['Upload']['id'] ?>">open</a>
+                  <a href="javascript:" onclick="joeyMedia_rssfetch(document,'expandItem-<?php echo $upload['Upload']['id']?>','/files/view/<?php echo $upload['File']['id']  . "/original" ?>', '<?php echo $upload['Upload']['id'] ?>');return false" id="joeyPlayerController-<?php echo $upload['Upload']['id'] ?>">open</a>
 
 <span id='joeyPlayerCloseButton-<?php echo $upload['Upload']['id'] ?>'></span>
 
