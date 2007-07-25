@@ -122,6 +122,12 @@ table { width:100% }
         height:80px;
 }
 
+.joey-mediaicon-image {
+        background: #333333 url(/css/style/icons/media-pictures.png) 0 0 no-repeat;
+        width:100px;
+        height:80px;
+}
+
 
 .joey-upload-preview {
 
