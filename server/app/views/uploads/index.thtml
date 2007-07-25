@@ -123,9 +123,10 @@
 
 	<?php if($upload['File']['original_type']=='image/jpeg') :?>
 
+marcio
           <div class="joey-upload-image-thumb">
 		     <div class="joey-mediaicon-image">
-            <a href=<?php echo "/files/view/{$upload['File']['id']}"?>>
+            <a href=<?php echo "/files/view/{$upload['File']['id']}"?> onclick="joeyMedia_imageShow('<?php echo "/files/view/{$upload['File']['id']}"?>/original','<?php echo "{$upload['Upload']['id']}"?>');return false" id="iconhandler-<?php echo $upload['Upload']['id'] ?>" >
               <img src=<?php echo "/files/view/{$upload['File']['id']}/preview"?>>
             </a>
           </div >
@@ -160,13 +161,16 @@
           
 
                   <?php if($upload['File']['original_type']=='video/flv') : ?>
+
                   <a href="javascript:" onclick="joeyMedia_videoPlayPause('<?php echo "/files/view/" . $upload['File']['id'] . "/original" ?>','<?php echo $upload['Upload']['id'] ?>');return false" 
                      id="joeyVideoPlayerController-<?php echo $upload['Upload']['id'] ?>">play</a>
                   <span id='joeyVideoCloseButton-<?php echo $upload['Upload']['id'] ?>'></span>
+
                   <?php endif; ?>
 
 
                   <?php if($upload['File']['original_type']=='application/rss+xml') : ?>
+
                   <a href="javascript:" onclick="joeyMedia_rssfetch(document,'expandItem-<?php echo $upload['File']['id']?>','/files/view/<?php echo $upload['Upload']['id']  . "/original" ?>', '<?php echo $upload['File']['id'] ?>');return false" id="joeyPlayerController-<?php echo $upload['File']['id'] ?>">open</a>
 
 <span id='joeyPlayerCloseButton-<?php echo $upload['File']['id'] ?>'></span>
