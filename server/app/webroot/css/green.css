@@ -1,11 +1,20 @@
 
-/* For the RSS Visualizer function - check joebag.js inline XSLT template */
+/* joeyMedia items - For the RSS Visualizer function - check joebag.js inline XSLT template */
 
 .item { margin:4px; background-color:#777777; padding:.2em;-moz-border-radius:4px }
 
 .item a {
   text-decoration:none;
   color:white;
+}
+
+/* joeyMedia items - the image preview element that shows on uploads page */
+
+.joeymedia-previewimage {
+ padding:.5em;
+ border:1px solid gray;
+ margin:.5em;
+ width:320px;
 }
 
 
