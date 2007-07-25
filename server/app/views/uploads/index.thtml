@@ -77,7 +77,7 @@
 		  <!-- this is the new thumbnail with the JS handler -->
 
                     <a href=<?php echo "/files/view/{$upload['File']['id']}/preview"; ?> title="<?php echo $upload['Upload']['title'] ?>" alt="<?php echo $upload['Upload']['title'] ?>" onclick="joeyMedia_videoPlayPause('<?php echo "/files/view/" . $upload['File']['id'] . "/original" ?>','<?php echo $upload['Upload']['id'] ?>');return false;" >
-                    <div class="joey-mediaicon-video" style='background:url(<?php echo "/files/view/{$upload['File']['id']}/preview"; ?>) 50% 50%' >
+                    <div class="joey-mediaicon-video" style='background:transparent 50% 50% no-repeat;background-image:url(<?php echo "/files/view/{$upload['File']['id']}/preview"; ?>);' >
                     </div>
         </a>
 
