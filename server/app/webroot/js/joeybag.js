@@ -10,6 +10,16 @@ function joeyPage_toggleIcon(iconReference,toolTip,cssClass,onClick) {
 
 }
 
+/* Helper function to show Text */
+
+function joeyMedia_textShow(filename,uploadIDHandler) {
+
+	// icon image ID format is: "iconhandler-" + uploadIDHandler
+
+	document.getElementById("expandItem-"+ uploadIDHandler).innerHTML="<iframe width='320' height='240' class='joeymedia-previewtext' id='joeymedia-textdisplayed-"+uploadIDHandler+"' class='joeymedia-previewimage' src='"+filename+"' />";
+
+
+}
 /* Helper function to show images */
 
 function joeyMedia_imageShow(filename,uploadIDHandler) {
