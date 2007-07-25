@@ -16,9 +16,13 @@ function joeyMedia_imageShow(filename,uploadIDHandler) {
 
 	// icon image ID format is: "iconhandler-" + uploadIDHandler
 
-	document.getElementById("expandItem-"+ uploadIDHandler).innerHTML="<img class='joeymedia-previewimage' src='"+filename+"' />";
+	document.getElementById("expandItem-"+ uploadIDHandler).innerHTML="Resize: <a href='javascript:' onclick='joeyMedia_changeImage(640,\"joeymedia-imagedisplayed-"+uploadIDHandler+"\");return false;'>large</a> - <a href='javascript:' onclick='joeyMedia_changeImage(320,\"joeymedia-imagedisplayed-"+uploadIDHandler+"\");return false'>medium</a><br /><img id='joeymedia-imagedisplayed-"+uploadIDHandler+"' class='joeymedia-previewimage' src='"+filename+"' />";
 
 
+}
+
+function joeyMedia_changeImage(width,elementRef) {
+	document.getElementById(elementRef).style.width=width+"px";
 }
 
 
