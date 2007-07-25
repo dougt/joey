@@ -1,4 +1,29 @@
 
+/* 
+ * Utility function used by the operations associated with each type-handler. 
+ * such as RSS, Image, MP3, Text, and more.
+ */
+function joeyPage_toggleIcon(iconReference,toolTip,cssClass,onClick) {
+
+    
+
+
+}
+
+/* Helper function to show images */
+
+function joeyMedia_imageShow(filename,uploadIDHandler) {
+
+	// icon image ID format is: "iconhandler-" + uploadIDHandler
+
+	document.getElementById("expandItem-"+ uploadIDHandler).innerHTML="<img class='joeymedia-previewimage' src='"+filename+"' />";
+
+
+}
+
+
+
+
 /* Joey Bag - JavaScript functions to support the Joey Inner-Browsing Experience */
 
 
@@ -440,7 +465,7 @@ blenderObject.prototype.apply = function () {
 			xsltProcessor.importStylesheet(this.xslRef);
 			htmlFragment = xsltProcessor.transformToFragment(this.xmlRef, this.targetDocument);
 
-			this.targetElement.setAttribute("style","display:block;overflow:scroll;width:90%;height:320px;border:1px solid gray;background-color:#444444;padding:1em;margin:.5em;");
+			this.targetElement.setAttribute("style","display:block;width:90%;;border:1px solid gray;background-color:#444444;padding:1em;margin:.5em;");
   		      this.targetElement.appendChild(htmlFragment.firstChild);
 
 			this.callbackRefFunction();
