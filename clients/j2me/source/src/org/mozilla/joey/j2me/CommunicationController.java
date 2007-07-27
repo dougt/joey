@@ -32,7 +32,6 @@ import java.io.EOFException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.Vector;
 
 import javax.microedition.io.HttpConnection;
 
@@ -45,14 +44,16 @@ public class CommunicationController
 		private String serverURL = "http://joey.labs.mozilla.com";
 	//#endif
 
+	private JoeyController controller;
 	private String cookieStr;
     private ArrayList queue;
     private UserData userData;
 
-	public CommunicationController(UserData userData)
+	public CommunicationController(JoeyController controller)
 	{
+		this.controller = controller;
         this.queue = new ArrayList();
-        this.userData = userData;
+        this.userData = controller.getUserData();
 
         updateServerURL();
         //#debug info
@@ -233,17 +234,17 @@ public class CommunicationController
         addNextRequest(nr);
 	}
 
-	public void getIndex(Vector uploads, ResponseHandler handler, int limit, int start)
+	public void getIndex(ResponseHandler handler, int limit, int start)
 	{
-        IndexNetworkRequest nr = new IndexNetworkRequest(uploads, limit, start);
+        IndexNetworkRequest nr = new IndexNetworkRequest(this.controller, limit, start);
         nr.setResponseHandler(handler);
 
         addRequest(nr);
 	}
 
-	public void getIndexUpdate(Vector uploads, ResponseHandler handler, long lastModified)
+	public void getIndexUpdate(ResponseHandler handler, long lastModified)
 	{
-		IndexUpdateNetworkRequest nr = new IndexUpdateNetworkRequest(uploads, lastModified);
+		IndexUpdateNetworkRequest nr = new IndexUpdateNetworkRequest(this.controller, lastModified);
 		nr.setResponseHandler(handler);
 
 		addRequest(nr);

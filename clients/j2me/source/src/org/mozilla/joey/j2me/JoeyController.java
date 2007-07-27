@@ -40,6 +40,7 @@ import javax.microedition.lcdui.List;
 import javax.microedition.media.MediaException;
 import javax.microedition.midlet.MIDlet;
 
+import org.bouncycastle.util.encoders.Base64;
 import org.mozilla.joey.j2me.views.LoginView;
 import org.mozilla.joey.j2me.views.MainMenuView;
 import org.mozilla.joey.j2me.views.PreferencesView;
@@ -53,6 +54,7 @@ import de.enough.polish.ui.SnapshotScreen;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
@@ -79,6 +81,8 @@ public class JoeyController
 	public static final int EVENT_NETWORK_REQUEST_SUCCESSFUL = 101;
 	public static final int EVENT_NETWORK_REQUEST_SUCCESSFUL_PARTIALLY = 102;
 
+	private static final int EVENT_UPDATE_AVAILABLE = 110;
+
 	private static final int VIEW_LOGIN = 1;
 	private static final int VIEW_MAINMENU = 2;
 	private static final int VIEW_PREFERENCES = 3;
@@ -92,6 +96,7 @@ public class JoeyController
 	private static final int ALERT_LOGIN_ERROR = 10;
 	private static final int ALERT_WAIT = 11;
 	private static final int ALERT_MEDIA_OPEN_ERROR = 12;
+	private static final int ALERT_APPLY_UPDATES = 13;
 
 	public static final String ATTR_UPLOAD = "upload";
 	
@@ -117,6 +122,7 @@ public class JoeyController
 	private CommandListener commandListener;
 	private CommunicationController commController;
     private Displayable uploadsView;
+	private Hashtable pendingUpdates;
 
 	private TimerTask updateTask = new TimerTask()
 	{
@@ -124,7 +130,7 @@ public class JoeyController
 		{
             System.out.println("Running Timer....");
 			long lastModified = (new Date().getTime() / 1000) - JoeyController.this.userdata.getUpdateInterval();
-			JoeyController.this.commController.getIndexUpdate(JoeyController.this.uploads, JoeyController.this, lastModified);
+			JoeyController.this.commController.getIndexUpdate(JoeyController.this, lastModified);
 		}
 	};
 
@@ -137,10 +143,15 @@ public class JoeyController
         loadUserdata();
 
 		this.commandListener = new ThreadedCommandListener(this);
-		this.commController = new CommunicationController(this.userdata);
+		this.commController = new CommunicationController(this);
 		this.commController.start();
 
         this.uploadsView = null;
+	}
+
+	public UserData getUserData()
+	{
+		return this.userdata;
 	}
 
     //@todo we should move this into the userdata class.	
@@ -290,6 +301,15 @@ public class JoeyController
 			alert.setCommandListener(this.commandListener);
 			return alert;
 
+		case ALERT_APPLY_UPDATES:
+			//#style alertConfirmation
+			alert = new Alert(null, Locale.get("alert.apply_updates.msg"), null, AlertType.CONFIRMATION);
+			alert.setTimeout(Alert.FOREVER);
+			alert.addCommand(CMD_YES);
+			alert.addCommand(CMD_NO);
+			alert.setCommandListener(this.commandListener);
+			return alert;
+
 		default:
 			//#debug fatal
 			System.out.println("unknown view: " + viewId);
@@ -406,7 +426,7 @@ public class JoeyController
 
             if (numUploads < totalCount && numUploads > 0) {
             	notifyEvent(EVENT_NETWORK_REQUEST_SUCCESSFUL_PARTIALLY);
-            	this.commController.getIndex(this.uploads, this, 5, numUploads);
+            	this.commController.getIndex(this, 5, numUploads);
             	return;
             }
             
@@ -488,7 +508,7 @@ public class JoeyController
 
 		// We have now logged in and get now all known uploads and then start the
 		// continuous upload updates every 20 seconds.
-		this.commController.getIndex(this.uploads, this, 5, 0);
+		this.commController.getIndex(this, 5, 0);
 		
 		do {
 			event = waitEvent();
@@ -503,7 +523,7 @@ public class JoeyController
 				MainMenuView mainMenu =
 					(MainMenuView) showView(VIEW_MAINMENU);
 
-				event = waitEvent();
+				event = waitEventAndProcessUpdates();
 
 				switch (event) {
 					case EVENT_EXIT:
@@ -545,7 +565,7 @@ public class JoeyController
 		SnapshotScreen view = (SnapshotScreen) showView(VIEW_SNAPSHOT);
 		
 		do {
-			event = waitEvent();
+			event = waitEventAndProcessUpdates();
 			
 			switch (event) {
 				case EVENT_SELECT:
@@ -588,7 +608,7 @@ public class JoeyController
 		showView(VIEW_PREFERENCES);
 		
 		do {
-			event = waitEvent();
+			event = waitEventAndProcessUpdates();
 
 			switch (event) {
 				case EVENT_BACK:
@@ -613,7 +633,7 @@ public class JoeyController
 
 		do {
 			UploadsView view = (UploadsView) showView(VIEW_UPLOADS);
-			event = waitEvent();
+			event = waitEventAndProcessUpdates();
 
 			switch (event) {
 				case EVENT_SELECT:
@@ -697,7 +717,7 @@ public class JoeyController
 			event = waitEvent();
 		} while (event != EVENT_OK && event != EVENT_CANCEL);
 		
-		return EVENT_OK;
+		return event;
 	}
 
 	public int waitYesNo()
@@ -733,11 +753,128 @@ public class JoeyController
 		return event;
 	}
 
+	private int waitEventAndProcessUpdates()
+	{
+		int event = EVENT_NONE;
+
+		do {
+			event = waitEvent();
+			
+			if (event == EVENT_UPDATE_AVAILABLE) {
+				// Save current view.
+				Displayable oldView = this.display.getCurrent();
+
+				showView(ALERT_APPLY_UPDATES);
+				event = waitYesNo();
+				
+				if (event == EVENT_YES) {
+					// TODO: Process updates.
+					// Apply pending updates.
+					processIndexUpdates(this.pendingUpdates);
+				}
+
+				// Forget pending updates.
+				this.pendingUpdates = null;
+
+				// Reset old view.
+				this.display.setCurrent(oldView);
+
+				// Delete event as processed.
+				event = EVENT_NONE;
+			}
+		} while (event == EVENT_NONE);
+
+		return event;
+	}
+
 	public void notifyEvent(int event)
 	{
 		synchronized (this) {
 			this.nextEvent = event;
 			notify();
 		}
+	}
+
+	public synchronized void processIndexUpdates(Hashtable parsedData)
+	{
+		int count = Integer.parseInt((String) parsedData.get("count"));
+
+		//#debug info
+		System.out.println("number of updated elements: " + count);
+
+		for (int i = 1; i <= count; i++) {
+			int foundIndex = -1;
+			String id = (String) parsedData.get("id." + i);
+
+			for (int j = 0; j < this.uploads.size(); j++) {
+				Upload upload = (Upload) this.uploads.elementAt(j);
+
+				if (id.equals(upload.getId())) {
+					foundIndex = j;
+					break;
+				}
+			}
+
+			if (foundIndex != -1) {
+				String deleted = (String) parsedData.get("deleted." + i);
+
+				if (deleted != null && deleted.equals("1")) {
+					//#debug info
+					System.out.println("found deleted element (this is okay): " + id);
+
+					// Delete upload.
+					this.uploads.removeElementAt(foundIndex);
+
+					// Continue with next upload.
+					continue;
+				}
+			}
+
+			String referrer = getDataString(parsedData, "referrer." + i);
+			String preview = getDataString(parsedData, "preview." + i);
+			String mimetype = getDataString(parsedData, "type." + i);
+			String modified = getDataString(parsedData, "modified." + i);
+			String title = getDataString(parsedData, "title." + i);
+
+			// Previews are optional.
+			byte[] previewBytes = null;
+
+			try {
+				previewBytes = Base64.decode(preview);
+			} 
+			catch (Exception ex) {
+				System.out.println("Base64 decode failed " + ex);
+			}
+
+			//#debug info
+			System.out.println("Updating upload: " + id + " " + mimetype  + " " + title);
+
+			Upload upload = new Upload(id, mimetype, title, previewBytes, null, modified, referrer);
+			
+			if (foundIndex == -1) {
+				//#debug info
+				System.out.println("added new element: " + id);
+				
+				this.uploads.addElement(upload);
+			}
+			else {
+				//#debug info
+				System.out.println("replace existing element: " + id);
+				
+				this.uploads.removeElementAt(foundIndex);
+				this.uploads.insertElementAt(upload, foundIndex);
+			}
+		}	
+	}
+
+	private String getDataString(Hashtable parsedData, String name)
+	{
+		String str = (String) parsedData.get(name);
+
+		if (str == null) {
+			str = "";
+		}
+
+		return str;
 	}
 }

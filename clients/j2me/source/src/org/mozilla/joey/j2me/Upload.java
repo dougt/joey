@@ -37,7 +37,7 @@ public class Upload
 
 	public Upload(String id, boolean deleted)
 	{
-		this(id, null, "", null, null, null, null);
+		this(id, "", "", null, null, null, null);
         this.deleted = deleted;
 	}
 	

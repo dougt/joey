@@ -32,3 +32,4 @@ alert.login.error=Anmeldung auf dem Server nicht m\u00f6glich. Benutzername oder
 alert.exit.msg=Wollen sie Joey wirklich beenden?
 alert.wait.msg=Bitte warten!
 alert.media.open.msg=Der Medientyp kann auf ihrem Handy nicht abgespielt werden.
+alert.apply_updates.msg=Es sind \u00c4nderungen verf\u00fcgbar. Anwenden?

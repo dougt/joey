@@ -24,20 +24,18 @@
 
 package org.mozilla.joey.j2me;
 
-import java.util.Vector;
 import java.util.Hashtable;
 
 import javax.microedition.io.HttpConnection;
-import org.bouncycastle.util.encoders.Base64;
 
 public class IndexNetworkRequest
     extends NetworkRequest
 {
-    private Vector uploads;
+	private JoeyController controller;
     private int count;
     private int totalCount;
 
-    public IndexNetworkRequest(Vector uploads, int limit, int start)
+    public IndexNetworkRequest(JoeyController controller, int limit, int start)
     {
 		StringBuffer sb = new StringBuffer();
 		sb.append("rest=1&limit=");
@@ -49,15 +47,13 @@ public class IndexNetworkRequest
         this.contenttype = "application/x-www-form-urlencoded";
         this.postdata = sb.toString();
 
-        this.uploads = uploads;
+        this.controller = controller;
     }
 
-    public void onStop() {
-
+    public void onStop()
+    {
 		if (this.responseCode == HttpConnection.HTTP_OK) {
-
             Hashtable parsedData = new Hashtable();
-            
             StringBuffer sb = new StringBuffer();
 
             for (int i = 0; i < this.data.length; i++) {
@@ -66,10 +62,12 @@ public class IndexNetworkRequest
                 if (ch == '\n') {
                     String line = sb.toString();
                     int pos = line.indexOf('=');
+                    
                     if (pos > 0) {
                         parsedData.put(line.substring(0, pos).trim(),
                                  line.substring(pos + 1).trim());
                     }
+
                     sb.setLength(0);
                 }
                 else {
@@ -77,65 +75,14 @@ public class IndexNetworkRequest
                 }
             }
 
-
 			this.count = Integer.parseInt((String) parsedData.get("count"));
 			this.totalCount = Integer.parseInt((String) parsedData.get("total_count"));
-            
-            // TODO: make this so much smarter.
-
-			for (int i = 1; i <= this.count; i++) {
-				String id = (String) parsedData.get("id." + i);
-				String referrer = (String) parsedData.get("referrer." + i);
-				String preview = (String) parsedData.get("preview." + i);
-				String mimetype = (String) parsedData.get("type." + i);
-				String modified = (String) parsedData.get("modified." + i);
-				String title = (String) parsedData.get("title." + i);
-
-                String deleted = (String) parsedData.get("deleted." + i);
-                
-                if (deleted != null && deleted.equals("1"))
-                {
-                    System.out.println("found deleted element (this is okay): " + id);
-
-                    // XXX
-                    this.uploads.addElement(new Upload(id, true));
-                    //ignore for now.
-                    continue;
-                }
-
-				int foundIndex = -1;
-                
-				for (int j = 0; j < this.uploads.size(); j++) {
-					Upload upload = (Upload) this.uploads.elementAt(j);
-                    
-					if (id.equals(upload.getId())) {
-						foundIndex = j;
-						break;
-					}
-				}
-                
-				if (foundIndex != -1) {
-					this.uploads.removeElementAt(foundIndex);
-				}
-                
-                // previews are optional.
-                byte[] previewBytes = null;
-                try {
-                    previewBytes = Base64.decode(preview);
-                } 
-                catch (Exception ex) 
-                {
-                    System.out.println("Base64 decode failed " + ex);
-                }
-
-                System.out.println("Creating upload: " + id + " " + mimetype  + " " + title);
-
-				this.uploads.addElement(new Upload(id, mimetype, title, previewBytes, null, modified, referrer));
-			}
-            
+			this.controller.processIndexUpdates(parsedData);
         }
-        if (this.handler != null)
+
+		if (this.handler != null) {
             this.handler.notifyResponse(this);
+		}
     }
 
 	public int getCount()

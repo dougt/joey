@@ -25,19 +25,15 @@
 package org.mozilla.joey.j2me;
 
 import java.util.Hashtable;
-import java.util.Vector;
 
 import javax.microedition.io.HttpConnection;
-
-import org.bouncycastle.util.encoders.Base64;
 
 public class IndexUpdateNetworkRequest
 	extends NetworkRequest
 {
-	private Vector uploads;
-	private int count;
+	private JoeyController controller;
 
-	public IndexUpdateNetworkRequest(Vector uploads, long lastModified)
+	public IndexUpdateNetworkRequest(JoeyController controller, long lastModified)
 	{
 		StringBuffer sb = new StringBuffer();
 		sb.append("rest=1&since=");
@@ -47,7 +43,7 @@ public class IndexUpdateNetworkRequest
 		this.contenttype = "application/x-www-form-urlencoded";
 		this.postdata = sb.toString();
 
-		this.uploads = uploads;
+		this.controller = controller;
 	}
 
     public void onStop()
@@ -62,85 +58,20 @@ public class IndexUpdateNetworkRequest
                 if (ch == '\n') {
                     String line = sb.toString();
                     int pos = line.indexOf('=');
+
                     if (pos > 0) {
                         parsedData.put(line.substring(0, pos).trim(),
                                  line.substring(pos + 1).trim());
                     }
-                    sb.setLength(0);
+
+                    	sb.setLength(0);
                 }
                 else {
                     sb.append(ch);
                 }
             }
 
-			this.count = Integer.parseInt((String) parsedData.get("count"));
-
-			//#debug info
-			System.out.println("number of updated elements: " + this.count);
-
-			for (int i = 1; i <= this.count; i++) {
-				int foundIndex = -1;
-				String id = (String) parsedData.get("id." + i);
-
-				for (int j = 0; j < this.uploads.size(); j++) {
-					Upload upload = (Upload) this.uploads.elementAt(j);
-
-					if (id.equals(upload.getId())) {
-						foundIndex = j;
-						break;
-					}
-				}
-
-				if (foundIndex != -1) {
-					String deleted = (String) parsedData.get("deleted." + i);
-
-					if (deleted != null && deleted.equals("1")) {
-						//#debug info
-						System.out.println("found deleted element (this is okay): " + id);
-
-						// Delete upload.
-						this.uploads.removeElementAt(foundIndex);
-
-						// Continue with next upload.
-						continue;
-					}
-				}
-
-				String referrer = (String) parsedData.get("referrer." + i);
-				String preview = (String) parsedData.get("preview." + i);
-				String mimetype = (String) parsedData.get("type." + i);
-				String modified = (String) parsedData.get("modified." + i);
-				String title = (String) parsedData.get("title." + i);
-
-				// Previews are optional.
-				byte[] previewBytes = null;
-
-				try {
-					previewBytes = Base64.decode(preview);
-				} 
-				catch (Exception ex) {
-					System.out.println("Base64 decode failed " + ex);
-				}
-
-				//#debug info
-				System.out.println("Updating upload: " + id + " " + mimetype  + " " + title);
-
-				Upload upload = new Upload(id, mimetype, title, previewBytes, null, modified, referrer);
-				
-				if (foundIndex == -1) {
-					//#debug info
-					System.out.println("added new element: " + id);
-					
-					this.uploads.addElement(upload);
-				}
-				else {
-					//#debug info
-					System.out.println("replace existing element: " + id);
-					
-					this.uploads.removeElementAt(foundIndex);
-					this.uploads.insertElementAt(upload, foundIndex);
-				}
-			}	
+			this.controller.processIndexUpdates(parsedData);
     	}
 
     	if (this.handler != null) {

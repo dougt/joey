@@ -189,7 +189,7 @@ camera here or in the MainMenu view.
                 continue;
             
             Item uploadItem = null;
-            if (upload.getMimetype().substring(0,mimeType.length()).equals(mimeType)) 
+            if (upload.getMimetype().startsWith(mimeType)) 
             {
                 uploadItem = getImagePreviewForUpdate(upload);
                 
