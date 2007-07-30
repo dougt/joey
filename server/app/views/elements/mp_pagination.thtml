@@ -4,7 +4,6 @@
 
     $pages = $pagination->pageNumbers(" | ");
 
-    // echo $pagination->result()."<br/>";
     echo "Go to page: ".$pages."<br/>";
     endif;
 ?>

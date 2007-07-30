@@ -1,6 +1,7 @@
 <div id="" class="joey-message">
 
-<?php echo $html->link( "Media successfuly deleted" , "/uploads/index?type=" . $pageinfo['type'] . "&page=" . $pageinfo['previous'] . "&show=" . $pageinfo['show']); ?>
+<?php echo $html->link( "Media successfuly deleted",
+                        "/uploads/index?type=" . $pageinfo['type'] . "&page=" . $pageinfo['previous'] . "&show=" . $pageinfo['show']); ?>
 
 <!-- this is written information to the lcient page, may have error codes, post-command codes, et --> 
 

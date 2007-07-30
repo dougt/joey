@@ -240,18 +240,14 @@ class UploadsController extends AppController
 
     $this->set('pageinfo',$pageinfo);
 
-    /* 
-     */ 
-
     if (!is_numeric($id)) {
       if ($this->nbClient) {
-
         $this->returnJoeyStatusCode($this->ERROR_DELETE);
-
+      } 
+      else if (BrowserAgent::isMobile()) {
+        $this->flash('Delete Failed.', '/uploads/index');
       } else {
-
         $this->render('deleted_failed');
-
       }
     }
     
@@ -265,13 +261,11 @@ class UploadsController extends AppController
     // Check for access
     if (empty($_owner) || ($_owner['User']['id'] != $this->_user['id'])) {
       if ($this->nbClient) {
-
         $this->returnJoeyStatusCode($this->ERROR_NOAUTH);
-
+      } else if (BrowserAgent::isMobile()) {
+        $this->flash('Delete Failed.', '/uploads/index');
       } else {
-
         $this->render('deleted_failed');
-
       }
     }
     
@@ -282,18 +276,14 @@ class UploadsController extends AppController
       $csid = $_item['File'][0]['Contentsource'][0]['id'];
       
       if (! $this->Contentsource->delete($csid)) {
-
         $this->Upload->rollback();
-
         if ($this->nbClient) {
-
           $this->returnJoeyStatusCode($this->ERROR_DELETE);
-
+        } else if (BrowserAgent::isMobile()) {
+          $this->flash('Delete Failed.', '/uploads/index');
         } else { 
-
-	  $this->set('deleted_message','Content Source Delete Failed');
-	  $this->render('deleted_failed');
-
+          $this->set('deleted_message','Content Source Delete Failed');
+          $this->render('deleted_failed');
         }
       }
     }
@@ -323,26 +313,21 @@ class UploadsController extends AppController
       $_file_id = $_item['File'][0]['id'];
       $this->File->delete($_file_id);
       
-      
       $this->Upload->commit();
       if ($this->nbClient) {
-
         $this->returnJoeyStatusCode($this->SUCCESS);
-
-      } else {
-        
-          $this->render('deleted_success');
-        
+      } else if (BrowserAgent::isMobile()) {
+        $this->flash('Delete Successful.', '/uploads/index');
+      } else { 
+        $this->render('deleted_success');
       }
     } else {
       if ($this->nbClient) {
-
         $this->returnJoeyStatusCode($this->ERROR_DELETE);
-
+      } else if (BrowserAgent::isMobile()) {
+        $this->flash('Delete Failed.', '/uploads/index');
       } else {
-
-          $this->render('deleted_failed');
-
+        $this->render('deleted_failed');
       }
     }
   }
@@ -367,8 +352,6 @@ class UploadsController extends AppController
       $_options['types'] = $this->filetypes[ $_GET['type'] ];
       $joeyClientPageInfoType = $_GET['type'];
     }
-    
-   
 
     // check to see if we have to deal with "since"
     if (array_key_exists('since',$_POST))
@@ -450,9 +433,17 @@ class UploadsController extends AppController
                                    'sortBy'    => 'id',
                                    'total'     => count($this->Upload->findAllUploadsForUserId($this->_user['id'],$_options))
                                    );
-      
+
+      /* mobile browsers might support ajax stuff, but we should use the simpliest pagination. */
+      if (BrowserAgent::isMobile()) {
+        $_pagination_options['style'] = 'html';
+        $_pagination_options['ajaxAutoDetect'] = false;
+      }
+
+
       list(,$limit,$page) = $this->Pagination->init(array(), array(), $_pagination_options);
       
+
       // @todo need to calculate $start
       $_options['limit'] = $limit;
       $_options['start'] = ($page-1)*$limit;

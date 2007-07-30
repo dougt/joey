@@ -21,7 +21,7 @@ class BrowserAgent {
       $agent=$_SERVER["HTTP_USER_AGENT"];
       
       // If mobile phone, see http://www.developershome.com/wap/detection/detection.asp?page=userAgentHeader
-      $res = preg_match('/nokia|symbian|motorola|mot\-|samsung|sec\-|lg\-|sonyericsson|sie\-|up\.b|up\//i', $agent);
+      $res = preg_match('/iemobile|ppc|smartphone|nokia|symbian|motorola|mot\-|samsung|sec\-|lg\-|sonyericsson|sie\-|up\.b|up\//i', $agent);
       
       return $res;
     }
