@@ -99,7 +99,7 @@
         
         <menuitem id="joeyMediaMenuItem" 
                   label="&overlay.menuMedia.label;"
-                  hidden="true" 
+                  disabled="true" 
                   oncommand="joey_uploadFoundMedia()" />
 
         <menuitem id="joey_selectContextual"
@@ -111,12 +111,6 @@
                   label="&overlay.menuPreferences.label;"
                   insertafter="context-stop"
                   oncommand="joeyLaunchPreferences();"/>
-        
-        <menuitem id="joey_registerFeedListener" 
-                  label="&overlay.registerFeedListener.label;"
-                  insertafter="context-stop"
-                  oncommand="joeyRegisterFeedListener();"/>
-
       </menupopup>
   </statusbarpanel>
 </statusbar>

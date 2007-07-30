@@ -115,7 +115,7 @@ joey_listener.prototype =
 
                 var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
                                         .getService(Components.interfaces.nsIPromptService);
-                prompts.alert(null, joeyString("uploadFailed"), joeyString("uploadFailed"));
+                prompts.alert(null, joeyString("uploadFailed"), joeyString("uploadFailedDetail"));
             }
             return;
         }
@@ -668,7 +668,7 @@ function rev(str)
  }
 
 
-
+/* todo: this needs to be per page... */
 var httpscanner = {
   observe: function(subject,topic,data){
 
@@ -690,7 +690,7 @@ var httpscanner = {
                 
                 if(testContentType(g_joey_mediaContentTypes)){
                     joeyDumpToConsole("media content found: "+ mediaLocation);
-                    document.getElementById("joeyMediaMenuItem").setAttribute("hidden","false");
+                    document.getElementById("joeyMediaMenuItem").setAttribute("disabled","false");
                     g_joey_media_type = contentType;
                     g_joey_media_url = mediaLocation;
                 }
@@ -825,21 +825,6 @@ function joeyLaunchPreferences() {
         window.open("chrome://joey/content/joeyOptions.xul",
                     "welcome", 
                     "chrome,resizable=yes");
-}
-
-
-function joeyRegisterFeedListener() {
-
-    var psvc = Components.classes["@mozilla.org/preferences-service;1"]
-                         .getService(Components.interfaces.nsIPrefBranch);
-
-    var url = "https://joey.labs.mozilla.com";
-    if (psvc.prefHasUserValue("joey.service_url"))
-        url = psvc.getCharPref("joey.service_url");
-
-    navigator.registerContentHandler('application/vnd.mozilla.maybe.feed',
-                                     url + '/uploads/add/rss/?source=%s', 
-                                     'Joey!');
 }
 
 function joeyBrowserStatusHandler() {}

@@ -16,6 +16,12 @@ function getJoeyServerURL()
     return cJoeyDefaultServer;
 }
 
+function clearPrivateData()
+{
+    clearJoeyFeedWatcherData();
+    clearLoginData();
+}
+
 function clearLoginData()
 {
     
@@ -65,3 +71,18 @@ function restoreDefaults() {
     } catch (i) { alert(i) }
     
 }
+
+function joeyRegisterFeedListener() {
+
+    var psvc = Components.classes["@mozilla.org/preferences-service;1"]
+                         .getService(Components.interfaces.nsIPrefBranch);
+
+    var url = cJoeyDefaultServer;
+    if (psvc.prefHasUserValue("joey.service_url"))
+        url = psvc.getCharPref("joey.service_url");
+
+    navigator.registerContentHandler('application/vnd.mozilla.maybe.feed',
+                                     url + '/uploads/add/rss/?source=%s', 
+                                     'Joey!');
+}
+

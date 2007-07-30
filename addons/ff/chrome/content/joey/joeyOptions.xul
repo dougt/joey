@@ -65,18 +65,16 @@
     </preferences>
 
     <groupbox flex="1"   align="left">
+        <caption label="&options.privacyTitle.label;" />
       <hbox flex="1">
-        <label value="&options.privacyTitle.label;" />
         <button label="&options.privacyButton.label;"
-                oncommand="clearLoginData(); return false;"/>
-        <button label="&options.privacyFeed.label;"
-                oncommand="clearJoeyFeedWatcherData(); return false;"/>
+                oncommand="clearPrivateData(); return false;"/>
       </hbox>
     </groupbox>
 
     <groupbox flex="1"   align="left">
+      <caption label="&options.basic.label;"/>
       <vbox flex="1">
-        <label value="Joey Upload:" />
         <checkbox label="&options.askForTitle.label;"
                 id="AlwaysAskForTitle" preference="joey.askForTitle"/>
 
@@ -89,6 +87,7 @@
     </groupbox>
 
     <groupbox flex="1"   align="left" style="" >
+      <caption label="&options.advanced.label;"/>
       <hbox flex="1">
         <grid flex="1">
           <columns>
@@ -103,11 +102,15 @@
               <textbox size="50" id="serviceUrl" preference="joey.service_url" />
               <button label="&options.restoreButton.label;" oncommand="restoreDefaults()"/>
             </row>
-
           </rows>
         </grid>
 
       </hbox>
+      <hbox>
+        <button label="&options.registerFeedListener.label;"
+                    oncommand="joeyRegisterFeedListener(); return false;"/>
+     </hbox>
+
     </groupbox>
 
   </prefpane>
