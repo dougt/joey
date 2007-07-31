@@ -10,6 +10,15 @@ function joeyPage_toggleIcon(iconReference,toolTip,cssClass,onClick) {
 
 }
 
+function joeyMedia_newWindow(urlRef) {
+
+	var newWindow = window.open("about:blank","title");
+	newWindow.document.open("text/html");
+	newWindow.document.write("<img class='joeymedia-previewimage' src='"+urlRef+"' />");
+	newWindow.document.close();
+
+}
+
 /* Helper function to show Text */
 
 function joeyMedia_textShow(filename,uploadIDHandler) {
@@ -26,7 +35,7 @@ function joeyMedia_imageShow(filename,uploadIDHandler) {
 
 	// icon image ID format is: "iconhandler-" + uploadIDHandler
 
-	document.getElementById("controlOptions-"+uploadIDHandler).innerHTML="<a href='javascript:' onclick='joeyMedia_newWindow();return false;'>Open in new window</a>";
+	document.getElementById("controlOptions-"+uploadIDHandler).innerHTML="<a href='javascript:' onclick='joeyMedia_newWindow(\""+filename+"\");return false;'>Open in new window</a>";
 	document.getElementById("expandItem-"+ uploadIDHandler).innerHTML="<img id='joeymedia-imagedisplayed-"+uploadIDHandler+"' class='joeymedia-previewimage' src='"+filename+"' />";
 
 
