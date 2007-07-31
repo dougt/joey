@@ -511,14 +511,15 @@ public class JoeyController
 		do {
 			event = waitEvent();
 		} while (event != EVENT_NETWORK_REQUEST_SUCCESSFUL);
-		
-		Timer timer = new Timer();
-		timer.schedule(this.updateTask, this.userdata.getUpdateInterval() * 1000, this.userdata.getUpdateInterval() * 1000);
 
 		// Handle main menu screen.
 		if (event == EVENT_NETWORK_REQUEST_SUCCESSFUL) {
 			// After a successful login, save the user info and load uploads from RMS.
 			saveUserdata();
+
+			// Start continuous update timer.
+			Timer timer = new Timer();
+			timer.schedule(this.updateTask, this.userdata.getUpdateInterval() * 1000, this.userdata.getUpdateInterval() * 1000);
 
 			do {
 				MainMenuView mainMenu =
@@ -554,6 +555,9 @@ public class JoeyController
 						break;
 				}
 			} while (event != EVENT_EXIT);
+
+			// Stop timer.
+			timer.cancel();
 		}
 
 		this.midlet.notifyDestroyed();
@@ -770,7 +774,6 @@ public class JoeyController
 				event = waitYesNo();
 				
 				if (event == EVENT_YES) {
-					// TODO: Process updates.
 					// Apply pending updates.
 					processIndexUpdates(this.pendingUpdates);
 				}
