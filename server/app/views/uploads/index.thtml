@@ -129,7 +129,7 @@
 <?php elseif($upload['File']['preview_name']!=null) :?>
 
 
-	<?php if($upload['File']['original_type']=='image/jpeg') :?>
+	<?php if($upload['File']['original_type']=='image/jpeg' || $upload['File']['original_type']=='image/gif')  :?>
 
           <div class="joey-upload-image-thumb">
             <a  href=<?php echo "/files/view/{$upload['File']['id']}"?> title="Open image"  onclick="joeyMedia_imageShow('<?php echo "/files/view/{$upload['File']['id']}"?>/original','<?php echo "{$upload['Upload']['id']}"?>');return false" id="iconhandler-<?php echo $upload['Upload']['id'] ?>" >
