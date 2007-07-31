@@ -343,14 +343,14 @@ camera here or in the MainMenu view.
 		if ((gameAction == LEFT && keyCode != Canvas.KEY_NUM4) ||
             (gameAction == RIGHT && keyCode != Canvas.KEY_NUM6)) {
 
-			UiAccess.handleKeyPressed( this.commands, keyCode, gameAction);
+			handled = UiAccess.handleKeyPressed( this.commands, keyCode, gameAction);
 
-            update();
-            handled = true;
+            if (handled) {
+            	update();
+            }
 		}
         else if ((gameAction == UP && keyCode != Canvas.KEY_NUM2) || 
                  (gameAction == DOWN && keyCode != Canvas.KEY_NUM8)) {
-
             handled = UiAccess.handleKeyPressed(this.container, keyCode, gameAction);
         }
 
