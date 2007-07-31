@@ -165,7 +165,7 @@ public class JoeyController
 			this.userdata = (UserData) this.storage.read(RMS_USERDATA);
 
             //#debug info
-            System.out.println("Saved UserData");
+            System.out.println("Loaded userdata");
 		}
 		catch (IOException e) {
 			//#debug info
@@ -179,11 +179,10 @@ public class JoeyController
 
     private void saveUserdata()
     {
-        //@todo check to see if this user want to remember the data.
-        
         try {
-            if (this.userdata.isRememberMe())
+            if (this.userdata.isRememberMe()) {
                 this.storage.save(this.userdata, RMS_USERDATA);
+            }
         }
         catch (IOException e) {
             //#debug error
@@ -409,9 +408,6 @@ public class JoeyController
             	if (((LoginNetworkRequest) request).sendSuccessNotification()) {
             		notifyEvent(EVENT_NETWORK_REQUEST_SUCCESSFUL);
             	}
-
-                // after a successful login, save the user info.
-                saveUserdata();
             }
             else {
             	notifyEvent(EVENT_NETWORK_REQUEST_FAILED);
@@ -521,6 +517,9 @@ public class JoeyController
 
 		// Handle main menu screen.
 		if (event == EVENT_NETWORK_REQUEST_SUCCESSFUL) {
+			// After a successful login, save the user info and load uploads from RMS.
+			saveUserdata();
+
 			do {
 				MainMenuView mainMenu =
 					(MainMenuView) showView(VIEW_MAINMENU);
