@@ -338,7 +338,6 @@ camera here or in the MainMenu view.
 
 	protected boolean handleKeyPressed(int keyCode, int gameAction)
 	{
-
         boolean handled = false;
 
 		if ((gameAction == LEFT && keyCode != Canvas.KEY_NUM4) ||
@@ -352,13 +351,16 @@ camera here or in the MainMenu view.
         else if ((gameAction == UP && keyCode != Canvas.KEY_NUM2) || 
                  (gameAction == DOWN && keyCode != Canvas.KEY_NUM8)) {
 
-            UiAccess.handleKeyPressed(this.container, keyCode, gameAction);
-            handled = true;
+            handled = UiAccess.handleKeyPressed(this.container, keyCode, gameAction);
         }
-
 
         this.currentlyActiveContainer = this.container;
         this.container.focus(0);
+
+        if (!handled ) {
+        	handled = super.handleKeyPressed(keyCode, gameAction);
+        }
+
         return handled;
     }
 
