@@ -116,11 +116,11 @@ public class JoeyController
 	private Displayable currentView;
 	private MIDlet midlet;
 	private Display display;
-	private UserData userdata;
+	/*private*/ UserData userdata;
 	private Vector uploads;
 	private RmsStorage storage;
 	private CommandListener commandListener;
-	private CommunicationController commController;
+	/*private*/ CommunicationController commController;
     private Displayable uploadsView;
 	private Hashtable pendingUpdates;
 
@@ -128,7 +128,9 @@ public class JoeyController
 	{
 		public void run()
 		{
+			//#debug debug
             System.out.println("Running Timer....");
+
 			long lastModified = (new Date().getTime() / 1000) - JoeyController.this.userdata.getUpdateInterval();
 			JoeyController.this.commController.getIndexUpdate(JoeyController.this, lastModified);
 		}
@@ -677,8 +679,9 @@ public class JoeyController
 
                 case EVENT_RSS_ITEM: 
                     showView(VIEW_RSS_ITEM);
-                    while (waitEvent() != EVENT_BACK)
-                        ; //spin
+                    while (waitEvent() != EVENT_BACK) {
+                    	//spin
+                    }
                     break;
 
                 case EVENT_MEDIA_OPEN:
