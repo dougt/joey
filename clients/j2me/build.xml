@@ -264,8 +264,8 @@
 		classpath="${java.class.path}"
 		fork="true"
 	>
-		<jvmarg value="-XX:MaxPermSize=512m" />
-		<jvmarg value="-Xmx128m" />
+		<jvmarg value="-XX:MaxPermSize=1024m" />
+		<jvmarg value="-Xmx256m" />
 		<arg value="-Dlocales=en_US" />
 	</java>
 	<java
