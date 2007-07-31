@@ -98,7 +98,9 @@ public class UploadsView
 		Image imgMs = null;
         
         Image imgPrefs  = null;
+//#if polish.api.mmapi
         Image imgCamera = null;
+//#endif
 
 		try
 		{
