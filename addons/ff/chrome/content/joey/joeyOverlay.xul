@@ -49,6 +49,10 @@
   
   <script type="application/x-javascript" src="chrome://joey/content/joeyCommon.js"> </script>
   <script type="application/x-javascript" src="chrome://joey/content/joeyOverlay.js"> </script>
+  <script type="application/x-javascript" src="chrome://joey/content/joeyStatus.js"> </script>
+  <script type="application/x-javascript" src="chrome://joey/content/joeyDivHighlighter.js"> </script>
+  <script type="application/x-javascript" src="chrome://joey/content/joeyMediaFetcher.js"> </script>
+  <script type="application/x-javascript" src="chrome://joey/content/joeyXPath.js"> </script>
 
   <stringbundleset id="stringbundleset">
     <stringbundle id="joey_properties" src="chrome://joey/locale/joey.properties"/>
