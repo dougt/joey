@@ -39,7 +39,6 @@ import javax.microedition.lcdui.StringItem;
 //#if polish.api.mmapi
 import javax.microedition.media.Manager;
 import javax.microedition.media.Player;
-import javax.microedition.media.control.GUIControl;
 import javax.microedition.media.control.VideoControl;
 //#endif
 
@@ -50,8 +49,6 @@ import de.enough.polish.browser.rss.*;
 
 import org.mozilla.joey.j2me.JoeyController;
 import org.mozilla.joey.j2me.Upload;
-
-
 
 class RssItemCommandListener extends DefaultRssItemCommandListener {
  
@@ -223,7 +220,7 @@ public class DetailsView
                 //#style button
                 Item item = new StringItem(null, Locale.get("media.browser.open"));
                 item.setDefaultCommand(JoeyController.CMD_MEDIA_OPEN);
-                item.setItemCommandListener(controller);
+                item.setItemCommandListener(this.controller);
                 append(item);
             }
 
