@@ -35,19 +35,128 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-var g_joey_data;
-var g_joey_content_type;
-var g_joey_title;
-var g_joey_url;
-var g_joey_isfile;
+
+/* 
+ * Event listeners associated to the joeyOverlay app 
+ */
+
+window.addEventListener("load", joeyStartup, false);
+window.addEventListener("mousedown",joeyOnMouseDown,false); 
+
+
+
+var g_joey_media_content_types = ['flv','mov','wmv','avi','mpeg','mp3','wav']; 
 var g_joey_media_url  = null;
 var g_joey_media_type = null;
-var g_joey_image_source = null;
-var g_joey_gBrowser = null;                // presents the main browser, used by the joey_feed code.
-var g_joey_statusUpdateObject = null;      // the proxy object to deal with UI 
-var g_joey_mediaContentTypes = ['flv','mov','wmv','avi','mpeg','mp3','wav']; 
 
+
+/* this is the url to the image that a context clict was done over */
+var g_joey_image_source = null;
+
+/* the browser object */
+var g_joey_gBrowser = null;
+
+/* the object that deals with the UI notifications */
+var g_joey_statusUpdateObject = null;
+
+/* the timer that periodically uploads the url's of all of the tabs */
 var g_joey_tab_upload_timer = null;
+
+
+function joey_upload(updateObject)
+{
+    this.updateObject = updateObject;
+
+    this.data = null;
+    this.file = null;
+    this.title= null;
+    this.url  = null;
+    this.contentType = null;
+}
+
+joey_upload.prototype = 
+{
+    setTitle: function (title)
+    {
+        this.title = title;
+	},
+
+    setURL: function (url)
+    {
+        this.url= url;
+    },
+
+    setFile: function (file)
+    {
+        this.file = file;
+    },
+
+    setData: function (data)
+    {
+        this.data = data;
+    },
+
+    setContentType: function(type)
+    {
+        this.contentType = type;
+    },
+
+    askUserForTitle: function()
+    {
+        try {
+            var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+                                    .getService(Components.interfaces.nsIPromptService);
+            
+            var titleObject = {value: this.title}; // default the username to user
+            
+            var psvc = Components.classes["@mozilla.org/preferences-service;1"]
+                                 .getService(Components.interfaces.nsIPrefBranch);
+
+            var askState = psvc.getBoolPref("joey.askForTitle");
+            
+            if(askState == true ) {
+                
+                var check = {value: askState};  // default the checkbox to true
+                var result = prompts.prompt(null,
+                                            joeyString("promptTitle.windowTitle"), 
+                                            joeyString("promptTitle.label"),
+                                            titleObject,
+                                            joeyString("promptTitle.prefQuestion"), 
+                                            check);
+                if(result) {
+                    this.title = titleObject.value;
+                }
+                psvc.setBoolPref("joey.askForTitle",check.value);       
+            } 
+        } catch (i) { joeyDumpToConsole(i) }
+    },
+
+
+    upload: function()
+    {
+        this.askUserForTitle();
+
+        var joey = Components.classes["@mozilla.com/joey;1"]
+                             .createInstance(Components.interfaces.mocoJoey);
+        
+        joey.setListener(new joey_listener(this.updateObject));
+    
+        if (this.file != null)
+        {
+            joey.uploadFile(this.title,
+                            this.url,
+                            this.file,
+                            this.contentType);
+        }
+        else
+        {
+            joey.uploadData(this.title,
+                            this.url,
+                            this.data,
+                            this.contentType);
+        }
+    },
+}
 
 
 var g_joey_bundleElement = null;
@@ -58,64 +167,6 @@ function joeyString(ref)
 
      return g_joey_bundleElement.getString(ref);
 }
-
-/* 
- * Event listeners associated to the joeyOverlay app 
- */
-
-window.addEventListener("load", joeyStartup, false);
-
-function uploadDataFromGlobals()
-{
-    try {
-        var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
-                                .getService(Components.interfaces.nsIPromptService);
-        
-        var titleObject = {value: g_joey_title}; // default the username to user
-
-        var psvc = Components.classes["@mozilla.org/preferences-service;1"]
-                             .getService(Components.interfaces.nsIPrefBranch);
-
-        var askState = psvc.getBoolPref("joey.askForTitle");
-     
-        if(askState == true ) {
-        
-            var check = {value: askState};  // default the checkbox to true
-            var result = prompts.prompt(null,
-                                        joeyString("promptTitle.windowTitle"), 
-                                        joeyString("promptTitle.label"),
-                                        titleObject,
-                                        joeyString("promptTitle.prefQuestion"), 
-                                        check);
-            if(result) {
-                g_joey_title = titleObject.value;
-            }
-            psvc.setBoolPref("joey.askForTitle",check.value);       
-        } 
-    } catch (i) { joeyDumpToConsole(i) }
-
-
-    var joey = Components.classes["@mozilla.com/joey;1"]
-                         .createInstance(Components.interfaces.mocoJoey);
-
-    joey.setListener(new joey_listener(g_joey_statusUpdateObject));
-    
-	if (g_joey_isfile)
-	{
-		joey.uploadFile(g_joey_title,
-                        g_joey_url,
-                        g_joey_file,
-                        g_joey_content_type);
-	}
-	else
-	{
-	    joey.uploadData(g_joey_title,
-                        g_joey_url,
-                        g_joey_data,
-                        g_joey_content_type);
-	}
-}
-
 
 function joeyOnMouseDown(e)
 {
@@ -205,13 +256,13 @@ function joey_selectedText()
     foStream.write(selection, selection.length);
     foStream.close();
 
-    g_joey_file = file;
-    g_joey_isfile = true;
-    g_joey_content_type = "text/plain";
-    g_joey_title = focusedWindow.document.title;
-    g_joey_url  = focusedWindow.location.href;
+    var upload = new joey_upload(g_joey_statusUpdateObject);
+    upload.setFile(file);
+    upload.setContentType("text/plain");
+    upload.setTitle(focusedWindow.document.title);
+    upload.setURL(focusedWindow.location.href);
 
-    uploadDataFromGlobals(false);
+    upload.upload();
 }
 
 function joey_currentTabs()
@@ -261,13 +312,12 @@ function joey_currentTabs()
         foStream.write(upload_content, upload_content.length);
         foStream.close();
         
-        g_joey_file = file;
-        g_joey_isfile = true;
-        g_joey_content_type = "browser/stuff";
-        g_joey_title = "Current Tabs";
-        g_joey_url  = "about:CurrentTabs";
-        
-        uploadDataFromGlobals(false);
+        var upload = new joey_upload(g_joey_statusUpdateObject);
+        upload.setFile(file);
+        upload.setContentType("browser/stuff");
+        upload.setTitle("Current Tabs");
+        upload.setURL("about:CurrentTabs");
+        upload.upload();
     } catch(e) {}
 }
 
@@ -297,16 +347,17 @@ function joey_feed()
     var baseTitle = g_joey_gBrowser.mCurrentBrowser.feeds[0].title || feedLocation;
     var icon = g_joey_gBrowser.mCurrentBrowser.mIconURL;
 
-    g_joey_data = "rss=" + feedLocation + "\r\n";
+    var data = "rss=" + feedLocation + "\r\n";
 
     if (icon != null)
-        g_joey_data = g_joey_data + "icon=" + icon + "\r\n";
+        data = data + "icon=" + icon + "\r\n";
 
-    g_joey_isfile = false;
-    g_joey_content_type = "rss-source/text";
-    g_joey_title = baseTitle;
-    g_joey_url  = feedLocation;
-    uploadDataFromGlobals(false);
+    var upload = new joey_upload(g_joey_statusUpdateObject);
+    upload.setData(data);
+    upload.setContentType("rss-source/text");
+    upload.setTitle(baseTitle);
+    upload.setURL(feedLocation);
+    upload.upload();
 }
 
 // Check XUL statusbar item
@@ -315,39 +366,15 @@ function joey_launchPopup()
   document.getElementById('joeyStatusPopup').showPopup(document.getElementById('joeyStatusButton'),-1,-1,'popup','topright', 'bottomright')
 }
 
-/* FIXME to be as an instance */
-
-function getMediaCallback(content_type, file)
-{
-	if (length>0)
-    { 
-        joeyDumpToConsole("Download successful... (" + content_type + ")");
-        
-        g_joey_statusUpdateObject.tellStatus("download",null,null,"completed");
-        
-        g_joey_content_type = content_type;
-        g_joey_file = file;
-        uploadDataFromGlobals(false);
-        return;
-	}
-    else {
-    
-        /* This should become failed? */
-        
-        g_joey_statusUpdateObject.tellStatus("download",null,null,"failed");
-        joeyDumpToConsole("Problem downloading media to joey!\n");
-    }
-}
-
 function joey_selectedImage()
 {
     var focusedWindow = document.commandDispatcher.focusedWindow;
+
+    var upload = new joey_upload(g_joey_statusUpdateObject);
+    upload.setTitle(focusedWindow.document.title);
+    upload.setURL(focusedWindow.location.href);
     
-    g_joey_title = focusedWindow.document.title;
-    g_joey_url = focusedWindow.location.href;
-    g_joey_isfile = true;
-    
-    JoeyMediaFetcher(g_joey_statusUpdateObject, getMediaCallback, g_joey_image_source)    
+    JoeyMediaFetcher(g_joey_statusUpdateObject, upload, g_joey_image_source)    
 }
 
 /* todo: this needs to be per page... */
@@ -370,7 +397,7 @@ var httpscanner = {
                 var mediaLocation = subject.QueryInterface(Components.interfaces.nsIChannel).URI;
                 mediaLocation=mediaLocation.prePath+mediaLocation.path;
                 
-                if(testContentType(g_joey_mediaContentTypes)){
+                if(testContentType(g_joey_media_content_types)){
                     joeyDumpToConsole("media content found: "+ mediaLocation);
                     document.getElementById("joeyMediaMenuItem").setAttribute("disabled","false");
                     g_joey_media_type = contentType;
@@ -386,16 +413,13 @@ var observerService = Components.classes["@mozilla.org/observer-service;1"].getS
 function joey_uploadFoundMedia() // refactor with joey_selectedImage
 {
     var focusedWindow = document.commandDispatcher.focusedWindow;
-    
-    g_joey_title = focusedWindow.document.title;
-    g_joey_url = focusedWindow.location.href;
-    g_joey_isfile = true;
-    g_joey_content_type = g_joey_media_type;
 
-    // g_joey_data, g_joey_content_type
-    // will be filled in when we have the media data.
+    var upload = new joey_upload(g_joey_statusUpdateObject);
+    upload.setTitle(focusedWindow.document.title);
+    upload.setURL(focusedWindow.location.href);
+    upload.setContentType(g_joey_media_type);
 
-    JoeyMediaFetcher(g_joey_statusUpdateObject, getMediaCallback, g_joey_media_url)    
+    JoeyMediaFetcher(g_joey_statusUpdateObject, upload, g_joey_media_url)        
 }
 
 function contentLoaded()
@@ -406,15 +430,14 @@ function contentLoaded()
 function joeyStartup()
 {
     window.document.getElementById("content").addEventListener("DOMContentLoaded", contentLoaded, false);
-
-    window.addEventListener("mousedown",joeyOnMouseDown,false); 
-
+    
     var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
                        .getService(Components.interfaces.nsIWindowMediator);
     
     gWin = wm.getMostRecentWindow("navigator:browser");
     
     g_joey_gBrowser = gWin.gBrowser;
+
 
     g_joey_statusUpdateObject = new JoeyStatusUpdateClass();
 
@@ -432,14 +455,15 @@ function joeyStartup()
     } catch(i) { joeyDumpToConsole(i) } 
 
 
-    // kick off the tab uploading thread:
+    // kick off the tab uploading thread.  TODO shouldn't
+    // this not be init'ed more than once?  does this get
+    // inited per window?
     g_run_tab_upload();
 }
 
 
 function g_run_tab_upload()
 {
-
     var psvc = Components.classes["@mozilla.org/preferences-service;1"]
                          .getService(Components.interfaces.nsIPrefBranch);
 
@@ -542,13 +566,6 @@ function toXMLString(str) {
 
 function joey_selectedTarget(targetElement)
 {
-    g_joey_isfile = false;
-
-    var focusedWindow = document.commandDispatcher.focusedWindow;
-    g_joey_url  = focusedWindow.location.href;
-    g_joey_title = "Microsummary from : " + focusedWindow.location.href; 
-    g_joey_content_type = "microsummary/xml";
-
     var xpath = joey_buildXPath(targetElement);
 
     /*
@@ -588,9 +605,13 @@ function joey_selectedTarget(targetElement)
 
     //    alert(str);
 
-    g_joey_data = str;
-
-    uploadDataFromGlobals(false);
+    var focusedWindow = document.commandDispatcher.focusedWindow;
+    var upload = new joey_upload(g_joey_statusUpdateObject);
+    upload.setContentType("microsummary/xml");
+    upload.setTitle("Microsummary from : " + focusedWindow.location.href);
+    upload.setURL(focusedWindow.location.href);
+    upload.setData(str);
+    upload.upload();
 }
 
 /* 

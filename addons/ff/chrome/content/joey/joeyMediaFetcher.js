@@ -39,27 +39,27 @@
  * This is nice for the Download + Progress functional
  */
  
-function JoeyMediaFetcher(updateStatus, callback, url)
+function JoeyMediaFetcher(updateStatus, upload, url)
 {
 	var ioService = Components.classes["@mozilla.org/network/io-service;1"].getService(Components.interfaces.nsIIOService);
     var uri = ioService.newURI(url, null, null);
     var channel = ioService.newChannelFromURI(uri);
-    var listener = new JoeyMediaFetcherStreamListener(updateStatus, callback);
+    var listener = new JoeyMediaFetcherStreamListener(updateStatus, upload);
     channel.notificationCallbacks = listener;
 	channel.asyncOpen(listener, null);
 }
 
 
-function JoeyMediaFetcherStreamListener(updateStatus, aCallbackFunc)
+function JoeyMediaFetcherStreamListener(updateStatus, upload)
 {
+    this.upload = upload;
     this.updateStatus = updateStatus;
-    this.mCallbackFunc = aCallbackFunc;
 }
 
 JoeyMediaFetcherStreamListener.prototype = 
 {
-  mStream: null,
-  mContentType : null,
+  stream: null,
+  contenttype : null,
   
   // nsIStreamListener
   onStartRequest: function (aRequest, aContext) 
@@ -77,13 +77,13 @@ JoeyMediaFetcherStreamListener.prototype =
 
       fos.init(this.file, 0x02 | 0x08 | 0x20, 0644, 0);
       
-      this.mstream = Components.classes["@mozilla.org/binaryoutputstream;1"].createInstance(Components.interfaces.nsIBinaryOutputStream);
-      this.mstream.setOutputStream(fos);
+      this.stream = Components.classes["@mozilla.org/binaryoutputstream;1"].createInstance(Components.interfaces.nsIBinaryOutputStream);
+      this.stream.setOutputStream(fos);
 
       try
       {
           var http = aRequest.QueryInterface(Components.interfaces.nsIHttpChannel);
-          this.mContentType = http.contentType;
+          this.contenttype = http.contentType;
       } 
       catch (ex) { joeyDumpToConsole(ex); }	
   },
@@ -97,7 +97,7 @@ JoeyMediaFetcherStreamListener.prototype =
       var n=0;
       while(n<aLength) {
           var data = bis.readByteArray( bis.available() );
-          this.mstream.writeByteArray( data, data.length );
+          this.stream.writeByteArray( data, data.length );
           n += data.length;
       }
   },
@@ -106,14 +106,18 @@ JoeyMediaFetcherStreamListener.prototype =
   {
       if (Components.isSuccessCode(aStatus))
       {	
-          this.mstream.close(); 
-          this.mCallbackFunc(this.mContentType, this.file);
-          
+          this.updateStatus.tellStatus("download",null,null,"completed");
+
+          this.stream.close(); 
+
+          this.upload.setContentType(this.contenttype);
+          this.upload.setFile(this.file);
+          this.upload.upload();
       } 
       else
       {
           // request failed
-          this.mCallbackFunc(null, null, 0);
+          this.updateStatus.tellStatus("download",null,null,"failed");
       }
   },
 
