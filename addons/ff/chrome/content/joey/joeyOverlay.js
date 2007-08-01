@@ -139,7 +139,7 @@ joey_upload.prototype =
         var joey = Components.classes["@mozilla.com/joey;1"]
                              .createInstance(Components.interfaces.mocoJoey);
         
-        joey.setListener(new joey_listener(this.updateObject));
+        joey.setListener(new joey_listener(this, this.updateObject));
     
         if (this.file != null)
         {

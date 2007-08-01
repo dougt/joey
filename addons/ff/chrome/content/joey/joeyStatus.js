@@ -121,7 +121,8 @@ JoeyStatusUpdateClass.prototype =
 
 
 
-function joey_listener(updateObject){
+function joey_listener(upload, updateObject){
+    this.upload = upload;
     this.updateObject = updateObject;
 }
 
@@ -152,7 +153,7 @@ joey_listener.prototype =
                 {
                     // Clear the username and password and try again.
                     clearLoginData();
-                    setTimeout(uploadDataFromGlobals, 500); // give enough time for us to leave the busy check
+                    setTimeout(this.upload.upload, 500); // give enough time for us to leave the busy check
                 }
             }
 
