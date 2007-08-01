@@ -33,7 +33,7 @@ public class GetRawURLNetworkRequest
      */
     public String raw_url;
 
-    public GetRawURLNetworkRequest(String id)
+    public GetRawURLNetworkRequest(long id)
     {
         this.requestURL = "/uploads/raw/" + id;
         this.contenttype = "application/x-www-form-urlencoded";

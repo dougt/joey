@@ -809,12 +809,12 @@ public class JoeyController
 
 		for (int i = 1; i <= count; i++) {
 			int foundIndex = -1;
-			String id = (String) parsedData.get("id." + i);
+			long id = Long.parseLong((String) parsedData.get("id." + i));
 
 			for (int j = 0; j < this.uploads.size(); j++) {
 				Upload upload = (Upload) this.uploads.elementAt(j);
 
-				if (id.equals(upload.getId())) {
+				if (id  == upload.getId()) {
 					foundIndex = j;
 					break;
 				}
@@ -838,7 +838,7 @@ public class JoeyController
 			String referrer = getDataString(parsedData, "referrer." + i);
 			String preview = getDataString(parsedData, "preview." + i);
 			String mimetype = getDataString(parsedData, "type." + i);
-			String modified = getDataString(parsedData, "modified." + i);
+			long modified = Long.parseLong((getDataString(parsedData, "modified." + i)));
 			String title = getDataString(parsedData, "title." + i);
 
 			// Previews are optional.

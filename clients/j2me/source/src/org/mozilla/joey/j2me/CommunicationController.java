@@ -258,7 +258,7 @@ public class CommunicationController
         addRequest(nr);
 	}
 
-    public void delete(String id, ResponseHandler handler)
+    public void delete(long id, ResponseHandler handler)
 	{
         DeleteNetworkRequest nr = new DeleteNetworkRequest(id);
         nr.setResponseHandler(handler);
@@ -274,7 +274,7 @@ public class CommunicationController
         addRequest(nr);
     }
 
-    public String getRawMediaURLFor(String id)
+    public String getRawMediaURLFor(long id)
     {
         GetRawURLNetworkRequest nr = new GetRawURLNetworkRequest(id);
         nr.setResponseHandler(null); // This is going to be a block operation.

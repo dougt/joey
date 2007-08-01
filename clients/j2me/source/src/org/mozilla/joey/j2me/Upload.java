@@ -26,22 +26,22 @@ package org.mozilla.joey.j2me;
 
 public class Upload
 {
-	private String id;
+	private long id;
 	private String title;
 	private String mimetype;
 	private byte[] preview;
 	private byte[] data;
-	private String modified;
+	private long modified;
 	private String referrer;
     private boolean deleted;
 
-	public Upload(String id, boolean deleted)
+	public Upload(long id, boolean deleted)
 	{
-		this(id, "", "", null, null, null, null);
+		this(id, "", "", null, null, 0, null);
         this.deleted = deleted;
 	}
 	
-	public Upload(String id, String mimetype, String title, byte[] preview, byte[] data, String modified, String referrer)
+	public Upload(long id, String mimetype, String title, byte[] preview, byte[] data, long modified, String referrer)
 	{
 		this.id = id;
 		this.title = title;
@@ -57,12 +57,12 @@ public class Upload
 		return this.deleted;
 	}
 	
-	public String getId()
+	public long getId()
 	{
 		return this.id;
 	}
 
-	public void setId(String id)
+	public void setId(long id)
 	{
 		this.id = id;
 	}
@@ -107,12 +107,12 @@ public class Upload
 		this.preview = preview;
 	}
 
-	public String getModified()
+	public long getModified()
 	{
 		return this.modified;
 	}
 
-	public void setModified(String modified)
+	public void setModified(long modified)
 	{
 		this.modified = modified;
 	}

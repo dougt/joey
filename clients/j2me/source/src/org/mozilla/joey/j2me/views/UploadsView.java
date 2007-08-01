@@ -168,7 +168,7 @@ camera here or in the MainMenu view.
             image = Image.createImage(new ByteArrayInputStream(upload.getPreview()));
 
             //#style uploadItem
-            return new ImageItem(null, image, ImageItem.LAYOUT_CENTER, upload.getId());
+            return new ImageItem(null, image, ImageItem.LAYOUT_CENTER, Long.toString(upload.getId()));
 
         }
         catch (Exception e)

@@ -93,7 +93,7 @@ public class DetailsView
 
     public String getDescription()
     {
-        return description;
+        return this.description;
     }
 
     public void setDescription(String description)
@@ -148,7 +148,7 @@ public class DetailsView
             } catch (Exception ignored) {}
 
             //#style imagecontent
-            Item item = new ImageItem(null, image, ImageItem.LAYOUT_CENTER, this.upload.getId());
+            Item item = new ImageItem(null, image, ImageItem.LAYOUT_CENTER, Long.toString(this.upload.getId()));
             append(item);
         }
 //#if polish.api.mmapi
@@ -172,7 +172,7 @@ public class DetailsView
                 //#style button
                 Item item = new StringItem(null, Locale.get("media.browser.open"));
                 item.setDefaultCommand(JoeyController.CMD_MEDIA_OPEN);
-                item.setItemCommandListener(controller);
+                item.setItemCommandListener(this.controller);
                 append(item);
             }
         }

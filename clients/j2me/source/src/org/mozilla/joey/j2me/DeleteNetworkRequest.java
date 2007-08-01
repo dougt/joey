@@ -27,7 +27,7 @@ package org.mozilla.joey.j2me;
 public class DeleteNetworkRequest
     extends NetworkRequest
 {
-    public DeleteNetworkRequest(String id)
+    public DeleteNetworkRequest(long id)
     {
         this.requestURL = "/uploads/deleteByFileID/" + id;
         this.contenttype = "application/x-www-form-urlencoded";
