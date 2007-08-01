@@ -23,6 +23,9 @@
 define('RSS', 'RSS');
 define('ATOM', 'Atom');
 
+if (!defined('MAGPIE_DEBUG'))
+    define('MAGPIE_DEBUG', false);
+
 require_once (MAGPIE_DIR . 'rss_utils.inc');
 
 /**
