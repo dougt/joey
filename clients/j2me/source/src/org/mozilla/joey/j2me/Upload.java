@@ -24,8 +24,17 @@
 
 package org.mozilla.joey.j2me;
 
+import de.enough.polish.io.Externalizable;
+
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
 public class Upload
+	implements Externalizable
 {
+	private static final int DEFAULT_SERIALIZATION_VERSION = 1;
+
 	private long id;
 	private String title;
 	private String mimetype;
@@ -125,5 +134,36 @@ public class Upload
 	public void setReferrer(String referrer)
 	{
 		this.referrer = referrer;
+	}
+
+	public void read(DataInputStream in)
+		throws IOException
+	{
+		// Helper for arrays.
+		int len;
+
+		/*int version =*/ in.readInt();
+		this.id = in.readLong();
+		this.title = in.readUTF();
+		this.modified = in.readLong();
+		len = in.readInt();
+		this.preview = new byte[len];
+		in.read(this.preview);
+		this.referrer = in.readUTF();
+		this.deleted = in.readBoolean();
+	}
+
+	public void write(DataOutputStream out)
+		throws IOException
+	{
+		out.writeInt(DEFAULT_SERIALIZATION_VERSION);
+
+		out.writeLong(this.id);
+		out.writeUTF(this.title);
+		out.writeLong(this.modified);
+		out.writeInt(this.preview.length);
+		out.write(this.preview);
+		out.writeUTF(this.referrer);
+		out.writeBoolean(this.deleted);
 	}
 }
