@@ -147,8 +147,10 @@ public class Upload
 		this.title = in.readUTF();
 		this.modified = in.readLong();
 		len = in.readInt();
-		this.preview = new byte[len];
-		in.read(this.preview);
+		if (len != -1) {
+			this.preview = new byte[len];
+			in.read(this.preview);
+		}
 		this.referrer = in.readUTF();
 		this.deleted = in.readBoolean();
 	}
@@ -159,11 +161,18 @@ public class Upload
 		out.writeInt(DEFAULT_SERIALIZATION_VERSION);
 
 		out.writeLong(this.id);
-		out.writeUTF(this.title);
+		out.writeUTF(this.title != null ? this.title : "");
 		out.writeLong(this.modified);
-		out.writeInt(this.preview.length);
-		out.write(this.preview);
-		out.writeUTF(this.referrer);
+
+		if (this.preview != null) {
+			out.writeInt(this.preview.length);
+			out.write(this.preview);
+		}
+		else {
+			out.writeInt(-1);
+		}
+
+		out.writeUTF(this.referrer != null ? this.referrer : "");
 		out.writeBoolean(this.deleted);
 	}
 }
