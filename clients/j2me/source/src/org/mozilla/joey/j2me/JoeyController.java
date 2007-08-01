@@ -111,6 +111,7 @@ public class JoeyController
 	public static final Command CMD_MEDIA_OPEN = new Command(Locale.get("command.media_open"), Command.SCREEN, 1);
 
 	private static final String RMS_USERDATA = "joey_userdata";
+	private static final String RMS_UPLOADS = "joey_uploads";
 
 	private int nextEvent = EVENT_NONE;
 	private Displayable currentView;
@@ -133,6 +134,7 @@ public class JoeyController
 
 			long lastModified = (new Date().getTime() / 1000) - JoeyController.this.userdata.getUpdateInterval();
 			JoeyController.this.commController.getIndexUpdate(JoeyController.this, lastModified);
+			JoeyController.this.userdata.setLastUpdate(lastModified);
 		}
 	};
 
@@ -187,6 +189,34 @@ public class JoeyController
 		catch (IOException e) {
 			//#debug error
 			System.out.println("unable to write userdata to record store");
+		}
+	}
+
+	private void loadUploadsFromRMS()
+	{
+		try {
+			this.uploads = (Vector) this.storage.read(RMS_UPLOADS);
+
+			//#debug info
+			System.out.println("Loaded upload data");
+		}
+		catch (IOException e) {
+			//#debug info
+			System.out.println("no uploads data stored in the record store");
+
+			// Create empty uploads vector.
+			this.uploads = new Vector();
+		}
+	}
+
+	private void saveUploadsToRMS()
+	{
+		try {
+			this.storage.save(this.uploads, RMS_UPLOADS);
+		}
+		catch (IOException e) {
+			//#debug error
+			System.out.println("unable to write upload data to record store");
 		}
 	}
 
@@ -424,6 +454,13 @@ public class JoeyController
 				this.commController.getIndex(this, 5, numUploads);
 				return;
 			}
+			
+			notifyEvent(request.responseCode == 200 ? EVENT_NETWORK_REQUEST_SUCCESSFUL : EVENT_NETWORK_REQUEST_FAILED);
+		}
+		else if (request instanceof IndexUpdateNetworkRequest)
+		{
+			//#debug info
+			System.out.println("IndexUpdateNetworkRequest request status: " + request.responseCode);
 
 			notifyEvent(request.responseCode == 200 ? EVENT_NETWORK_REQUEST_SUCCESSFUL : EVENT_NETWORK_REQUEST_FAILED);
 		}
@@ -500,18 +537,20 @@ public class JoeyController
 		} while (event != EVENT_NETWORK_REQUEST_SUCCESSFUL
 			     && event != EVENT_EXIT);
 
-		// We have now logged in and get now all known uploads and then start the
-		// continuous upload updates every 20 seconds.
-		this.commController.getIndex(this, 5, 0);
-
-		do {
-			event = waitEvent();
-		} while (event != EVENT_NETWORK_REQUEST_SUCCESSFUL);
-
 		// Handle main menu screen.
 		if (event == EVENT_NETWORK_REQUEST_SUCCESSFUL) {
 			// After a successful login, save the user info and load uploads from RMS.
 			saveUserdata();
+
+			// Load all known uploads from RMS.
+			loadUploadsFromRMS();
+
+			// Get all updates since the last check.
+			this.commController.getIndexUpdate(this, this.userdata.getLastUpdate());
+			
+			do {
+				event = waitEvent();
+			} while (event != EVENT_NETWORK_REQUEST_SUCCESSFUL);
 
 			// Start continuous update timer.
 			Timer timer = new Timer();
@@ -556,6 +595,7 @@ public class JoeyController
 			timer.cancel();
 		}
 
+		saveUploadsToRMS();
 		this.midlet.notifyDestroyed();
 	}
 
@@ -837,7 +877,15 @@ public class JoeyController
 			String referrer = getDataString(parsedData, "referrer." + i);
 			String preview = getDataString(parsedData, "preview." + i);
 			String mimetype = getDataString(parsedData, "type." + i);
-			long modified = Long.parseLong((getDataString(parsedData, "modified." + i)));
+			long modified = 0;
+
+			try {
+				modified = Long.parseLong((getDataString(parsedData, "modified." + i)));
+			}
+			catch (NumberFormatException e) {
+				// Ignore. modified variable is set to 0 in this case;
+			}
+
 			String title = getDataString(parsedData, "title." + i);
 
 			// Previews are optional.
