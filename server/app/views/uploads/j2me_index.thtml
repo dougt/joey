@@ -14,7 +14,7 @@ foreach ($uploads as $upload) {
   } else {
     echo "title."    . $i . "=" . $upload['Upload']['title'] . "\n";
     echo "referrer." . $i . "=" . $upload['Upload']['referrer'] . "\n";
-    echo "modified." . $i . "=" . $upload['Upload']['modified'] . "\n";
+    echo "modified." . $i . "=" . mktime($upload['Upload']['modified']) . "\n";
     echo "type."     . $i        . "=" . $upload['type'] . "\n";
     echo "preview."  . $i . "=" .   $upload['preview'] . "\n";
   }
