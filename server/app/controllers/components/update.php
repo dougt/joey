@@ -150,8 +150,9 @@ class UpdateComponent extends Object
             $this->controller->Upload->cacheQueries = true;
         }
 
-        // If we're not forcing an update, check if enough time has passed
-        if (!$force) {
+        // If we're not forcing an update, check if enough time has passed.  If the
+        // file has never been updated, it's time, automatically
+        if (!$force && $_upload['Upload']['ever_updated'] == 1) {
             $_expire_time = strtotime($_upload['File']['modified'] . " + " . CONTENTSOURCE_REFRESH_TIME . " minutes");
 
             if (($_expire_time === false) || $_expire_time > strtotime('now')) {
@@ -182,6 +183,9 @@ class UpdateComponent extends Object
                 return false;
         }
 
+        $this->controller->Upload->id = $_upload['Upload']['id'];
+        $this->controller->Upload->saveField('ever_updated', '1');
+
         return true;
         
     }
@@ -211,6 +215,7 @@ class UpdateComponent extends Object
             unset($_icon_url);
 
         if (($result = $this->fetchURL($_rss_url)) == false) {
+            $this->controller->Error->addError("Failed to fetch URL ({$_rss_url})", 'update:rss', false, true);
             return false;
         }
 
@@ -236,12 +241,12 @@ class UpdateComponent extends Object
         else
         {
           if (!file_put_contents($_originalname, $result)) {
-            $this->controller->Error->addError("Failed to write original file ({$_originalname})", 'general', false, true);
+            $this->controller->Error->addError("Failed to write original file ({$_originalname})", 'update:rss', false, true);
             return false;
           }
           
           if (!file_put_contents($_filename, $this->_buildRssOutput($rss))) {
-            $this->controller->Error->addError("Failed to write file ({$_filename})", 'general', false, true);
+            $this->controller->Error->addError("Failed to write file ({$_filename})", 'update:rss', false, true);
             return false;
           }
 
@@ -333,7 +338,7 @@ class UpdateComponent extends Object
         $_tempname = UPLOAD_DIR."/cache/{$upload['File']['preview_name']}.{$_extension}";
 
         if (!file_put_contents($_tempname, $_result)) {
-            $this->controller->Error->addError("Failed to write temp file ({$_tempname})", 'general', false, true);
+            $this->controller->Error->addError("Failed to write temp file ({$_tempname})", 'update', false, true);
             return false;
         }
 
@@ -402,12 +407,12 @@ class UpdateComponent extends Object
         exit();
 
         if (!array_key_exists($_podcast['url'], $this->Storage->suffix)) {
-            $this->controller->Error->addError("Attempt to save unsupported RSS enclosure type ({$_podcast['url']})", 'general', false, true);
+            $this->controller->Error->addError("Attempt to save unsupported RSS enclosure type ({$_podcast['url']})", 'update', false, true);
             return false;
         }
         */
         if (!file_put_contents($_originalname, $_output)) {
-            $this->controller->Error->addError("Failed to write original file ({$_originalname})", 'general', false, true);
+            $this->controller->Error->addError("Failed to write original file ({$_originalname})", 'update', false, true);
         }
 
         // transcoding requires that the file suffix used
@@ -483,7 +488,7 @@ class UpdateComponent extends Object
 
         // write the file.
         if (!file_put_contents($_filename, $_ms->result)) {
-            $this->controller->Error->addError("Failed to write file ({$_filename})", 'general', false, true);
+            $this->controller->Error->addError("Failed to write file ({$_filename})", 'update:microsummary', false, true);
             return false;
         }
 
@@ -530,12 +535,12 @@ class UpdateComponent extends Object
 
         // write the file.
         if (!file_put_contents($_filename, $_jw->content)) {
-            $this->controller->Error->addError("Failed to write file ({$_filename})", 'general', false, true);
+            $this->controller->Error->addError("Failed to write file ({$_filename})", 'update:joeywidget', false, true);
             return false;
         }
 
         if (!file_put_contents($_previewname, $_jw->preview)) {
-            $this->controller->Error->addError("Failed to write preview file ({$_previewname})", 'general', false, true);
+            $this->controller->Error->addError("Failed to write preview file ({$_previewname})", 'update:joeywidget', false, true);
             return false;
         }
 

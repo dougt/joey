@@ -58,15 +58,17 @@ class TranscodeComponent extends Object
             return false;
         }
 
-        $_target_dir = UPLOAD_DIR."/{$this->controller->_user['id']}";
+        $_file = $this->controller->File->findById($id, null, null, 0);
+
+        $_owner = $this->controller->Upload->findOwnerDataFromUploadId($_file['File']['upload_id']);
+
+        $_phone_data = $this->controller->User->getPhoneDataByUserId($_owner['User']['id']);
+
+        $_target_dir = UPLOAD_DIR."/{$_owner['User']['id']}";
 
         if (!is_writable($_target_dir)) {
             return false;
         }
-
-        $_file = $this->controller->File->findById($id, null, null, 0);
-
-        $_phone_data = $this->controller->User->getPhoneDataByUserId($this->controller->_user['id']);
 
         // Get the random name generated for the original file
         preg_match('/^joey-([A-Za-z0-9-].*)\..*$/', $_file['File']['original_name'], $matches);
@@ -88,7 +90,9 @@ class TranscodeComponent extends Object
             $_file['File']['name'] = empty($_file['File']['name']) ?  "joey-{$_rand}.3gp" : $_file['File']['name'];
             $_file['File']['type'] = empty($_file['File']['type']) ?  "video/3gpp" : $_file['File']['type'];
 
-            $this->transcodeVideo("{$_target_dir}/originals/{$_file['File']['original_name']}", "{$_target_dir}/{$_file['File']['name']}", "{$_target_dir}/previews/{$_file['File']['preview_name']}", $_phone_data['screen_width'], $_phone_data['screen_height']);
+            if (!$this->transcodeVideo("{$_target_dir}/originals/{$_file['File']['original_name']}", "{$_target_dir}/{$_file['File']['name']}", "{$_target_dir}/previews/{$_file['File']['preview_name']}", $_phone_data['screen_width'], $_phone_data['screen_height'])) {
+                return false;
+            }
 
         // If the upload is an image
         } else if (in_array(strtolower($_file['File']['original_type']), array('image/png', 'image/jpeg', 'image/tiff', 'image/bmp', 'image/gif'))) {
@@ -96,7 +100,9 @@ class TranscodeComponent extends Object
             $_file['File']['name'] = empty($_file['File']['name']) ?  "joey-{$_rand}.png" : $_file['File']['name'];
             $_file['File']['type'] = empty($_file['File']['type']) ?  "image/png" : $_file['File']['type'];
 
-            $this->transcodeImageAndPreview("{$_target_dir}/originals/{$_file['File']['original_name']}","{$_target_dir}/{$_file['File']['name']}", "{$_target_dir}/previews/{$_file['File']['preview_name']}", $_phone_data['screen_width'], $_phone_data['screen_height']);
+            if (!$this->transcodeImageAndPreview("{$_target_dir}/originals/{$_file['File']['original_name']}","{$_target_dir}/{$_file['File']['name']}", "{$_target_dir}/previews/{$_file['File']['preview_name']}", $_phone_data['screen_width'], $_phone_data['screen_height'])) {
+                return false;
+            }
  
         } else if (in_array(strtolower($_file['File']['original_type']), array('browser/stuff'))) {
 
@@ -107,7 +113,9 @@ class TranscodeComponent extends Object
             $_file['File']['name'] = empty($_file['File']['name']) ?  "joey-{$_rand}.html" : $_file['File']['name'];
             $_file['File']['type'] = empty($_file['File']['type']) ?  "text/html" : $_file['File']['type'];
 
-            $this->transcodeBrowserStuff("", "{$_target_dir}/originals/{$_file['File']['original_name']}","{$_target_dir}/{$_file['File']['name']}");
+            if (!$this->transcodeBrowserStuff("", "{$_target_dir}/originals/{$_file['File']['original_name']}","{$_target_dir}/{$_file['File']['name']}")) {
+                return false;
+            }
         }
         else if (in_array(strtolower($_file['File']['original_type']), array('text/plain'))) {
 
@@ -118,7 +126,9 @@ class TranscodeComponent extends Object
             $_file['File']['name'] = empty($_file['File']['name']) ?  "joey-{$_rand}.txt" : $_file['File']['name'];
             $_file['File']['type'] = empty($_file['File']['type']) ?  "text/plain" : $_file['File']['type'];
 
-            $this->transcodeText("{$_target_dir}/originals/{$_file['File']['original_name']}","{$_target_dir}/{$_file['File']['name']}");
+            if (!$this->transcodeText("{$_target_dir}/originals/{$_file['File']['original_name']}","{$_target_dir}/{$_file['File']['name']}")) {
+                return false;
+            }
         }
 
         // update all of the file sizes
@@ -127,6 +137,10 @@ class TranscodeComponent extends Object
         $_file['File']['preview_size'] = filesize("{$_target_dir}/previews/{$_file['File']['preview_name']}");
 
         if ($this->controller->File->save($_file)) {
+
+            $this->controller->Upload->id = $_file['File']['upload_id'];
+            $this->controller->Upload->saveField('ever_updated', '1');
+
             return true;
         }
 
@@ -159,7 +173,7 @@ class TranscodeComponent extends Object
         exec($_cmd, $_out, $_ret);
 
         if ($_ret !== 0) {
-            $this->controller->Error->addError("transcodeAudio error (".implode(',',$_out).") from the command ($_cmd)", 'general', false, true);
+            $this->controller->Error->addError("transcodeAudio error (".implode(',',$_out).") from the command ($_cmd)", 'transcode:audio', false, true);
             return false;
         }
 
@@ -178,7 +192,7 @@ class TranscodeComponent extends Object
         $_cmd = CONVERT_CMD." -geometry '{$width}x{$height}' {$_fromName} {$_toName}";    
         exec($_cmd, $_out, $_ret);
         if ($_ret !== 0) {
-            $this->controller->Error->addError("transcodeImage error (".implode(',',$_out).") from the command ($_cmd)", 'general', false, true);
+            $this->controller->Error->addError("transcodeImage error (".implode(',',$_out).") from the command ($_cmd)", 'transcode:image', false, true);
             return false;
         }
 
@@ -220,7 +234,7 @@ class TranscodeComponent extends Object
         unlink($tmpfname);
 
         if ($_ret !== 0) {
-            $this->controller->Error->addError("transcodeVideo error (".implode(',',$_out).") from the command ($_cmd)", 'general', false, true);
+            $this->controller->Error->addError("transcodeVideo error (".implode(',',$_out).") from the command ($_cmd)", 'transcode:video', false, true);
             return false;
         }
 
@@ -230,7 +244,7 @@ class TranscodeComponent extends Object
         exec($_cmd, $_out, $_ret);
 
         if ($_ret !== 0) {
-            $this->controller->Error->addError("transcodeVideo preview error (".implode(',',$_out).") from the command ($_cmd)", 'general', false, true);
+            $this->controller->Error->addError("transcodeVideo preview error (".implode(',',$_out).") from the command ($_cmd)", 'transcode:video', false, true);
             return false;
         }
 

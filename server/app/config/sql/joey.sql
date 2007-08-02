@@ -112,6 +112,7 @@ CREATE TABLE `uploads` (
   `title` varchar(255) NOT NULL default '',
   `referrer` varchar(255) NOT NULL default '',
   `deleted` datetime default NULL,
+  `ever_updated` tinyint(1) NOT NULL default 0,
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL,
   PRIMARY KEY  (`id`)

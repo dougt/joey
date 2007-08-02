@@ -200,6 +200,20 @@ class Upload extends AppModel
         return $data;
     }
 
+    function getActiveIds() {
+        $_query = "SELECT id FROM uploads as Upload WHERE deleted IS NULL";
+
+        $data = $this->query($_query);
+
+        // Cake is crazy...
+        $_ret = array();
+        foreach ($data as $var => $val) {
+            $_ret[] = $val['Upload']['id'];
+        }
+
+        return $_ret;
+    }
+
     /**
      * I suggest using this function instead of findById() because it brings back
      * exactly what we want. when using findById, to get the contentsource we have to go to 3
@@ -224,6 +238,38 @@ class Upload extends AppModel
         $data = $this->query($_query);
 
         return $data[0];
+    }
+
+    /**
+     * Performs the same query as findDataById, but will return data for several
+     * Uploads.  If you asked cake to handle this, it would actually run a separate
+     * query for every upload.  *shiver*  Warning: This function doesn't verify 
+     * the data in the array is valid!
+     */
+    function findDataByIds($ids=array(), $options='') {
+
+        if (empty($ids)) {
+            return array();
+        }
+
+        $_ids = implode(',',$ids);
+
+        $_query = "
+            SELECT * FROM 
+            uploads_users 
+            JOIN uploads as Upload ON uploads_users.upload_id = Upload.id
+            LEFT JOIN files as File ON Upload.id = File.upload_id
+            LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
+            LEFT JOIN contentsourcetypes as Contentsourcetype ON Contentsource.contentsourcetype_id = Contentsourcetype.id
+            WHERE uploads_users.upload_id IN({$_ids})
+        ";
+        if (!empty($options)) {
+            $_query .= "AND {$options}";
+        }
+
+        $data = $this->query($_query);
+
+        return $data;
     }
 
 

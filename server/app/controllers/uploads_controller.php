@@ -291,19 +291,21 @@ class UploadsController extends AppController
     if ($this->Upload->delete($id)) {
       // Delete the files if they exist
       if (array_key_exists(0,$_item['File'])) {
-        if (file_exists(UPLOAD_DIR."/{$this->_user['id']}/{$_item['File'][0]['name']}") && !unlink(UPLOAD_DIR."/{$this->_user['id']}/{$_item['File'][0]['name']}")) {
-          $this->Error->addError('Could not delete file ('.UPLOAD_DIR."/{$this->_user['id']}/{$_item['File'][0]['name']}".')', 'general', false, true);
+        if (!empty($_item['File'][0]['name'])) {
+            if (file_exists(UPLOAD_DIR."/{$this->_user['id']}/{$_item['File'][0]['name']}") && !unlink(UPLOAD_DIR."/{$this->_user['id']}/{$_item['File'][0]['name']}")) {
+              $this->Error->addError('Could not delete file ('.UPLOAD_DIR."/{$this->_user['id']}/{$_item['File'][0]['name']}".')', 'general', false, true);
+            }
         }
         
         if (!empty($_item['File'][0]['original_name'])) {
           if (file_exists(UPLOAD_DIR."/{$this->_user['id']}/originals/{$_item['File'][0]['original_name']}") && !unlink(UPLOAD_DIR."/{$this->_user['id']}/originals/{$_item['File'][0]['original_name']}")) {
-            $this->Error->addError('Could not delete file ('.UPLOAD_DIR."/{$this->_user['id']}/originals/{$_item['File'][0]['original_name']}".')', 'general', false, true);
+            $this->Error->addError('Could not delete original file ('.UPLOAD_DIR."/{$this->_user['id']}/originals/{$_item['File'][0]['original_name']}".')', 'general', false, true);
           }
         }
         
         if (!empty($_item['File'][0]['preview_name'])) {
           if (file_exists(UPLOAD_DIR."/{$this->_user['id']}/previews/{$_item['File'][0]['preview_name']}") && !unlink(UPLOAD_DIR."/{$this->_user['id']}/previews/{$_item['File'][0]['preview_name']}")) {
-            $this->Error->addError('Could not delete file ('.UPLOAD_DIR."/{$this->_user['id']}/previews/{$_item['File'][0]['preview_name']}".')', 'general', false, true);
+            $this->Error->addError('Could not delete preview file ('.UPLOAD_DIR."/{$this->_user['id']}/previews/{$_item['File'][0]['preview_name']}".')', 'general', false, true);
           }
         }
       }
@@ -502,7 +504,7 @@ class UploadsController extends AppController
 
         // To make it easier on the view, break these all
         // apart.  Maybe other views will want it this way
-        // too.
+        // too. @todo benchmark this - this is a lot of queries...
         $_options['types'] = $this->filetypes["videos"];
         $this->set("videos", $this->Upload->findAllUploadsForUserId($this->_user['id'], $_options));
 
@@ -603,8 +605,8 @@ class UploadsController extends AppController
 
                     $this->Upload->setOwnerForUploadIdAndUserId($this->Upload->id, $this->_user['id']);
 
-                    // @todo - remove this.  This needs to happen offline (bug 386777)
-                    $this->Update->updateContentSourceByUploadId($this->Upload->id, true);
+                    // This happens offline now (bug 386777)
+                    //$this->Update->updateContentSourceByUploadId($this->Upload->id, true);
 
                     $this->Upload->commit();
 
@@ -687,7 +689,8 @@ class UploadsController extends AppController
               return false;
             }
             
-            $this->Transcode->transcodeFileById($prior_upload['File']['id']);
+            // This happens offline now (bug 386777)
+            //$this->Transcode->transcodeFileById($prior_upload['File']['id']);
             return true;
           }
         }
@@ -720,8 +723,8 @@ class UploadsController extends AppController
 
                 $this->Upload->commit();
 
-                // @todo This needs to happen offline (bug 386777)
-                $this->Transcode->transcodeFileById($this->File->id);
+                // This happens offline now (bug 386777)
+                //$this->Transcode->transcodeFileById($this->File->id);
 
                 return true;
 
@@ -736,6 +739,81 @@ class UploadsController extends AppController
         }
 
         return false;
+    }
+
+    /**
+     * Processing media is all done offline via cron, because it is too intensive to
+     * do real time. This function prints stuff, because we want output while the
+     * cron is running.
+     */
+    function updateAllUploads() {
+
+        // This should only be run by the update.php cron script.
+        if (!defined('MAINTENANCE_ACCESS') || !MAINTENANCE_ACCESS) {
+            $this->redirect('/uploads/index');
+            exit;
+        }
+
+        // How many uploads do we want to retrieve per loop?  @todo - pick a good
+        // number
+        $_uploads_per_query = 15;
+
+        // Get a list of ids for uploads that aren't deleted
+        $_upload_ids = $this->Upload->getActiveIds();
+
+        $_total_uploads = count($_upload_ids);
+        $_failed_uploads = 0;
+        $_transcoded_uploads = 0;
+        $_skipped_uploads = 0;
+
+        // Loop through our list of upload ids, and run our query.  This is a query
+        // in a loop (and actually, several queries in several loops in the update
+        // process).  This is going to be a relatively slow process, which is why we
+        // are only allowing it to be run via cron.
+        for ($_start = 0; $_start < $_total_uploads;   ) {
+
+            // I wish they had an array_shift() that could specify the amount of elements you want back...
+            $_ids = array_slice($_upload_ids, $_start, $_uploads_per_query);
+
+            $_uploads = $this->Upload->findDataByIds($_ids);
+
+            foreach ($_uploads as $_upload) {
+                // There is a contentsource - we should update
+                if (!empty($_upload['Contentsource']['id'])) {
+                    if (!$this->Update->updateContentSourceByUploadId($_upload['Upload']['id'])) {
+                        echo "  Failed to update id ({$_upload['Upload']['id']})\n";
+                        $_failed_uploads++;
+                    }
+
+                // This is an uploaded file, we need to transcode it
+                } else if (empty($_upload['File']['name']) && empty($_upload['File']['preview_name']) && !empty($_upload['File']['original_name']) && $_upload['Upload']['ever_updated'] == 0) {
+                    if (!$this->Transcode->transcodeFileById($_upload['File']['id'])) {
+                        echo "  Failed to transcode upload id ({$_upload['Upload']['id']})\n";
+                        $_failed_uploads++;
+                    }
+                    $_transcoded_uploads++;
+                } else {
+                    $_skipped_uploads++;
+                }
+            }
+
+            $_start += count($_ids);
+
+            echo "Processed {$_start} of {$_total_uploads} uploads...\n";
+
+        }
+
+        echo "done.\n";
+        echo "Stats:  \n";
+        echo "  Total Uploads we looked at: {$_total_uploads}\n";
+        echo "  Total Uploads we transcoded: {$_transcoded_uploads}\n";
+        echo "  Total Skipped (didn't need an update, or unsupported): {$_skipped_uploads}\n";
+        echo "  Total Failures: {$_failed_uploads}\n";
+        if ($_failed_uploads > 0) {
+            echo "  The error log (".LOGS."error.log) might have more information on the failures.";
+        }
+
+        $this->layout = null;
     }
 
 }
