@@ -44,6 +44,11 @@ public class Upload
 	private String referrer;
     private boolean deleted;
 
+    public Upload()
+    {
+    	// Only for serialization. Never use explicitely.
+    }
+
 	public Upload(long id, boolean deleted)
 	{
 		this(id, "", "", null, null, 0, null);
