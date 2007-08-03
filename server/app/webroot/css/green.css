@@ -154,10 +154,10 @@ table { width:100% }
 	background-color:#444444;
 }
 
-.joey-loading {
-	width:16px;
-	height:16px;
-	background:url(/img/loading.gif) no-repeat 0 0;
+a.joey-loading {
+	min-height:16px;
+	padding-right:22px;
+	background: url(/img/loading.gif) no-repeat 100% 0;
 }
 
 
