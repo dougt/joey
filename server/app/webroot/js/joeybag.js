@@ -408,6 +408,7 @@ function joeyMedia_rssfetch(targetDoc, targetElementId, refDocument, itemId) {
  
 		var elementLoadingButton = document.getElementById("joeyPlayerController-"+itemId);
 		elementLoadingButton.innerHTML="Refresh";
+		elementLoadingButton.setAttribute("class","");
 
 	});
 
