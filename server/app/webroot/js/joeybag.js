@@ -511,6 +511,11 @@ blenderObject.prototype.apply = function () {
 blenderObject.prototype.run = function () {
 	try {
 
+
+		this.xmlRef.load(this.xmlUrl);
+
+		/* Old synchronous code 
+
 		req = new XMLHttpRequest();
 		req.open('GET', this.xmlUrl, false); 
 		req.send(null);
@@ -523,6 +528,9 @@ blenderObject.prototype.run = function () {
 
 
 		}
+
+
+		*/
 
 
 	} catch (e) {
