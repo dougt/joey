@@ -490,6 +490,8 @@ blenderObject.prototype.apply = function () {
 			htmlFragment = xsltProcessor.transformToFragment(this.xmlRef, this.targetDocument);
 
 			this.targetElement.setAttribute("style","display:block;width:90%;;border:1px solid gray;background-color:#444444;padding:1em;margin:.5em;");
+
+			this.targetElement.innerHTML="";
   		      this.targetElement.appendChild(htmlFragment.firstChild);
 
 			this.callbackRefFunction();
