@@ -154,6 +154,13 @@ table { width:100% }
 	background-color:#444444;
 }
 
+.joey-loading {
+	width:16px;
+	height:16px;
+	background:url(/img/loading.gif) no-repeat 0 0;
+}
+
+
 table.joey-upload-list, .joey-upload-list td {
 	padding:1em;
 }
