@@ -405,10 +405,23 @@ function joeyMedia_rssfetch(targetDoc, targetElementId, refDocument, itemId) {
 		elementCloseButton.innerHTML="<a href='javascript;' >close</a>";
 		elementCloseButton.setAttribute("onclick","document.getElementById('"+targetElementId+"').innerHTML='';document.getElementById('"+targetElementId+"').style.display='none';return false;");
 
-
  
+		var elementLoadingButton = document.getElementById("joeyPlayerController-"+itemId);
+		elementLoadingButton.innerHTML="Refresh";
 
 	});
+
+
+	testLoad.setCallbackLoading( function () {
+
+		
+		var elementLoadingButton = document.getElementById("joeyPlayerController-"+itemId);
+		elementLoadingButton.setAttribute("class","joey-loading");
+		elementLoadingButton.innerHTML="Loading";
+alert(2);
+
+	});
+
 
 	testLoad.run();
 
@@ -451,10 +464,11 @@ blenderObject.prototype.xmlLoaded = function () {
 }
 
 blenderObject.prototype.setCallback = function (callbackRefFunction) {
-
 	this.callbackRefFunction = callbackRefFunction;
-	
+}
 
+blenderObject.prototype.setCallbackLoading = function (callbackRefFunction) {
+	this.callbackRefLoadingFunction = callbackRefFunction;
 }
 
 blenderObject.prototype.xslSerialize = function (stringXML) {
@@ -484,8 +498,8 @@ blenderObject.prototype.xmlLoading = function (e) {
 		}
 	}
 
-	if(this.xmlHttp.readyState ==2 ) {
-
+	if(this.xmlHttp.readyState == 1 ) {
+		this.callbackRefLoadingFunction();
 	}
 
 
