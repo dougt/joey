@@ -880,7 +880,8 @@ public class JoeyController
 			long modified = 0;
 
 			try {
-				modified = Long.parseLong((getDataString(parsedData, "modified." + i)));
+				// Server sends seconds, we need to handle milliseconds.
+				modified = Long.parseLong((getDataString(parsedData, "modified." + i))) * 1000;
 			}
 			catch (NumberFormatException e) {
 				// Ignore. modified variable is set to 0 in this case;
