@@ -396,7 +396,6 @@ function joeyMedia_rssfetch(targetDoc, targetElementId, refDocument, itemId) {
 	testLoad.setTargetDocument(targetDoc);
 	testLoad.setTargetElement(document.getElementById(targetElementId));
 
-	
 
 
 	testLoad.setCallback(function () { 
@@ -421,7 +420,10 @@ function joeyMedia_rssfetch(targetDoc, targetElementId, refDocument, itemId) {
 
 function blenderObject() {
 
-	this.xmlRef=document.implementation.createDocument("","",null);
+	this.xmlHttp = new XMLHttpRequest();
+
+	this.xmlRef = null;
+
 	this.xslRef=document.implementation.createDocument("http://www.w3.org/1999/XSL/Transform","stylesheet",null);
 
 	this.xmlUrl="";
@@ -431,9 +433,12 @@ function blenderObject() {
 
 	var lambda=function thisScopeFunction() { myThis.xmlLoaded(); }
 	var omega=function thisScopeFunction2() { myThis.xslLoaded(); }
+	var gamma = function thisScopeFunction3(e) { myThis.xmlLoading(e); } 
 
-	this.xmlRef.addEventListener("load",lambda,false);
 	this.xslRef.addEventListener("load",omega,false);
+
+	this.xmlHttp.onreadystatechange = gamma;
+
 
 	this.xmlLoadedState=false;
 	this.xslLoadedState=false;
@@ -462,6 +467,29 @@ blenderObject.prototype.xslSerialize = function (stringXML) {
 blenderObject.prototype.xslLoaded = function () {
 	this.xslLoadedState=true;
 	this.apply();
+}
+
+blenderObject.prototype.xmlLoading = function (e) {
+
+	if(this.xmlHttp.readyState ==4 ) {
+
+		if(this.xmlHttp.status == 200) {
+
+			this.xmlRef = this.xmlHttp.responseXML;
+
+			this.xmlLoadedState=true;
+			this.apply();
+			return;
+
+		}
+	}
+
+	if(this.xmlHttp.readyState ==2 ) {
+
+	}
+
+
+
 }
 
 blenderObject.prototype.xmlSet = function (urlstr) {
@@ -512,30 +540,10 @@ blenderObject.prototype.run = function () {
 	try {
 
 
-		this.xmlRef.load(this.xmlUrl);
-
-		/* Old synchronous code 
-
-		req = new XMLHttpRequest();
-		req.open('GET', this.xmlUrl, false); 
-		req.send(null);
-		if(req.status == 200) {
-
-			this.xmlRef=req.responseXML;
-			this.xmlLoadedState=true;
-
-			this.apply();
-
-
-		}
-
-
-		*/
-
+		this.xmlHttp.open('GET', this.xmlUrl, true); 
+		this.xmlHttp.send(null);
 
 	} catch (e) {
-
-	
 
 
 	}
