@@ -219,8 +219,8 @@ class microsummary {
     // fetch
     if (!$str = $this->fetch($applyTo))
     {
+      $result = "unable to fetch $applyTo";
       return;
-      //       die("unable to fetch $applyTo");
     }
 
     //    $str = str_replace("<head>",
