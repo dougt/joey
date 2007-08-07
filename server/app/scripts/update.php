@@ -46,6 +46,8 @@
  * @subpackage bin
  */
 
+ // Grab our defines
+ require_once '../config/config.php';
 
  // Before doing anything, test to see if we are calling this from the command
  // line.  If this is being called from the web, HTTP environment variables will
@@ -53,13 +55,24 @@
  if (isset($_SERVER['HTTP_HOST'])) {
      exit;
  }
+
+ // Lets check if we are already running.  If so, we need to bail.
+ $joey_lock_file = fopen(UPLOAD_DIR."/cache/joey.update.lock", "w");
+
+ if (!$joey_lock_file) {
+   echo "Could not open lock file!";
+   exit;
+ }
+
+ if (!flock($joey_lock_file, LOCK_NB+LOCK_EX)) { 
+   fclose($joey_lock_file);
+   echo "Could not aquire lock!";
+   exit;
+ }
  //@todo settimelimit/memorylimit
 
  ini_set('memory_limit', '32M');
  set_time_limit(0);
-
- // Grab our defines
- require_once '../config/config.php';
 
  // This will let us access the functions we need to (ie. bypass authentication)
  define('MAINTENANCE_ACCESS', TRUE);
@@ -71,6 +84,10 @@
  require dirname(__FILE__).'/../webroot/index.php';
  
  echo "done.\n";
+
+ // Clean up our lockfile
+ flock($joey_lock_file, LOCK_UN);
+ fclose($joey_lock_file);
 
 
 ?>
