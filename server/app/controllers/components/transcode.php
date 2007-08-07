@@ -67,7 +67,8 @@ class TranscodeComponent extends Object
         $_target_dir = UPLOAD_DIR."/{$_owner['User']['id']}";
 
         if (!is_writable($_target_dir)) {
-            return false;
+          $this->controller->Error->addError("Target Directory is not writable  ($_target_dir)", 'transcode:fatal', false, true);
+          return false;
         }
 
         // Get the random name generated for the original file
@@ -161,13 +162,21 @@ class TranscodeComponent extends Object
 
     function transcodeText($fromName, $toName)
     {
-      copy ($fromName, $toName);
+      $_ret = copy ($fromName, $toName);
+      if ($_ret !== 0) {
+        $this->controller->Error->addError("transcodeText error ($fromName -> $toName)", 'transcode:text', false, true);
+        return false;
+      }
       return true;
     }
 
     function transcodeBrowserStuff($url, $fromName, $toName)
     {
-      copy ($fromName, $toName);
+      $_ret = copy ($fromName, $toName);
+      if ($_ret !== 0) {
+        $this->controller->Error->addError("transcodeBrowserStuff error ($fromName -> $toName)", 'transcode:browser', false, true);
+        return false;
+      }
       return true;
     }
     
