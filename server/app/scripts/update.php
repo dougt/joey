@@ -47,7 +47,7 @@
  */
 
  // Grab our defines
- require_once '../config/config.php';
+ require_once dirname(__FILE__).'/../config/config.php';
 
  // Before doing anything, test to see if we are calling this from the command
  // line.  If this is being called from the web, HTTP environment variables will
