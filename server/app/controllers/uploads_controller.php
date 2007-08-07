@@ -793,7 +793,7 @@ class UploadsController extends AppController
                 // There is a contentsource - we should update
                 if (!empty($_upload['Contentsource']['id'])) {
                     if (!$this->Update->updateContentSourceByUploadId($_upload['Upload']['id'])) {
-                        echo "  Failed to update id ({$_upload['Upload']['id']})\n";
+                        echo "  Failed to update id ({$_upload['Upload']['id']} - file id {$_upload['File']['id']})\n";
                         $_failed_uploads++;
                     }
 

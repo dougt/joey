@@ -107,9 +107,30 @@ class UpdateComponent extends Object
    */
   function fetchURL($url)
   {
+      $parsed = parse_url($url);
+
+      // We want to ensure that the query does not have
+      // space or other illegal char.  we need to urlencode
+      // it, but that does way to much. (it converts '='
+      // which is valid in the query string).  There doesn't
+      // seam to be an easy way to do this. @TODO maybe
+      // something exists in PHP5.
+
+      $uri  = isset($parsed['scheme']) ? $parsed['scheme']."://" : "http://";
+      $uri .= isset($parsed['user']) ? $parsed['user'].($parsed['pass']? ':'.$parsed['pass']:'').'@':'';
+      $uri .= isset($parsed['host']) ? $parsed['host'] : '';
+      $uri .= isset($parsed['port']) ? ':'.$parsed['port'] : '';
+      $uri .= isset($parsed['path']) ? $parsed['path'] : '';
+
+      // urlencode does way to much.  all we need to do (i think) is escape spaces.
+      $query = str_replace(" ", "%20", $parsed['query']);
+
+      $uri .= isset($parsed['query']) ? '?'. $query : '';
+      $uri .= isset($parsed['fragment']) ? '#'.$parsed['fragment'] : '';
+
       $useragent = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-US; rv:1.8.1.4) Gecko/20070515 Firefox/2.0.0.4";
       $ch = curl_init();
-      curl_setopt($ch, CURLOPT_URL, $url);
+      curl_setopt($ch, CURLOPT_URL, $uri);
       curl_setopt($ch, CURLOPT_HEADER, 0);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); // return into a variable
       curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
@@ -117,7 +138,14 @@ class UpdateComponent extends Object
 
       $result = curl_exec($ch);
 
+      $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
       curl_close($ch);
+      
+      if ($code != 200) //@todo others? 
+      {
+        return false;
+      }
+
       return $result;
   }
 
@@ -224,8 +252,10 @@ class UpdateComponent extends Object
 
         $rss = new MagpieRSS( $result );
         if ( !$rss or $rss->ERROR)
+        {
+            $this->controller->Error->addError("Failed to parse RSS ({$_rss_url} error: {$rss->ERROR})", 'update:rss', false, true);          
             return false;
-
+        }
         $_title = $rss->channel['title'];
 
         $this->controller->Upload->id = $upload['Upload']['id'];
@@ -328,6 +358,7 @@ class UpdateComponent extends Object
 
         // Grab the icon content.
         if (($_result = $this->fetchURL($url)) == false) {
+            $this->controller->Error->addError("Failed to fetch URL ({$_rss_url})", 'update:preview', false, true);
             return false;
         }
 
@@ -398,6 +429,7 @@ class UpdateComponent extends Object
         }
 
         if (($_output = $this->fetchURL($_podcast['url'])) == false) {
+            $this->controller->Error->addError("Failed to fetch URL ({$_rss_url})", 'update:podcast', false, true);
             return false;
         }
 

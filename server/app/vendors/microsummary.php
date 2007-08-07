@@ -390,22 +390,49 @@ class microsummary {
 
   // curl utility function
   function fetch($url) {
-    $ch = curl_init();
-    curl_setopt ($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (X11; U; FreeBSD i386; en-US; rv:1.2a) Gecko/20021021");
-    curl_setopt($ch, CURLOPT_URL,$url); // set url to post to
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER,1); // return into a variable
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept-Charset:utf-8')); 
-    curl_setopt($ch, CURLOPT_TIMEOUT, 5);
-    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); 
-    $result = curl_exec($ch);
-    if (curl_errno($ch)) {
-      return false;
-    }
-    curl_close($ch);
-    
-    return $result;
-  }
 
-}
+      $parsed = parse_url($url);
+
+      // We want to ensure that the query does not have
+      // space or other illegal char.  we need to urlencode
+      // it, but that does way to much. (it converts '='
+      // which is valid in the query string).  There doesn't
+      // seam to be an easy way to do this. @TODO maybe
+      // something exists in PHP5.
+
+      $uri  = isset($parsed['scheme']) ? $parsed['scheme']."://" : "http://";
+      $uri .= isset($parsed['user']) ? $parsed['user'].($parsed['pass']? ':'.$parsed['pass']:'').'@':'';
+      $uri .= isset($parsed['host']) ? $parsed['host'] : '';
+      $uri .= isset($parsed['port']) ? ':'.$parsed['port'] : '';
+      $uri .= isset($parsed['path']) ? $parsed['path'] : '';
+
+      // urlencode does way to much.  all we need to do (i think) is escape spaces.
+      $query = str_replace(" ", "%20", $parsed['query']);
+
+      $uri .= isset($parsed['query']) ? '?'. $query : '';
+      $uri .= isset($parsed['fragment']) ? '#'.$parsed['fragment'] : '';
+
+      $useragent = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-US; rv:1.8.1.4) Gecko/20070515 Firefox/2.0.0.4";
+      $ch = curl_init();
+      curl_setopt($ch, CURLOPT_URL, $uri);
+      curl_setopt($ch, CURLOPT_HEADER, 0);
+      curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); // return into a variable
+      curl_setopt($ch, CURLOPT_HTTPHEADER, array('Accept-Charset:utf-8')); 
+      curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
+      curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); 
+
+      $result = curl_exec($ch);
+
+      $code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+      curl_close($ch);
+      
+      if ($code != 200) //@todo others? 
+      {
+        return false;
+      }
+
+      return $result;
+  }
+  }
 
 ?>
