@@ -163,7 +163,7 @@ class TranscodeComponent extends Object
     function transcodeText($fromName, $toName)
     {
       $_ret = copy ($fromName, $toName);
-      if ($_ret !== 0) {
+      if ($_ret == false) {
         $this->controller->Error->addError("transcodeText error ($fromName -> $toName)", 'transcode:text', false, true);
         return false;
       }
@@ -173,7 +173,7 @@ class TranscodeComponent extends Object
     function transcodeBrowserStuff($url, $fromName, $toName)
     {
       $_ret = copy ($fromName, $toName);
-      if ($_ret !== 0) {
+      if ($_ret == false) {
         $this->controller->Error->addError("transcodeBrowserStuff error ($fromName -> $toName)", 'transcode:browser', false, true);
         return false;
       }
@@ -260,6 +260,7 @@ class TranscodeComponent extends Object
 
         $width = intval($width / 2);
         $height = intval($height / 2);
+
         $_cmd = FFMPEG_CMD . " -y -i {$_fromName} -ss 5 -vcodec png -vframes 1 -an -f rawvideo -s '{$width}x{$height}' {$_previewName} 2>&1";
         exec($_cmd, $_out, $_ret);
 

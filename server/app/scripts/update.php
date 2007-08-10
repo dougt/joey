@@ -49,11 +49,23 @@
  // Grab our defines
  require_once dirname(__FILE__).'/../config/config.php';
 
+
  // Before doing anything, test to see if we are calling this from the command
  // line.  If this is being called from the web, HTTP environment variables will
  // be automatically set by Apache.  If these are found, exit immediately.
  if (isset($_SERVER['HTTP_HOST'])) {
      exit;
+ }
+
+ // Some transcoding requires that the cwd is writable.
+ // This usually isn't a problem, but when running as
+ // another user (like sudo -u <> php -f update.php) it can
+ // be an issue.
+
+ if (!is_writable(getcwd()))
+ {
+   echo "CWD is not writable\n";
+   exit;
  }
 
  // Lets check if we are already running.  If so, we need to bail.
