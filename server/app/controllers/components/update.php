@@ -107,6 +107,9 @@ class UpdateComponent extends Object
    */
   function fetchURL($url)
   {
+      if (!isset($url) || $url==null)
+        return false;
+
       $parsed = parse_url($url);
 
       // We want to ensure that the query does not have
