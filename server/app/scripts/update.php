@@ -57,6 +57,15 @@
      exit;
  }
 
+
+ // Lets change into the cache directory so that we can
+ // ensure that we have a place that we can write to.
+ if (!chdir(UPLOAD_DIR."/cache/"))
+ {
+   echo "Could not change directory into cache directory\n";
+   exit;
+ }
+
  // Some transcoding requires that the cwd is writable.
  // This usually isn't a problem, but when running as
  // another user (like sudo -u <> php -f update.php) it can
