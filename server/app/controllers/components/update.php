@@ -361,7 +361,7 @@ class UpdateComponent extends Object
 
         // Grab the icon content.
         if (($_result = $this->fetchURL($url)) == false) {
-            $this->controller->Error->addError("Failed to fetch URL ({$_rss_url})", 'update:preview', false, true);
+            $this->controller->Error->addError("Failed to fetch URL ({$url})", 'update:preview', false, true);
             return false;
         }
 
@@ -432,7 +432,7 @@ class UpdateComponent extends Object
         }
 
         if (($_output = $this->fetchURL($_podcast['url'])) == false) {
-            $this->controller->Error->addError("Failed to fetch URL ({$_rss_url})", 'update:podcast', false, true);
+            $this->controller->Error->addError("Failed to fetch URL ({$_podcast['url']})", 'update:podcast', false, true);
             return false;
         }
 
@@ -448,9 +448,7 @@ class UpdateComponent extends Object
         */
         if (!file_put_contents($_originalname, $_output)) {
             $this->controller->Error->addError("Failed to write original file ({$_originalname})", 'update', false, true);
-        }
-
-        // transcoding requires that the file suffix used
+       // transcoding requires that the file suffix used
         // match the file's actual content.  If we leave the
         // original file as .rss, transcoding will fail.
         $oldname = $_originalname;
