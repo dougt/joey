@@ -448,6 +448,7 @@ class UpdateComponent extends Object
         */
         if (!file_put_contents($_originalname, $_output)) {
             $this->controller->Error->addError("Failed to write original file ({$_originalname})", 'update', false, true);
+        }
        // transcoding requires that the file suffix used
         // match the file's actual content.  If we leave the
         // original file as .rss, transcoding will fail.
