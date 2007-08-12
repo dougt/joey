@@ -92,7 +92,6 @@
  }
  //@todo settimelimit/memorylimit
 
- ini_set('memory_limit', '32M');
  set_time_limit(0);
 
  // This will let us access the functions we need to (ie. bypass authentication)
