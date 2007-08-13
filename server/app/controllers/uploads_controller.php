@@ -752,7 +752,7 @@ class UploadsController extends AppController
 
         // How many uploads do we want to retrieve per loop?  @todo - pick a good
         // number
-        $_uploads_per_query = 150;
+        $_uploads_per_query = 15;
 
         // Get a list of ids for uploads that aren't deleted
         $_upload_ids = $this->Upload->getActiveIds();
@@ -768,6 +768,8 @@ class UploadsController extends AppController
         // are only allowing it to be run via cron.
         for ($_start = 0; $_start < $_total_uploads;   ) {
 
+            $time_start = time();
+
             // I wish they had an array_shift() that could specify the amount of elements you want back...
             $_ids = array_slice($_upload_ids, $_start, $_uploads_per_query);
 
@@ -776,7 +778,7 @@ class UploadsController extends AppController
             foreach ($_uploads as $_upload) {
 
                 $_successful = true;
-                $time_start = microtime();
+                $item_time_start = time();
 
                 // There is a contentsource - we should update
                 if (!empty($_upload['Contentsource']['id'])) {
@@ -796,8 +798,8 @@ class UploadsController extends AppController
                     $_skipped_uploads++;
                 }
                 
-                $time_end = microtime();
-                $time = $time_end - $time_start;
+                $item_time_end = time();
+                $time = $item_time_end - $item_time_start;
                 
                 if ($_successful == true)
                   echo "  id: ({$_upload['Upload']['id']}). $time seconds\n";
@@ -808,7 +810,9 @@ class UploadsController extends AppController
 
             $_start += count($_ids);
 
-            echo "Processed {$_start} of {$_total_uploads} uploads...\n";
+            $time_end = time();
+            $time = $time_end - $time_start;
+            echo "Processed {$_start} of {$_total_uploads} uploads in $time seconds...\n";
 
         }
 

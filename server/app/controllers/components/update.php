@@ -247,7 +247,7 @@ class UpdateComponent extends Object
             unset($_icon_url);
 
         if (($result = $this->fetchURL($_rss_url)) == false) {
-            $this->controller->Error->addError("Failed to fetch URL ({$_rss_url})", 'update:rss', false, true);
+            $this->controller->Error->addError("({$upload['Upload']['id']}) Failed to fetch URL ({$_rss_url})", 'update:rss', false, true);
             return false;
         }
 
@@ -257,7 +257,7 @@ class UpdateComponent extends Object
         $rss = new MagpieRSS( $result );
         if ( !$rss or $rss->ERROR)
         {
-            $this->controller->Error->addError("Failed to parse RSS ({$_rss_url} error: {$rss->ERROR})", 'update:rss', false, true);          
+            $this->controller->Error->addError("({$upload['Upload']['id']}) Failed to parse RSS ({$_rss_url} error: {$rss->ERROR})", 'update:rss', false, true);          
             return false;
         }
         $_title = $rss->channel['title'];
@@ -275,12 +275,12 @@ class UpdateComponent extends Object
         else
         {
           if (!file_put_contents($_originalname, $result)) {
-            $this->controller->Error->addError("Failed to write original file ({$_originalname})", 'update:rss', false, true);
+            $this->controller->Error->addError("({$upload['Upload']['id']}) Failed to write original file ({$_originalname})", 'update:rss', false, true);
             return false;
           }
           
           if (!file_put_contents($_filename, $this->_buildRssOutput($rss))) {
-            $this->controller->Error->addError("Failed to write file ({$_filename})", 'update:rss', false, true);
+            $this->controller->Error->addError("({$upload['Upload']['id']}) Failed to write file ({$_filename})", 'update:rss', false, true);
             return false;
           }
 
@@ -362,7 +362,7 @@ class UpdateComponent extends Object
 
         // Grab the icon content.
         if (($_result = $this->fetchURL($url)) == false) {
-            $this->controller->Error->addError("Failed to fetch URL ({$url})", 'update:preview', false, true);
+            $this->controller->Error->addError("({$upload['Upload']['id']}) Failed to fetch URL ({$url})", 'update:preview', false, true);
             return false;
         }
 
@@ -373,7 +373,7 @@ class UpdateComponent extends Object
         $_tempname = UPLOAD_DIR."/cache/{$upload['File']['preview_name']}.{$_extension}";
 
         if (!file_put_contents($_tempname, $_result)) {
-            $this->controller->Error->addError("Failed to write temp file ({$_tempname})", 'update', false, true);
+            $this->controller->Error->addError("({$upload['Upload']['id']}) Failed to write temp file ({$_tempname})", 'update', false, true);
             return false;
         }
 
@@ -433,7 +433,7 @@ class UpdateComponent extends Object
         }
 
         if (($_output = $this->fetchURL($_podcast['url'])) == false) {
-            $this->controller->Error->addError("Failed to fetch URL ({$_podcast['url']})", 'update:podcast', false, true);
+            $this->controller->Error->addError("({$upload['Upload']['id']}) Failed to fetch URL ({$_podcast['url']})", 'update:podcast', false, true);
             return false;
         }
 
@@ -448,7 +448,7 @@ class UpdateComponent extends Object
         }
         */
         if (!file_put_contents($_originalname, $_output)) {
-            $this->controller->Error->addError("Failed to write original file ({$_originalname})", 'update', false, true);
+            $this->controller->Error->addError("({$upload['Upload']['id']}) Failed to write original file ({$_originalname})", 'update', false, true);
         }
        // transcoding requires that the file suffix used
         // match the file's actual content.  If we leave the
@@ -523,7 +523,7 @@ class UpdateComponent extends Object
 
         // write the file.
         if (!file_put_contents($_filename, $_ms->result)) {
-            $this->controller->Error->addError("Failed to write file ({$_filename})", 'update:microsummary', false, true);
+            $this->controller->Error->addError("({$upload['Upload']['id']}) Failed to write file ({$_filename})", 'update:microsummary', false, true);
             return false;
         }
 
@@ -570,12 +570,12 @@ class UpdateComponent extends Object
 
         // write the file.
         if (!file_put_contents($_filename, $_jw->content)) {
-            $this->controller->Error->addError("Failed to write file ({$_filename})", 'update:joeywidget', false, true);
+            $this->controller->Error->addError("({$upload['Upload']['id']}) Failed to write file ({$_filename})", 'update:joeywidget', false, true);
             return false;
         }
 
         if (!file_put_contents($_previewname, $_jw->preview)) {
-            $this->controller->Error->addError("Failed to write preview file ({$_previewname})", 'update:joeywidget', false, true);
+            $this->controller->Error->addError("({$upload['Upload']['id']}) Failed to write preview file ({$_previewname})", 'update:joeywidget', false, true);
             return false;
         }
 
