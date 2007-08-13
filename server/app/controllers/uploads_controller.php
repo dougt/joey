@@ -428,7 +428,7 @@ class UploadsController extends AppController
       // Render a page for the browser client
 
       
-      $this->pageTitle = 'Uploads';
+      $this->pageTitle = 'Joey! Uploads';
       
       $_pagination_options = array(
                                    'direction' => 'DESC',

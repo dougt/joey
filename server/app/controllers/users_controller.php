@@ -141,7 +141,7 @@ class UsersController extends AppController
      */
     function edit() {
 
-        $this->pageTitle = 'Edit User';
+        $this->pageTitle = 'Joey! Edit User';
 
         $this->_user = $this->Session->read('User');
 
@@ -243,7 +243,7 @@ class UsersController extends AppController
      */
     function login() {
 
-        $this->pageTitle = 'Login';
+        $this->pageTitle = 'Joey! Login';
 
         // @todo this check will change if we are
         // using a net scaler.
@@ -389,7 +389,7 @@ class UsersController extends AppController
     function resetpasswordemail()
     {
 
-        $this->pageTitle = 'Reset your password';
+        $this->pageTitle = 'Joey! Reset your password';
 	$this->set('flowContext',"resetpassword");
 
 
@@ -428,7 +428,7 @@ class UsersController extends AppController
      */
     function register() {
 
-        $this->pageTitle = 'Register';
+        $this->pageTitle = 'Joey! Register';
 
         $this->set('phones', $this->Phone->generateList(null,null,null,'{n}.Phone.id','{n}.Phone.name'));
         $this->set('operators', $this->Operator->generateList(null,null,null,'{n}.Operator.id','{n}.Operator.provider'));
