@@ -756,7 +756,7 @@ class UploadsController extends AppController
 
         // How many uploads do we want to retrieve per loop?  @todo - pick a good
         // number
-        $_uploads_per_query = 15;
+        $_uploads_per_query = 150;
 
         // Get a list of ids for uploads that aren't deleted
         $_upload_ids = $this->Upload->getActiveIds();
@@ -778,23 +778,36 @@ class UploadsController extends AppController
             $_uploads = $this->Upload->findDataByIds($_ids);
 
             foreach ($_uploads as $_upload) {
+
+                $_successful = true;
+                $time_start = microtime();
+
                 // There is a contentsource - we should update
                 if (!empty($_upload['Contentsource']['id'])) {
                     if (!$this->Update->updateContentSourceByUploadId($_upload['Upload']['id'])) {
-                        echo "  Failed to update id ({$_upload['Upload']['id']} - file id {$_upload['File']['id']})\n";
+                        $_successful = false;
                         $_failed_uploads++;
                     }
 
                 // This is an uploaded file, we need to transcode it
                 } else if (empty($_upload['File']['name']) && empty($_upload['File']['preview_name']) && !empty($_upload['File']['original_name']) && $_upload['Upload']['ever_updated'] == 0) {
                     if (!$this->Transcode->transcodeFileById($_upload['File']['id'])) {
-                        echo "  Failed to transcode upload id ({$_upload['Upload']['id']})\n";
+                        $_successful = false;
                         $_failed_uploads++;
                     }
                     $_transcoded_uploads++;
                 } else {
                     $_skipped_uploads++;
                 }
+                
+                $time_end = microtime();
+                $time = $time_end - $time_start;
+                
+                if ($_successful == true)
+                  echo "  id: ({$_upload['Upload']['id']}). $time seconds\n";
+                else
+                  echo "  id: ({$_upload['Upload']['id']}).  $time seconds -- FAILED\n";
+
             }
 
             $_start += count($_ids);
