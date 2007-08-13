@@ -548,19 +548,15 @@ class UploadsController extends AppController
      * UploadController::Add()
      */
     function _saveUploadedContentSource() {
-        // check for duplicates @todo - this doesn't check the user_id (bug 387369)
-        /*
-        $_contentdup = $this->Contentsource->findBySource($this->data['Contentsource']['source']);
-        
-        if (!empty($_contentdup)) {
-          
+
+        if ($this->Contentsource->is_duplicate($this->_user['id'], $this->data['Contentsource']['source']))
+        {
           if ($this->nbClient) {
             $this->returnJoeyStatusCode($this->ERROR_DUPLICATE);
           }
-
           $this->Error->addError('Duplicate content detected - looks like you\'ve already uploaded this.');
+          return true; // we are going to lie and say that duplicate uploads are really successful.
         }
-        */
 
         // Remote clients don't know the ID's ahead of time, so they will
         // submit the type as a string.  Here we look for that, and look up

@@ -58,5 +58,31 @@ class Contentsource extends AppModel
                             'contentsourcetype_id' => VALID_NOT_EMPTY
                          );
 
+    function is_duplicate($user, $source)
+    {
+      if (!is_numeric($user))
+        return false;
+
+      //      $_query = "SELECT COUNT(*)
+      //                 FROM uploads_users, contentsources
+      //                 WHERE uploads_users.owner=1 AND uploads_users.user_id = '{$user}' AND contentsources.source = '{$source}'";
+
+
+      $_query = "SELECT COUNT(*) FROM  uploads_users 
+                 JOIN uploads as Upload ON uploads_users.upload_id = Upload.id 
+                 LEFT JOIN files as File ON Upload.id = File.upload_id
+                 LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
+                 LEFT JOIN contentsourcetypes as Contentsourcetype ON Contentsource.contentsourcetype_id = Contentsourcetype.id 
+                 WHERE uploads_users.owner=1 AND uploads_users.user_id = '{$user}' AND source = '{$source}'";
+
+
+      $_ret = $this->query($_query);
+
+      if ($_ret[0][0]['COUNT(*)'] > 0)
+        return true;
+
+      return false;
+    }
+
 }
 ?>
