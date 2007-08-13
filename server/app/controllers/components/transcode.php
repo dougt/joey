@@ -132,17 +132,6 @@ class TranscodeComponent extends Object
             }
         }
 
-        // ensure that the files have the correct permissions on disk.
-        $old = umask(0);
-
-        chmod("{$_target_dir}/originals/{$_file['File']['original_name']}", 0770);
-        chgrp("{$_target_dir}/originals/{$_file['File']['original_name']}", "joey_adm");
-
-        chmod("{$_target_dir}/originals/{$_file['File']['preview_name']}", 0770);
-        chgrp("{$_target_dir}/originals/{$_file['File']['preview_name']}", "joey_adm");
-
-        umask($old);
-
         // update all of the file sizes
         $_file['File']['size'] = filesize("{$_target_dir}/{$_file['File']['name']}");
         $_file['File']['original_size'] = filesize("{$_target_dir}/originals/{$_file['File']['original_name']}");

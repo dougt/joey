@@ -138,6 +138,7 @@ class UpdateComponent extends Object
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1); // return into a variable
       curl_setopt($ch, CURLOPT_USERAGENT, $useragent);
       curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1); 
+      curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
 
       $result = curl_exec($ch);
 

@@ -689,12 +689,6 @@ class UploadsController extends AppController
               return false;
             }
             
-            // ensure that the files have the correct permissions on disk.
-            chgrp($_destination_file, "joey_adm");
-            $old = umask(0);
-            chmod($_destination_file, 0770);
-            umask($old);
-
             // This happens offline now (bug 386777)
             //$this->Transcode->transcodeFileById($prior_upload['File']['id']);
             return true;
@@ -710,12 +704,6 @@ class UploadsController extends AppController
             return false;
         }
         
-        // ensure that the files have the correct permissions on disk.
-        chgrp($_destination_file, "joey_adm");
-        $old = umask(0);
-        chmod($_destination_file, 0770);
-        umask($old);
-
         $this->data['File']['original_name'] = basename($_destination_file);
         $this->data['File']['original_type'] = $this->data['File']['Upload']['type'];
         $this->data['File']['original_size'] = filesize($_destination_file);  
