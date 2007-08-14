@@ -45,11 +45,15 @@
             
 	        <td class="joey-item-control" width="1" valign="top" >
 
-		<div>
+		<!-- this is so far semantic hidden info for debug --> 
+
+		<div style='display:none'>
 			<?php echo $upload['File']['original_type'] ?>
 		</div>
 
-<?php echo $html->link( "Delete", "/uploads/delete/" . $upload['Upload']['id'] . "&previous=" . $pageinfo['page'] . "&show=" . $pageinfo['limit']  . "&type=" . $pageinfo['type']) ?>
+<!-- we need to have a safe mode and always be able to fall back to non ajax when needed --> 
+
+<?php /* cho $html->link( "Delete", "/uploads/delete/" . $upload['Upload']['id'] . "&previous=" . $pageinfo['page'] . "&show=" . $pageinfo['limit']  . "&type=" . $pageinfo['type']) */ ?>
 
 
               <?php 
