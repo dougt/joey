@@ -418,7 +418,7 @@ function joeyMedia_rssfetch(targetDoc, targetElementId, refDocument, itemId) {
 		
 		var elementLoadingButton = document.getElementById("joeyPlayerController-"+itemId);
 	document.getElementById(targetElementId).setAttribute("class","joey-loading");
-	document.getElementById(targetElementId).setAttribute("style","display:block;w idth:90%;;border:1px solid gray;background-color:#444444;padding:1em;margin:.5em ;");
+	document.getElementById(targetElementId).setAttribute("style","display:block;width:90%;;border:1px solid gray;background-color:#444444;padding:1em;padding-left:3em;;margin:.5em ;");
 
 	document.getElementById(targetElementId).innerHTML="Loading ..";
 
@@ -534,6 +534,7 @@ blenderObject.prototype.apply = function () {
 			htmlFragment = xsltProcessor.transformToFragment(this.xmlRef, this.targetDocument);
 
 			this.targetElement.setAttribute("style","display:block;width:90%;;border:1px solid gray;background-color:#444444;padding:1em;margin:.5em;");
+			this.targetElement.setAttribute("class","");
 
 			this.targetElement.innerHTML="";
   		      this.targetElement.appendChild(htmlFragment.firstChild);
