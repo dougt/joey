@@ -32,3 +32,11 @@ Build instructions
   The possible values for the device property can be get from the J2ME Polish
   device database at http://www.j2mepolish.org/devices-overview.html.
 
+Updating J2ME Polish
+====================
+
+  Download a new version of J2ME Polish and run the installer and point it to the
+  polish/ subdirectory in the j2m project. This installs a new J2ME Polish version
+  but keeps changes to teh custom-*.xml files. Then check the new version by
+  building Joey for several mobile phones and test them extensively. When you are
+  okay with the current version commit the whole polish directory.
