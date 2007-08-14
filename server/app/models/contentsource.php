@@ -63,11 +63,7 @@ class Contentsource extends AppModel
       if (!is_numeric($user))
         return false;
 
-      //      $_query = "SELECT COUNT(*)
-      //                 FROM uploads_users, contentsources
-      //                 WHERE uploads_users.owner=1 AND uploads_users.user_id = '{$user}' AND contentsources.source = '{$source}'";
-
-
+      // maybe optimize
       $_query = "SELECT COUNT(*) FROM  uploads_users 
                  JOIN uploads as Upload ON uploads_users.upload_id = Upload.id 
                  LEFT JOIN files as File ON Upload.id = File.upload_id
@@ -76,6 +72,7 @@ class Contentsource extends AppModel
                  WHERE uploads_users.owner=1 AND uploads_users.user_id = '{$user}' AND source = '{$source}'";
 
 
+      // maybe not a full query?  wil knows.
       $_ret = $this->query($_query);
 
       if ($_ret[0][0]['COUNT(*)'] > 0)
