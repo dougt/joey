@@ -575,6 +575,8 @@ function joey_selectedTarget(targetElement)
         return;
     */
 
+    var focusedWindow = document.commandDispatcher.focusedWindow;
+
     var uuidGenerator =  Components.classes["@mozilla.org/uuid-generator;1"].getService(Components.interfaces.nsIUUIDGenerator);
     var uuid = uuidGenerator.generateUUID();
     var uuidString = uuid.toString();
