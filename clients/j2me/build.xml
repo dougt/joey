@@ -116,7 +116,7 @@
 			version="0.1"
 			description=""
 			vendorName="Mozilla Foundation"
-			infoUrl="http://www.mozilla.com"
+			infoUrl="http://joey.labs.mozilla.com/app/webroot/ff"
 			icon="icon.png"
 			jarName="${polish.vendor}-${polish.name}-${polish.locale}-joey.jar" 
 			jarUrl="${deploy-url}${polish.jarName}"
