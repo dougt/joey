@@ -162,7 +162,7 @@ class UpdateComponent extends Object
    * @param boolean force an update?
    * @return boolean true on success, false on failure
    */
-    function updateContentSourceByUploadId($id, $force) {
+    function updateContentSourceByUploadId($id, $force=false) {
 
         $_upload = $this->controller->Upload->FindDataById($id);
 
