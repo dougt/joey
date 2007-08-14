@@ -417,8 +417,10 @@ function joeyMedia_rssfetch(targetDoc, targetElementId, refDocument, itemId) {
 
 		
 		var elementLoadingButton = document.getElementById("joeyPlayerController-"+itemId);
-		elementLoadingButton.setAttribute("class","joey-loading");
-		elementLoadingButton.innerHTML="Loading";
+	document.getElementById(targetElementId).setAttribute("class","joey-loading");
+	document.getElementById(targetElementId).setAttribute("style","display:block;w idth:90%;;border:1px solid gray;background-color:#444444;padding:1em;margin:.5em ;");
+
+	document.getElementById(targetElementId).innerHTML="Loading ..";
 
 	});
 
