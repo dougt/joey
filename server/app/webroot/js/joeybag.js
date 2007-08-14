@@ -384,6 +384,9 @@ function visinoteembed_DoFSCommand(command, args) {
 
 function joeyMedia_rssfetch(targetDoc, targetElementId, refDocument, itemId) {
 
+	
+	var targetElement = document.getElementById(targetElementId);
+	if(targetElement.className!="loaded") {
 
        
 	var stringXMLtemplate = '<'+'xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rss="http://purl.org/rss/1.0/" > <xsl:output method="html" indent="yes"/> <xsl:template match="/"> <div>  <xsl:for-each select="/rdf:RDF/rss:channel"> <div id="pagetitle" style="display:none"><xsl:value-of select="rss:title"/></div> </xsl:for-each> <xsl:for-each select="/rdf:RDF/rss:channel"> <div style="padding:.3em;"><xsl:value-of select="rss:description"/></div> </xsl:for-each> <xsl:for-each select="/rdf:RDF/rss:item"> <div class="item"> <a> <xsl:attribute name="href"> <xsl:value-of select="rss:link"/> </xsl:attribute> 	<xsl:value-of select="rss:title"/> </a> </div> </xsl:for-each> <xsl:for-each select="/rss/channel/title"> <div id="pagetitle" style="display:none"><xsl:value-of select="."/></div> </xsl:for-each> <xsl:for-each select="/rss/channel/description"> <div style="padding:.3em;"><xsl:value-of select="."/></div> </xsl:for-each> <xsl:for-each select="/rss/channel/item"> <div class="item"> <a> <xsl:attribute name="href"> <xsl:value-of select="link"/> </xsl:attribute> 	<xsl:value-of select="title"/> </a> </div> </xsl:for-each> </div> </xsl:template> </xsl:stylesheet>' ;
@@ -401,14 +404,13 @@ function joeyMedia_rssfetch(targetDoc, targetElementId, refDocument, itemId) {
 	testLoad.setCallback(function () { 
 
 
-		var elementCloseButton = document.getElementById("joeyPlayerCloseButton-"+itemId);
-		elementCloseButton.innerHTML="<a href='javascript;' >close</a>";
-		elementCloseButton.setAttribute("onclick","document.getElementById('"+targetElementId+"').innerHTML='';document.getElementById('"+targetElementId+"').style.display='none';return false;");
+		var elementCloseButton = document.getElementById("joeyPlayerController-"+itemId);
+		elementCloseButton.innerHTML="close";
+		
+ 		var elementTarget = document.getElementById(targetElementId);
 
- 
-		var elementLoadingButton = document.getElementById("joeyPlayerController-"+itemId);
-		elementLoadingButton.innerHTML="Refresh";
-		elementLoadingButton.setAttribute("class","");
+		elementTarget.className='loaded';
+			
 
 	});
 
@@ -416,7 +418,6 @@ function joeyMedia_rssfetch(targetDoc, targetElementId, refDocument, itemId) {
 	testLoad.setCallbackLoading( function () {
 
 		
-		var elementLoadingButton = document.getElementById("joeyPlayerController-"+itemId);
 	document.getElementById(targetElementId).setAttribute("class","joey-loading");
 	document.getElementById(targetElementId).setAttribute("style","display:block;width:90%;;border:1px solid gray;background-color:#444444;padding:1em;padding-left:3em;;margin:.5em ;");
 
@@ -426,6 +427,26 @@ function joeyMedia_rssfetch(targetDoc, targetElementId, refDocument, itemId) {
 
 
 	testLoad.run();
+
+
+	} else {
+
+	
+                var elementCloseButton = document.getElementById("joeyPlayerCloseButton-"+itemId);
+                elementCloseButton.innerHTML="";
+
+                document.getElementById(targetElementId).className='';
+                document.getElementById(targetElementId).innerHTML='';
+		document.getElementById(targetElementId).style.display='none';
+
+
+                var elementLoadingButton = document.getElementById("joeyPlayerController-"+itemId);
+                elementLoadingButton.innerHTML="Open";
+                elementLoadingButton.setAttribute("class","");
+
+
+
+	}
 
 }
 
