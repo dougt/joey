@@ -49,8 +49,6 @@
     <?php echo $html->css('joey'); ?>
 	<title><?=$title_for_layout?></title>
 
-	<!-- this first should be just for the uploads view, blame marcio here or help him -->
-	<?php echo $javascript->link('joeybag.js') ?>
 
 	<!-- this is the cake compliant ajax infra -->
 	<?php echo $javascript->link('prototype.js') ?>
