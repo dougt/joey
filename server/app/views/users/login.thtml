@@ -32,7 +32,7 @@
 
 <?php 
     if (isset($secure_page))
-      echo "<div><b><a href=\"" . $secure_page . "\">Use Secure Login.</a></b></div>";
+      echo "<div><b><a href=\"" . $secure_page . "\">Use Secure Login</a></b></div>";
 ?>
 
 <div>
