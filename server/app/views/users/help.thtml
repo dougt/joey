@@ -6,15 +6,20 @@
 <div id="joey-registration-content">
 
 
-<h2>How to Video</h2>
+<h2>How To</h2>
 
 
+<?=$html->link('How to video','http://labs.mozilla.com/2007/08/introduction-to-joey-video/')?>
 <h2>Get the Software</h2>
 
+<?=$html->link('Needed software ( Firefox and Mobile ) ','/users/getSoftware')?>
 
-<h2>Password related</h2>
+<h2>Account</h2>
+
+<?=$html->link('Reset Password','/users/resetpasswordemail')?><br />
+<?=$html->link('Edit Account Information','/users/edit')?>
 <h2>Feedback</h2>
-
+<?=$html->link('Joey Forum','https://labs.mozilla.com/forum/index.php/board,3.0.html')?>
 </div>
 </div>
 <div id="footer-content">
