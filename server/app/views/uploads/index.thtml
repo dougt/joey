@@ -1,5 +1,8 @@
 <div id="content">
 
+<!-- FIXME - to throw this only in AJAX / full Web mode cases --> 
+<?php print $javascript->link('joeybag.js') ?>
+
 <div id="joey-upload-frame">
 
 
