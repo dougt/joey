@@ -5,15 +5,11 @@
 <div id="joey-login-content">
 
 
-<h2>Edit User</h2>
+<h2>Edit User: <?=$this->data['User']['username']?></h2>
 <p>All fields are required.</p>
 
 <form action="" method="post" class="joey-form" >
 
-<div>
-    <label class="joey-label-large" for="UserUsername">User Name:</label>
-    <span><?=$this->data['User']['username']?></span>
-</div>
 
 <div>
     <label class="joey-label-large" for="UserEmail">Email Address:</label>
