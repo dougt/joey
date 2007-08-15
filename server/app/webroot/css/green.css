@@ -273,13 +273,16 @@ font-size: 76%;
 
 }
 
-#toprightlink {
+/* 
+
 	background: transparent url(style/arrow-right.gif) no-repeat 100% 0;
+*/
+#toprightlink {
+
+
 	-moz-border-radius:8px;
 	float:right;
 	padding:10px;
-	margin-top:4px; margin-right:10px;
-	padding-right:24px;
 }
 
 #toprightlink a {
