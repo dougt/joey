@@ -423,6 +423,9 @@ class UsersController extends AppController
       }
     }
 
+    function help() {
+	$this->pageTitle = 'Joey! Helps';
+    } 
     /**
      *
      */
