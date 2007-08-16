@@ -172,11 +172,11 @@ class UploadsController extends AppController
         if ($this->nbClient) {
             $this->returnJoeyStatusCode($this->ERROR_UPLOAD);
         }
-        
+
         // tell joeyd that we have an upload!  We do not
         // care here if this fails.
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, JOEYD_SERVER_ADDRESS);
+        curl_setopt($ch, CURLOPT_URL, "http://" . JOEYD_SERVER_ADDRESS . "/" . $this->Upload->id);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
         curl_exec($ch);
 
