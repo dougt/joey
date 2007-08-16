@@ -49,9 +49,6 @@
  // Grab our defines
  require_once dirname(__FILE__).'/../config/config.php';
 
- // This will let us access the functions we need to (ie. bypass authentication)
- define('MAINTENANCE_ACCESS', TRUE);
-
 
  // Before doing anything, test to see if we are calling this from the command
  // line.  If this is being called from the web, HTTP environment variables will
@@ -93,28 +90,9 @@
    echo "Could not aquire lock!";
    exit;
  }
+ //@todo settimelimit/memorylimit
 
  set_time_limit(0);
-
- // Query the DB for all non-deleted upload ids.
-
- $query = "SELECT id FROM uploads as Upload WHERE deleted IS NULL";
-
- $db = mysql_connect(DB_HOST, DB_USER, DB_PASS) or die("Connection Failure to Database");
- mysql_select_db(DB_NAME, $db) or die (DB_NAME . " Database not found. " . DB_USER);
- $result = mysql_db_query(DB_NAME, $query) or die("Failed Query of " . $query);
-
- $fetcher = dirname(__FILE__).'/fetcher.php';
- while($row = mysql_fetch_row($result)) {
-   $id = $row[0];
-
-   echo "calling fetcher for id ".$id."\n";
-   exec("php -f " . $fetcher . " " . $id . ">> /dev/null 2>&1");
- }
- 
-
-
- exit;
 
  // This will let us access the functions we need to (ie. bypass authentication)
  define('MAINTENANCE_ACCESS', TRUE);
