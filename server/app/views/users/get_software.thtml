@@ -8,8 +8,15 @@
 </div>
 
 <div>
+
+
 <h3> Joey! Addon for your phone </h3>
-<p>Pressing this button will send an email to your phone.  This might cost you something, but you already know that.</p>
+
+<div>
+<p>You can access your Joey on your phone using the built-in browser, but if you want to try out our experimental application... here ya go! </p>
+</div>
+<br><p>Pressing this button will send an email to your phone.  This might cost you something, but you already know that.</p>
+
 
 <form action="" method="post" class="joey-form">
    <input type="hidden" name="joey" value="joey"/>

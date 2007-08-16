@@ -746,15 +746,12 @@ class UploadsController extends AppController
      */
     function updateUpload($id) {
 
-      // @todo we need to protect this so that it is only
-      // called locally.  not sure if this works right for
-      // all cases.  lets rethink this wil.
-      if ($_SERVER['SERVER_NAME'] != "localhost")
-      {
-            $this->redirect('/uploads/index');
-            exit;        
+      // This should only be run by the update.php cron script.
+      if (!defined('MAINTENANCE_ACCESS') || !MAINTENANCE_ACCESS) {
+        $this->redirect('/uploads/index');
+        exit;
       }
-
+      
       $_upload = $this->Upload->findDataById($id);
       
       $this->layout = null;
