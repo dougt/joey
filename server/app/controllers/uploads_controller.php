@@ -156,7 +156,6 @@ class UploadsController extends AppController
             }
         }
 
-
         //@todo Really, they only need a file OR a contentsource[type], but this
         //will tell them they need all of them.  Since this form isn't going to
         //go live anyway, I'll leave it, but if we ever need to make the form
@@ -173,6 +172,14 @@ class UploadsController extends AppController
         if ($this->nbClient) {
             $this->returnJoeyStatusCode($this->ERROR_UPLOAD);
         }
+        
+        // tell joeyd that we have an upload!  We do not
+        // care here if this fails.
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, JOEYD_SERVER_ADDRESS);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        curl_exec($ch);
+
 
     }
     

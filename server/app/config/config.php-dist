@@ -40,6 +40,12 @@
  */
 
 /**
+ * Address of the joeyd offline processing server.
+ */
+
+define('JOEYD_SERVER_ADDRESS', 'localhost:8777');
+
+/**
  * Email address to be used when sending out registration 
  * activate and password reminder emails
  */
