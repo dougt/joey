@@ -126,9 +126,11 @@ class UpdateComponent extends Object
       $uri .= isset($parsed['path']) ? $parsed['path'] : '';
 
       // urlencode does way to much.  all we need to do (i think) is escape spaces.
-      $query = str_replace(" ", "%20", $parsed['query']);
+      if (isset($parsed['query'])) {
+        $query = str_replace(" ", "%20", $parsed['query']);
+        $uri .= '?'. $query;
+      }
 
-      $uri .= isset($parsed['query']) ? '?'. $query : '';
       $uri .= isset($parsed['fragment']) ? '#'.$parsed['fragment'] : '';
 
       $useragent = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-US; rv:1.8.1.4) Gecko/20070515 Firefox/2.0.0.4";

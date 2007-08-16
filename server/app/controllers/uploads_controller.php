@@ -738,6 +738,54 @@ class UploadsController extends AppController
     }
 
     /**
+     * Processing media by a given upload id
+     * return code:
+     * 0) transcode/update okay
+     * 1) transcode/update failed
+     * 2) transcode/update skipped
+     */
+    function updateUpload($id) {
+
+      // @todo we need to protect this so that it is only
+      // called locally.  not sure if this works right for
+      // all cases.  lets rethink this wil.
+      if ($_SERVER['SERVER_NAME'] != "localhost")
+      {
+            $this->redirect('/uploads/index');
+            exit;        
+      }
+
+      $_upload = $this->Upload->findDataById($id);
+      
+      $this->layout = null;
+      
+      // There is a contentsource - we should update
+      if (!empty($_upload['Contentsource']['id'])) {
+        if (!$this->Update->updateContentSourceByUploadId($_upload['Upload']['id'])) {
+          echo "  Failed - update id ({$id}\n";
+          return 1;
+        } 
+        // This is an uploaded file, we need to transcode it
+      } else if (empty($_upload['File']['name']) &&
+                 empty($_upload['File']['preview_name']) &&
+                 !empty($_upload['File']['original_name']) &&
+                 $_upload['Upload']['ever_updated'] == 0) {
+        
+        if (!$this->Transcode->transcodeFileById($_upload['File']['id'])) {
+          echo "  Failed - upload id ({$id})\n";
+          return 1;
+        }
+      }
+      else
+      {
+        echo "  Skipping - upload id ({$id})\n";
+        return 2;
+      }
+      echo "  Success - upload id ({$id})\n";
+      return 0;
+    }
+
+    /**
      * Processing media is all done offline via cron, because it is too intensive to
      * do real time. This function prints stuff, because we want output while the
      * cron is running.
@@ -773,39 +821,20 @@ class UploadsController extends AppController
             // I wish they had an array_shift() that could specify the amount of elements you want back...
             $_ids = array_slice($_upload_ids, $_start, $_uploads_per_query);
 
+            // we should only return the ids here.
             $_uploads = $this->Upload->findDataByIds($_ids);
 
-            foreach ($_uploads as $_upload) {
+            foreach ($_uploads as $_upload)
+            {
+              $rv = $this->updateUpload($_upload['Upload']['id']);
 
-                $_successful = true;
-                $item_time_start = time();
-
-                // There is a contentsource - we should update
-                if (!empty($_upload['Contentsource']['id'])) {
-                    if (!$this->Update->updateContentSourceByUploadId($_upload['Upload']['id'])) {
-                        $_successful = false;
-                        $_failed_uploads++;
-                    }
-
-                // This is an uploaded file, we need to transcode it
-                } else if (empty($_upload['File']['name']) && empty($_upload['File']['preview_name']) && !empty($_upload['File']['original_name']) && $_upload['Upload']['ever_updated'] == 0) {
-                    if (!$this->Transcode->transcodeFileById($_upload['File']['id'])) {
-                        $_successful = false;
-                        $_failed_uploads++;
-                    }
-                    $_transcoded_uploads++;
-                } else {
-                    $_skipped_uploads++;
-                }
-                
-                $item_time_end = time();
-                $time = $item_time_end - $item_time_start;
-                
-                if ($_successful == true)
-                  echo "  id: ({$_upload['Upload']['id']}). $time seconds\n";
-                else
-                  echo "  id: ({$_upload['Upload']['id']}).  $time seconds -- FAILED\n";
-
+              if ($rv == 0) {
+                $_transcoded_uploads++;
+              }  else if ($rv == 1) {
+                $_failed_uploads++;
+              } else if ($rv == 2) {
+                $_skipped_uploads++;
+              }
             }
 
             $_start += count($_ids);
