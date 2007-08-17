@@ -324,7 +324,7 @@ public class JoeyController
 				return alert;
 	
 			case ALERT_MEDIA_OPEN_ERROR:
-				//#style alertWait
+				//#style alertConfirmation
 				alert = new Alert(null, Locale.get("alert.media.open.msg"), null, AlertType.ERROR);
 				alert.setTimeout(Alert.FOREVER);
 				alert.addCommand(CMD_YES);
