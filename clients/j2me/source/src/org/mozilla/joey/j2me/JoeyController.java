@@ -127,6 +127,12 @@ public class JoeyController
 	private Displayable uploadsView;
 	private Hashtable pendingUpdates;
 
+	//#if polish.api.mmapi
+		// We may only create this once, so we cache and reuse it.
+		private SnapshotScreen snapshotScreen;
+	//#endif
+	
+
 	private TimerTask updateTask = new TimerTask()
 	{
 		public void run()
@@ -153,6 +159,10 @@ public class JoeyController
 		this.commController.start();
 
 		this.uploadsView = null;
+
+		//#if polish.api.mmapi
+			this.snapshotScreen = (SnapshotScreen) getView(VIEW_SNAPSHOT);
+		//#endif
 	}
 
 	public UserData getUserData()
@@ -620,7 +630,7 @@ public class JoeyController
 	{
 //#if polish.api.mmapi
 		int event;
-		SnapshotScreen view = (SnapshotScreen) showView(VIEW_SNAPSHOT);
+		showView(this.snapshotScreen);
 
 		do {
 			event = waitEventAndProcessUpdates();
@@ -631,7 +641,7 @@ public class JoeyController
 					{
 						// TODO: Choose the best encoding instead of using the first.
 						String[] encodings = SnapshotScreen.getSnapshotEncodings();
-						byte[] image = view.getSnapshot(encodings[0]);
+						byte[] image = this.snapshotScreen.getSnapshot(encodings[0]);
 	
 						// TODO: Is this the correct format for time? Is this correct for all locales? 
 						String modified = new Date().toString();
