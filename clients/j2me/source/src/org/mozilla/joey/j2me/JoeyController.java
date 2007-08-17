@@ -321,6 +321,8 @@ public class JoeyController
 				//#style alertWait
 				alert = new Alert(null, Locale.get("alert.wait.msg"), null, AlertType.INFO);
 				alert.setTimeout(Alert.FOREVER);
+				alert.addCommand(CMD_CANCEL);
+				alert.setCommandListener(this.commandListener);
 				return alert;
 	
 			case ALERT_MEDIA_OPEN_ERROR:
@@ -520,6 +522,9 @@ public class JoeyController
 								view = (LoginView) showView(VIEW_LOGIN);
 								event = EVENT_NONE;
 								break;
+
+							case EVENT_CANCEL:
+								break;
 		
 							default:
 								event = EVENT_NONE;
@@ -527,6 +532,7 @@ public class JoeyController
 						}
 					} while (event != EVENT_NETWORK_REQUEST_SUCCESSFUL
 						     && event != EVENT_NETWORK_REQUEST_FAILED
+						     && event != EVENT_CANCEL
 						     && event != EVENT_NONE);
 					break;
 	
@@ -709,7 +715,11 @@ public class JoeyController
 		if (fetchData == true) {
 			showView(ALERT_WAIT);
 			this.commController.get(upload, this);
-			event = waitEvent();
+
+			do {
+				event = waitEvent();
+			} while (event != EVENT_NETWORK_REQUEST_SUCCESSFUL
+					 && event != EVENT_NETWORK_REQUEST_FAILED);
 		}
 
 		do {
@@ -746,11 +756,16 @@ public class JoeyController
 					if (waitYesNo() == EVENT_YES) {
 						showView(ALERT_WAIT);
 						this.commController.delete(upload.getId(), this);
-						event = waitEvent();
+
+						do {
+							event = waitEvent();
 	
-						if (event == EVENT_NETWORK_REQUEST_SUCCESSFUL) {
-							event = EVENT_BACK;
-						}
+							// Go back to uploads view on successful deletion.
+							if (event == EVENT_NETWORK_REQUEST_SUCCESSFUL) {
+								event = EVENT_BACK;
+							}
+						} while (event != EVENT_NETWORK_REQUEST_FAILED
+								 && event != EVENT_BACK);
 					}
 
 					break;
