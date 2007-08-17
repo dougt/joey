@@ -106,8 +106,10 @@ public class JoeyController
 	public static final Command CMD_LOGIN = new Command(Locale.get("command.login"), Command.SCREEN, 1);
 	public static final Command CMD_DELETE = new Command(Locale.get("command.delete"), Command.SCREEN, 10);
 	public static final Command CMD_SNAPSHOT = new Command(Locale.get("command.snapshot"), Command.SCREEN, 1);
-	public static final Command CMD_YES = new Command(Locale.get("command.yes"), Command.SCREEN, 1);
-	public static final Command CMD_NO = new Command(Locale.get("command.no"), Command.BACK, 1);
+	public static final Command CMD_OK = new Command(Locale.get("command.ok"), Command.OK, 1);
+	public static final Command CMD_CANCEL = new Command(Locale.get("command.cancel"), Command.CANCEL, 1);
+	public static final Command CMD_YES = new Command(Locale.get("command.yes"), Command.OK, 1);
+	public static final Command CMD_NO = new Command(Locale.get("command.no"), Command.CANCEL, 1);
 	public static final Command CMD_MEDIA_OPEN = new Command(Locale.get("command.media_open"), Command.SCREEN, 1);
 
 	private static final String RMS_USERDATA = "joey_userdata";
@@ -373,7 +375,12 @@ public class JoeyController
 				break;
 	
 			case Command.OK:
-				notifyEvent(EVENT_OK);
+				if (command == CMD_YES) {
+					notifyEvent(EVENT_YES);
+				}
+				else {
+					notifyEvent(EVENT_OK);
+				}
 				break;
 	
 			case Command.CANCEL:
@@ -387,9 +394,6 @@ public class JoeyController
 				}
 				else if (command == CMD_LOGIN) {
 					notifyEvent(EVENT_SELECT);
-				}
-				else if (command == CMD_YES) {
-					notifyEvent(EVENT_YES);
 				}
 				else if (command == CMD_DELETE) {
 					notifyEvent(EVENT_DELETE);
