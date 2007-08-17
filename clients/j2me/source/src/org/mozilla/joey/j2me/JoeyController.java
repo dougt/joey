@@ -519,7 +519,8 @@ public class JoeyController
 								break;
 		
 							case EVENT_NETWORK_REQUEST_FAILED:
-								view = (LoginView) showView(VIEW_LOGIN);
+								showView(ALERT_LOGIN_ERROR);
+								waitEvent();
 								event = EVENT_NONE;
 								break;
 
