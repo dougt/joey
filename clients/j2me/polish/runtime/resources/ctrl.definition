@@ -1,0 +1,20 @@
+<!-- created by J2ME Polish on Sun Jul 31 02:58:27 CEST 2005 -->
+<data-definition>
+	<description>defines the skin for emulators based on the enough-j2mepolish-runtime.jar</description>
+	<extension>.ctrl</extension>
+	<type name="Position"><subtype type="int" /><subtype type="int" /></type>
+	<type name="PositionDimension"><subtype type="unsigned short" /><subtype type="unsigned short" /><subtype type="unsigned short" /><subtype type="unsigned short" /></type>
+	<entry name="ScreenPos" type="PositionDimension" count="1" />
+	<entry name="up" type="PositionDimension" count="1" />
+	<entry name="down" type="PositionDimension" count="1" />
+	<entry name="left" type="PositionDimension" count="1" />
+	<entry name="right" type="PositionDimension" count="1" />
+	<entry name="fire" type="PositionDimension" count="1" />
+	<entry name="leftSoftButton" type="PositionDimension" count="1" />
+	<entry name="rightSoftButton" type="PositionDimension" count="1" />
+	<entry name="clearButton" type="PositionDimension" count="1" />
+	<entry name="changeInputModeButton" type="PositionDimension" count="1" />
+	<entry name="quitButton" type="PositionDimension" count="1" />
+	<entry name="backButton" type="PositionDimension" count="1" />
+	<entry name="skin" type="PNG-Image" count="1" />
+</data-definition>

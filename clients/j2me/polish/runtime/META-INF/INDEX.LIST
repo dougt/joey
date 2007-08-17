@@ -1,0 +1,20 @@
+JarIndex-Version: 1.0
+
+enough-j2mepolish-runtime.jar
+de
+de/enough
+de/enough/polish
+de/enough/polish/runtime
+de/enough/polish/runtime/overlays
+de/enough/polish/runtime/swing
+de/enough/polish/runtime/test
+de/enough/polish/swing
+de/enough/polish/util
+javax
+javax/microedition
+javax/microedition/io
+javax/microedition/lcdui
+javax/microedition/midlet
+javax/microedition/rms
+resources
+
