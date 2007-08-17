@@ -48,12 +48,12 @@ public class LoginView
 		super(Locale.get("title.login"));
 
 		//#style input
-		this.mUsernameTextField = new TextField("Username:", "", 10, TextField.ANY | TextField.NON_PREDICTIVE);
+		this.mUsernameTextField = new TextField("Username:", "", 50, TextField.ANY | TextField.NON_PREDICTIVE);
 		this.mUsernameTextField.setString(userdata.getUsername());
 		append(this.mUsernameTextField);
 
 		//#style input
-        this.mPasswordTextField = new TextField("Password:", "", 10, TextField.PASSWORD | TextField.NON_PREDICTIVE);
+        this.mPasswordTextField = new TextField("Password:", "", 50, TextField.PASSWORD | TextField.NON_PREDICTIVE);
         this.mPasswordTextField.setString(userdata.getPassword());
         append(this.mPasswordTextField);
 
