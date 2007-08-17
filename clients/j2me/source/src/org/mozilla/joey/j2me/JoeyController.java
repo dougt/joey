@@ -919,7 +919,9 @@ public class JoeyController
 			byte[] previewBytes = null;
 
 			try {
-				previewBytes = Base64.decode(preview);
+				if (preview.length() > 0) {
+					previewBytes = Base64.decode(preview);
+				}
 			}
 			catch (Exception ex) {
 				System.out.println("Base64 decode failed " + ex);
