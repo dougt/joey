@@ -290,6 +290,43 @@ font-size: 76%;
 	color:rgb(200,255,0);
 }
 
+#getsoftware a {
+	text-decoration:none;
+	color:rgb(200,255,0);
+}
+
+#getsoftware {
+
+	background:transparent url(style/arrow-right.gif) no-repeat 100% 0;
+	float:right;
+	padding:10px;
+	padding-right:24px;
+	padding-top:4px;
+
+}
+
+
+#getsoftware a:hover {
+	color:orange;
+}
+
+#barright {
+	float:right;
+	background:url(style/bar-right.jpg) no-repeat;
+	height:29px;
+	width:38px;
+
+}
+
+/* General Style Info */
+a{
+color: rgb(200,255,0);
+text-decoration:underline;
+}
+a:hover{
+color:orange;
+
+
 #getsoftware a:hover {
 	color:orange;
 }
