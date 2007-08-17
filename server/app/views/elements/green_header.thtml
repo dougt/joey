@@ -46,7 +46,7 @@
 
 
      <?php if ($this->controller->Session->check('User')) : ?>
-<!--
+
     <p id="getsoftware" >
 
     <?php
@@ -59,18 +59,10 @@
 
     ?>
     </p>
--->
-
-                <p id="toprightlink"><?=$html->link('Help','/users/help')?></p>
-
-
-        <?php else :?>
-
-                <p id="toprightlink"><?=$html->link('Register','register')?></p>
-
 
 
     <?php endif; ?>
+
 
 	<div id="barmiddle">
 
