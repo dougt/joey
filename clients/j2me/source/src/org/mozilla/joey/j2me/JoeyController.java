@@ -222,10 +222,15 @@ public class JoeyController
 		}
 	}
 
+	private void showView(Displayable displayable)
+	{
+		this.currentView = displayable;
+		this.display.setCurrent(this.currentView);
+	}
+
 	private Displayable showView(int viewId)
 	{
-		this.currentView = getView(viewId);
-		this.display.setCurrent(this.currentView);
+		showView(getView(viewId));
 		return this.currentView;
 	}
 
@@ -498,9 +503,10 @@ public class JoeyController
 		int event;
 
 		// Handle application login screen.
-		do {
-			LoginView view = (LoginView) showView(VIEW_LOGIN);
+		LoginView view = (LoginView) getView(VIEW_LOGIN);
 
+		do {
+			showView(view);
 			event = waitEvent();
 			switch (event) {
 				case EVENT_SELECT:
