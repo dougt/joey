@@ -368,12 +368,7 @@ public class JoeyController
 				break;
 	
 			case Command.BACK:
-				if (command == CMD_NO) {
-					notifyEvent(EVENT_NO);
-				}
-				else {
-					notifyEvent(EVENT_BACK);
-				}
+				notifyEvent(EVENT_BACK);
 				break;
 	
 			case Command.OK:
@@ -386,7 +381,12 @@ public class JoeyController
 				break;
 	
 			case Command.CANCEL:
-				notifyEvent(EVENT_CANCEL);
+				if (command == CMD_NO) {
+					notifyEvent(EVENT_NO);
+				}
+				else {
+					notifyEvent(EVENT_CANCEL);
+				}
 				break;
 	
 			case Command.SCREEN:
