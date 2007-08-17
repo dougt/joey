@@ -11,14 +11,26 @@ into a thread pool for processing.
 """
 
 import threading
+
+import MySQLdb
+
 from time import sleep
+
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+
 
 """ What address should with listen to """
 joeyd_address = ('localhost', 8777)
 
 """ How many threads should be in our thread pool """
 joeyd_threadcount = 20
+
+""" Database login info """
+joey_db_server = "localhost"
+joey_db_user   = "root"
+joey_db_pw     = ""
+joey_db_name   = "joey"
+
 
 
 """ Threading code from Python Cookbook Recipe """
@@ -203,6 +215,22 @@ def processUpload(id):
 
 
 print "joeyd started."
+
+
+# connect
+joey_db = MySQLdb.connect(host=joey_db_server, user=joey_db_user, passwd=joey_db_pw, db=joey_db_name)
+
+
+cursor = joey_db.cursor()
+cursor.execute("SELECT * FROM uploads")
+result = cursor.fetchall()
+
+for record in result:
+    print "Upload ID: %d Title: $s" % record[0]
+    print "Upload Title: %s" % record[2]
+
+"""
+
 print "Connected on: %s:%s" % joeyd_address
 
 joeyd_threadpool = ThreadPool(joeyd_threadcount)
@@ -211,3 +239,4 @@ joeyd_server     = HTTPServer(joeyd_address, RequestHandler)
 joeyd_server.serve_forever() 
 
 joeyd_threadpool.joinAll()
+"""
