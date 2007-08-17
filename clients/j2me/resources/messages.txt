@@ -14,6 +14,9 @@ command.delete=Delete
 command.snapshot=Snapshot
 command.media_open=Open
 
+command.ok=Ok
+command.cancel=Cancel
+
 command.yes=Yes
 command.no=No
 

@@ -16,6 +16,9 @@ command.media_open=\u00d6ffnen
 command.yes=Ja
 command.no=Nein
 
+command.ok=Ok
+command.cancel=Abbruch
+
 mainmenu.view=Uploads betrachten
 mainmenu.snapshot=Schnappschuss machen
 mainmenu.preferences=Einstellungen
