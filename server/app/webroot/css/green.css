@@ -273,14 +273,8 @@ font-size: 76%;
 
 }
 
-/* 
 
-	background: transparent url(style/arrow-right.gif) no-repeat 100% 0;
-*/
 #toprightlink {
-
-
-	-moz-border-radius:8px;
 	float:right;
 	padding:10px;
 }
@@ -318,19 +312,6 @@ font-size: 76%;
 
 }
 
-/* General Style Info */
-a{
-color: rgb(200,255,0);
-text-decoration:underline;
-}
-a:hover{
-color:orange;
-
-
-#getsoftware a:hover {
-	color:orange;
-}
-
 #barright {
 	float:right;
 	background:url(style/bar-right.jpg) no-repeat;
@@ -339,7 +320,6 @@ color:orange;
 
 }
 
-/* General Style Info */
 a{
 color: rgb(200,255,0);
 text-decoration:underline;
