@@ -48,17 +48,16 @@ public class LoginView
 		super(Locale.get("title.login"));
 
 		//#style input
-		this.mUsernameTextField = new TextField("Username:", "", 50, TextField.ANY | TextField.NON_PREDICTIVE);
+		this.mUsernameTextField = new TextField(Locale.get("form.login.username"), "", 50, TextField.ANY | TextField.NON_PREDICTIVE);
 		this.mUsernameTextField.setString(userdata.getUsername());
 		append(this.mUsernameTextField);
 
 		//#style input
-        this.mPasswordTextField = new TextField("Password:", "", 50, TextField.PASSWORD | TextField.NON_PREDICTIVE);
+        this.mPasswordTextField = new TextField(Locale.get("form.login.password"), "", 50, TextField.PASSWORD | TextField.NON_PREDICTIVE);
         this.mPasswordTextField.setString(userdata.getPassword());
         append(this.mPasswordTextField);
 
-        // TODO: Localize
-        String[] optionStrings = { "Use SSL for data encryption", "Remember Me" };
+        String[] optionStrings = { Locale.get("form.login.usessl"), Locale.get("form.login.rememberme") };
         this.mLoginOptionsChoiceGroup = new ChoiceGroup("", Choice.MULTIPLE, optionStrings, null);
 		boolean[] flags = new boolean[2];
 		flags[0] = userdata.isUseSsl();

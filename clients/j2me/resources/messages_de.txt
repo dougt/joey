@@ -23,6 +23,10 @@ mainmenu.preferences=Einstellungen
 uploads.delete.msg=Wollen sie diesen Upload wirklich l\u00f6schen?
 
 form.login.login=Anmelden
+form.login.username=Benutzername:
+form.login.password=Passwort:
+form.login.usessl=SSL zur Verschl\u00fcsselung benutzen
+form.login.rememberme=Einstellungen speichern
 
 media.browser.open=In Browser \u00f6ffnen
 

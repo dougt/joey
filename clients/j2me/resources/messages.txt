@@ -24,6 +24,10 @@ mainmenu.preferences=Preferences
 uploads.delete.msg=Do you really wanna delete this upload?
 
 form.login.login=Login
+form.login.username=Username:
+form.login.password=Password:
+form.login.usessl=Use SSL for data encryption
+form.login.rememberme=Remember Me
 
 media.browser.open=Open in browser
 
