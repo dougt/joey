@@ -367,6 +367,9 @@ function visinoteembed_DoFSCommand(command, args) {
 
 
 	}
+
+
+	if(command=="onmetadata") { alert(args) } 
 }
 
 
