@@ -176,7 +176,7 @@ class UploadsController extends AppController
         // tell joeyd that we have an upload!  We do not
         // care here if this fails.
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "http://" . JOEYD_SERVER_ADDRESS . "/" . $this->Upload->id);
+        curl_setopt($ch, CURLOPT_URL, "http://" . JOEYD_SERVER_ADDRESS . "/" . $this->Upload->id . "/now");
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
         curl_exec($ch);
 

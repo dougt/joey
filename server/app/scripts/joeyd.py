@@ -8,6 +8,9 @@ high port waiting for incoming requests in the form of
 /<upload_id>.  When we get a request, we toss the request
 into a thread pool for processing.
 
+if "/now" is append on a request, we make an attempt to put
+the new request at the top of the queue for processing.
+
 """
 
 import threading
@@ -28,7 +31,7 @@ joeyd_threadcount = 20
 """ Database login info """
 joey_db_server = "localhost"
 joey_db_user   = "root"
-joey_db_pw     = ""
+joey_db_pw     = "wil is my hero"
 joey_db_name   = "joey"
 
 
@@ -94,7 +97,7 @@ class ThreadPool:
         finally:
             self.__resizeLock.release()
 
-    def queueTask(self, task, args=None, taskCallback=None):
+    def queueTask(self, task, args=None, taskCallback=None, forceToTop=0):
 
         """Insert a task into the queue.  task must be callable;
         args and taskCallback can be None."""
@@ -106,7 +109,13 @@ class ThreadPool:
         
         self.__taskLock.acquire()
         try:
-            self.__tasks.append((task, args, taskCallback))
+
+            print self.__tasks;
+
+            if forceToTop == 1:
+                self.__tasks.insert(0, (task, args, taskCallback))
+            else:
+                self.__tasks.append((task, args, taskCallback))
             return True
         finally:
             self.__taskLock.release()
@@ -197,9 +206,20 @@ class RequestHandler(BaseHTTPRequestHandler):
  
     def do_GET(self):
 
-        upload_id = self.path.replace("/", "");
+        """ 
+        The path needs to look like
+            /<upload_id>[/now]
+        """
+        path = self.path.split("/");
+        upload_id = path[1];
         
-        joeyd_threadpool.queueTask(processUpload, upload_id)
+
+        if (len(path) == 3):
+            if path[2] == "now":
+                print "Processing NOW event"
+                joeyd_threadpool.queueTask(processUpload, upload_id, None, 1)
+        else:
+            joeyd_threadpool.queueTask(processUpload, upload_id, None)
 
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
@@ -209,7 +229,7 @@ class RequestHandler(BaseHTTPRequestHandler):
 def processUpload(id):
     """ need to validate this as an id """
     print "upload %s processing" % id
-    sleep(1)
+    sleep(10)
     print "upload %s done" % id
     return 0;
 
@@ -220,7 +240,7 @@ print "joeyd started."
 # connect
 joey_db = MySQLdb.connect(host=joey_db_server, user=joey_db_user, passwd=joey_db_pw, db=joey_db_name)
 
-
+"""
 cursor = joey_db.cursor()
 cursor.execute("SELECT * FROM uploads")
 result = cursor.fetchall()
@@ -239,4 +259,3 @@ joeyd_server     = HTTPServer(joeyd_address, RequestHandler)
 joeyd_server.serve_forever() 
 
 joeyd_threadpool.joinAll()
-"""
