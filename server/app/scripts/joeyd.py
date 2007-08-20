@@ -1,3 +1,6 @@
+#!/usr/bin/python
+
+
 """ 
 
 joeyd
@@ -13,28 +16,43 @@ the new request at the top of the queue for processing.
 
 """
 
-import threading
+import sys
+import os
+import traceback
 
-import MySQLdb
+import thread
+import threading
+import time
 
 from time import sleep
+ 
+import urllib
 
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
+import cse.Database
+import cse.MySQLDatabase
+
+
+#---------------------------------------------------------------------------------------------------
+# Configuration options
+#---------------------------------------------------------------------------------------------------
+
+version = "0.1"
+
+standardError = sys.stderr
+
 
 """ What address should with listen to """
-joeyd_address = ('localhost', 8777)
+joeyd_address = ('localhost', 87277)
 
 """ How many threads should be in our thread pool """
 joeyd_threadcount = 20
 
-""" Database login info """
-joey_db_server = "localhost"
-joey_db_user   = "root"
-joey_db_pw     = "wil is my hero"
-joey_db_name   = "joey"
 
-
+#---------------------------------------------------------------------------------------------------
+# Thread pool implemenation
+#---------------------------------------------------------------------------------------------------
 
 """ Threading code from Python Cookbook Recipe """
 class ThreadPool:
@@ -202,6 +220,11 @@ class ThreadPoolThread(threading.Thread):
         self.__isDying = True
 
 
+#---------------------------------------------------------------------------------------------------
+# HTTP Request Handler
+#   Called when a GET request is made
+#---------------------------------------------------------------------------------------------------
+
 class RequestHandler(BaseHTTPRequestHandler):
  
     def do_GET(self):
@@ -224,7 +247,50 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-type', 'text/html')
         self.end_headers()
+
+
+#---------------------------------------------------------------------------------------------------
+# Timer implemenation
+#---------------------------------------------------------------------------------------------------
+
+class Timer:
+
+    # Create Timer Object
+    def __init__(self, interval, function, *args, **kwargs):
+        self.__lock = thread.allocate_lock()
+        self.__interval = interval
+        self.__function = function
+        self.__args = args
+        self.__kwargs = kwargs
+        self.__loop = False
+        self.__alive = False
+
+    # Start Timer Object
+    def start(self):
+        self.__lock.acquire()
+        if not self.__alive:
+            self.__loop = True
+            self.__alive = True
+            thread.start_new_thread(self.__run, ())
+        self.__lock.release()
+
+    # Stop Timer Object
+    def stop(self):
+        self.__lock.acquire()
+        self.__loop = False
+        self.__lock.release()
+
+    # Private Thread Function
+    def __run(self):
+        while self.__loop:
+            self.__function(*self.__args, **self.__kwargs)
+            sleep(self.__interval)
+        self.__alive = False
+
         
+#---------------------------------------------------------------------------------------------------
+# Adding processing code here TODO
+#---------------------------------------------------------------------------------------------------
 """ Add upload handling code here """
 def processUpload(id):
     """ need to validate this as an id """
@@ -234,28 +300,88 @@ def processUpload(id):
     return 0;
 
 
-print "joeyd started."
+
+#---------------------------------------------------------------------------------------------------
+# Joey refreshing timer
+#---------------------------------------------------------------------------------------------------
+def joeyd_refresher_timeout():
+
+#todo in addtion, we should only query for files with a
+#modification date greater than 15 min (or whatever refresh
+#time we care about)
+
+    query = """
+        SELECT * FROM 
+        uploads_users 
+        JOIN uploads as Upload ON uploads_users.upload_id = Upload.id
+        LEFT JOIN files as File ON Upload.id = File.upload_id
+        LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
+        WHERE Contentsource.source IS NOT NULL """
+    
+    result = joey_db.executeSql(query)
+    
+    for x in result:
+        joeyd_threadpool.queueTask(processUpload, x.id, None)
 
 
-# connect
-joey_db = MySQLdb.connect(host=joey_db_server, user=joey_db_user, passwd=joey_db_pw, db=joey_db_name)
+#===========================================================================================================
+# main
+#===========================================================================================================
+if __name__ == "__main__":
 
-"""
-cursor = joey_db.cursor()
-cursor.execute("SELECT * FROM uploads")
-result = cursor.fetchall()
+    import cse.ConfigurationManager
+    
+    try:
+        
+        options = [ ('?',  'help', False, None, 'print this message'), 
+                    ('c',  'config', True, './joeyd.conf', 'specify the location and name of the config file'),
+                    (None, 'DatabaseName', True, "", 'the name of the database within the server'),
+                    (None, 'ServerName', True, "", 'the name of the database server'),
+                    (None, 'UserName', True, "", 'the name of the user in the database'),
+                    (None, 'Password', True, "", 'the password for the user in the database'),
+                    (None, 'logPathName', True, "./update.log", 'a progressive log of all runs of the update script'),
+                    ('v',  'verbose', False, None, 'print status information as it runs to stderr'),
+                    ]
+        
+        workingEnvironment = cse.ConfigurationManager.ConfigurationManager(options)
+        
+    except cse.ConfigurationManager.ConfigurationManagerNotAnOption, x:
+        print >>standardError, "m1 %s\n%s\nFor usage, try --help" % (version, x)
+        sys.exit()
+    
 
-for record in result:
-    print "Upload ID: %d Title: $s" % record[0]
-    print "Upload Title: %s" % record[2]
 
-"""
 
-print "Connected on: %s:%s" % joeyd_address
+print "joeyd starting."
+
+
+joey_db = cse.MySQLDatabase.MySQLDatabase(workingEnvironment["DatabaseName"],
+                                          workingEnvironment["ServerName"], 
+                                          workingEnvironment["UserName"],
+                                          workingEnvironment["Password"])
+print "joeyd db setup."
+
+
+
 
 joeyd_threadpool = ThreadPool(joeyd_threadcount)
+print "joeyd threadpool setup."
+
+
+
+# every 30 seconds is going to kill us.  throttle back when we go online.
+joeyd_refresher_timer = Timer(30.0, joeyd_refresher_timeout)
+joeyd_refresher_timer.start()
+print "joeyd timer setup."
+
+
+
 joeyd_server     = HTTPServer(joeyd_address, RequestHandler)
+print "Connected on: %s:%s" % joeyd_address
 
+
+
+
+# cleanup when we die.
 joeyd_server.serve_forever() 
-
 joeyd_threadpool.joinAll()
