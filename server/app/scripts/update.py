@@ -19,54 +19,87 @@ def processByUploadId (uploadId):
         print >>standardError, "Invalid input (%s): not a number" % uploadId
         sys.exit();
 
-    data = getDataById(uploadId);
-    data.printByColumn()
-
-    for x in getDataById(uploadId):
+    #@todo - make sure files exist on disk
+    for x in Upload.getDataById(uploadId):
         if x.source is None:
-            transcodeByUploadData(x)
+            Transcode.transcodeByUploadData(x)
         else:
-            updateByUploadData(x)
+            Update.updateByUploadData(x)
 
-def transcodeByUploadData(data):
-    return 0
+#---------------------------------------------------------------------------------------------------
+# Transcode Class
+#---------------------------------------------------------------------------------------------------
+class Transcode:
 
-def updateByUploadData(data):
-    if (data.name == 'rss-source/text'):
-        updateRssTypeFromUploadData(data)
-    elif (data.name == 'microsummary/xml'):
-        updateMicrosummaryTypeFromUploadData(data)
-    elif (data.name == 'widget/joey'):
-        updateJoeyWidgetTypeFromUploadData(data)
-    else:
-        print >>standardError, "Attempt to upload unsupported type (%s)" % data.name
+    def transcodeByUploadData(self, data):
+        print "Transcoding by upload data..."
+# TODO: call _ functions depending on data.original_type
+        
+        return 0
 
-def updateRssTypeFromUploadData(data):
-    print "update rss"
-    return 0
+    def _transcodeAudio(self, data):
+        print "   Transcoding audio."
+        return 0
 
-def updateMicrosummaryTypeFromUploadData(data):
-    print "update microsummary"
-    return 0
+    def _transcodeImage(self, data):
+        print "   Transcoding image."
+        return 0
 
-def updateJoeyWidgetTypeFromUploadData(data):
-    print "update joey widget"
-    return 0
+    def _transcodeImageAndPreview(self, data):
+        print "   Transcoding image and preview."
+        return 0
 
-def getDataById(id):
-    if type(id) != int:
-        print >>standardError, "Invalid input (%s): not a number" % id
-        sys.exit();
-    query = """
-        SELECT * FROM 
-        uploads_users 
-        JOIN uploads as Upload ON uploads_users.upload_id = Upload.id
-        LEFT JOIN files as File ON Upload.id = File.upload_id
-        LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
-        LEFT JOIN contentsourcetypes as Contentsourcetype ON Contentsource.contentsourcetype_id = Contentsourcetype.id
-        WHERE uploads_users.upload_id = '%d' """ % id
+    def _transcodeVideo(self, data):
+        print "   Transcoding video."
+        return 0
 
-    return database.executeSql(query)
+
+#---------------------------------------------------------------------------------------------------
+# Update Class
+#---------------------------------------------------------------------------------------------------
+class Update:
+    def updateByUploadData(self, data):
+        print "Updating by upload data..."
+        if (data.name == 'rss-source/text'):
+            self._updateRssTypeFromUploadData(data)
+        elif (data.name == 'microsummary/xml'):
+            self._updateMicrosummaryTypeFromUploadData(data)
+        elif (data.name == 'widget/joey'):
+            self._updateJoeyWidgetTypeFromUploadData(data)
+        else:
+            print >>standardError, "Attempt to update unsupported type (%s)" % data.name
+
+    def _updateRssTypeFromUploadData(self, data):
+        print "update rss"
+        return 0
+
+    def _updateMicrosummaryTypeFromUploadData(self, data):
+        print "update microsummary"
+        return 0
+
+    def _updateJoeyWidgetTypeFromUploadData(self, data):
+        print "update joey widget"
+        return 0
+
+
+#---------------------------------------------------------------------------------------------------
+# Upload Class
+#---------------------------------------------------------------------------------------------------
+class Upload:
+    def getDataById(self, id):
+        if type(id) != int:
+            print >>standardError, "Invalid input (%s): not a number" % id
+            sys.exit();
+        query = """
+            SELECT * FROM 
+            uploads_users 
+            JOIN uploads as Upload ON uploads_users.upload_id = Upload.id
+            LEFT JOIN files as File ON Upload.id = File.upload_id
+            LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
+            LEFT JOIN contentsourcetypes as Contentsourcetype ON Contentsource.contentsourcetype_id = Contentsourcetype.id
+            WHERE uploads_users.upload_id = '%d' """ % id
+
+        return database.executeSql(query)
 
 
 
@@ -108,9 +141,13 @@ if __name__ == "__main__":
     database = cse.MySQLDatabase.MySQLDatabase(workingEnvironment["DatabaseName"], workingEnvironment["ServerName"], 
                                                   workingEnvironment["UserName"], workingEnvironment["Password"])
 
+    Transcode = Transcode();
+    Update = Update();
+    Upload = Upload();
 
     # Where stuff actually happens
-    processByUploadId(10)
+    processByUploadId(2)
+
         
   except KeyboardInterrupt:
     print >>standardError, "Interrupted..."
