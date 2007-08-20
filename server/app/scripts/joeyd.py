@@ -43,13 +43,6 @@ version = "0.1"
 standardError = sys.stderr
 
 
-""" What address should with listen to """
-joeyd_address = ('localhost', 87277)
-
-""" How many threads should be in our thread pool """
-joeyd_threadcount = 20
-
-
 #---------------------------------------------------------------------------------------------------
 # Thread pool implemenation
 #---------------------------------------------------------------------------------------------------
@@ -340,6 +333,9 @@ if __name__ == "__main__":
                     (None, 'UserName', True, "", 'the name of the user in the database'),
                     (None, 'Password', True, "", 'the password for the user in the database'),
                     (None, 'logPathName', True, "./update.log", 'a progressive log of all runs of the update script'),
+                    ('t',  'threadcount', True, 20, 'Number of threads that should be in our thread pool.'),
+                    (None, 'listenAddress', True, '', 'Address to listen on'),
+                    (None, 'listenPort', True, 87277, 'Port to listen on'),
                     ('v',  'verbose', False, None, 'print status information as it runs to stderr'),
                     ]
         
@@ -349,8 +345,6 @@ if __name__ == "__main__":
         print >>standardError, "m1 %s\n%s\nFor usage, try --help" % (version, x)
         sys.exit()
     
-
-
 
 print "joeyd starting."
 
@@ -364,7 +358,7 @@ print "joeyd db setup."
 
 
 
-joeyd_threadpool = ThreadPool(joeyd_threadcount)
+joeyd_threadpool = ThreadPool(workingEnvironment["threadcount"])
 print "joeyd threadpool setup."
 
 
@@ -375,9 +369,8 @@ joeyd_refresher_timer.start()
 print "joeyd timer setup."
 
 
-
-joeyd_server     = HTTPServer(joeyd_address, RequestHandler)
-print "Connected on: %s:%s" % joeyd_address
+joeyd_server     = HTTPServer((workingEnvironment["listenAddress"], workingEnvironment["listenPort"]), RequestHandler)
+print "Connected on: %s:%s" % (workingEnvironment["listenAddress"], workingEnvironment["listenPort"])
 
 
 
