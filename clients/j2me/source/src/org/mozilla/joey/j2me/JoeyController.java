@@ -28,6 +28,7 @@ import de.enough.polish.event.ThreadedCommandListener;
 import de.enough.polish.io.RmsStorage;
 import de.enough.polish.util.Locale;
 
+import javax.microedition.io.ConnectionNotFoundException;
 import javax.microedition.lcdui.Alert;
 import javax.microedition.lcdui.AlertType;
 import javax.microedition.lcdui.Command;
@@ -65,6 +66,14 @@ public class JoeyController
 {
 	private static final int DEFAULT_UPDATE_INTERVAL = 300;
 
+	public static final String VERSION_UNKNOWN = "unknown";
+
+	//#if joey.version:defined
+		//#= private static String VERSION = "${joey.version}";
+	//#else
+		private static final String VERSION = VERSION_UNKNOWN;
+	//#endif
+
 	public static final int EVENT_NONE = 0;
 	public static final int EVENT_NO = 1;
 	public static final int EVENT_YES = 2;
@@ -97,6 +106,7 @@ public class JoeyController
 	private static final int ALERT_WAIT = 11;
 	private static final int ALERT_MEDIA_OPEN_ERROR = 12;
 	private static final int ALERT_APPLY_UPDATES = 13;
+	private static final int ALERT_NEW_VERSION_AVAILABLE = 14;
 
 	public static final String ATTR_UPLOAD = "upload";
 
@@ -356,6 +366,15 @@ public class JoeyController
 				alert.addCommand(CMD_NO);
 				alert.setCommandListener(this.commandListener);
 				return alert;
+
+			case ALERT_NEW_VERSION_AVAILABLE:
+				//#style alertConfirmation
+				alert = new Alert(null, Locale.get("alert.new_version.msg"), null, AlertType.CONFIRMATION);
+				alert.setTimeout(Alert.FOREVER);
+				alert.addCommand(CMD_YES);
+				alert.addCommand(CMD_NO);
+				alert.setCommandListener(this.commandListener);
+				return alert;
 	
 			default:
 				//#debug fatal
@@ -566,6 +585,36 @@ public class JoeyController
 
 		// Handle main menu screen.
 		if (event == EVENT_NETWORK_REQUEST_SUCCESSFUL) {
+			// Check if there is a newer version available
+			System.out.println("Michael: " + VERSION);
+			String currentVersion = this.commController.getCurrentVersion();
+			System.out.println("Michael: " + currentVersion);
+			if (!VERSION.equals(currentVersion)
+				&& !VERSION_UNKNOWN.equals(currentVersion)) {
+				showView(ALERT_NEW_VERSION_AVAILABLE);
+				event = waitYesNo();
+
+				if (event == EVENT_YES) {
+					String updateUrl = null;
+					//#= updateUrl = "${joey.update.url}";
+
+					// Do platform request on update URL.
+					try {
+						this.midlet.platformRequest(updateUrl);
+					}
+					catch (ConnectionNotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					// Destroy midlet.
+					this.midlet.notifyDestroyed();
+					return;
+				}
+
+				showView(ALERT_WAIT);
+			}
+
 			// After a successful login, save the user info and load uploads from RMS.
 			saveUserdata();
 

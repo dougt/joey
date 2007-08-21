@@ -40,3 +40,4 @@ alert.exit.msg=Wollen sie Joey wirklich beenden?
 alert.wait.msg=Bitte warten!
 alert.media.open.msg=Der Medientyp kann auf ihrem Handy nicht abgespielt werden.
 alert.apply_updates.msg=Es sind \u00c4nderungen verf\u00fcgbar. Anwenden?
+alert.new_version.msg=Eine neue Version von Joey ist verf\u00fcgbar. Sie koennen jetzt aktualisieren. Sie m\u00fcssen nach der Aktualisierung Joey neu starten. Jetzt aktualisieren?

@@ -38,6 +38,9 @@ import javax.microedition.io.HttpConnection;
 public class CommunicationController
 	extends Thread
 {
+	private static final String JOEY_STATUS = "X-joey-status";
+	private static final String JOEY_VERSION = "X-joey-version";
+
 	//#if serverUrl:defined
 		//#= private String serverURL = "${serverUrl}";
 	//#else
@@ -48,6 +51,7 @@ public class CommunicationController
 	private String cookieStr;
     private ArrayList queue;
     private UserData userData;
+    private String currentVersion = JoeyController.VERSION_UNKNOWN;
 
 	public CommunicationController(JoeyController controller)
 	{
@@ -136,7 +140,12 @@ public class CommunicationController
             out.close();
 
             in = connection.openDataInputStream();
-            nr.responseCode = connection.getHeaderFieldInt("X-joey-status", -1);
+            nr.responseCode = connection.getHeaderFieldInt(JOEY_STATUS, -1);
+            this.currentVersion = connection.getHeaderField(JOEY_VERSION);
+
+            if (this.currentVersion == null) {
+            	this.currentVersion = JoeyController.VERSION_UNKNOWN;
+            }
 
             /* 
 
@@ -294,5 +303,10 @@ public class CommunicationController
         	this.serverURL = TextUtil.replace(this.serverURL, "http:", "https:");
         else
         	this.serverURL = TextUtil.replace(this.serverURL, "https:", "http:");
+    }
+
+    public String getCurrentVersion()
+    {
+    	return this.currentVersion;
     }
 }

@@ -94,6 +94,9 @@
   	<property name="test" value="false" />
 	<property name="dir.work" value="build/real" />
 	<property name="deploy-url" value="" />
+
+	<property name="joey.version" value="0.1" />
+	<property name="joey.update.url" value="http://joey.labs.mozilla.com/app/webroot/ff/" />
 </target>
  
 <!-- In this target the J2ME Polish task is used.             -->
@@ -107,16 +110,20 @@
 		depends="init"
 		description="This is the controller for the J2ME build process." 
 		>
+	<mkdir dir="dist" />
+	<propertyfile file="dist/build.properties">
+		<entry key="joey.version" value="${joey.version}" />
+	</propertyfile>
 	<j2mepolish>
 	    <!-- general settings, these settings basically form the JAD-attributes. -->
 	    <!-- Have a look at the <jad>-section for setting specialised attributes.
 	         You can also define localized attributes in the resources/messages.txt files -->
 		<info
 			name="Joey"
-			version="0.1"
+			version="${joey.version}"
 			description=""
 			vendorName="Mozilla Foundation"
-			infoUrl="http://joey.labs.mozilla.com/app/webroot/ff"
+			infoUrl="http://joey.labs.mozilla.com/"
 			icon="icon.png"
 			jarName="${polish.vendor}-${polish.name}-${polish.locale}-joey.jar" 
 			jarUrl="${deploy-url}${polish.jarName}"
@@ -138,6 +145,8 @@
 			<and>
 				<requirement name="Feature" value="supportsPolishGui" />
 				<requirement name="JavaPlatform" value="MIDP/2.0+" />
+				<!--
+				-->
 				<requirement name="Term" value="!polish.blackberry" />
 				<requirement name="Term" value="!(polish.identifier == Generic/DotNetCF1.1)" />
 				<requirement name="Term" value="!(polish.identifier == Nokia/Series90)" />
@@ -171,6 +180,7 @@
 				<variable name="polish.rmi.synchrone" value="true" />
 				<variable name="polish.usePolishTitle" value="true" />
 				<variable name="polish.TextField.useDirectInput" value="true" unless="${ isOS( Windows ) } or polish.hasPointerEvents"/>
+				<variable name="joey.update.url" value="${joey.update.url}${polish.vendor}-${polish.name}-${polish.locale}-joey.jad" />
 			</variables>
 			<!-- Here you can set the dir attribute to "resources2" for an alternative design. -->
 			<resources
