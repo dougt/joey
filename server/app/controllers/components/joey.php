@@ -80,5 +80,35 @@ class JoeyComponent extends Object
                 return sprintf("%01.3f", $size / 1024 / 1024 / 1024 / 1024) . ' TB';
         }
     }
+
+    function getJ2MEMidletVersion() {
+
+      $version_string = "0.1";  // default if something bad happens below
+
+      //@todo maybe we shouldn't use __FILE__ and instead use a built in cake value.
+      $filename = dirname(__FILE__) . '/../webroot/ff/build.properties';
+      
+      if(($handle = fopen($filename,'r')) != FALSE) 
+      {
+      
+        while (!feof($handle)) 
+        {
+          // look for just the version string in the build.properties file
+          $version = fscanf($handle, "joey.version=%s\n");
+          
+          // great, found it.
+          if (isset($version[0])) {
+            $version_string =  $version[0];
+            break;
+          }
+        }
+
+        fclose($handle);
+      }
+      
+      return $version_string;
+    }
+
+
 }
 ?>

@@ -42,6 +42,7 @@ uses('sanitize');
 class UsersController extends AppController
 {
     var $name = 'Users';
+    var $components = array('Joey');
     var $uses = array('Operator', 'Phone', 'User');
     var $helpers = array('Form','Html','Javascript');
     var $securityLevel = 'low';
@@ -271,6 +272,7 @@ class UsersController extends AppController
                         $this->Session->write('User', $_someone['User']);
 
                         if ($this->nbClient) {
+                            header ("X-joey-version: " . $this->Joey->getJ2MEMidletVersion(),  true);
                             $this->returnJoeyStatusCode($this->SUCCESS);
                         } else {
 
