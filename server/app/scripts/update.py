@@ -33,12 +33,28 @@ class Transcode:
 
     def transcodeByUploadData(self, data):
         print "Transcoding by upload data..."
-# TODO: call _ functions depending on data.original_type
+
+        if (data.original_type in ["audio/x-wav","audio/mpeg","audio/mid","audio/amr"]):
+            self._transcodeAudio(data)
+        elif (data.original_type in ["browser/stuff"]):
+            self._transcodeBrowserStuff(data)
+        elif (data.original_type in ["image/png","image/jpeg","image/tiff","image/bmp","image/gif"]):
+            self._transcodeImage(data)
+        elif (data.original_type in ["text/plain"]):
+            self._transcodeText(data)
+        elif (data.original_type in ["video/3gpp","video/flv","video/mpeg","video/avi","video/quicktime"]):
+            self._transcodeVideo(data)
+        else:
+            print >>standardError, "Attempt to trasncode unsupported type (%s) for upload id (%d)" % data.original_type, data.id
         
         return 0
 
     def _transcodeAudio(self, data):
         print "   Transcoding audio."
+        return 0
+
+    def _transcodeBrowserStuff(self, data):
+        print "   Transcoding browserstuff."
         return 0
 
     def _transcodeImage(self, data):
@@ -47,6 +63,10 @@ class Transcode:
 
     def _transcodeImageAndPreview(self, data):
         print "   Transcoding image and preview."
+        return 0
+
+    def _transcodeText(self, data):
+        print "   Transcoding text."
         return 0
 
     def _transcodeVideo(self, data):
@@ -67,7 +87,7 @@ class Update:
         elif (data.name == 'widget/joey'):
             self._updateJoeyWidgetTypeFromUploadData(data)
         else:
-            print >>standardError, "Attempt to update unsupported type (%s)" % data.name
+            print >>standardError, "Attempt to update unsupported type (%s) for upload id (%d)" % data.name, data.id
 
     def _updateRssTypeFromUploadData(self, data):
         print "update rss"
@@ -119,6 +139,7 @@ if __name__ == "__main__":
                 (None, 'UserName', True, "", 'the name of the user in the database'),
                 (None, 'Password', True, "", 'the password for the user in the database'),
                 (None, 'logPathName', True, "./update.log", 'a progressive log of all runs of the update script'),
+                (None, 'UploadDir', True, "", 'Where are all the uploads stored?'),
                 ('v',  'verbose', False, None, 'print status information as it runs to stderr'),
               ]
     
@@ -137,6 +158,10 @@ if __name__ == "__main__":
     if "verbose" in workingEnvironment: 
       print >>standardError, "Beginning update version %s with options:" % (version)
       workingEnvironment.output(standardError)
+
+    if not os.access(workingEnvironment["UploadDir"], os.W_OK):
+      print >>standardError, "Upload directory (%s) is not writable, exiting..." % workingEnvironment["UploadDir"]
+      sys.exit()
 
     database = cse.MySQLDatabase.MySQLDatabase(workingEnvironment["DatabaseName"], workingEnvironment["ServerName"], 
                                                   workingEnvironment["UserName"], workingEnvironment["Password"])
