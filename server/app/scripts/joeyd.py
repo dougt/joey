@@ -1,4 +1,4 @@
-#!/usr/bin/python
+|#!/usr/bin/python
 
 
 """ 
@@ -333,6 +333,7 @@ if __name__ == "__main__":
                     (None, 'UserName', True, "", 'the name of the user in the database'),
                     (None, 'Password', True, "", 'the password for the user in the database'),
                     (None, 'logPathName', True, "./update.log", 'a progressive log of all runs of the update script'),
+                    (None, 'UploadDir', True, "", 'Where are all the uploads stored?'),
                     ('t',  'threadcount', True, 20, 'Number of threads that should be in our thread pool.'),
                     (None, 'listenAddress', True, '', 'Address to listen on'),
                     (None, 'listenPort', True, 87277, 'Port to listen on'),
