@@ -16,11 +16,19 @@ standardError = sys.stderr
 #---------------------------------------------------------------------------------------------------
 def processByUploadId (uploadId):
     if type(uploadId) != int:
-        print >>standardError, "Invalid input (%s): not a number" % uploadId
-        sys.exit();
+        logMessage("processByUploadId: Invalid input (%s): not a number" % uploadId)
+        return
 
-    #@todo - make sure files exist on disk
+    logMessage("Processing upload id (%d)..." % uploadId)
+
     for x in Upload.getDataById(uploadId):
+
+        uploadDir = os.path.join(workingEnvironment['UploadDir'], str(x.user_id))
+
+        if not os.access(uploadDir, os.R_OK|os.W_OK):
+          logMessage("Upload directory (%s) is not readable or writable, failing.\n" % (uploadDir, uploadId),1)
+          return
+
         if x.source is None:
             Transcode.transcodeByUploadData(x)
         else:
@@ -32,7 +40,7 @@ def processByUploadId (uploadId):
 class Transcode:
 
     def transcodeByUploadData(self, data):
-        print "Transcoding by upload data..."
+        logMessage("transcoding...");
 
         if (data.original_type in ["audio/x-wav","audio/mpeg","audio/mid","audio/amr"]):
             self._transcodeAudio(data)
@@ -45,20 +53,23 @@ class Transcode:
         elif (data.original_type in ["video/3gpp","video/flv","video/mpeg","video/avi","video/quicktime"]):
             self._transcodeVideo(data)
         else:
-            print >>standardError, "Attempt to trasncode unsupported type (%s) for upload id (%d)" % data.original_type, data.id
+            logMessage("Attempt to transcode unsupported type (%s) for upload id (%d)" % (data.original_type, data.id),1)
         
         return 0
 
     def _transcodeAudio(self, data):
-        print "   Transcoding audio."
+        logMessage("type=audio...")
+        logMessage("success.\n")
         return 0
 
     def _transcodeBrowserStuff(self, data):
-        print "   Transcoding browserstuff."
+        logMessage("type=browserstuff...")
+        logMessage("success.\n")
         return 0
 
     def _transcodeImage(self, data):
-        print "   Transcoding image."
+        logMessage("type=image...")
+        logMessage("success.\n")
         return 0
 
     def _transcodeImageAndPreview(self, data):
@@ -66,11 +77,15 @@ class Transcode:
         return 0
 
     def _transcodeText(self, data):
-        print "   Transcoding text."
+        logMessage("type=text...")
+        originalFile = "%s/%d/originals/%s" % (workingEnvironment['UploadDir'], data.user_id, data.original_name)
+        newFile      = "%s/%d/%s" % (workingEnvironment['UploadDir'], data.user_id, data.name)
+        logMessage("success.\n")
         return 0
 
     def _transcodeVideo(self, data):
-        print "   Transcoding video."
+        logMessage("type=video...")
+        logMessage("success.\n")
         return 0
 
 
@@ -79,7 +94,7 @@ class Transcode:
 #---------------------------------------------------------------------------------------------------
 class Update:
     def updateByUploadData(self, data):
-        print "Updating by upload data..."
+        logMessage("updating...")
         if (data.name == 'rss-source/text'):
             self._updateRssTypeFromUploadData(data)
         elif (data.name == 'microsummary/xml'):
@@ -87,18 +102,22 @@ class Update:
         elif (data.name == 'widget/joey'):
             self._updateJoeyWidgetTypeFromUploadData(data)
         else:
-            print >>standardError, "Attempt to update unsupported type (%s) for upload id (%d)" % data.name, data.id
+            logMessage("Attempt to update unsupported type (%s) for upload id (%d)" % (data.name, data.id),1)
 
     def _updateRssTypeFromUploadData(self, data):
-        print "update rss"
+        logMessage("type=rss...")
+        logMessage("success.\n")
         return 0
 
     def _updateMicrosummaryTypeFromUploadData(self, data):
         print "update microsummary"
+        logMessage("type=microsummary...")
+        logMessage("success.\n")
         return 0
 
     def _updateJoeyWidgetTypeFromUploadData(self, data):
-        print "update joey widget"
+        logMessage("type=widget...")
+        logMessage("success.\n")
         return 0
 
 
@@ -121,6 +140,18 @@ class Upload:
 
         return database.executeSql(query)
 
+
+#---------------------------------------------------------------------------------------------------
+# logMessage: Helper function for logging
+#---------------------------------------------------------------------------------------------------
+def logMessage (msg, error=0):
+    if "verbose" in workingEnvironment:
+        LogFile = open(workingEnvironment["logPathName"], "a")
+        LogFile.write(msg)
+        LogFile.close()
+
+    if not error == 0:
+        print >>standardError, msg
 
 
 #===========================================================================================================
@@ -151,16 +182,11 @@ if __name__ == "__main__":
   
     
   try:
-    useLogFile = open(workingEnvironment["logPathName"], "a")
-    workingEnvironment.output(useLogFile)
-    useLogFile.close()
 
-    if "verbose" in workingEnvironment: 
-      print >>standardError, "Beginning update version %s with options:" % (version)
-      workingEnvironment.output(standardError)
+    logMessage("Beginning update version %s\n" % (version))
 
-    if not os.access(workingEnvironment["UploadDir"], os.W_OK):
-      print >>standardError, "Upload directory (%s) is not writable, exiting..." % workingEnvironment["UploadDir"]
+    if not os.access(workingEnvironment["UploadDir"], os.R_OK|os.W_OK):
+      logMessage("Upload directory (%s) is not readable or writable, exiting.\n" % workingEnvironment['UploadDir'],1)
       sys.exit()
 
     database = cse.MySQLDatabase.MySQLDatabase(workingEnvironment["DatabaseName"], workingEnvironment["ServerName"], 
@@ -171,7 +197,7 @@ if __name__ == "__main__":
     Upload = Upload();
 
     # Where stuff actually happens
-    processByUploadId(2)
+    processByUploadId(18)
 
         
   except KeyboardInterrupt:
@@ -182,5 +208,3 @@ if __name__ == "__main__":
     print >>standardError, x
     traceback.print_exc(file=standardError)
 
-  
-  if "verbose" in workingEnvironment: print >>standardError, "done."
