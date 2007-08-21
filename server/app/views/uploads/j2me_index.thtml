@@ -11,7 +11,10 @@ foreach ($uploads as $upload) {
   
   if ($upload['Upload']['deleted'] != null) {
     echo "deleted."  . $i . "=" . "1\n";
-  } else {
+  } 
+  else if ($upload['Upload']['ever_updated'] == 0) {
+  }
+  else {
     echo "title."    . $i . "=" . $upload['Upload']['title'] . "\n";
     echo "referrer." . $i . "=" . $upload['Upload']['referrer'] . "\n";
     echo "modified." . $i . "=" . mktime($upload['Upload']['modified']) . "\n";
