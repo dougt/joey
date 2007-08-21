@@ -55,7 +55,7 @@ if (file_exists(ROOT.DS.APP_DIR.DS.'config'.DS.'config-local.php')) {
  *
  */
  if (!defined('DEBUG'))
-	define('DEBUG', 2);
+	define('DEBUG', 0);
 /**
  * Turn of caching checking wide.
  * You must still use the controller var cacheAction inside you controller class.
