@@ -79,7 +79,11 @@ class Transcode:
     def _transcodeText(self, data):
         logMessage("type=text...")
         originalFile = "%s/%d/originals/%s" % (workingEnvironment['UploadDir'], data.user_id, data.original_name)
-        newFile      = "%s/%d/%s" % (workingEnvironment['UploadDir'], data.user_id, data.name)
+        newFile      = "%s/%d/%s" % (workingEnvironment['UploadDir'], data.user_id, data.file_name)
+        os.system("cp %s %s" % (originalFile, newFile))
+        if not os.path.isfile(newFile): 
+            logMessage("failure.\n")
+            return 1
         logMessage("success.\n")
         return 0
 
@@ -95,14 +99,14 @@ class Transcode:
 class Update:
     def updateByUploadData(self, data):
         logMessage("updating...")
-        if (data.name == 'rss-source/text'):
+        if (data.file_name == 'rss-source/text'):
             self._updateRssTypeFromUploadData(data)
-        elif (data.name == 'microsummary/xml'):
+        elif (data.file_name == 'microsummary/xml'):
             self._updateMicrosummaryTypeFromUploadData(data)
-        elif (data.name == 'widget/joey'):
+        elif (data.file_name == 'widget/joey'):
             self._updateJoeyWidgetTypeFromUploadData(data)
         else:
-            logMessage("Attempt to update unsupported type (%s) for upload id (%d)" % (data.name, data.id),1)
+            logMessage("Attempt to update unsupported type (%s) for upload id (%d)" % (data.file_name, data.id),1)
 
     def _updateRssTypeFromUploadData(self, data):
         logMessage("type=rss...")
@@ -129,9 +133,31 @@ class Upload:
         if type(id) != int:
             print >>standardError, "Invalid input (%s): not a number" % id
             sys.exit();
+        # CSE has a known issue about selecting columns with the same name across multiple tables.  We'll have to
+        # manually specify the column names we need.
         query = """
-            SELECT * FROM 
-            uploads_users 
+            SELECT
+                uploads_users.user_id,
+                Upload.id as upload_id,
+                Upload.title as upload_title,
+                Upload.referrer as upload_referrer,
+                Upload.deleted as upload_deleted,
+                File.id as file_id,
+                File.name as file_name,
+                File.size as file_size,
+                File.type as file_type,
+                File.original_name,
+                File.original_size,
+                File.original_type,
+                File.preview_name,
+                File.preview_size,
+                File.preview_type,
+                File.ever_updated,
+                File.modified as file_modified,
+                Contentsource.source,
+                Contentsourcetype.name as contentsourcetype_name
+            FROM 
+            uploads_users
             JOIN uploads as Upload ON uploads_users.upload_id = Upload.id
             LEFT JOIN files as File ON Upload.id = File.upload_id
             LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
