@@ -407,9 +407,11 @@ class microsummary {
       $uri .= isset($parsed['path']) ? $parsed['path'] : '';
 
       // urlencode does way to much.  all we need to do (i think) is escape spaces.
-      $query = str_replace(" ", "%20", $parsed['query']);
+      if (isset($parsed['query'])) {
+        $query = str_replace(" ", "%20", $parsed['query']);
+        $uri .= '?'. $query;
+      }
 
-      $uri .= isset($parsed['query']) ? '?'. $query : '';
       $uri .= isset($parsed['fragment']) ? '#'.$parsed['fragment'] : '';
 
       $useragent = "Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-US; rv:1.8.1.4) Gecko/20070515 Firefox/2.0.0.4";
@@ -434,5 +436,25 @@ class microsummary {
       return $result;
   }
   }
+
+
+// basically what we are trying to do is make this callable
+// via the CLI, while allowing this to be included by the
+// existing cake php controllers.  
+if ($argc == 3) {
+  $_ms = new microsummary();
+
+  $f = fopen($argv[1], "r");
+  $gen = fread ($f, filesize($argv[1]));
+  fclose($f);
+
+  $_ms->load($gen);
+  $_ms->execute($argv[2], false);
+
+  $f = fopen($argv[1], "w");
+  fwrite($f, $_ms->result);
+  fclose($f);
+  return 1;
+}
 
 ?>
