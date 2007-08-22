@@ -80,50 +80,6 @@ function execJoey(scriptInfo) {
  * This is joey project  - the Web FlV vidoe player functions
  */ 
 
-var gCurrentControlId = null;
-var gCurrentElement = null;
-
-function joeyMedia_destroyPlayer(itemId) {
-
-	//remove the player from the markup
-	document.getElementById("expandItem-"+itemId).innerHTML="";
-	document.getElementById("expandItem-"+itemId).style.display="none";
-
-	
-	document.getElementById("joeyVideoPlayerController-"+itemId).innerHTML="play";
-        document.getElementById("joeyVideoCloseButton-"+itemId).innerHTML="";
-
-	gJoeyMediaHash[itemId]=null;
-
-}
-
-
-function joeyMedia_initPlayer(itemId){
-
-
- 	var strVideoEmbed = ' <div id="singleVideo" style="text-align:center;" class="videoPlayer"> <object align="middle" codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=7,0,0,0" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" id="videoplayerobject" width="320" height="240"><param value="/app/webroot/vendor/webflv.swf" name="movie"><param value="high" name="quality"><param value="true" name="swLiveConnect"><param value="#000000" name="bgcolor"> <embed pluginspage="http://www.macromedia.com/go/getflashplayer" type="application/x-shockwave-flash" allowScriptAccess="sameDomain" align="middle" bgcolor="#000000" swLiveConnect="true" quality="high" src="/app/webroot/vendor/webflv.swf" mayscript="true" id="videoplayerembed" width="320" height="240"></embed> </object> </div>' ;
-
-
-	var el = document.getElementById("expandItem-"+itemId);
-
-	el.style.display="block";
-
-        gCurrentControlId = itemId;
-	gCurrentElement = "expandItem-"+itemId;
-
-	el.innerHTML = strVideoEmbed;
-
-	document.getElementById("joeyVideoCloseButton-"+itemId).innerHTML="<a href='javascript:' onclick='joeyMedia_destroyPlayer(\""+itemId+"\");return false;'> close</a>";
-
-	if(document.all) { 
-			gBrowserFlashID="videoplayerobject";
-	} else {
-			gBrowserFlashID="videoplayerembed";	
-	}
-
-
-}
-
 function findPos(obj) {
 	var curleft = curtop = 0;
 	if (obj.offsetParent) {
@@ -137,229 +93,221 @@ function findPos(obj) {
 	return [curleft,curtop];
 }
 
-var form_playURL = null;
-var oldX=0;
-var video_timemax;
-var seekMax = 376;
-var pauseFlop = true;
-var form_headTime;
-var form_playing=false;
+/* 
+ * new Joey mediaplayer JS + flash video player implementation 0.2
+ * 
+ */
+ 
+var seekMax = 266 - 20; /* Maximu */
+var seekInit = 2;
 
-function joeyMedia_delayedVideoPlay(videoId,itemId) {
+var gMediaPlayerArray=new Array();
 
-	gJoeyMediaHash[itemId]=1;
-	joeyMedia_updateControl(itemId,"pause");
-	setTimeout("videoPlay('"+videoId+"')",2000);
+function joeyMedia_mediaplayer_updateControls(referenceElement,timeInfo) {
 
-}
+    var currentPlayer = gMediaPlayerArray[referenceElement];
+    
+        var videoDuration = currentPlayer.videoDuration;
 
-
-function videoPlay(videoId,timeStamp) {
-
-	form_playURL = videoId
-	getFlash().SetVariable("form_fileURL", form_playURL);
-	getFlash().SetVariable("form_bufferTime",5);
-	getFlash().SetVariable("form_seekPosition",0);
-	getFlash().SetVariable("vp_function_seek","go");
-	getFlash().SetVariable("vp_function_play","go");
-	getFlash().SetVariable("vp_function_seturl","go");
-
-	form_playing = true; 
-
-}
-
-function videoCheckTime() {
-	if(form_playing) {
-		getFlash().SetVariable("vp_function_checktime","go");
-	} 
-}
-
-function videoSeek(timePosition, videoid) {
-
-	/* if not initialized */ 
-	if(!form_playURL) {
-	
-		videoPlay(videoid,0);
-	
-	}
-	newTimePosition = timePosition;
-	getFlash().SetVariable("form_seekPosition",newTimePosition);
-	getFlash().SetVariable("vp_function_seek","go");
-}
-
-function videoTryPause() {
-	if(pauseFlop) { 
-		form_playing=false;
-		pauseFlop=false;
-		getFlash().SetVariable("vp_function_pauseresume","go");
-	}
-}
-
-
-var gJoeyMediaHash = new Array();
-var gCurrentVideoPlaying = null;
-
-function joeyMedia_videoPlayPause(videoId,itemId) {
-
-	if(  gJoeyMediaHash[itemId] > 0) {
-
-		videoPlayPause();
-		return;
-
-	} 
-
-	if( !gCurrentVideoPlaying ) {
-
-                joeyMedia_initPlayer(itemId);
-                joeyMedia_delayedVideoPlay(videoId,itemId);
-		gCurrentVideoPlaying = itemId;
-
+		var left = seekInit + parseInt((timeInfo/videoDuration)*seekMax);
 		
-	} else {
+		currentPlayer.thumbSlider.style.left = left + "px";
+       
+       
+       
+}
 
-		gJoeyMediaHash[gCurrentVideoPlaying]=null;
-		joeyMedia_destroyPlayer(gCurrentVideoPlaying);
+
+function joeyMedia_mediaplayer_toggle(videoId,itemId) {
+
+    if(gMediaPlayerArray[itemId]) {
+        joeyMedia_mediaplayer_destroyPlayer(itemId);
+    } else {
+        joeyMedia_mediaplayer_createPlayer(itemId,videoId);    
+    }
+
+}
+
+function joeyMedia_mediaplayer_playpause(itemId) {
+
+    var currentPlayer = gMediaPlayerArray[itemId];
+    
+    if(currentPlayer.flashObject==null) {
+        currentPlayer.flashObject = document.getElementById(currentPlayer.flashid);
+    }
+
+   if(currentPlayer.playing==true) {
+  
+        currentPlayer.flashObject.SetVariable("vp_function_pauseresume","go");
+        currentPlayer.playButton.className="videobutton-play";  
+        currentPlayer.playing = false;
+        
+    } else {
+    
+        currentPlayer.playing = true;
+        currentPlayer.playButton.className="videobutton-pause";      
+        currentPlayer.flashObject.SetVariable("vp_function_pauseresume","go");
+        
+    }
+    
+}
 
 
-		gCurrentVideoPlaying = itemId;
+function joeyMedia_mediaplayer_stop(itemId) {
 
-		joeyMedia_initPlayer(itemId);	
-		joeyMedia_delayedVideoPlay(videoId,itemId);
+    var currentPlayer = gMediaPlayerArray[itemId];
+    if(currentPlayer.flashObject==null) {
+        currentPlayer.flashObject = document.getElementById(currentPlayer.flashid);
+    }
 
-	}
+   if(currentPlayer.playing==true) {
+        currentPlayer.flashObject.SetVariable("vp_function_pauseresume","go");
+        currentPlayer.playButton.className="videobutton-play";  
+        currentPlayer.playing = false;
+        currentPlayer.flashObject.SetVariable("form_seekPosition",0);
+        currentPlayer.flashObject.SetVariable("vp_function_seek","go");
+        
+    } else {
+        currentPlayer.flashObject.SetVariable("form_seekPosition",0);
+        currentPlayer.flashObject.SetVariable("vp_function_seek","go");
+    }
+    joeyMedia_mediaplayer_updateControls(itemId,0);
+}
+
+function joeyMedia_mediaplayer_createPlayer(itemId,videoId) {
+
+        /* Remove this: test only */
+        /* RRR */
+        
+        videoId = "/js/test.flv";
+
+        var width = 320;
+        var height = 240;   
+ 	    var strVideoEmbed = ' <div id="mediaplayer-'+itemId+'" style="text-align:center;" class="videoPlayer"> <object align="middle" codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=7,0,0,0" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" id="videoplayerobject-'+itemId+'" width="'+width+'" height="'+height+'"><param value="/app/webroot/vendor/webflv.swf?fileName='+videoId+'&refId='+itemId+'" name="movie"><param value="high" name="quality"><param value="true" name="swLiveConnect"><param value="#000000" name="bgcolor"> <embed pluginspage="http://www.macromedia.com/go/getflashplayer" type="application/x-shockwave-flash" allowScriptAccess="sameDomain" align="middle" bgcolor="#000000" swLiveConnect="true" quality="high" src="/app/webroot/vendor/webflv.swf?fileName='+videoId+'&refId='+itemId+'" mayscript="true" id="videoplayerembed-'+itemId+'" width="'+width+'" height="'+height+'"></embed> </object> </div>' ;
+	    var el = document.getElementById("expandItem-"+itemId);
+	 
+	    el.style.display="block";
+	    el.innerHTML = strVideoEmbed;
+
+	    document.getElementById("joeyVideoPlayerController-"+itemId).innerHTML="close";
+
+        var flashid="videoplayerembed-"+itemId;
+
+	    if(document.all) { 
+			    flashid="videoplayerobject-"+itemId;
+	    } 
+	    
+	    /* 
+	     * We create the flash video object 
+	     */
+	     
+	    gMediaPlayerArray[itemId] = { 
+	    
+	        flashid:flashid,
+	        itemId:itemId,
+	        flashObject:null,
+	        expandDiv:el,
+	        playing:false,
+	        playButton:null,
+	        videoDuration:null,
+	        thumbSlider:null
+	    };
+    
+        var playerElement = document.createElement("div");
+        playerElement.setAttribute("style","position:relative;width:314px;height:24px;");
+        
+        var playButton = document.createElement("a");
+        playButton.setAttribute("class","videobutton-pause");
+        playButton.setAttribute("href","javascript:");
+        playButton.setAttribute("style","position:absolute;top:2px;left:2px;width:22px;height:22px;");
+        playButton.setAttribute("onclick","joeyMedia_mediaplayer_playpause('"+itemId+"');return false");   
+
+        playerElement.appendChild(playButton);
+
+        gMediaPlayerArray[itemId].playButton = playButton; 
+        
+        var rewindInit = document.createElement("a");
+        rewindInit.setAttribute("class","videobutton-stop");
+        rewindInit.setAttribute("href","javascript:");
+        rewindInit.setAttribute("style","position:absolute;top:2px;left:26px;width:22px;height:22px;");     
+        rewindInit.setAttribute("onclick","joeyMedia_mediaplayer_stop('"+itemId+"');return false");   
+        playerElement.appendChild(rewindInit);
+
+        var sliderElement = document.createElement("div");
+        sliderElement.setAttribute("style","position:absolute;border:1px solid gray;top:4px;left:52px;background-color:black;width:267px;height:18px;");
+        playerElement.appendChild(sliderElement);
+       
+        var dragElement = document.createElement("div");
+        dragElement.setAttribute("class","videobutton-thumb");
+        dragElement.setAttribute("style","position:absolute;width:18px;height:16px;");
+        sliderElement.appendChild(dragElement);
+  
+        gMediaPlayerArray[itemId].thumbSlider = dragElement;
+        
+        document.getElementById("mediaplayer-"+itemId).appendChild(playerElement);        
+
+        gMediaPlayerArray[itemId].playing = true;
+           
+        joeyMedia_mediaplayer_kickDuration();   
+           
+}
+
+function joeyMedia_mediaplayer_kickDuration() {
+
+    for(var key in gMediaPlayerArray) {
+    
+        var currentPlayer = gMediaPlayerArray[key];
+        try { 
+            if(currentPlayer.playing) { 
+                if(currentPlayer.flashObject==null) {
+                    currentPlayer.flashObject = document.getElementById(currentPlayer.flashid);
+                }     
+                currentPlayer.flashObject.SetVariable("vp_function_checktime","go");
+            }
+        } catch (i) {
+            /* nothing yet */
+ 
+        }
+    
+    }
+
+    setTimeout("joeyMedia_mediaplayer_kickDuration()",1000);
+    
+}
+
+function joeyMedia_mediaplayer_destroyPlayer(itemId) {
+
+    var currentPlayer = gMediaPlayerArray[itemId];
+    
+    currentPlayer.expandDiv.innerHTML="";
+	currentPlayer.expandDiv.style.display="none";
 	
-}
+	document.getElementById("joeyVideoPlayerController-"+itemId).innerHTML="play";
 
-function joeyMedia_updateControl(itemId,toString) {
+	gMediaPlayerArray[itemId]=null;
 
-	  document.getElementById("joeyVideoPlayerController-"+itemId).innerHTML=toString;
-
-}
-
-function videoPlayPause() {
-
-	if(gJoeyMediaHash[gCurrentControlId]==1) { 
-
-		document.getElementById("joeyVideoPlayerController-"+gCurrentControlId).innerHTML="play";	
-		gJoeyMediaHash[gCurrentControlId]=2;
-
-
-	} else {
-
-		document.getElementById("joeyVideoPlayerController-"+gCurrentControlId).innerHTML="pause";	
-		gJoeyMediaHash[gCurrentControlId]=1;
-
-	}
-
-	getFlash().SetVariable("vp_function_pauseresume","go");
-
-
-}
-
-function init() {
-
-	resize();
-
-	video_timemax = parseFloat(document.getElementById("videolength").innerHTML);
-	document.getElementById("timeshow").innerHTML = parseInt(document.getElementById("videolength").innerHTML);
-
-	init_seeker();
-	
-	gAllowPlay= true;
-	
-}	
-
-gAllowPlay= false;
-gCurrentPlaying = 0;
-gCurrentVideo = null;
-
-function init_seeker() {
-
-	// soon support dragger IE. 
-
-	if(!document.all) {
-
-		document.getElementById("dragpoint").addEventListener("mousedown",seekerClick,false);
-
-	}
-}
-
-function seekerClick(e) {
-	videoTryPause();
-	oldX=e.clientX;
-	document.addEventListener("mousemove",seekerMove,false);
-	document.addEventListener("mouseup",seekerUp,false);
-	seekerDragging=true;
-}
-
-
-var seekerDragging = false;
-
-
-function seekerMove(e) {
-
-
-	newX=e.clientX;
-
-	deltaX=newX-oldX;
-
-	oldX=newX;
-
-	markupLeft = parseInt(document.getElementById("dragpoint").style.left);
-
-	markupLeft+=deltaX;
-
-	if(markupLeft>=0 && markupLeft <= seekMax) {
-
-		document.getElementById("dragpoint").style.left=markupLeft+"px";
-	}
-
-}
-
-function seekerUp(e) {
-
-	document.removeEventListener("mousemove",seekerMove,false);
-	document.removeEventListener("mouseup",seekerUp,false);
-
-	positionSec =  ( parseInt(document.getElementById("dragpoint").style.left) / seekMax )* video_timemax ;
-
-	seekerDragging = false;
-	videoSeek(positionSec);
-	form_headTime = positionSec;
-	visual_updateDisplay(positionSec);
-
-}
-
-function seekerTryUpdate() {
-	if(!seekerDragging) {
-
-		left=parseInt((form_headTime/video_timemax)*seekMax);
-
-		document.getElementById("dragpoint").style.left = left+"px";
-
-	}
-}
-
-function visual_updateDisplay(vv) {
-
-		document.getElementById("timeshow").innerHTML=vv;
-
-}
-
-function getFlash() {
-      return document.getElementById(gBrowserFlashID);
 }
 
 function visinoteembed_DoFSCommand(command, args) {
 
+    if(command=="flashready") {
+   
+        
+    }
+
+    if(command=="filename") {
+    
+        
+        
+    }
 	if(command=="timeevent") {
 
-		gCurrentPlaying = args;
-
-		//visual_updateDisplay(args);
-		//form_headTime=args;
-		//seekerTryUpdate();
-		//if(form_playing) {setTimeout("videoCheckTime()",1000);} 
+        var argsArray = args.split("::");
+        
+        var timeInfo = parseFloat(argsArray[0]);
+        var referenceElement = argsArray[1];
+        
+        joeyMedia_mediaplayer_updateControls(referenceElement,timeInfo);
 
 	}
 
@@ -369,7 +317,26 @@ function visinoteembed_DoFSCommand(command, args) {
 	}
 
 
-	if(command=="onmetadata") { alert(args) } 
+	if(command=="onmetadata") { 
+
+              var metaString = args.split("::");
+              var referenceId = metaString[0];
+              var objectString = metaString[1];
+
+              if(objectString == "duration") {
+
+                      var durationTime = metaString[2];
+
+                      /* Global for current max duration time for the current video */ 
+                      
+                      var video_timemax = parseFloat(durationTime);
+                      
+                      gMediaPlayerArray[referenceId].videoDuration=video_timemax; 
+                      
+              }
+
+
+	} 
 }
 
 
