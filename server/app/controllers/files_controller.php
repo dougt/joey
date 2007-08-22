@@ -40,7 +40,7 @@ class FilesController extends AppController
 {
     var $name = 'Files';
 
-    var $components = array('Session','Storage', 'Update');
+    var $components = array('Session','Storage');
 
     var $uses = array('Contentsource', 'Contentsourcetype', 'File', 'Upload', 'User');
 
@@ -156,10 +156,6 @@ class FilesController extends AppController
             $this->flash('Invalid ID requested', '/uploads/index');
         }
 
-        // before doing anything, see if we have to update the content.
-        // @todo - remove this.  This needs to happen offline (bug 386777)
-        $this->Update->updateContentSourceByUploadId($_item['File']['upload_id'], false);
-
         $this->layout = null;
 
         // Make a note if they are asking for the preview
@@ -192,6 +188,7 @@ class FilesController extends AppController
             $_filesize = $_item['File']['size'];
         }
 
+
         // We can't read the file for whatever reason.  Fallback to the default.
         // (This actually sends the image if the complete content is missing too. hmm)
         if (! (is_readable($_filename) && is_file($_filename))) {
@@ -207,7 +204,6 @@ class FilesController extends AppController
         $this->set('content_type', $_filetype);
         $this->set('content_length', $_filesize);
         $this->set('content', file_get_contents($_filename));
-
 
         if ($this->nbClient) {
             header("X-joey-status: 200");

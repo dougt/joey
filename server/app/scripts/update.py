@@ -104,6 +104,21 @@ class Transcode:
 #---------------------------------------------------------------------------------------------------
 class Update:
 
+    def _markUpdatedInDB(self, data):
+        
+        query = """
+           UPDATE
+              uploads
+           SET
+              ever_updated = 1
+           WHERE
+             id = '%d' """ % (data.upload_id)
+
+        database.executeSql(query)
+        
+        #todo move out of here
+        database.commit()
+
     def _setTitleInDB(self, id, title):
 
         query = """
@@ -119,13 +134,37 @@ class Update:
         #todo move out of here
         database.commit()
 
+    def _changeOriganalFileNameInDB(self, data, newname):
+
+        query = """
+            UPDATE
+                files
+            SET
+                original_name = '%s'
+           WHERE
+                id = '%d' """ % (newname, data.file_id)
+
+        database.executeSql(query)
+        
+        #todo move out of here
+        database.commit()
+
+
+
     def _updateFileSizesInDB(self, data):
 
         originalFile = "%s/%d/originals/%s" % (workingEnvironment['UploadDir'], data.user_id, data.original_name)
         newFile      = "%s/%d/%s" % (workingEnvironment['UploadDir'], data.user_id, data.file_name)
 
-        size = os.path.getsize(newFile)
-        originalsize = os.path.getsize(originalFile)
+        if not os.path.isfile(newFile): 
+            size = 0
+        else:
+            size = os.path.getsize(newFile)
+
+        if not os.path.isfile(originalFile): 
+            originalsize = 0
+        else:
+            originalsize = os.path.getsize(originalFile)
 
         query = """
             UPDATE
@@ -143,6 +182,7 @@ class Update:
         database.commit()
         
     def _updateFileTypesInDB(self, data, type, originaltype):
+
         query = """
             UPDATE
                 files
@@ -183,12 +223,14 @@ class Update:
 
         if (data.contentsourcetype_name == 'rss-source/text'):
             self._updateRssTypeFromUploadData(data)
+            self._markUpdatedInDB(data)
         elif (data.contentsourcetype_name == 'microsummary/xml'):
             self._updateMicrosummaryTypeFromUploadData(data)
         elif (data.contentsourcetype_name == 'widget/joey'):
             self._updateJoeyWidgetTypeFromUploadData(data)
         else:
             logMessage("Attempt to update unsupported type (%s) for upload id (%d)" % (data.contentsourcetype_name, data.upload_id) ,1)
+
 
     def _updateRssTypeFromUploadData(self, data):
 
@@ -242,9 +284,25 @@ class Update:
                         
 
                         #todo -- shouldn't we worry here about disk space?
-                        urllib.urlretrieve(enclosure.href, originalFile)
+                        #print urllib.urlretrieve(enclosure.href, originalFile)
 
-                        print originalFile
+                        f = urllib.urlopen(enclosure.href)
+                        media = f.read()
+                        
+                        # check to see if the originalFile already has the right extension
+                        if (originalFile.find(".mp3") == -1):
+                            originalFile = originalFile + ".mp3"
+                            #update the table with this new file name.
+
+                        self._changeOriganalFileNameInDB(data, os.path.basename(originalFile))
+
+                        out = open(originalFile, 'w+')
+                        out.write(media)
+                        out.close()
+                        media = ""
+
+
+                        print data
                         # todo transcode audio
 
                         self._updateFileTypesInDB(data, "audio/amr", enclosure.type)
@@ -376,7 +434,7 @@ if __name__ == "__main__":
   try:
   
     options = [ ('?',  'help', False, None, 'print this message'), 
-                ('c',  'config', True, './update.conf', 'specify the location and name of the config file'),
+                ('c',  'config', True, './joeyd.conf', 'specify the location and name of the config file'),
                 (None, 'DatabaseName', True, "", 'the name of the database within the server'),
                 (None, 'ServerName', True, "", 'the name of the database server'),
                 (None, 'UserName', True, "", 'the name of the user in the database'),
@@ -409,7 +467,7 @@ if __name__ == "__main__":
     Upload = Upload();
 
     # Where stuff actually happens
-    processByUploadId(702)
+    processByUploadId(722)
 
   except KeyboardInterrupt:
     print >>standardError, "Interrupted..."

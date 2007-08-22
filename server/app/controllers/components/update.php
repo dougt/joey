@@ -37,7 +37,6 @@
 
 vendor('microsummary');
 vendor('joeywidget');
-vendor('magpierss/rss_fetch.inc');
 
 uses('sanitize');
 
@@ -256,7 +255,7 @@ class UpdateComponent extends Object
         // default error output.
         $output = "RSS currently doesn't exist for this upload. Try again later.";
 
-        $rss = new MagpieRSS( $result );
+        $rss;// = new MagpieRSS( $result );
         if ( !$rss or $rss->ERROR)
         {
             $this->controller->Error->addError("({$upload['Upload']['id']}) Failed to parse RSS ({$_rss_url} error: {$rss->ERROR})", 'update:rss', false, true);          

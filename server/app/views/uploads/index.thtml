@@ -172,7 +172,14 @@
                     <li>Joey hasn't processed this yet</li>
                     <li>Uploaded <?php echo $time->niceShort($upload['Upload']['created']); ?></li>
                 <?php else : ?>
-                    <li>Size:  <?php echo $number->toReadableSize($upload['File']['size']); ?></li>
+                    <li>Size:  
+                    <?php 
+                          if ($upload['File']['size'] == 0)
+                             echo "0"; 
+                          else 
+                             echo $number->toReadableSize($upload['File']['size']);
+                     ?>
+                     </li>
                     <li>Uploaded <?php echo $time->niceShort($upload['Upload']['created']); ?></li>
                     <li><?php echo $html->link( "Original", "/files/view/" . $upload['File']['id'] . "/original") ?>         
                 <?php endif; ?>
