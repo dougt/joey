@@ -48,59 +48,107 @@ class Transcode:
     def transcodeByUploadData(self, data):
         logMessage("transcoding...");
 
+        _phone_data = User.getPhoneDataByUserId(int(data.user_id))
+
+        # @TODO - I think the preview is NULL from php sometimes - we need to prefill the name correctly
+        fromFile    = os.path.join(workingEnvironment['UploadDir'], data.user_id, 'originals', data.original_name)
+        toFile      = os.path.join(workingEnvironment['UploadDir'], data.user_id, data.file_name)
+        previewFile = os.path.join(workingEnvironment['UploadDir'], data.user_id, 'previews' , data.preview_name)
+
         if (data.original_type in ["audio/x-wav","audio/mpeg","audio/mid","audio/amr"]):
             self._transcodeAudio(data)
         elif (data.original_type in ["browser/stuff"]):
             self._transcodeBrowserStuff(data)
         elif (data.original_type in ["image/png","image/jpeg","image/tiff","image/bmp","image/gif"]):
-            self._transcodeImage(data)
+            self._transcodeImageAndPreview(fromFile, toFile, previewFile) #@TODO width/height from _phone_data
         elif (data.original_type in ["text/plain"]):
-            self._transcodeText(data)
+            self._transcodeText(fromFile, toFile)
         elif (data.original_type in ["video/3gpp","video/flv","video/mpeg","video/avi","video/quicktime"]):
             self._transcodeVideo(data)
         else:
             logMessage("Attempt to transcode unsupported type (%s) for upload id (%d)" % (data.original_type, data.upload_id),1)
         
+        Update.updateFileSizesInDB(data)
+
         return 0
 
-    def _transcodeAudio(self, data):
+    def _transcodeAudio(self, fromFile, toFile):
         logMessage("type=audio...")
+
+        if not os.path.isfile(fromFile):
+            logMessage("failure (file not found)\n")
+            return 1
+
+        # Encode the file, wait for the command to return
+        if not os.spawnlp(os.P_WAIT, workingEnvironment['FfmpegCmd'], os.path.basename(workingEnvironment['FfmpegCmd']), '-y', '-i', fromFile, '-ar', '8000', '-ac', '1', '-ab', '7400', '-f', 'amr', toFile) == 0:
+            logMessage("failure.\n")
+            return 1
+
+        if not os.path.isfile(toFile): 
+            logMessage("failure.\n")
+            return 1
         logMessage("success.\n")
         return 0
 
     def _transcodeBrowserStuff(self, data):
         logMessage("type=browserstuff...")
+        #@TODO
         logMessage("success.\n")
         return 0
 
-    def _transcodeImage(self, data):
+    def _transcodeImage(self, fromFile, toFile, width=100, height=100):
         logMessage("type=image...")
+
+        if not os.path.isfile(fromFile):
+            logMessage("failure (file not found)\n")
+            return 1
+
+        # Encode the file, wait for the command to return
+        if not os.spawnlp(os.P_WAIT, workingEnvironment['ConvertCmd'], os.path.basename(workingEnvironment['ConvertCmd']), '-geometry', ("%sx%s"% (width, height)), fromFile, toFile) == 0:
+            logMessage("failure.\n")
+            return 1
+
+        if not os.path.isfile(toFile): 
+            logMessage("failure.\n")
+            return 1
+
         logMessage("success.\n")
         return 0
 
-    def _transcodeImageAndPreview(self, data):
-        print "   Transcoding image and preview."
+    def _transcodeImageAndPreview(self, fromFile, toFile, previewFile, width=100, height=100):
+        # TODO logMessage isn't really going to work for this method since it's nested with _transcodeImage, but since we have to redo the logging to deal with the
+        # multithreading I'm just going to skip this function for now
+
+        if not self._transcodeImage(fromFile, toFile, width, height) == 0:
+            return 1
+
+        if not self._transcodeImage(toFile, previewFile, width/2, height/2) == 0:
+            return 1
+
         return 0
 
-    def _transcodeText(self, data):
+    def _transcodeText(self, fromFile, toFile):
         logMessage("type=text...")
 
-        originalFile = "%s/%d/originals/%s" % (workingEnvironment['UploadDir'], data.user_id, data.original_name)
-        newFile      = "%s/%d/%s" % (workingEnvironment['UploadDir'], data.user_id, data.file_name)
+        if not os.path.isfile(fromFile):
+            logMessage("failure (file not found)\n")
+            return 1
 
-        os.system("cp %s %s" % (originalFile, newFile))
+        # Copy the file, wait for the command to return
+        if not os.spawnlp(os.P_WAIT, 'cp', 'cp', originalFile, newFile) == 0:
+            logMessage("failure.\n")
+            return 1
 
         if not os.path.isfile(newFile): 
             logMessage("failure.\n")
             return 1
-
-        Update.updateFileSizesInDB(data)
 
         logMessage("success.\n")
         return 0
 
     def _transcodeVideo(self, data):
         logMessage("type=video...")
+        #@TODO
         logMessage("success.\n")
         return 0
 
@@ -383,8 +431,8 @@ class Update:
 class Upload:
     def getDataById(self, id):
         if type(id) != int:
-            print >>standardError, "Invalid input (%s): not a number" % id
-            sys.exit();
+            logMessage("Invalid input (%s): not a number" % id, 1)
+
         # CSE has a known issue about selecting columns with the same name across multiple tables.  We'll have to
         # manually specify the column names we need.
         query = """
@@ -415,6 +463,20 @@ class Upload:
             LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
             LEFT JOIN contentsourcetypes as Contentsourcetype ON Contentsource.contentsourcetype_id = Contentsourcetype.id
             WHERE uploads_users.upload_id = '%d' """ % id
+
+        return database.executeSql(query)
+
+class User:
+    def getPhoneDataByUserId(self, id):
+        if type(id) != int:
+            logMessage("Invalid input (%s): not a number" % id, 1)
+
+        query = """
+            SELECT
+                Phone.*
+            FROM phones as Phone
+            JOIN users as User on User.phone_id = Phone.id
+            WHERE User.id = '%d' """ % id 
 
         return database.executeSql(query)
 
@@ -449,6 +511,8 @@ if __name__ == "__main__":
                 (None, 'Password', True, "", 'the password for the user in the database'),
                 (None, 'logPathName', True, "./update.log", 'a progressive log of all runs of the update script'),
                 (None, 'UploadDir', True, "", 'Where are all the uploads stored?'),
+                (None, 'ConvertCmd', True, "/usr/bin/convert", 'Where is your convert executable?'),
+                (None, 'FfmpegCmd', True, "", 'Where is your ffmpeg executable?'),
                 ('v',  'verbose', False, None, 'print status information as it runs to stderr'),
               ]
     
@@ -473,9 +537,10 @@ if __name__ == "__main__":
     Transcode = Transcode();
     Update = Update();
     Upload = Upload();
+    User = User();
 
     # Where stuff actually happens
-    processByUploadId(722)
+    processByUploadId(2)
 
   except KeyboardInterrupt:
     print >>standardError, "Interrupted..."
