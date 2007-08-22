@@ -84,12 +84,18 @@ class Transcode:
 
     def _transcodeText(self, data):
         logMessage("type=text...")
+
         originalFile = "%s/%d/originals/%s" % (workingEnvironment['UploadDir'], data.user_id, data.original_name)
         newFile      = "%s/%d/%s" % (workingEnvironment['UploadDir'], data.user_id, data.file_name)
+
         os.system("cp %s %s" % (originalFile, newFile))
+
         if not os.path.isfile(newFile): 
             logMessage("failure.\n")
             return 1
+
+        Update.updateFileSizesInDB(data)
+
         logMessage("success.\n")
         return 0
 
@@ -151,32 +157,38 @@ class Update:
 
 
 
-    def _updateFileSizesInDB(self, data):
+    def updateFileSizesInDB(self, data):
 
         originalFile = "%s/%d/originals/%s" % (workingEnvironment['UploadDir'], data.user_id, data.original_name)
+        previewFile  = "%s/%d/previews/%s" % (workingEnvironment['UploadDir'], data.user_id, data.preview_name)
         newFile      = "%s/%d/%s" % (workingEnvironment['UploadDir'], data.user_id, data.file_name)
 
-        if not os.path.isfile(newFile): 
-            size = 0
-        else:
-            size = os.path.getsize(newFile)
+        originalSize = 0
+        previewSize = 0
+        newSize = 0
 
-        if not os.path.isfile(originalFile): 
-            originalsize = 0
-        else:
-            originalsize = os.path.getsize(originalFile)
+        if os.path.isfile(originalFile):
+            originalSize = int(os.path.getsize(originalFile))
+
+        if os.path.isfile(previewFile):
+            previewSize = int(os.path.getsize(previewFile))
+
+        if os.path.isfile(newFile):
+            newSize = int(os.path.getsize(newFile))
 
         query = """
             UPDATE
                 files
             SET
-                size = %s,
-                original_size = %s
-
+                size = '%s',
+                original_size = '%s',
+                preview_size = '%s'
            WHERE
-                id = '%d' """ % (size, originalsize, data.file_id)
+                files.id = '%s'
+           LIMIT
+                1"""
 
-        database.executeSql(query)
+        database.executeManySql(query, [(newSize, originalSize, previewSize, data.file_id)])
         
         #todo move out of here
         database.commit()
@@ -319,7 +331,7 @@ class Update:
                 
                 self._updateFileTypesInDB(data, "text/html", "application/rss+xml")
 
-            self._updateFileSizesInDB(data)
+            self.updateFileSizesInDB(data)
     
         except:
             #look at this mess.  what happened to simply being able to get the exception passed to you?
