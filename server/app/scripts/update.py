@@ -8,7 +8,7 @@ import os
 import traceback
 
 import re
-
+import codecs
 import urllib
 
 import feedparser
@@ -103,20 +103,138 @@ class Transcode:
 # Update Class
 #---------------------------------------------------------------------------------------------------
 class Update:
+
+    def _setTitleInDB(self, id, title):
+
+        query = """
+            UPDATE
+                uploads
+            SET
+                title = '%s'
+           WHERE
+                id = '%d' """ % (title, id)
+
+        database.executeSql(query)
+        
+        #todo move out of here
+        database.commit()
+
+    def _updateFileSizesInDB(self, data):
+
+        originalFile = "%s/%d/originals/%s" % (workingEnvironment['UploadDir'], data.user_id, data.original_name)
+        newFile      = "%s/%d/%s" % (workingEnvironment['UploadDir'], data.user_id, data.file_name)
+
+        size = os.path.getsize(newFile)
+        originalsize = os.path.getsize(originalFile)
+
+        query = """
+            UPDATE
+                files
+            SET
+                size = %s,
+                original_size = %s
+
+           WHERE
+                id = '%d' """ % (size, originalsize, data.file_id)
+
+        database.executeSql(query)
+        
+        #todo move out of here
+        database.commit()
+        
+
+    def _buildRssOutput(self, feed):
+        
+        output = "<h2>Channel Title: " +feed[ "channel" ][ "title" ]+ "</h2>"
+
+        output = output + "<dl>"
+
+        entries = feed.entries
+        for entry in entries:
+            if hasattr(entry, "link"):
+                output = output + "<dt><a href=\""+entry['link']+"\">"+entry['title']+"</a></dt>"
+            else:
+                output = output + "<dt>"+entry['title']+"</dt>"
+
+            output = output + "<dd>" + entry['description'] + "</dd>"
+        
+        output = output + "</dl>"
+
+        return output
+
     def updateByUploadData(self, data):
         logMessage("updating...")
-        if (data.file_name == 'rss-source/text'):
+
+        if (data.contentsourcetype_name == 'rss-source/text'):
             self._updateRssTypeFromUploadData(data)
-        elif (data.file_name == 'microsummary/xml'):
+        elif (data.contentsourcetype_name == 'microsummary/xml'):
             self._updateMicrosummaryTypeFromUploadData(data)
-        elif (data.file_name == 'widget/joey'):
+        elif (data.contentsourcetype_name == 'widget/joey'):
             self._updateJoeyWidgetTypeFromUploadData(data)
         else:
-            logMessage("Attempt to update unsupported type (%s) for upload id (%d)" % (data.file_name, data.id),1)
+            logMessage("Attempt to update unsupported type (%s) for upload id (%d)" % (data.contentsourcetype_name, data.upload_id) ,1)
 
     def _updateRssTypeFromUploadData(self, data):
-        logMessage("type=rss...")
-        logMessage("success.\n")
+
+        originalFile = "%s/%d/originals/%s" % (workingEnvironment['UploadDir'], data.user_id, data.original_name)
+        newFile      = "%s/%d/%s" % (workingEnvironment['UploadDir'], data.user_id, data.file_name)
+
+        #@todo, re needs to be able to just return the value in (.*).
+
+        # parse out the rss url.
+        rss_url = re.compile('rss=(.*)\r\n').search(data.source).group()
+        rss_url = rss_url.replace('rss=', '')
+        
+        # parse out the optional icon url
+        try:
+            ico_url = re.compile('icon=(.*)\r\n').search(data.source).group()
+            ico_url = ico_url.replace('icon=', '')
+        except:
+            # no url for the icon
+            logMessage("no icon url to process for upload id (%d)" %(data.upload_id),1)
+
+
+        # fetch the RSS Source
+        file = urllib.urlopen(rss_url)
+        source = file.read()
+
+        # default error output.
+        output = "RSS currently doesn't exist for this upload. Try again later.";
+
+        d = feedparser.parse(source)
+
+        # save / update the title of the upload.
+        title = d['feed']['title'];
+        self._setTitleInDB(data.upload_id, title)
+
+
+        if hasattr(d.entries[0], "enclosures"):
+
+            print "enclosures found"
+
+        else:
+            # generate the RSS output that we want to show people
+            output = self._buildRssOutput(d)
+
+            try:
+                # copy the |source| to the original file
+                out = open(originalFile, 'w+')
+                out.write(source)
+                out.close()
+
+                # copy that to the actual file
+                out = codecs.open(newFile, encoding='utf-8', mode='w+')
+                out.write(output)
+                out.close()
+
+                self._updateFileSizesInDB(data)
+
+            except:
+                #look at this mess.  what happened to simply being able to get the exception passed to you?
+                msg = "ERROR:\n" + traceback.format_tb(sys.exc_info()[2])[0] + "\nError Info:\n    " + str(sys.exc_type)+ ": " + str(sys.exc_value) + "\n"
+                logMessage("Problem updating files on disk for upload id (%d):\n%s" %(data.upload_id, msg),1)
+
+        print "updated rss"
         return 0
 
     def _updateMicrosummaryTypeFromUploadData(self, data):
