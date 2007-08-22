@@ -83,7 +83,7 @@
 
 		  <!-- this is the new thumbnail with the JS handler -->
 
-                    <a href=<?php echo "/files/view/{$upload['File']['id']}/preview"; ?> title="<?php echo $upload['Upload']['title'] ?>" alt="<?php echo $upload['Upload']['title'] ?>" onclick="joeyMedia_videoPlayPause('<?php echo "/files/view/" . $upload['File']['id'] . "/original" ?>','<?php echo $upload['Upload']['id'] ?>');return false;" >
+                    <a href=<?php echo "/files/view/{$upload['File']['id']}/preview"; ?> title="<?php echo $upload['Upload']['title'] ?>" alt="<?php echo $upload['Upload']['title'] ?>" onclick="joeyMedia_mediaplayer_toggle('<?php echo "/files/view/" . $upload['File']['id'] . "/original" ?>','<?php echo $upload['Upload']['id'] ?>');return false;" >
                     <div class="joey-mediaicon-video" style='background:transparent 50% 50% no-repeat;background-image:url(<?php echo "/files/view/{$upload['File']['id']}/preview"; ?>);' >
                     </div>
         </a>
@@ -185,9 +185,8 @@
 
                   <?php if($upload['File']['original_type']=='video/flv') : ?>
 
-                  <a href="javascript:" onclick="joeyMedia_videoPlayPause('<?php echo "/files/view/" . $upload['File']['id'] . "/original" ?>','<?php echo $upload['Upload']['id'] ?>');return false" 
+                  <a href="javascript:" onclick="joeyMedia_mediaplayer_toggle('<?php echo "/files/view/" . $upload['File']['id'] . "/original" ?>','<?php echo $upload['Upload']['id'] ?>');return false" 
                      id="joeyVideoPlayerController-<?php echo $upload['Upload']['id'] ?>">play</a>
-                  <span id='joeyVideoCloseButton-<?php echo $upload['Upload']['id'] ?>'></span>
 
                   <?php endif; ?>
 
@@ -204,7 +203,9 @@
               </ul>
               <!-- used by the ajax video player . just a container --> 
               
-              <div id="expandItem-<?php echo $upload['Upload']['id'] ?>"> </div>
+              <div id="expandItem-<?php echo $upload['Upload']['id'] ?>">
+
+ </div>
 
 	        </td>
           </tr>
