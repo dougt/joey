@@ -142,6 +142,22 @@ class Update:
         #todo move out of here
         database.commit()
         
+    def _updateFileTypesInDB(self, data, type, originaltype):
+        query = """
+            UPDATE
+                files
+            SET
+                type = '%s',
+                original_type = '%s'
+
+           WHERE
+                id = '%d' """ % (type, originaltype, data.file_id)
+
+        database.executeSql(query)
+        
+        #todo move out of here
+        database.commit()
+
 
     def _buildRssOutput(self, feed):
         
@@ -191,15 +207,12 @@ class Update:
             ico_url = ico_url.replace('icon=', '')
         except:
             # no url for the icon
-            logMessage("no icon url to process for upload id (%d)" %(data.upload_id),1)
+            logMessage("no icon url to process for upload id (%d)" %(data.upload_id))
 
 
         # fetch the RSS Source
         file = urllib.urlopen(rss_url)
         source = file.read()
-
-        # default error output.
-        output = "RSS currently doesn't exist for this upload. Try again later.";
 
         d = feedparser.parse(source)
 
@@ -207,40 +220,89 @@ class Update:
         title = d['feed']['title'];
         self._setTitleInDB(data.upload_id, title)
 
+        try:
 
-        if hasattr(d.entries[0], "enclosures"):
+            if hasattr(d.entries[0], "enclosures"):
 
-            print "enclosures found"
+                last_entry = d.entries[0]
+                
+                for entry in d.entries:
+                    if (entry.updated_parsed > last_entry.updated_parsed):
+                        last_entry = entry
+                        
+                # check to see if on disk the last modification
+                # time matches the updated_parsed date.  If so,
+                # than ignore this update.
+                        
+                # todo we should be able to process other types of podcasts
+                        
+                for enclosure in last_entry.enclosures:
+                    if (enclosure.type == "audio/mpeg"):
+                        # process as a audio podcast
+                        
 
-        else:
-            # generate the RSS output that we want to show people
-            output = self._buildRssOutput(d)
+                        #todo -- shouldn't we worry here about disk space?
+                        urllib.urlretrieve(enclosure.href, originalFile)
 
-            try:
+                        print originalFile
+                        # todo transcode audio
+
+                        self._updateFileTypesInDB(data, "audio/amr", enclosure.type)
+                                
+            else:
+                # generate the RSS output that we want to show people
+                output = self._buildRssOutput(d)
+                
                 # copy the |source| to the original file
                 out = open(originalFile, 'w+')
                 out.write(source)
                 out.close()
-
-                # copy that to the actual file
+                
+                # copy that to the actual file -- utf8.
                 out = codecs.open(newFile, encoding='utf-8', mode='w+')
                 out.write(output)
                 out.close()
+                
+                self._updateFileTypesInDB(data, "text/html", "application/rss+xml")
 
-                self._updateFileSizesInDB(data)
+            self._updateFileSizesInDB(data)
+    
+        except:
+            #look at this mess.  what happened to simply being able to get the exception passed to you?
+            msg = "ERROR:\n" + traceback.format_tb(sys.exc_info()[2])[0] + "\nError Info:\n    " + str(sys.exc_type)+ ": " + str(sys.exc_value) + "\n"
+            logMessage("Problem updating files on disk for upload id (%d):\n%s" %(data.upload_id, msg),1)
+            return 1
 
-            except:
-                #look at this mess.  what happened to simply being able to get the exception passed to you?
-                msg = "ERROR:\n" + traceback.format_tb(sys.exc_info()[2])[0] + "\nError Info:\n    " + str(sys.exc_type)+ ": " + str(sys.exc_value) + "\n"
-                logMessage("Problem updating files on disk for upload id (%d):\n%s" %(data.upload_id, msg),1)
-
-        print "updated rss"
         return 0
 
     def _updateMicrosummaryTypeFromUploadData(self, data):
-        print "update microsummary"
-        logMessage("type=microsummary...")
-        logMessage("success.\n")
+
+        originalFile = "%s/%d/originals/%s" % (workingEnvironment['UploadDir'], data.user_id, data.original_name)
+        newFile      = "%s/%d/%s" % (workingEnvironment['UploadDir'], data.user_id, data.file_name)
+
+        # this is a hack.  we spent a bunch of time making
+        # the DOM between FF and PHP work when using XPATHS.
+        # In order to save this work until we investigate
+        # using the PYTHON DOM, we are going to kick off php
+        # here.
+
+        # save out the data.source so that PHP can see it
+        out = open(originalFile, 'w+')
+        out.write(data.source)
+        out.close()
+
+        #TODO  -- are we absolutely sure that os.system escapes params?  This is a huge hole if not.  
+
+        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        os.system("php -f ../vendors/microsummary.php %s %s" % (originalFile, data.upload_referrer))
+        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        # copy it over to the new file.
+        os.system("cp %s %s" % (originalFile, newFile))
+        if not os.path.isfile(newFile): 
+            logMessage("failure.\n")
+            return 1
+
         return 0
 
     def _updateJoeyWidgetTypeFromUploadData(self, data):
@@ -347,9 +409,8 @@ if __name__ == "__main__":
     Upload = Upload();
 
     # Where stuff actually happens
-    processByUploadId(18)
+    processByUploadId(702)
 
-        
   except KeyboardInterrupt:
     print >>standardError, "Interrupted..."
     pass
