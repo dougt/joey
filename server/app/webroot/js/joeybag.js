@@ -111,6 +111,8 @@ function joeyMedia_mediaplayer_updateControls(referenceElement,timeInfo) {
 
 		var left = seekInit + parseInt((timeInfo/videoDuration)*seekMax);
 		
+		if(!left) { left = seekInit } ;
+	
 		currentPlayer.thumbSlider.style.left = left + "px";
        
        
@@ -266,7 +268,7 @@ function joeyMedia_mediaplayer_kickDuration() {
     
     }
 
-    setTimeout("joeyMedia_mediaplayer_kickDuration()",1000);
+    setTimeout("joeyMedia_mediaplayer_kickDuration()",1500);
     
 }
 
