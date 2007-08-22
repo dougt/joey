@@ -280,8 +280,6 @@ class Update:
                         
                 for enclosure in last_entry.enclosures:
                     if (enclosure.type == "audio/mpeg"):
-                        # process as a audio podcast
-                        
 
                         #todo -- shouldn't we worry here about disk space?
                         #print urllib.urlretrieve(enclosure.href, originalFile)
@@ -293,18 +291,16 @@ class Update:
                         if (originalFile.find(".mp3") == -1):
                             originalFile = originalFile + ".mp3"
                             #update the table with this new file name.
-
-                        self._changeOriganalFileNameInDB(data, os.path.basename(originalFile))
+                            self._changeOriganalFileNameInDB(data, os.path.basename(originalFile))
 
                         out = open(originalFile, 'w+')
                         out.write(media)
                         out.close()
                         media = ""
 
-
-                        print data
                         # todo transcode audio
 
+                        # update the file types.
                         self._updateFileTypesInDB(data, "audio/amr", enclosure.type)
                                 
             else:

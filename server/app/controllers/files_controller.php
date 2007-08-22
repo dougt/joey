@@ -203,6 +203,10 @@ class FilesController extends AppController
 
         $this->set('content_type', $_filetype);
         $this->set('content_length', $_filesize);
+
+        // @TODO  - for some files, this requires a TON of memory.  I am seeing these errors when PHP memory cap is 100M:
+        // Allowed memory size of 104857600 bytes exhausted (tried to allocate 26001408 bytes)
+        // We need to stream this content to the view instead of just reading it all into a variable.
         $this->set('content', file_get_contents($_filename));
 
         if ($this->nbClient) {
