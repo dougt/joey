@@ -175,12 +175,7 @@ function joeyMedia_mediaplayer_stop(itemId) {
 }
 
 function joeyMedia_mediaplayer_createPlayer(itemId,videoId) {
-
-        /* Remove this: test only */
-        /* RRR */
-        
-        videoId = "/js/test.flv";
-
+      
         var width = 320;
         var height = 240;   
  	    var strVideoEmbed = ' <div id="mediaplayer-'+itemId+'" style="text-align:center;" class="videoPlayer"> <object align="middle" codebase="http://fpdownload.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=7,0,0,0" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" id="videoplayerobject-'+itemId+'" width="'+width+'" height="'+height+'"><param value="/app/webroot/vendor/webflv.swf?fileName='+videoId+'&refId='+itemId+'" name="movie"><param value="high" name="quality"><param value="true" name="swLiveConnect"><param value="#000000" name="bgcolor"> <embed pluginspage="http://www.macromedia.com/go/getflashplayer" type="application/x-shockwave-flash" allowScriptAccess="sameDomain" align="middle" bgcolor="#000000" swLiveConnect="true" quality="high" src="/app/webroot/vendor/webflv.swf?fileName='+videoId+'&refId='+itemId+'" mayscript="true" id="videoplayerembed-'+itemId+'" width="'+width+'" height="'+height+'"></embed> </object> </div>' ;
