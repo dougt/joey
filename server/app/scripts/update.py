@@ -7,6 +7,12 @@ import sys
 import os
 import traceback
 
+import re
+
+import urllib
+
+import feedparser
+
 version = "0.1"
 
 standardError = sys.stderr
@@ -53,7 +59,7 @@ class Transcode:
         elif (data.original_type in ["video/3gpp","video/flv","video/mpeg","video/avi","video/quicktime"]):
             self._transcodeVideo(data)
         else:
-            logMessage("Attempt to transcode unsupported type (%s) for upload id (%d)" % (data.original_type, data.id),1)
+            logMessage("Attempt to transcode unsupported type (%s) for upload id (%d)" % (data.original_type, data.upload_id),1)
         
         return 0
 
@@ -142,6 +148,7 @@ class Upload:
                 Upload.title as upload_title,
                 Upload.referrer as upload_referrer,
                 Upload.deleted as upload_deleted,
+                Upload.ever_updated,
                 File.id as file_id,
                 File.name as file_name,
                 File.size as file_size,
@@ -152,7 +159,6 @@ class Upload:
                 File.preview_name,
                 File.preview_size,
                 File.preview_type,
-                File.ever_updated,
                 File.modified as file_modified,
                 Contentsource.source,
                 Contentsourcetype.name as contentsourcetype_name
