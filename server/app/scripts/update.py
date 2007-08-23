@@ -6,7 +6,7 @@ import cse.MySQLDatabase
 import sys
 import os
 import traceback
-
+import time
 import re
 import codecs
 import urllib
@@ -51,14 +51,28 @@ class Transcode:
         _phone_data = User.getPhoneDataByUserId(int(data.user_id))
 
         # @TODO - I think the preview is NULL from php sometimes - we need to prefill the name correctly
-        fromFile    = os.path.join(workingEnvironment['UploadDir'], data.user_id, 'originals', data.original_name)
-        toFile      = os.path.join(workingEnvironment['UploadDir'], data.user_id, data.file_name)
-        previewFile = os.path.join(workingEnvironment['UploadDir'], data.user_id, 'previews' , data.preview_name)
+
+        # this totally sucks and is wrong, I DON'T WANT TO have to deal with this here.
+        if (data.preview_name == None or data.preview_name == ""):
+            data.preview_name = data.original_name
+
+        if (data.file_name == None or data.file_name == ""):
+            data.file_name = data.original_name
+
+        fromFile    = os.path.join(workingEnvironment['UploadDir'], str(data.user_id), 'originals', data.original_name)
+        toFile      = os.path.join(workingEnvironment['UploadDir'], str(data.user_id), data.file_name)
+        previewFile = os.path.join(workingEnvironment['UploadDir'], str(data.user_id), 'previews' , data.preview_name)
+
+        print data.original_name
+        print data.preview_name
+        print data.file_name
+        return 1
+        #TODO we need to write these file basename's to the DB
 
         if (data.original_type in ["audio/x-wav","audio/mpeg","audio/mid","audio/amr"]):
             self._transcodeAudio(data)
         elif (data.original_type in ["browser/stuff"]):
-            self._transcodeBrowserStuff(data)
+            self._transcodeBrowserStuff(fromFile, toFile, previewFile)
         elif (data.original_type in ["image/png","image/jpeg","image/tiff","image/bmp","image/gif"]):
             self._transcodeImageAndPreview(fromFile, toFile, previewFile) #@TODO width/height from _phone_data
         elif (data.original_type in ["text/plain"]):
@@ -69,6 +83,7 @@ class Transcode:
             logMessage("Attempt to transcode unsupported type (%s) for upload id (%d)" % (data.original_type, data.upload_id),1)
         
         Update.updateFileSizesInDB(data)
+        Update.markUpdatedInDB(data)
 
         return 0
 
@@ -90,9 +105,33 @@ class Transcode:
         logMessage("success.\n")
         return 0
 
-    def _transcodeBrowserStuff(self, data):
+    def _transcodeBrowserStuff(self, fromFile, toFile, preview):
         logMessage("type=browserstuff...")
-        #@TODO
+
+        if not os.path.isfile(fromFile):
+            logMessage("failure (file not found)\n")
+            return 1
+
+        # Copy the file, wait for the command to return
+        if not os.spawnlp(os.P_WAIT, 'cp', 'cp', fromFile, toFile) == 0:
+            logMessage("failure.\n")
+            return 1
+
+        if not os.path.isfile(toFile): 
+            logMessage("failure.\n")
+            return 1
+
+        # Copy the file to preview, wait for the command to return
+        if not os.spawnlp(os.P_WAIT, 'cp', 'cp', fromFile, preview) == 0:
+            logMessage("failure.\n")
+            return 1
+
+        if not os.path.isfile(preview): 
+            logMessage("failure.\n")
+            return 1
+
+        Upload.updateFileTypesInDB(data, "text/html", "browser/stuff", "")
+
         logMessage("success.\n")
         return 0
 
@@ -135,11 +174,11 @@ class Transcode:
             return 1
 
         # Copy the file, wait for the command to return
-        if not os.spawnlp(os.P_WAIT, 'cp', 'cp', originalFile, newFile) == 0:
+        if not os.spawnlp(os.P_WAIT, 'cp', 'cp', fromFile, toFile) == 0:
             logMessage("failure.\n")
             return 1
 
-        if not os.path.isfile(newFile): 
+        if not os.path.isfile(toFile): 
             logMessage("failure.\n")
             return 1
 
@@ -158,7 +197,7 @@ class Transcode:
 #---------------------------------------------------------------------------------------------------
 class Update:
 
-    def _markUpdatedInDB(self, data):
+    def markUpdatedInDB(self, data):
         
         query = """
            UPDATE
@@ -241,7 +280,7 @@ class Update:
         #todo move out of here
         database.commit()
         
-    def _updateFileTypesInDB(self, data, type, originaltype):
+    def updateFileTypesInDB(self, data, type, originaltype, previewtype):
 
         query = """
             UPDATE
@@ -249,9 +288,10 @@ class Update:
             SET
                 type = '%s',
                 original_type = '%s'
+                preview_type = '%s'
 
            WHERE
-                id = '%d' """ % (type, originaltype, data.file_id)
+                id = '%d' """ % (type, originaltype, previewtype, data.file_id)
 
         database.executeSql(query)
         
@@ -283,7 +323,7 @@ class Update:
 
         if (data.contentsourcetype_name == 'rss-source/text'):
             self._updateRssTypeFromUploadData(data)
-            self._markUpdatedInDB(data)
+            self.markUpdatedInDB(data)
         elif (data.contentsourcetype_name == 'microsummary/xml'):
             self._updateMicrosummaryTypeFromUploadData(data)
         elif (data.contentsourcetype_name == 'widget/joey'):
@@ -335,7 +375,18 @@ class Update:
                 # check to see if on disk the last modification
                 # time matches the updated_parsed date.  If so,
                 # than ignore this update.
-                        
+                info = os.stat(originalFile)
+
+                last_entry_time = int(time.mktime(last_entry.updated_parsed))
+
+                # [8] is the last mod date.  I wonder if
+                # there is a "define" for this.  This is a
+                # magic number i do not like.
+
+                if (last_entry_time <= info[8]):
+                    # do nothing
+                    return 1
+
                 # todo we should be able to process other types of podcasts
                         
                 for enclosure in last_entry.enclosures:
@@ -356,12 +407,26 @@ class Update:
                         out = open(originalFile, 'w+')
                         out.write(media)
                         out.close()
+
+                        # make sure that the file time matches the feed updated time so that we can ignore updates if the dates match
+
+                        modtime = int(time.mktime(last_entry.updated_parsed))
+                        os.utime(originalFile, (modtime, modtime))
+
                         media = ""
 
-                        # todo transcode audio
+                        # todo transcode audio (Can I simply call Transcode.transcodeAudio?)
+                        if not os.spawnlp(os.P_WAIT, workingEnvironment['FfmpegCmd'], os.path.basename(workingEnvironment['FfmpegCmd']), '-y', '-i', originalFile, '-ar', '8000', '-ac', '1', '-ab', '7400', '-f', 'amr', newFile) == 0:
+                            logMessage("failure.\n")
+                            return 1
+                        
+                        if not os.path.isfile(newFile): 
+                            logMessage("failure.\n")
+                            return 1
+                        logMessage("success.\n")
 
                         # update the file types.
-                        self._updateFileTypesInDB(data, "audio/amr", enclosure.type)
+                        self.updateFileTypesInDB(data, "audio/amr", enclosure.type, "")
                                 
             else:
                 # generate the RSS output that we want to show people
@@ -377,7 +442,7 @@ class Update:
                 out.write(output)
                 out.close()
                 
-                self._updateFileTypesInDB(data, "text/html", "application/rss+xml")
+                self.updateFileTypesInDB(data, "text/html", "application/rss+xml", "")
 
             self.updateFileSizesInDB(data)
     
@@ -540,7 +605,8 @@ if __name__ == "__main__":
     User = User();
 
     # Where stuff actually happens
-    processByUploadId(2)
+    processByUploadId(710)
+    processByUploadId(722)
 
   except KeyboardInterrupt:
     print >>standardError, "Interrupted..."
