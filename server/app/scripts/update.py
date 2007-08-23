@@ -40,6 +40,8 @@ def processByUploadId (uploadId):
         else:
             Update.updateByUploadData(x)
 
+        Database.markUpdated(x)
+
     Database.commit()
 
 
@@ -78,25 +80,18 @@ class Database:
 
     def changeFileNames(self, data, original, file, preview):
 
-        query = """
-            UPDATE
-                files
-            SET """
-        
+        # todo combined
         if original is not None:
-            query +=   "original_name = '%s'" % ( original )
+            query =   "UPDATE files SET original_name = '%s' WHERE id='%d'" % ( original, data.file_id )
+            database.executeSql(query)
 
         if file is not None:
-            query +=  "name = '%s'" % ( file )
+            query =   "UPDATE files SET name = '%s' WHERE id='%d'" % ( file, data.file_id )
+            database.executeSql(query)
 
         if preview is not None:
-            query += "preview_name = '%s'" % ( preview )
-
-        query += """
-           WHERE
-                id = '%d' """ % (data.file_id)
-
-        database.executeSql(query)
+            query =   "UPDATE files SET preview_name = '%s' WHERE id='%d'" % ( preview, data.file_id )
+            database.executeSql(query)
 
     def updateFileSizes(self, data):
 
@@ -133,18 +128,19 @@ class Database:
         
     def updateFileTypes(self, data, type, originaltype, previewtype):
 
-        query = """
-            UPDATE
-                files
-            SET
-                type = '%s',
-                original_type = '%s'
-                preview_type = '%s'
+        # TODO Combined
+        if type is not None:
+            query = "UPDATE files SET type = '%s' WHERE id = '%d'" % (type, data.file_id)
+            database.executeSql(query)
 
-           WHERE
-                id = '%d' """ % (type, originaltype, previewtype, data.file_id)
+        if originaltype is not None:
+            query = "UPDATE files SET original_type = '%s' WHERE id = '%d'" % (originaltype, data.file_id)
+            database.executeSql(query)
 
-        database.executeSql(query)
+        if previewtype is not None:
+            query = "UPDATE files SET preview_type = '%s' WHERE id = '%d'" % (previewtype, data.file_id)
+            database.executeSql(query)
+
 
 
 #---------------------------------------------------------------------------------------------------
@@ -182,7 +178,7 @@ class Transcode:
         if (data.original_type in ["audio/x-wav","audio/mpeg","audio/mid","audio/amr"]):
             self._transcodeAudio(data)
         elif (data.original_type in ["browser/stuff"]):
-            self._transcodeBrowserStuff(fromFile, toFile, previewFile)
+            self._transcodeBrowserStuff(data, fromFile, toFile, previewFile)
         elif (data.original_type in ["image/png","image/jpeg","image/tiff","image/bmp","image/gif"]):
             self._transcodeImageAndPreview(fromFile, toFile, previewFile) #@TODO width/height from _phone_data
         elif (data.original_type in ["text/plain"]):
@@ -193,7 +189,6 @@ class Transcode:
             logMessage("Attempt to transcode unsupported type (%s) for upload id (%d)" % (data.original_type, data.upload_id),1)
         
         Database.updateFileSizes(data)
-        Database.markUpdated(data)
 
         return 0
 
@@ -215,7 +210,7 @@ class Transcode:
         logMessage("success.\n")
         return 0
 
-    def _transcodeBrowserStuff(self, fromFile, toFile, preview):
+    def _transcodeBrowserStuff(self, data, fromFile, toFile, preview):
         logMessage("type=browserstuff...")
 
         if not os.path.isfile(fromFile):
@@ -240,7 +235,7 @@ class Transcode:
             logMessage("failure.\n")
             return 1
 
-        Database.updateFileTypes(data, "text/html", "browser/stuff", "")
+        Database.updateFileTypes(data, "text/html", "browser/stuff", None)
 
         logMessage("success.\n")
         return 0
@@ -332,7 +327,6 @@ class Update:
 
         if (data.contentsourcetype_name == 'rss-source/text'):
             self._updateRssTypeFromUploadData(data)
-            Database.markUpdated(data)
         elif (data.contentsourcetype_name == 'microsummary/xml'):
             self._updateMicrosummaryTypeFromUploadData(data)
         elif (data.contentsourcetype_name == 'widget/joey'):
@@ -436,7 +430,7 @@ class Update:
                         logMessage("success.\n")
 
                         # update the file types.
-                        Database.updateFileTypes(data, "audio/amr", enclosure.type, "")
+                        Database.updateFileTypes(data, "audio/amr", enclosure.type, None)
                                 
             else:
                 # generate the RSS output that we want to show people
@@ -452,7 +446,7 @@ class Update:
                 out.write(output)
                 out.close()
                 
-                Database.updateFileTypes(data, "text/html", "application/rss+xml", "")
+                Database.updateFileTypes(data, "text/html", "application/rss+xml", None)
 
             Database.updateFileSizes(data)
     
@@ -480,11 +474,10 @@ class Update:
         out.write(data.source)
         out.close()
 
-        #TODO  -- are we absolutely sure that os.system escapes params?  This is a huge hole if not.  
-
-        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        os.system("php -f ../vendors/microsummary.php %s %s" % (originalFile, data.upload_referrer))
-        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        #TODO  -- are we absolutely sure that os.spawnlp escapes params?  This is a huge hole if not.  
+        
+        if not os.spawnlp(os.P_WAIT, "php", "", '-f', '../vendors/microsummary.php', originalFile, data.upload_referrer) == 0:
+            logMessage("failure.\n")
 
         # copy it over to the new file.
         os.system("cp %s %s" % (originalFile, newFile))
@@ -618,6 +611,9 @@ if __name__ == "__main__":
     # Where stuff actually happens
     processByUploadId(710)
     processByUploadId(722)
+    processByUploadId(727)
+    processByUploadId(728)
+    processByUploadId(729)
 
   except KeyboardInterrupt:
     print >>standardError, "Interrupted..."
