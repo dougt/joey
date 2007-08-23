@@ -40,6 +40,113 @@ def processByUploadId (uploadId):
         else:
             Update.updateByUploadData(x)
 
+    Database.commit()
+
+
+#---------------------------------------------------------------------------------------------------
+# Database Class
+#---------------------------------------------------------------------------------------------------
+class Database:
+
+    def commit(self):
+        database.commit()
+
+
+    def markUpdated(self, data):
+        
+        query = """
+           UPDATE
+              uploads
+           SET
+              ever_updated = 1
+           WHERE
+             id = '%d' """ % (data.upload_id)
+
+        database.executeSql(query)
+
+    def setTitle(self, id, title):
+
+        query = """
+            UPDATE
+                uploads
+            SET
+                title = '%s'
+           WHERE
+                id = '%d' """ % (title, id)
+
+        database.executeSql(query)
+
+    def changeFileNames(self, data, original, file, preview):
+
+        query = """
+            UPDATE
+                files
+            SET """
+        
+        if original is not None:
+            query +=   "original_name = '%s'" % ( original )
+
+        if file is not None:
+            query +=  "name = '%s'" % ( file )
+
+        if preview is not None:
+            query += "preview_name = '%s'" % ( preview )
+
+        query += """
+           WHERE
+                id = '%d' """ % (data.file_id)
+
+        database.executeSql(query)
+
+    def updateFileSizes(self, data):
+
+        originalFile = "%s/%d/originals/%s" % (workingEnvironment['UploadDir'], data.user_id, data.original_name)
+        previewFile  = "%s/%d/previews/%s" % (workingEnvironment['UploadDir'], data.user_id, data.preview_name)
+        newFile      = "%s/%d/%s" % (workingEnvironment['UploadDir'], data.user_id, data.file_name)
+
+        originalSize = 0
+        previewSize = 0
+        newSize = 0
+
+        if os.path.isfile(originalFile):
+            originalSize = int(os.path.getsize(originalFile))
+
+        if os.path.isfile(previewFile):
+            previewSize = int(os.path.getsize(previewFile))
+
+        if os.path.isfile(newFile):
+            newSize = int(os.path.getsize(newFile))
+
+        query = """
+            UPDATE
+                files
+            SET
+                size = '%s',
+                original_size = '%s',
+                preview_size = '%s'
+           WHERE
+                files.id = '%s'
+           LIMIT
+                1"""
+
+        database.executeManySql(query, [(newSize, originalSize, previewSize, data.file_id)])
+        
+    def updateFileTypes(self, data, type, originaltype, previewtype):
+
+        query = """
+            UPDATE
+                files
+            SET
+                type = '%s',
+                original_type = '%s'
+                preview_type = '%s'
+
+           WHERE
+                id = '%d' """ % (type, originaltype, previewtype, data.file_id)
+
+        database.executeSql(query)
+
+
 #---------------------------------------------------------------------------------------------------
 # Transcode Class
 #---------------------------------------------------------------------------------------------------
@@ -50,23 +157,26 @@ class Transcode:
 
         _phone_data = User.getPhoneDataByUserId(int(data.user_id))
 
-        # @TODO - I think the preview is NULL from php sometimes - we need to prefill the name correctly
+        # Newly uploaded files do not have their
+        # preview_name nor file_name filed in either in the
+        # db or on disk. we need to prefill the name
+        # correctly
+        #
+        # TODO we might want to change the upload controller
+        # to deal with this
 
-        # this totally sucks and is wrong, I DON'T WANT TO have to deal with this here.
         if (data.preview_name == None or data.preview_name == ""):
             data.preview_name = data.original_name
+            Database.changeFileNames(data, None, None, data.preview_name)
 
         if (data.file_name == None or data.file_name == ""):
             data.file_name = data.original_name
+            Database.changeFileNames(data, None, data.file_name, None)
 
         fromFile    = os.path.join(workingEnvironment['UploadDir'], str(data.user_id), 'originals', data.original_name)
         toFile      = os.path.join(workingEnvironment['UploadDir'], str(data.user_id), data.file_name)
         previewFile = os.path.join(workingEnvironment['UploadDir'], str(data.user_id), 'previews' , data.preview_name)
 
-        print data.original_name
-        print data.preview_name
-        print data.file_name
-        return 1
         #TODO we need to write these file basename's to the DB
 
         if (data.original_type in ["audio/x-wav","audio/mpeg","audio/mid","audio/amr"]):
@@ -82,8 +192,8 @@ class Transcode:
         else:
             logMessage("Attempt to transcode unsupported type (%s) for upload id (%d)" % (data.original_type, data.upload_id),1)
         
-        Update.updateFileSizesInDB(data)
-        Update.markUpdatedInDB(data)
+        Database.updateFileSizes(data)
+        Database.markUpdated(data)
 
         return 0
 
@@ -130,7 +240,7 @@ class Transcode:
             logMessage("failure.\n")
             return 1
 
-        Upload.updateFileTypesInDB(data, "text/html", "browser/stuff", "")
+        Database.updateFileTypes(data, "text/html", "browser/stuff", "")
 
         logMessage("success.\n")
         return 0
@@ -197,107 +307,6 @@ class Transcode:
 #---------------------------------------------------------------------------------------------------
 class Update:
 
-    def markUpdatedInDB(self, data):
-        
-        query = """
-           UPDATE
-              uploads
-           SET
-              ever_updated = 1
-           WHERE
-             id = '%d' """ % (data.upload_id)
-
-        database.executeSql(query)
-        
-        #todo move out of here
-        database.commit()
-
-    def _setTitleInDB(self, id, title):
-
-        query = """
-            UPDATE
-                uploads
-            SET
-                title = '%s'
-           WHERE
-                id = '%d' """ % (title, id)
-
-        database.executeSql(query)
-        
-        #todo move out of here
-        database.commit()
-
-    def _changeOriganalFileNameInDB(self, data, newname):
-
-        query = """
-            UPDATE
-                files
-            SET
-                original_name = '%s'
-           WHERE
-                id = '%d' """ % (newname, data.file_id)
-
-        database.executeSql(query)
-        
-        #todo move out of here
-        database.commit()
-
-
-
-    def updateFileSizesInDB(self, data):
-
-        originalFile = "%s/%d/originals/%s" % (workingEnvironment['UploadDir'], data.user_id, data.original_name)
-        previewFile  = "%s/%d/previews/%s" % (workingEnvironment['UploadDir'], data.user_id, data.preview_name)
-        newFile      = "%s/%d/%s" % (workingEnvironment['UploadDir'], data.user_id, data.file_name)
-
-        originalSize = 0
-        previewSize = 0
-        newSize = 0
-
-        if os.path.isfile(originalFile):
-            originalSize = int(os.path.getsize(originalFile))
-
-        if os.path.isfile(previewFile):
-            previewSize = int(os.path.getsize(previewFile))
-
-        if os.path.isfile(newFile):
-            newSize = int(os.path.getsize(newFile))
-
-        query = """
-            UPDATE
-                files
-            SET
-                size = '%s',
-                original_size = '%s',
-                preview_size = '%s'
-           WHERE
-                files.id = '%s'
-           LIMIT
-                1"""
-
-        database.executeManySql(query, [(newSize, originalSize, previewSize, data.file_id)])
-        
-        #todo move out of here
-        database.commit()
-        
-    def updateFileTypesInDB(self, data, type, originaltype, previewtype):
-
-        query = """
-            UPDATE
-                files
-            SET
-                type = '%s',
-                original_type = '%s'
-                preview_type = '%s'
-
-           WHERE
-                id = '%d' """ % (type, originaltype, previewtype, data.file_id)
-
-        database.executeSql(query)
-        
-        #todo move out of here
-        database.commit()
-
 
     def _buildRssOutput(self, feed):
         
@@ -323,7 +332,7 @@ class Update:
 
         if (data.contentsourcetype_name == 'rss-source/text'):
             self._updateRssTypeFromUploadData(data)
-            self.markUpdatedInDB(data)
+            Database.markUpdated(data)
         elif (data.contentsourcetype_name == 'microsummary/xml'):
             self._updateMicrosummaryTypeFromUploadData(data)
         elif (data.contentsourcetype_name == 'widget/joey'):
@@ -360,7 +369,7 @@ class Update:
 
         # save / update the title of the upload.
         title = d['feed']['title'];
-        self._setTitleInDB(data.upload_id, title)
+        Database.setTitle(data.upload_id, title)
 
         try:
 
@@ -401,8 +410,9 @@ class Update:
                         # check to see if the originalFile already has the right extension
                         if (originalFile.find(".mp3") == -1):
                             originalFile = originalFile + ".mp3"
+
                             #update the table with this new file name.
-                            self._changeOriganalFileNameInDB(data, os.path.basename(originalFile))
+                            Database.changeFileNames(data, None, os.path.basename(originalFile), None)
 
                         out = open(originalFile, 'w+')
                         out.write(media)
@@ -426,7 +436,7 @@ class Update:
                         logMessage("success.\n")
 
                         # update the file types.
-                        self.updateFileTypesInDB(data, "audio/amr", enclosure.type, "")
+                        Database.updateFileTypes(data, "audio/amr", enclosure.type, "")
                                 
             else:
                 # generate the RSS output that we want to show people
@@ -442,9 +452,9 @@ class Update:
                 out.write(output)
                 out.close()
                 
-                self.updateFileTypesInDB(data, "text/html", "application/rss+xml", "")
+                Database.updateFileTypes(data, "text/html", "application/rss+xml", "")
 
-            self.updateFileSizesInDB(data)
+            Database.updateFileSizes(data)
     
         except:
             #look at this mess.  what happened to simply being able to get the exception passed to you?
@@ -603,6 +613,7 @@ if __name__ == "__main__":
     Update = Update();
     Upload = Upload();
     User = User();
+    Database = Database();
 
     # Where stuff actually happens
     processByUploadId(710)
