@@ -1,4 +1,4 @@
-y<?php
+<?php
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -43,7 +43,7 @@ class UploadsController extends AppController
   var $name = 'Uploads';
   
   // ajax
-  var $components = array('Error', 'Joey', 'Pagination', 'RequestHandler', 'Session', 'Storage', 'Transcode', 'Update');
+  var $components = array('Error', 'Joey', 'Pagination', 'RequestHandler', 'Session', 'Storage');
   
   //@todo review these
   var $uses = array('Phone', 'Contentsource', 'Contentsourcetype', 'File', 'Upload','User');

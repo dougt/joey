@@ -42,8 +42,6 @@
 class StorageComponent extends Object
 {
 
-  var $components = array('Transcode');
-  
   var $suffix = array ("text/plain" => "txt",
                        "image/png" => "png",
                        "image/jpeg" => "jpg",
