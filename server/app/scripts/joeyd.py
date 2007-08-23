@@ -50,11 +50,11 @@ def logMessage (msg, error=0):
 
     if "verbose" in workingEnvironment:
         LogFile = open(workingEnvironment["logPathName"], "a")
-        LogFile.write(msg)
+        LogFile.write(msg + "\n")
         LogFile.close()
 
     if "debug" in workingEnvironment:
-        print msg
+        error = 1
 
     if not error == 0:
         print >>standardError, msg
@@ -92,6 +92,7 @@ def processUpload (db, uploadId):
 class Database:
 
     def __init__(self):
+        logMessage("Creating connection to DB")
         self.joey_db = cse.MySQLDatabase.MySQLDatabase(workingEnvironment["DatabaseName"],
                                                        workingEnvironment["ServerName"], 
                                                        workingEnvironment["UserName"],
@@ -283,7 +284,7 @@ class Transcode:
         elif (data.original_type in ["image/png","image/jpeg","image/tiff","image/bmp","image/gif"]):
             self._transcodeImageAndPreview(fromFile, toFile, previewFile) #@TODO width/height from _phone_data
         elif (data.original_type in ["text/plain"]):
-            self._transcodeText(fromFile, toFile)
+            self._transcodeText(db, data, fromFile, toFile)
         elif (data.original_type in ["video/3gpp","video/flv","video/mpeg","video/avi","video/quicktime"]):
             self._transcodeVideo(data)
         else:
@@ -372,7 +373,7 @@ class Transcode:
 
         return 0
 
-    def _transcodeText(self, fromFile, toFile):
+    def _transcodeText(self, db, data, fromFile, toFile):
         logMessage("type=text...")
 
         if not os.path.isfile(fromFile):
@@ -387,6 +388,8 @@ class Transcode:
         if not os.path.isfile(toFile): 
             logMessage("failure.\n")
             return 1
+
+        db.updateFileTypes(data, "text/plain", "text/plain", None)
 
         logMessage("success.\n")
         return 0
@@ -424,6 +427,7 @@ class Update:
         return output
 
     def updateByUploadData(self, db, data):
+
         logMessage("updating...")
 
         if (data.contentsourcetype_name == 'rss-source/text'):
@@ -866,6 +870,7 @@ def joeyd_refresher_timeout():
                    LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
                    WHERE Contentsource.source IS NOT NULL AND Upload.deleted IS NULL"""
     
+        logMessage("Creating connection to DB")
         joey_db = cse.MySQLDatabase.MySQLDatabase(workingEnvironment["DatabaseName"],
                                                   workingEnvironment["ServerName"], 
                                                   workingEnvironment["UserName"],
