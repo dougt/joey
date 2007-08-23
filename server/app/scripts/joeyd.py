@@ -53,7 +53,8 @@ def logMessage (msg, error=0):
         LogFile.write(msg)
         LogFile.close()
 
-    print msg
+    if "debug" in workingEnvironment:
+        print msg
 
     if not error == 0:
         print >>standardError, msg
@@ -509,7 +510,7 @@ class Update:
                             originalFile = originalFile + ".mp3"
 
                             #update the table with this new file name.
-                            db.changeFileNames(data, None, os.path.basename(originalFile), None)
+                            db.changeFileNames(data, os.path.basename(originalFile), None, None)
 
                         out = open(originalFile, 'w+')
                         out.write(media)
@@ -904,6 +905,7 @@ if __name__ == "__main__":
                     (None, 'ConvertCmd', True, "/usr/bin/convert", 'Where is your convert executable?'),
                     (None, 'FfmpegCmd', True, "", 'Where is your ffmpeg executable?'),
                     ('v',  'verbose', False, None, 'print status information as it runs to stderr'),
+                    ('d',  'debug', False, None, 'print status information as it runs to stdout'),
                     ('l',  'listen', False, None, 'listen on the listening address and port for incoming requests'),
                     ]
         
