@@ -63,14 +63,16 @@ def logMessage (msg, error=0):
 #---------------------------------------------------------------------------------------------------
 def processUpload (db, uploadId):
 
-    logMessage("Processing upload id (%d)..." % uploadId)
+    id = int(uploadId)
 
-    for x in db.getDataById(uploadId):
+    logMessage("Processing upload id (%d)..." % id)
+
+    for x in db.getDataById(id):
 
         uploadDir = os.path.join(workingEnvironment['UploadDir'], str(x.user_id))
 
         if not os.access(uploadDir, os.R_OK|os.W_OK):
-          logMessage("Upload directory (%s) is not readable or writable, failing.\n" % (uploadDir, uploadId),1)
+          logMessage("Upload directory (%s) is not readable or writable, failing.\n" % (uploadDir, id),1)
           return
 
         if x.source is None:
@@ -155,6 +157,7 @@ class Database:
              id = '%d' """ % (data.upload_id)
 
         self.joey_db.executeSql(query)
+        self.joey_db.commit()
 
     def setTitle(self, id, title):
 
@@ -167,6 +170,8 @@ class Database:
                 id = '%d' """ % (title, id)
 
         self.joey_db.executeSql(query)
+        self.joey_db.commit()
+
 
     def changeFileNames(self, data, original, file, preview):
 
@@ -182,6 +187,9 @@ class Database:
         if preview is not None:
             query =   "UPDATE files SET preview_name = '%s' WHERE id='%d'" % ( preview, data.file_id )
             self.joey_db.executeSql(query)
+
+        self.joey_db.commit()
+
 
     def updateFileSizes(self, data):
 
@@ -215,6 +223,7 @@ class Database:
                 1"""
 
         self.joey_db.executeManySql(query, [(newSize, originalSize, previewSize, data.file_id)])
+        self.joey_db.commit()
         
     def updateFileTypes(self, data, type, originaltype, previewtype):
 
@@ -231,6 +240,7 @@ class Database:
             query = "UPDATE files SET preview_type = '%s' WHERE id = '%d'" % (previewtype, data.file_id)
             self.joey_db.executeSql(query)
 
+        self.joey_db.commit()
 
 
 #---------------------------------------------------------------------------------------------------
@@ -268,7 +278,7 @@ class Transcode:
         if (data.original_type in ["audio/x-wav","audio/mpeg","audio/mid","audio/amr"]):
             self._transcodeAudio(data)
         elif (data.original_type in ["browser/stuff"]):
-            self._transcodeBrowserStuff(data, fromFile, toFile, previewFile)
+            self._transcodeBrowserStuff(db, data, fromFile, toFile, previewFile)
         elif (data.original_type in ["image/png","image/jpeg","image/tiff","image/bmp","image/gif"]):
             self._transcodeImageAndPreview(fromFile, toFile, previewFile) #@TODO width/height from _phone_data
         elif (data.original_type in ["text/plain"]):
@@ -773,19 +783,26 @@ class RequestHandler(BaseHTTPRequestHandler):
         The path needs to look like
             /<upload_id>[/now]
         """
-        path = self.path.split("/");
-        upload_id = path[1];
+        try:
+            path = self.path.split("/");
+            upload_id = path[1];
+            
+            logMessage("Get Request for " + self.path);
+            
+            if (len(path) == 3):
+                if path[2] == "now":
+                    joeyd_threadpool.queueTask(processUpload, upload_id, None, 1)
+                else:
+                    joeyd_threadpool.queueTask(processUpload, upload_id, None)
+                    
+                    self.send_response(200)
+                    self.send_header('Content-type', 'text/html')
+                    self.end_headers()
+
+        except Exception, x:
+            print >>standardError, x
+            traceback.print_exc(file=standardError)
         
-
-        if (len(path) == 3):
-            if path[2] == "now":
-                joeyd_threadpool.queueTask(processUpload, upload_id, None, 1)
-        else:
-            joeyd_threadpool.queueTask(processUpload, upload_id, None)
-
-        self.send_response(200)
-        self.send_header('Content-type', 'text/html')
-        self.end_headers()
 
 
 #---------------------------------------------------------------------------------------------------
