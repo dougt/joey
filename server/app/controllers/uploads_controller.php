@@ -1,4 +1,4 @@
-<?php
+y<?php
 /* ***** BEGIN LICENSE BLOCK *****
  * Version: MPL 1.1/GPL 2.0/LGPL 2.1
  *
@@ -172,15 +172,6 @@ class UploadsController extends AppController
         if ($this->nbClient) {
             $this->returnJoeyStatusCode($this->ERROR_UPLOAD);
         }
-
-        // tell joeyd that we have an upload!  We do not
-        // care here if this fails.
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, "http://" . JOEYD_SERVER_ADDRESS . "/" . $this->Upload->id . "/now");
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-        curl_exec($ch);
-
-
     }
     
     // handle XHTML MP browser
@@ -608,8 +599,8 @@ class UploadsController extends AppController
 
                     $this->Upload->setOwnerForUploadIdAndUserId($this->Upload->id, $this->_user['id']);
 
-                    // This happens offline now (bug 386777)
-                    //$this->Update->updateContentSourceByUploadId($this->Upload->id, true);
+                    // notify the offline processor
+                    $this->notifyJoeyD($this->Upload->id);
 
                     $this->Upload->commit();
 
@@ -692,8 +683,8 @@ class UploadsController extends AppController
               return false;
             }
             
-            // This happens offline now (bug 386777)
-            //$this->Transcode->transcodeFileById($prior_upload['File']['id']);
+            // notify the offline processor
+            $this->notifyJoeyD($prior_upload['Upload']['id']);
             return true;
           }
         }
@@ -726,8 +717,8 @@ class UploadsController extends AppController
 
                 $this->Upload->commit();
 
-                // This happens offline now (bug 386777)
-                //$this->Transcode->transcodeFileById($this->File->id);
+                // notify the offline processor
+                $this->notifyJoeyD($this->Upload->id);
 
                 return true;
 
@@ -744,122 +735,13 @@ class UploadsController extends AppController
         return false;
     }
 
-    /**
-     * Processing media by a given upload id
-     * return code:
-     * 0) transcode/update okay
-     * 1) transcode/update failed
-     * 2) transcode/update skipped
-     */
-    function updateUpload($id) {
-
-      // This should only be run by the update.php cron script.
-      if (!defined('MAINTENANCE_ACCESS') || !MAINTENANCE_ACCESS) {
-        $this->redirect('/uploads/index');
-        exit;
-      }
-      
-      $_upload = $this->Upload->findDataById($id);
-      
-      $this->layout = null;
-      
-      // There is a contentsource - we should update
-      if (!empty($_upload['Contentsource']['id'])) {
-        if (!$this->Update->updateContentSourceByUploadId($_upload['Upload']['id'])) {
-          echo "  Failed - update id ({$id}\n";
-          return 1;
-        } 
-        // This is an uploaded file, we need to transcode it
-      } else if (empty($_upload['File']['name']) &&
-                 empty($_upload['File']['preview_name']) &&
-                 !empty($_upload['File']['original_name']) &&
-                 $_upload['Upload']['ever_updated'] == 0) {
-        
-        if (!$this->Transcode->transcodeFileById($_upload['File']['id'])) {
-          echo "  Failed - upload id ({$id})\n";
-          return 1;
-        }
-      }
-      else
-      {
-        echo "  Skipping - upload id ({$id})\n";
-        return 2;
-      }
-      echo "  Success - upload id ({$id})\n";
-      return 0;
-    }
-
-    /**
-     * Processing media is all done offline via cron, because it is too intensive to
-     * do real time. This function prints stuff, because we want output while the
-     * cron is running.
-     */
-    function updateAllUploads() {
-
-        // This should only be run by the update.php cron script.
-        if (!defined('MAINTENANCE_ACCESS') || !MAINTENANCE_ACCESS) {
-            $this->redirect('/uploads/index');
-            exit;
-        }
-
-        // How many uploads do we want to retrieve per loop?  @todo - pick a good
-        // number
-        $_uploads_per_query = 15;
-
-        // Get a list of ids for uploads that aren't deleted
-        $_upload_ids = $this->Upload->getActiveIds();
-
-        $_total_uploads = count($_upload_ids);
-        $_failed_uploads = 0;
-        $_transcoded_uploads = 0;
-        $_skipped_uploads = 0;
-
-        // Loop through our list of upload ids, and run our query.  This is a query
-        // in a loop (and actually, several queries in several loops in the update
-        // process).  This is going to be a relatively slow process, which is why we
-        // are only allowing it to be run via cron.
-        for ($_start = 0; $_start < $_total_uploads;   ) {
-
-            $time_start = time();
-
-            // I wish they had an array_shift() that could specify the amount of elements you want back...
-            $_ids = array_slice($_upload_ids, $_start, $_uploads_per_query);
-
-            // we should only return the ids here.
-            $_uploads = $this->Upload->findDataByIds($_ids);
-
-            foreach ($_uploads as $_upload)
-            {
-              $rv = $this->updateUpload($_upload['Upload']['id']);
-
-              if ($rv == 0) {
-                $_transcoded_uploads++;
-              }  else if ($rv == 1) {
-                $_failed_uploads++;
-              } else if ($rv == 2) {
-                $_skipped_uploads++;
-              }
-            }
-
-            $_start += count($_ids);
-
-            $time_end = time();
-            $time = $time_end - $time_start;
-            echo "Processed {$_start} of {$_total_uploads} uploads in $time seconds...\n";
-
-        }
-
-        echo "done.\n";
-        echo "Stats:  \n";
-        echo "  Total Uploads we looked at: {$_total_uploads}\n";
-        echo "  Total Uploads we transcoded: {$_transcoded_uploads}\n";
-        echo "  Total Skipped (didn't need an update, or unsupported): {$_skipped_uploads}\n";
-        echo "  Total Failures: {$_failed_uploads}\n";
-        if ($_failed_uploads > 0) {
-            echo "  The error log (".LOGS."error.log) might have more information on the failures.";
-        }
-
-        $this->layout = null;
+    function notifyJoeyD($id) {
+        // tell joeyd that we have an upload!  We do not
+        // care here if this fails.
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, "http://" . JOEYD_SERVER_ADDRESS . "/" . $id . "/now");
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+        curl_exec($ch);
     }
 
 }
