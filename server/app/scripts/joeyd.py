@@ -53,22 +53,19 @@ def logMessage (msg, error=0):
         LogFile.write(msg)
         LogFile.close()
 
+    print msg
+
     if not error == 0:
         print >>standardError, msg
 
 #---------------------------------------------------------------------------------------------------
 # processByUploadId
 #---------------------------------------------------------------------------------------------------
-def processByUploadId (uploadId):
-
-    if type(uploadId) != int:
-        logMessage("processByUploadId: Invalid input (%s): not a number" % uploadId)
-        return
-
+def processUpload (db, uploadId):
 
     logMessage("Processing upload id (%d)..." % uploadId)
 
-    for x in Upload.getDataById(uploadId):
+    for x in db.getDataById(uploadId):
 
         uploadDir = os.path.join(workingEnvironment['UploadDir'], str(x.user_id))
 
@@ -77,13 +74,13 @@ def processByUploadId (uploadId):
           return
 
         if x.source is None:
-            Transcode.transcodeByUploadData(x)
+            Transcode.transcodeByUploadData(db, x)
         else:
-            Update.updateByUploadData(x)
+            Update.updateByUploadData(db, x)
 
-        Database.markUpdated(x)
+        db.markUpdated(x)
 
-    Database.commit()
+    db.commit()
 
 
 #---------------------------------------------------------------------------------------------------
@@ -91,9 +88,61 @@ def processByUploadId (uploadId):
 #---------------------------------------------------------------------------------------------------
 class Database:
 
+    def __init__(self):
+        self.joey_db = cse.MySQLDatabase.MySQLDatabase(workingEnvironment["DatabaseName"],
+                                                       workingEnvironment["ServerName"], 
+                                                       workingEnvironment["UserName"],
+                                                       workingEnvironment["Password"])
     def commit(self):
-        joey_db.commit()
+        self.joey_db.commit()
 
+
+    def getPhoneDataByUserId(self, id):
+
+        query = """
+            SELECT
+                Phone.*
+            FROM phones as Phone
+            JOIN users as User on User.phone_id = Phone.id
+            WHERE User.id = '%d' """ % id 
+
+        return self.joey_db.executeSql(query)
+
+
+    def getDataById(self, id):
+
+        # CSE has a known issue about selecting columns with the same name across multiple tables.  We'll have to
+        # manually specify the column names we need.
+        query = """
+            SELECT
+                uploads_users.user_id,
+                Upload.id as upload_id,
+                Upload.title as upload_title,
+                Upload.referrer as upload_referrer,
+                Upload.deleted as upload_deleted,
+                Upload.ever_updated,
+                File.id as file_id,
+                File.name as file_name,
+                File.size as file_size,
+                File.type as file_type,
+                File.original_name,
+                File.original_size,
+                File.original_type,
+                File.preview_name,
+                File.preview_size,
+                File.preview_type,
+                File.modified as file_modified,
+                Contentsource.source,
+                Contentsourcetype.name as contentsourcetype_name
+            FROM 
+            uploads_users
+            JOIN uploads as Upload ON uploads_users.upload_id = Upload.id
+            LEFT JOIN files as File ON Upload.id = File.upload_id
+            LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
+            LEFT JOIN contentsourcetypes as Contentsourcetype ON Contentsource.contentsourcetype_id = Contentsourcetype.id
+            WHERE uploads_users.upload_id = '%d' """ % id
+
+        return self.joey_db.executeSql(query)
 
     def markUpdated(self, data):
         
@@ -105,7 +154,7 @@ class Database:
            WHERE
              id = '%d' """ % (data.upload_id)
 
-        joey_db.executeSql(query)
+        self.joey_db.executeSql(query)
 
     def setTitle(self, id, title):
 
@@ -117,22 +166,22 @@ class Database:
            WHERE
                 id = '%d' """ % (title, id)
 
-        joey_db.executeSql(query)
+        self.joey_db.executeSql(query)
 
     def changeFileNames(self, data, original, file, preview):
 
         # todo combined
         if original is not None:
             query =   "UPDATE files SET original_name = '%s' WHERE id='%d'" % ( original, data.file_id )
-            joey_db.executeSql(query)
+            self.joey_db.executeSql(query)
 
         if file is not None:
             query =   "UPDATE files SET name = '%s' WHERE id='%d'" % ( file, data.file_id )
-            joey_db.executeSql(query)
+            self.joey_db.executeSql(query)
 
         if preview is not None:
             query =   "UPDATE files SET preview_name = '%s' WHERE id='%d'" % ( preview, data.file_id )
-            joey_db.executeSql(query)
+            self.joey_db.executeSql(query)
 
     def updateFileSizes(self, data):
 
@@ -165,22 +214,22 @@ class Database:
            LIMIT
                 1"""
 
-        joey_db.executeManySql(query, [(newSize, originalSize, previewSize, data.file_id)])
+        self.joey_db.executeManySql(query, [(newSize, originalSize, previewSize, data.file_id)])
         
     def updateFileTypes(self, data, type, originaltype, previewtype):
 
         # TODO Combined
         if type is not None:
             query = "UPDATE files SET type = '%s' WHERE id = '%d'" % (type, data.file_id)
-            joey_db.executeSql(query)
+            self.joey_db.executeSql(query)
 
         if originaltype is not None:
             query = "UPDATE files SET original_type = '%s' WHERE id = '%d'" % (originaltype, data.file_id)
-            joey_db.executeSql(query)
+            self.joey_db.executeSql(query)
 
         if previewtype is not None:
             query = "UPDATE files SET preview_type = '%s' WHERE id = '%d'" % (previewtype, data.file_id)
-            joey_db.executeSql(query)
+            self.joey_db.executeSql(query)
 
 
 
@@ -189,10 +238,10 @@ class Database:
 #---------------------------------------------------------------------------------------------------
 class Transcode:
 
-    def transcodeByUploadData(self, data):
+    def transcodeByUploadData(self, db, data):
         logMessage("transcoding...");
 
-        _phone_data = User.getPhoneDataByUserId(int(data.user_id))
+        _phone_data = db.getPhoneDataByUserId(int(data.user_id))
 
         # Newly uploaded files do not have their
         # preview_name nor file_name filed in either in the
@@ -204,11 +253,11 @@ class Transcode:
 
         if (data.preview_name == None or data.preview_name == ""):
             data.preview_name = data.original_name
-            Database.changeFileNames(data, None, None, data.preview_name)
+            db.changeFileNames(data, None, None, data.preview_name)
 
         if (data.file_name == None or data.file_name == ""):
             data.file_name = data.original_name
-            Database.changeFileNames(data, None, data.file_name, None)
+            db.changeFileNames(data, None, data.file_name, None)
 
         fromFile    = os.path.join(workingEnvironment['UploadDir'], str(data.user_id), 'originals', data.original_name)
         toFile      = os.path.join(workingEnvironment['UploadDir'], str(data.user_id), data.file_name)
@@ -229,7 +278,7 @@ class Transcode:
         else:
             logMessage("Attempt to transcode unsupported type (%s) for upload id (%d)" % (data.original_type, data.upload_id),1)
         
-        Database.updateFileSizes(data)
+        db.updateFileSizes(data)
 
         return 0
 
@@ -251,7 +300,7 @@ class Transcode:
         logMessage("success.\n")
         return 0
 
-    def _transcodeBrowserStuff(self, data, fromFile, toFile, preview):
+    def _transcodeBrowserStuff(self, db, data, fromFile, toFile, preview):
         logMessage("type=browserstuff...")
 
         if not os.path.isfile(fromFile):
@@ -276,7 +325,7 @@ class Transcode:
             logMessage("failure.\n")
             return 1
 
-        Database.updateFileTypes(data, "text/html", "browser/stuff", None)
+        db.updateFileTypes(data, "text/html", "browser/stuff", None)
 
         logMessage("success.\n")
         return 0
@@ -363,11 +412,11 @@ class Update:
 
         return output
 
-    def updateByUploadData(self, data):
+    def updateByUploadData(self, db, data):
         logMessage("updating...")
 
         if (data.contentsourcetype_name == 'rss-source/text'):
-            self._updateRssTypeFromUploadData(data)
+            self._updateRssTypeFromUploadData(db, data)
         elif (data.contentsourcetype_name == 'microsummary/xml'):
             self._updateMicrosummaryTypeFromUploadData(data)
         elif (data.contentsourcetype_name == 'widget/joey'):
@@ -376,7 +425,7 @@ class Update:
             logMessage("Attempt to update unsupported type (%s) for upload id (%d)" % (data.contentsourcetype_name, data.upload_id) ,1)
 
 
-    def _updateRssTypeFromUploadData(self, data):
+    def _updateRssTypeFromUploadData(self, db, data):
 
         originalFile = "%s/%d/originals/%s" % (workingEnvironment['UploadDir'], data.user_id, data.original_name)
         newFile      = "%s/%d/%s" % (workingEnvironment['UploadDir'], data.user_id, data.file_name)
@@ -404,7 +453,7 @@ class Update:
 
         # save / update the title of the upload.
         title = d['feed']['title'];
-        Database.setTitle(data.upload_id, title)
+        db.setTitle(data.upload_id, title)
 
         try:
 
@@ -419,17 +468,20 @@ class Update:
                 # check to see if on disk the last modification
                 # time matches the updated_parsed date.  If so,
                 # than ignore this update.
-                info = os.stat(originalFile)
+                
+                if os.path.isfile(originalFile):
 
-                last_entry_time = int(time.mktime(last_entry.updated_parsed))
+                    info = os.stat(originalFile)
 
-                # [8] is the last mod date.  I wonder if
-                # there is a "define" for this.  This is a
-                # magic number i do not like.
+                    last_entry_time = int(time.mktime(last_entry.updated_parsed))
 
-                if (last_entry_time <= info[8]):
-                    # do nothing
-                    return 1
+                    # [8] is the last mod date.  I wonder if
+                    # there is a "define" for this.  This is a
+                    # magic number i do not like.
+
+                    if (last_entry_time <= info[8]):
+                        # do nothing
+                        return 1
 
                 # todo we should be able to process other types of podcasts
                         
@@ -447,7 +499,7 @@ class Update:
                             originalFile = originalFile + ".mp3"
 
                             #update the table with this new file name.
-                            Database.changeFileNames(data, None, os.path.basename(originalFile), None)
+                            db.changeFileNames(data, None, os.path.basename(originalFile), None)
 
                         out = open(originalFile, 'w+')
                         out.write(media)
@@ -471,7 +523,7 @@ class Update:
                         logMessage("success.\n")
 
                         # update the file types.
-                        Database.updateFileTypes(data, "audio/amr", enclosure.type, None)
+                        db.updateFileTypes(data, "audio/amr", enclosure.type, None)
                                 
             else:
                 # generate the RSS output that we want to show people
@@ -487,9 +539,9 @@ class Update:
                 out.write(output)
                 out.close()
                 
-                Database.updateFileTypes(data, "text/html", "application/rss+xml", None)
+                db.updateFileTypes(data, "text/html", "application/rss+xml", None)
 
-            Database.updateFileSizes(data)
+            db.updateFileSizes(data)
     
         except:
             #look at this mess.  what happened to simply being able to get the exception passed to you?
@@ -532,63 +584,6 @@ class Update:
         logMessage("type=widget...")
         logMessage("success.\n")
         return 0
-
-
-#---------------------------------------------------------------------------------------------------
-# Upload Class
-#---------------------------------------------------------------------------------------------------
-class Upload:
-    def getDataById(self, id):
-        if type(id) != int:
-            logMessage("I1nvalid input (%s): not a number" % id, 1)
-
-        # CSE has a known issue about selecting columns with the same name across multiple tables.  We'll have to
-        # manually specify the column names we need.
-        query = """
-            SELECT
-                uploads_users.user_id,
-                Upload.id as upload_id,
-                Upload.title as upload_title,
-                Upload.referrer as upload_referrer,
-                Upload.deleted as upload_deleted,
-                Upload.ever_updated,
-                File.id as file_id,
-                File.name as file_name,
-                File.size as file_size,
-                File.type as file_type,
-                File.original_name,
-                File.original_size,
-                File.original_type,
-                File.preview_name,
-                File.preview_size,
-                File.preview_type,
-                File.modified as file_modified,
-                Contentsource.source,
-                Contentsourcetype.name as contentsourcetype_name
-            FROM 
-            uploads_users
-            JOIN uploads as Upload ON uploads_users.upload_id = Upload.id
-            LEFT JOIN files as File ON Upload.id = File.upload_id
-            LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
-            LEFT JOIN contentsourcetypes as Contentsourcetype ON Contentsource.contentsourcetype_id = Contentsourcetype.id
-            WHERE uploads_users.upload_id = '%d' """ % id
-
-        return joey_db.executeSql(query)
-
-class User:
-    def getPhoneDataByUserId(self, id):
-        if type(id) != int:
-            logMessage("Invalid input (%s): not a number" % id, 1)
-
-        query = """
-            SELECT
-                Phone.*
-            FROM phones as Phone
-            JOIN users as User on User.phone_id = Phone.id
-            WHERE User.id = '%d' """ % id 
-
-        return joey_db.executeSql(query)
-
 
 
 #---------------------------------------------------------------------------------------------------
@@ -741,16 +736,23 @@ class ThreadPoolThread(threading.Thread):
         """ Until told to quit, retrieve the next task and execute
         it, calling the callback if any.  """
         
-        while self.__isDying == False:
-            cmd, args, callback = self.__pool.getNextTask()
+        try:
+            db = Database()
+
+            while self.__isDying == False:
+                cmd, args, callback = self.__pool.getNextTask()
             # If there's nothing to do, just sleep a bit
-            if cmd is None:
-                sleep(ThreadPoolThread.threadSleepTime)
-            elif callback is None:
-                cmd(args)
-            else:
-                callback(cmd(args))
-    
+                if cmd is None:
+                    sleep(ThreadPoolThread.threadSleepTime)
+                elif callback is None:
+                    cmd(db, args)
+                else:
+                    callback(db, cmd(args))
+
+        except Exception, x:
+            print >>standardError, x
+            traceback.print_exc(file=standardError)
+
     def goAway(self):
 
         """ Exit the run loop next time through."""
@@ -824,21 +826,6 @@ class Timer:
             sleep(self.__interval)
         self.__alive = False
 
-        
-#---------------------------------------------------------------------------------------------------
-# Adding processing code here TODO
-#---------------------------------------------------------------------------------------------------
-""" Add upload handling code here """
-def processUpload(id):
-    """ need to validate this as an id """
-    logMessage("upload %s processing" % id)
-
-    processByUploadId(int(id))
-
-    logMessage("upload %s done" % id)
-    return 0;
-
-
 
 #---------------------------------------------------------------------------------------------------
 # Joey refreshing timer
@@ -849,18 +836,32 @@ def joeyd_refresher_timeout():
 #modification date greater than 15 min (or whatever refresh
 #time we care about)
 
-    query = """
-        SELECT * FROM 
-        uploads_users 
-        JOIN uploads as Upload ON uploads_users.upload_id = Upload.id
-        LEFT JOIN files as File ON Upload.id = File.upload_id
-        LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
-        WHERE Contentsource.source IS NOT NULL """
+    try:
+        
+        logMessage("firing timeout...");
+        
+        query = """
+                   SELECT Upload.id as id FROM 
+                   uploads_users 
+                   JOIN uploads as Upload ON uploads_users.upload_id = Upload.id
+                   LEFT JOIN files as File ON Upload.id = File.upload_id
+                   LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
+                   WHERE Contentsource.source IS NOT NULL AND Upload.deleted IS NULL"""
     
-    result = joey_db.executeSql(query)
+        joey_db = cse.MySQLDatabase.MySQLDatabase(workingEnvironment["DatabaseName"],
+                                                  workingEnvironment["ServerName"], 
+                                                  workingEnvironment["UserName"],
+                                                  workingEnvironment["Password"])
+
+        result = joey_db.executeSql(query)
     
-    for x in result:
-        joeyd_threadpool.queueTask(processUpload, x.id, None)
+        for x in result:
+            joeyd_threadpool.queueTask(processUpload, x.id, None)
+
+    except Exception, x:
+
+        print >>standardError, x
+        traceback.print_exc(file=standardError)
 
 
 #===========================================================================================================
@@ -900,11 +901,6 @@ try:
       logMessage("joeyd starting.",1)
 
       
-      joey_db = cse.MySQLDatabase.MySQLDatabase(workingEnvironment["DatabaseName"],
-                                                workingEnvironment["ServerName"], 
-                                                workingEnvironment["UserName"],
-                                                workingEnvironment["Password"])
-
       logMessage("joeyd db setup.",1)
             
       joeyd_threadpool = ThreadPool(workingEnvironment["threadcount"])
@@ -914,11 +910,7 @@ try:
       
       Transcode = Transcode();
       Update = Update();
-      Upload = Upload();
-      User = User();
-      Database = Database();
-      
-
+     
       if "listen" in workingEnvironment:
           
           # every 30 seconds is going to kill us.  throttle back when we go online.
