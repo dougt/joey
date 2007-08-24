@@ -877,9 +877,12 @@ def joeyd_refresher_timeout():
                                                   workingEnvironment["Password"])
 
         result = joey_db.executeSql(query)
-    
+        
+        joey_db.close()
+
         for x in result:
             joeyd_threadpool.queueTask(processUpload, x.id, None)
+
 
     except Exception, x:
 
