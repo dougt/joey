@@ -97,24 +97,52 @@ def processUpload (db, uploadId):
 #   style attacks.
 #
 #---------------------------------------------------------------------------------------------------
+
+
 def safeExternalOnlyGet (url):
+
+#
+#    try:
+#
+#        o = urlparse(url)
+#        print o
+#
+#        ip = IP( socket.gethostbyname( o[2]) )  #in python 2.5 we can use o.netloc
+#        if ip.iptype() == "PRIVATE":
+#            logMessage("WARNING! an attempt has been made to connect to: (%s) which is a PRIVATE address.\n" % (url), 1)
+#            return "This url can not be connected to."
+#        return 1;
+#
+#    except Exception, x:
+#        print >>standardError, x
+#        traceback.print_exc(file=standardError)
+#        # gethostbyname probably failed.
+#        logMessage("gethostbyname failed: (%s).\n" % (url), 1)
+#        return ""
+
+    # Do we need to use the ip that we just looked up?  TODO
+
+
+    url_opener = urllib.URLopener()
 
     try:
 
-        ip = IP( socket.gethostbyname( urlparse(url)[2 ]) )  #in python 2.5 we can use o.netloc
-        if ip.iptype() == "PRIVATE":
-            logMessage("WARNING! an attempt has been made to connect to: (%s) which is a PRIVATE address.\n" % (url), 1)
-            return "This url can not be connected to."
-        return 1;
-    except:
-        # gethostbyname probably failed.
-        logMessage("gethostbyname failed: (%s).\n" % (url), 1)
-        return ""
+        f = url_opener.open(url)
+        result = f.read()
+        f.close()
+    except IOError, error_code:
+        error = "unknown"
+        if error_code[0] == "http error" :
+            if error_code[1] == 401 : 	# password protected site
+                error = "Authorization required"
+            elif error_code[1] == 404 :		# file not found
+                error = "File not found"
+            else :
+                error = error_code
+        result = False
+        logMessage("Error loading content %s" %(error));
 
-    # Do we need to use the ip that we just looked up?  TODO
-    f = urllib.urlopen(url)
-    return f.read()
-    
+    return result
 
 #---------------------------------------------------------------------------------------------------
 # Database Class
@@ -461,16 +489,20 @@ class Update:
     def updateByUploadData(self, db, data):
 
         logMessage("updating...")
-
-        if (data.contentsourcetype_name == 'rss-source/text'):
-            self._updateRssTypeFromUploadData(db, data)
-        elif (data.contentsourcetype_name == 'microsummary/xml'):
-            self._updateMicrosummaryTypeFromUploadData(data)
-        elif (data.contentsourcetype_name == 'widget/joey'):
-            self._updateJoeyWidgetTypeFromUploadData(data)
-        else:
-            logMessage("Attempt to update unsupported type (%s) for upload id (%d)" % (data.contentsourcetype_name, data.upload_id) ,1)
-
+        try:
+            if (data.contentsourcetype_name == 'rss-source/text'):
+                self._updateRssTypeFromUploadData(db, data)
+            elif (data.contentsourcetype_name == 'microsummary/xml'):
+                self._updateMicrosummaryTypeFromUploadData(data)
+            elif (data.contentsourcetype_name == 'widget/joey'):
+                self._updateJoeyWidgetTypeFromUploadData(data)
+            else:
+                logMessage("Attempt to update unsupported type (%s) for upload id (%d)" % (data.contentsourcetype_name, data.upload_id) ,1)
+        except Exception, x:
+            print >>standardError, x
+            traceback.print_exc(file=standardError)
+            logMessage("something bad happened with upload id (%d)" %(data.upload_id))
+            
 
     def _updateRssTypeFromUploadData(self, db, data):
 
@@ -480,9 +512,14 @@ class Update:
         #@todo, re needs to be able to just return the value in (.*).
 
         # parse out the rss url.
-        rss_url = re.compile('rss=(.*)\r\n').search(data.source).group()
-        rss_url = rss_url.replace('rss=', '')
-        
+        try:
+            rss_url = re.compile('rss=(.*)\r\n').search(data.source).group()
+            rss_url = rss_url.replace('rss=', '')
+        except:
+            # no url for the icon
+            logMessage("no rss url to process for upload id (%d).  Ignoring" %(data.upload_id))
+            return 1
+
         # parse out the optional icon url
         try:
             ico_url = re.compile('icon=(.*)\r\n').search(data.source).group()
@@ -494,11 +531,22 @@ class Update:
 
         # fetch the RSS Source
         source = safeExternalOnlyGet(rss_url)
+        if source == False:
+            return 1;
 
         d = feedparser.parse(source)
 
+        if hasattr(d, "entries") == False:
+            logMessage("no entries for upload id (%d)" %(data.upload_id))
+            return 1;
+
+
         # save / update the title of the upload.
-        title = d['feed']['title'];
+        if hasattr(d.channel, "title"):
+            title = d.channel.title 
+        else:
+            title = rss_url
+            
         db.setTitle(data.upload_id, title)
 
         try:
@@ -538,6 +586,8 @@ class Update:
                         #print urllib.urlretrieve(enclosure.href, originalFile)
 
                         media = safeExternalOnlyGet(enclosure.href)
+                        if source == False:
+                            return 1;
                         
                         # check to see if the originalFile already has the right extension
                         if (originalFile.find(".mp3") == -1):
@@ -937,7 +987,7 @@ if __name__ == "__main__":
                     (None, 'Password', True, "", 'the password for the user in the database'),
                     (None, 'logPathName', True, "./joeyd.log", 'a progressive log of all runs of the update script'),
                     (None, 'UploadDir', True, "", 'Where are all the uploads stored?'),
-                    ('t',  'threadcount', True, 20, 'Number of threads that should be in our thread pool.'),
+                    ('t',  'threadcount', True, 100, 'Number of threads that should be in our thread pool.'),
                     (None, 'listenAddress', True, 'localhost', 'Address to listen on'),
                     (None, 'listenPort', True, 8777, 'Port to listen on'),
                     (None, 'ConvertCmd', True, "/usr/bin/convert", 'Where is your convert executable?'),
@@ -968,8 +1018,7 @@ try:
     
     if "listen" in workingEnvironment:
         
-        # every 30 seconds is going to kill us.  throttle back when we go online.
-        joeyd_refresher_timer = Timer(30.0, joeyd_refresher_timeout)
+        joeyd_refresher_timer = Timer(15*60.0, joeyd_refresher_timeout)
         joeyd_refresher_timer.start()
         logMessage("joeyd timer setup.", 1)
         
