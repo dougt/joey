@@ -100,6 +100,8 @@ class Database:
     def commit(self):
         self.joey_db.commit()
 
+    def close(self):
+        self.joey_db.close()
 
     def getPhoneDataByUserId(self, id):
 
@@ -583,7 +585,7 @@ class Update:
         out.close()
 
         #TODO  -- are we absolutely sure that os.spawnlp escapes params?  This is a huge hole if not.  
-        
+
         if not os.spawnlp(os.P_WAIT, "php", "", '-f', '../vendors/microsummary.php', originalFile, data.upload_referrer) == 0:
             logMessage("failure.\n")
 
@@ -932,12 +934,11 @@ try:
             
       joeyd_threadpool = ThreadPool(workingEnvironment["threadcount"])
       
-      logMessage("joeyd threadpool setup.",1)
-      
+      logMessage("joeyd threadpool setup.",1)      
       
       Transcode = Transcode();
       Update = Update();
-     
+
       if "listen" in workingEnvironment:
           
           # every 30 seconds is going to kill us.  throttle back when we go online.
@@ -949,7 +950,6 @@ try:
           logMessage("Connected on: %s:%s" % (workingEnvironment["listenAddress"], workingEnvironment["listenPort"]),1)
           joeyd_server.serve_forever() 
           
-
           joeyd_threadpool.joinAll()
 
 except KeyboardInterrupt:
