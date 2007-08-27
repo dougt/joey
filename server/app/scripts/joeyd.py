@@ -22,6 +22,7 @@ import codecs
 import feedparser
 import os
 import re
+import socket
 import sys
 import thread
 import threading
@@ -33,6 +34,8 @@ from time import sleep
  
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
+from urlparse import urlparse
+from IPy import IP
 
 #---------------------------------------------------------------------------------------------------
 # Configuration options
@@ -85,6 +88,33 @@ def processUpload (db, uploadId):
 
     db.commit()
 
+
+#---------------------------------------------------------------------------------------------------
+#   safeExternalOnlyGet
+#
+#   The idea here is that we only will load urls that are
+#   not NAT addresses with the intent to prevent princton
+#   style attacks.
+#
+#---------------------------------------------------------------------------------------------------
+def safeExternalOnlyGet (url):
+
+    try:
+
+        ip = IP( socket.gethostbyname( urlparse(url)[2 ]) )  #in python 2.5 we can use o.netloc
+        if ip.iptype() == "PRIVATE":
+            logMessage("WARNING! an attempt has been made to connect to: (%s) which is a PRIVATE address.\n" % (url), 1)
+            return "This url can not be connected to."
+        return 1;
+    except:
+        # gethostbyname probably failed.
+        logMessage("gethostbyname failed: (%s).\n" % (url), 1)
+        return ""
+
+    # Do we need to use the ip that we just looked up?  TODO
+    f = urllib.urlopen(url)
+    return f.read()
+    
 
 #---------------------------------------------------------------------------------------------------
 # Database Class
@@ -463,8 +493,7 @@ class Update:
 
 
         # fetch the RSS Source
-        file = urllib.urlopen(rss_url)
-        source = file.read()
+        source = safeExternalOnlyGet(rss_url)
 
         d = feedparser.parse(source)
 
@@ -508,8 +537,7 @@ class Update:
                         #todo -- shouldn't we worry here about disk space?
                         #print urllib.urlretrieve(enclosure.href, originalFile)
 
-                        f = urllib.urlopen(enclosure.href)
-                        media = f.read()
+                        media = safeExternalOnlyGet(enclosure.href)
                         
                         # check to see if the originalFile already has the right extension
                         if (originalFile.find(".mp3") == -1):
@@ -926,37 +954,37 @@ if __name__ == "__main__":
         sys.exit()
     
 try:
-
-      logMessage("joeyd starting.",1)
-
-      
-      logMessage("joeyd db setup.",1)
-            
-      joeyd_threadpool = ThreadPool(workingEnvironment["threadcount"])
-      
-      logMessage("joeyd threadpool setup.",1)      
-      
-      Transcode = Transcode();
-      Update = Update();
-
-      if "listen" in workingEnvironment:
-          
-          # every 30 seconds is going to kill us.  throttle back when we go online.
-          joeyd_refresher_timer = Timer(30.0, joeyd_refresher_timeout)
-          joeyd_refresher_timer.start()
-          logMessage("joeyd timer setup.", 1)
-          
-          joeyd_server     = HTTPServer((workingEnvironment["listenAddress"], workingEnvironment["listenPort"]), RequestHandler)
-          logMessage("Connected on: %s:%s" % (workingEnvironment["listenAddress"], workingEnvironment["listenPort"]),1)
-          joeyd_server.serve_forever() 
-          
-          joeyd_threadpool.joinAll()
-
+    logMessage("joeyd starting.",1)
+    
+    
+    logMessage("joeyd db setup.",1)
+    
+    joeyd_threadpool = ThreadPool(workingEnvironment["threadcount"])
+    
+    logMessage("joeyd threadpool setup.",1)      
+    
+    Transcode = Transcode();
+    Update = Update();
+    
+    if "listen" in workingEnvironment:
+        
+        # every 30 seconds is going to kill us.  throttle back when we go online.
+        joeyd_refresher_timer = Timer(30.0, joeyd_refresher_timeout)
+        joeyd_refresher_timer.start()
+        logMessage("joeyd timer setup.", 1)
+        
+        joeyd_server     = HTTPServer((workingEnvironment["listenAddress"], workingEnvironment["listenPort"]), RequestHandler)
+        logMessage("Connected on: %s:%s" % (workingEnvironment["listenAddress"], workingEnvironment["listenPort"]),1)
+        joeyd_server.serve_forever() 
+        
+        joeyd_threadpool.joinAll()
+        
 except KeyboardInterrupt:
     print >>standardError, "Interrupted..."
     sys.exit()
     pass
-  
+
 except Exception, x:
     print >>standardError, x
     traceback.print_exc(file=standardError)
+    
