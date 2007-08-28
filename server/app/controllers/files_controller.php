@@ -174,6 +174,7 @@ class FilesController extends AppController
 
         if ($_preview && !empty($_item['File']['preview_name'])) {
             $_filename = UPLOAD_DIR."/{$this->_user['id']}/previews/{$_item['File']['preview_name']}";
+
             $_filetype = $_item['File']['preview_type'];
             $_filesize = $_item['File']['preview_size'];
             

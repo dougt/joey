@@ -150,7 +150,7 @@ def safeExternalOnlyGet (url):
 class Database:
 
     def __init__(self):
-        logMessage("Creating connection to DB")
+        # lots of startup noise. logMessage("Creating connection to DB")
         self.joey_db = cse.MySQLDatabase.MySQLDatabase(workingEnvironment["DatabaseName"],
                                                        workingEnvironment["ServerName"], 
                                                        workingEnvironment["UserName"],
@@ -335,18 +335,41 @@ class Transcode:
         toFile      = os.path.join(workingEnvironment['UploadDir'], str(data.user_id), data.file_name)
         previewFile = os.path.join(workingEnvironment['UploadDir'], str(data.user_id), 'previews' , data.preview_name)
 
+        if not os.path.isfile(fromFile):
+            logMessage("failure (file not found)\n")
+            return 1
+        
         #TODO we need to write these file basename's to the DB
-
         if (data.original_type in ["audio/x-wav","audio/mpeg","audio/mid","audio/amr"]):
             self._transcodeAudio(data)
+            db.updateFileTypes(data, "audio/amr", None, None)
         elif (data.original_type in ["browser/stuff"]):
             self._transcodeBrowserStuff(db, data, fromFile, toFile, previewFile)
+            db.updateFileTypes(data, "text/html", "browser/stuff", None)
         elif (data.original_type in ["image/png","image/jpeg","image/tiff","image/bmp","image/gif"]):
             self._transcodeImageAndPreview(fromFile, toFile, previewFile) #@TODO width/height from _phone_data
+            db.updateFileTypes(data, "image/png", None, "image/png")
         elif (data.original_type in ["text/plain"]):
             self._transcodeText(db, data, fromFile, toFile)
+            db.updateFileTypes(data, "text/plain", "text/plain", None)
         elif (data.original_type in ["video/3gpp","video/flv","video/mpeg","video/avi","video/quicktime"]):
-            self._transcodeVideo(data)
+            
+            # check to see if the toFile already has the right extension
+            if (toFile.find(".3gp") == -1):
+                toFile = toFile + ".3gp"
+                data.file_name = os.path.basename(toFile)
+                db.changeFileNames(data, None, os.path.basename(toFile), None)
+
+            # check to see if the file previewFile already has the right extension
+            if (previewFile.find(".png") == -1):
+                previewFile = previewFile + ".png"
+                data.preview_name = os.path.basename(previewFile)
+                db.changeFileNames(data, None, None, os.path.basename(previewFile))
+
+            self._transcodeVideo(fromFile, toFile, previewFile, 100, 100) #@TODO width/height from _phone_data
+
+            db.updateFileTypes(data, "vido/3gpp", None, "image/png")
+
         else:
             logMessage("Attempt to transcode unsupported type (%s) for upload id (%d)" % (data.original_type, data.upload_id),1)
         
@@ -356,10 +379,6 @@ class Transcode:
 
     def _transcodeAudio(self, fromFile, toFile):
         logMessage("type=audio...")
-
-        if not os.path.isfile(fromFile):
-            logMessage("failure (file not found)\n")
-            return 1
 
         # Encode the file, wait for the command to return
         if not os.spawnlp(os.P_WAIT, workingEnvironment['FfmpegCmd'], os.path.basename(workingEnvironment['FfmpegCmd']), '-y', '-i', fromFile, '-ar', '8000', '-ac', '1', '-ab', '7400', '-f', 'amr', toFile) == 0:
@@ -374,10 +393,6 @@ class Transcode:
 
     def _transcodeBrowserStuff(self, db, data, fromFile, toFile, preview):
         logMessage("type=browserstuff...")
-
-        if not os.path.isfile(fromFile):
-            logMessage("failure (file not found)\n")
-            return 1
 
         # Copy the file, wait for the command to return
         if not os.spawnlp(os.P_WAIT, 'cp', 'cp', fromFile, toFile) == 0:
@@ -397,17 +412,11 @@ class Transcode:
             logMessage("failure.\n")
             return 1
 
-        db.updateFileTypes(data, "text/html", "browser/stuff", None)
-
         logMessage("success.\n")
         return 0
 
     def _transcodeImage(self, fromFile, toFile, width=100, height=100):
         logMessage("type=image...")
-
-        if not os.path.isfile(fromFile):
-            logMessage("failure (file not found)\n")
-            return 1
 
         # Encode the file, wait for the command to return
         if not os.spawnlp(os.P_WAIT, workingEnvironment['ConvertCmd'], os.path.basename(workingEnvironment['ConvertCmd']), '-geometry', ("%sx%s"% (width, height)), fromFile, toFile) == 0:
@@ -422,8 +431,12 @@ class Transcode:
         return 0
 
     def _transcodeImageAndPreview(self, fromFile, toFile, previewFile, width=100, height=100):
-        # TODO logMessage isn't really going to work for this method since it's nested with _transcodeImage, but since we have to redo the logging to deal with the
-        # multithreading I'm just going to skip this function for now
+
+        # TODO logMessage isn't really going to work for
+        # this method since it's nested with
+        # _transcodeImage, but since we have to redo the
+        # logging to deal with the multithreading I'm just
+        # going to skip this function for now
 
         if not self._transcodeImage(fromFile, toFile, width, height) == 0:
             return 1
@@ -436,10 +449,6 @@ class Transcode:
     def _transcodeText(self, db, data, fromFile, toFile):
         logMessage("type=text...")
 
-        if not os.path.isfile(fromFile):
-            logMessage("failure (file not found)\n")
-            return 1
-
         # Copy the file, wait for the command to return
         if not os.spawnlp(os.P_WAIT, 'cp', 'cp', fromFile, toFile) == 0:
             logMessage("failure.\n")
@@ -449,14 +458,36 @@ class Transcode:
             logMessage("failure.\n")
             return 1
 
-        db.updateFileTypes(data, "text/plain", "text/plain", None)
-
         logMessage("success.\n")
         return 0
 
-    def _transcodeVideo(self, data):
+    def _transcodeVideo(self, fromFile, toFile, previewFile, width, height):
         logMessage("type=video...")
-        #@TODO
+        
+        tmpfile = os.tempnam(workingEnvironment['UploadDir'] + "/cache", "ffmpeg.log")
+
+        os.system("%s -y -i %s -ab 12.2k -ac 1 -acodec libamr_nb -ar 8000 -vcodec h263 -r 10 -s qcif -b 44K -pass 1 -passlogfile %s %s" % (workingEnvironment['FfmpegCmd'] , fromFile, tmpfile, toFile))
+
+# For whatever reason spawn doesn't work.  Hopefully subprocess can help here.
+
+#        if not os.spawnlp(os.P_WAIT,
+#                          workingEnvironment['FfmpegCmd'], 
+#                          os.path.basename(workingEnvironment['FfmpegCmd']), 
+#                          '-y', '-i', fromFile, '-ab', '12.2k', '-ac', '1', '-acodec', 'libamr_nb', '-ar', '8000',
+#                          '-vcodec', 'h263', '-r', '10', '-s', 'qcif', '-b', '44k', '-pass', '1', '-passlogfile', tmpfile,
+#                          toFile ) == 0:
+#
+#            logMessage("video failure\n")
+#
+#               if os.path.isfile(tmpfile): 
+#                os.unlink(tmpfile);
+#            return 1
+
+        if os.path.isfile(tmpfile): 
+            os.unlink(tmpfile);
+        
+        os.system("%s -y -i %s -ss 5 -vcodec png -vframes 1 -an -f rawvideo -s '%dx%d' %s" % (workingEnvironment['FfmpegCmd'] , fromFile, width, height, previewFile))
+
         logMessage("success.\n")
         return 0
 
@@ -466,21 +497,26 @@ class Transcode:
 #---------------------------------------------------------------------------------------------------
 class Update:
 
+    def xmlescape(self, data):
+        data = data.replace('&', '&amp;')
+        data = data.replace('>', '&gt;')
+        data = data.replace('<', '&lt;')
+        return data
 
     def _buildRssOutput(self, feed):
         
-        output = "<h2>Channel Title: " +feed[ "channel" ][ "title" ]+ "</h2>"
+        output = "<h2>Channel Title: " + self.xmlescape(feed["channel" ][ "title" ])+ "</h2>"
 
         output = output + "<dl>"
 
         entries = feed.entries
         for entry in entries:
             if hasattr(entry, "link"):
-                output = output + "<dt><a href=\""+entry['link']+"\">"+entry['title']+"</a></dt>"
+                output = output + "<dt><a href=\""+self.xmlescape(entry['link'])+"\">"+self.xmlescape(entry['title'])+"</a></dt>"
             else:
-                output = output + "<dt>"+entry['title']+"</dt>"
+                output = output + "<dt>"+self.xmlescape(entry['title'])+"</dt>"
 
-            output = output + "<dd>" + entry['description'] + "</dd>"
+            output = output + "<dd>" + self.xmlescape(entry['description']) + "</dd>"
         
         output = output + "</dl>"
 
@@ -543,7 +579,7 @@ class Update:
 
         # save / update the title of the upload.
         if hasattr(d.channel, "title"):
-            title = d.channel.title 
+            title = self.xmlescape(d.channel.title) 
         else:
             title = rss_url
             
@@ -592,9 +628,8 @@ class Update:
                         # check to see if the originalFile already has the right extension
                         if (originalFile.find(".mp3") == -1):
                             originalFile = originalFile + ".mp3"
-
-                            #update the table with this new file name.
-                            db.changeFileNames(data, os.path.basename(originalFile), None, None)
+                            data.original_name = os.path.basename(originalFile)
+                            db.changeFileNames(data, data.original_name, None, None)
 
                         out = open(originalFile, 'w+')
                         out.write(media)
@@ -950,7 +985,7 @@ def joeyd_refresher_timeout():
                    LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
                    WHERE Contentsource.source IS NOT NULL AND Upload.deleted IS NULL"""
     
-        logMessage("Creating connection to DB")
+        # noisy at startup.  logMessage("Creating connection to DB")
         joey_db = cse.MySQLDatabase.MySQLDatabase(workingEnvironment["DatabaseName"],
                                                   workingEnvironment["ServerName"], 
                                                   workingEnvironment["UserName"],
