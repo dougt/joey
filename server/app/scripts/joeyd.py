@@ -959,8 +959,8 @@ class Timer:
     # Private Thread Function
     def __run(self):
         while self.__loop:
-            self.__function(*self.__args, **self.__kwargs)
             sleep(self.__interval)
+            self.__function(*self.__args, **self.__kwargs)
         self.__alive = False
 
 
