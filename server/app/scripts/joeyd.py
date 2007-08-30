@@ -1048,7 +1048,7 @@ def joeyd_heartbeat_timeout():
 
         heartbeat_file = open(workingEnvironment["statPathName"], "w")
 
-        heartbeat_file.write("joeyd stats")
+        heartbeat_file.write("joeyd stats\n")
 
         heartbeat_file.write(time.ctime() + "\n")
 
