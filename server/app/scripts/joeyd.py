@@ -1114,7 +1114,7 @@ def joeyd_refresher_timeout():
                    JOIN uploads as Upload ON uploads_users.upload_id = Upload.id
                    LEFT JOIN files as File ON Upload.id = File.upload_id
                    LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
-                   WHERE Contentsource.source IS NOT NULL AND Upload.deleted IS NULL"""
+                   WHERE (Contentsource.source IS NOT NULL OR Upload.ever_updated = 0) AND Upload.deleted IS NULL"""
     
         # noisy at startup.  logMessage("Creating connection to DB")
         joey_db = cse.MySQLDatabase.MySQLDatabase(workingEnvironment["DatabaseName"],
@@ -1186,6 +1186,8 @@ if __name__ == "__main__":
         
         if "listen" in workingEnvironment:
             
+            joeyd_refresher_timeout()
+
             joeyd_refresher_timer = Timer(15*60.0, joeyd_refresher_timeout)
             joeyd_refresher_timer.start()
             logMessage("joeyd timer setup.", 1)
