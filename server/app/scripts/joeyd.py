@@ -37,6 +37,23 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from urlparse import urlparse
 from IPy import IP
 
+
+# init reporting variables
+
+joeyd_stat_processed_count = 0
+joeyd_stat_daemon_request_count = 0
+joeyd_stat_refresher_timeout_last_called = 0
+joeyd_stat_fetched_item_count = 0
+joeyd_stat_fetched_item_failure_count = 0
+joeyd_stat_fetched_item_bytes = 0
+joeyd_stat_processed_audio = 0
+joeyd_stat_processed_videos = 0
+joeyd_stat_processed_pictures = 0
+joeyd_stat_processed_rss = 0
+joeyd_stat_processed_browser = 0
+joeyd_stat_processed_ms = 0
+joeyd_stat_processed_text = 0
+
 #---------------------------------------------------------------------------------------------------
 # Configuration options
 #---------------------------------------------------------------------------------------------------
@@ -66,6 +83,10 @@ def logMessage (msg, error=0):
 # processByUploadId
 #---------------------------------------------------------------------------------------------------
 def processUpload (db, uploadId):
+
+    #increment the total processed count for reporting
+    global joeyd_stat_processed_count
+    joeyd_stat_processed_count = joeyd_stat_processed_count + 1
 
     id = int(uploadId)
 
@@ -122,6 +143,9 @@ def safeExternalOnlyGet (url):
 
     # Do we need to use the ip that we just looked up?  TODO
 
+    # remember item count for reporting
+    global joeyd_stat_fetched_item_count
+    joeyd_stat_fetched_item_count = joeyd_stat_fetched_item_count +1
 
     url_opener = urllib.URLopener()
 
@@ -130,7 +154,15 @@ def safeExternalOnlyGet (url):
         f = url_opener.open(url)
         result = f.read()
         f.close()
+
+        # remember byte count for reporting
+        global joeyd_stat_fetched_item_bytes
+        joeyd_stat_fetched_item_bytes = joeyd_stat_fetched_item_bytes + len(result)
+
     except IOError, error_code:
+        # remember item count for reporting
+        global joeyd_stat_fetched_item_failure_count
+        joeyd_stat_fetched_item_failure_count = joeyd_stat_fetched_item_failure_count + 1
         error = "unknown"
         if error_code[0] == "http error" :
             if error_code[1] == 401 : 	# password protected site
@@ -343,15 +375,31 @@ class Transcode:
         if (data.original_type in ["audio/x-wav","audio/mpeg","audio/mid","audio/amr"]):
             self._transcodeAudio(data)
             db.updateFileTypes(data, "audio/amr", None, None)
+            
+            global joeyd_stat_processed_audio
+            joeyd_stat_processed_audio = joeyd_stat_processed_audio + 1
+
         elif (data.original_type in ["browser/stuff"]):
             self._transcodeBrowserStuff(db, data, fromFile, toFile, previewFile)
             db.updateFileTypes(data, "text/html", "browser/stuff", None)
+            
+            global joeyd_stat_processed_browser
+            joeyd_stat_processed_browser = joeyd_stat_processed_browser + 1
+
         elif (data.original_type in ["image/png","image/jpeg","image/tiff","image/bmp","image/gif"]):
             self._transcodeImageAndPreview(fromFile, toFile, previewFile) #@TODO width/height from _phone_data
             db.updateFileTypes(data, "image/png", None, "image/png")
+            
+            global joeyd_stat_processed_pictures
+            joeyd_stat_processed_pictures = joeyd_stat_processed_pictures + 1
+
         elif (data.original_type in ["text/plain"]):
             self._transcodeText(db, data, fromFile, toFile)
             db.updateFileTypes(data, "text/plain", "text/plain", None)
+
+            global joeyd_stat_processed_text
+            joeyd_stat_processed_text = joeyd_stat_processed_text + 1
+
         elif (data.original_type in ["video/3gpp","video/flv","video/mpeg","video/avi","video/quicktime"]):
             
             # check to see if the toFile already has the right extension
@@ -369,6 +417,10 @@ class Transcode:
             self._transcodeVideo(fromFile, toFile, previewFile, 100, 100) #@TODO width/height from _phone_data
 
             db.updateFileTypes(data, "vido/3gpp", None, "image/png")
+
+            global joeyd_stat_processed_videos
+            joeyd_stat_processed_videos = joeyd_stat_processed_videos + 1
+
 
         else:
             logMessage("Attempt to transcode unsupported type (%s) for upload id (%d)" % (data.original_type, data.upload_id),1)
@@ -468,21 +520,6 @@ class Transcode:
 
         os.system("%s -y -i %s -ab 12.2k -ac 1 -acodec libamr_nb -ar 8000 -vcodec h263 -r 10 -s qcif -b 44K -pass 1 -passlogfile %s %s" % (workingEnvironment['FfmpegCmd'] , fromFile, tmpfile, toFile))
 
-# For whatever reason spawn doesn't work.  Hopefully subprocess can help here.
-
-#        if not os.spawnlp(os.P_WAIT,
-#                          workingEnvironment['FfmpegCmd'], 
-#                          os.path.basename(workingEnvironment['FfmpegCmd']), 
-#                          '-y', '-i', fromFile, '-ab', '12.2k', '-ac', '1', '-acodec', 'libamr_nb', '-ar', '8000',
-#                          '-vcodec', 'h263', '-r', '10', '-s', 'qcif', '-b', '44k', '-pass', '1', '-passlogfile', tmpfile,
-#                          toFile ) == 0:
-#
-#            logMessage("video failure\n")
-#
-#               if os.path.isfile(tmpfile): 
-#                os.unlink(tmpfile);
-#            return 1
-
         if os.path.isfile(tmpfile): 
             os.unlink(tmpfile);
         
@@ -528,8 +565,16 @@ class Update:
         try:
             if (data.contentsourcetype_name == 'rss-source/text'):
                 self._updateRssTypeFromUploadData(db, data)
+
+                global joeyd_stat_processed_rss
+                joeyd_stat_processed_rss = joeyd_stat_processed_rss + 1
+
             elif (data.contentsourcetype_name == 'microsummary/xml'):
                 self._updateMicrosummaryTypeFromUploadData(data)
+
+                global joeyd_stat_processed_ms
+                joeyd_stat_processed_ms = joeyd_stat_processed_ms + 1
+
             elif (data.contentsourcetype_name == 'widget/joey'):
                 self._updateJoeyWidgetTypeFromUploadData(data)
             else:
@@ -815,6 +860,17 @@ class ThreadPool:
         finally:
             self.__taskLock.release()
     
+    def getPendingCount(self):
+
+        """Return the number of tasks pending."""
+        
+        self.__taskLock.acquire()
+        try:
+            return len(self.__tasks)
+        finally:
+            self.__taskLock.release()
+
+
     def joinAll(self, waitForTasks = True, waitForThreads = True):
 
         """ Clear the task queue and terminate all pooled threads,
@@ -904,6 +960,11 @@ class RequestHandler(BaseHTTPRequestHandler):
             /<upload_id>[/now]
         """
         try:
+
+            # increment joey reporting variable
+            global joeyd_stat_daemon_request_count
+            joeyd_stat_daemon_request_count = joeyd_stat_daemon_request_count + 1
+
             path = self.path.split("/");
             upload_id = path[1];
             
@@ -964,6 +1025,66 @@ class Timer:
         self.__alive = False
 
 
+
+#---------------------------------------------------------------------------------------------------
+# Joey heartbeat timer
+#---------------------------------------------------------------------------------------------------
+def joeyd_heartbeat_timeout():
+
+    try:
+        global joeyd_stat_processed_count
+        global joeyd_stat_daemon_request_count
+        global joeyd_stat_refresher_timeout_last_called
+        global joeyd_stat_fetched_item_count
+        global joeyd_stat_fetched_item_failure_count
+        global joeyd_stat_fetched_item_bytes
+        global joeyd_stat_processed_audio
+        global joeyd_stat_processed_videos
+        global joeyd_stat_processed_pictures
+        global joeyd_stat_processed_rss
+        global joeyd_stat_processed_ms
+        global joeyd_stat_processed_text
+        global joeyd_stat_processed_browser
+
+        heartbeat_file = open(workingEnvironment["statPathName"], "w")
+
+        heartbeat_file.write("joeyd stats")
+
+        heartbeat_file.write(time.ctime() + "\n")
+
+        heartbeat_file.write("\n")
+
+        heartbeat_file.write("last time refreshing thread was called: %s\n" %(joeyd_stat_refresher_timeout_last_called))
+        heartbeat_file.write("threadpool pending: %d\n" %(joeyd_threadpool.getPendingCount()))
+
+        heartbeat_file.write("total requests from daemon: %d\n" %(joeyd_stat_daemon_request_count))
+
+        heartbeat_file.write("\n")
+
+        heartbeat_file.write("total fetches: %d\n" %(joeyd_stat_fetched_item_count))
+        heartbeat_file.write("total fetch failures: %d\n" %(joeyd_stat_fetched_item_failure_count))
+        heartbeat_file.write("total fetched bytes: %d\n" %(joeyd_stat_fetched_item_bytes))
+
+        heartbeat_file.write("\n")
+
+        heartbeat_file.write("total processed audio: %d\n" %(joeyd_stat_processed_audio))
+        heartbeat_file.write("total processed videos: %d\n" %(joeyd_stat_processed_videos))
+        heartbeat_file.write("total processed pictures: %d\n" %(joeyd_stat_processed_pictures))
+        heartbeat_file.write("total processed rss: %d\n" %(joeyd_stat_processed_rss))
+        heartbeat_file.write("total processed browser: %d\n" %(joeyd_stat_processed_browser))
+        heartbeat_file.write("total processed ms: %d\n" %(joeyd_stat_processed_ms))
+        heartbeat_file.write("total processed text: %d\n" %(joeyd_stat_processed_text))
+        heartbeat_file.write("total uploads processed: %d\n" %(joeyd_stat_processed_count))
+
+        heartbeat_file.close()
+
+        print "."
+
+    except Exception, x:
+        print >>standardError, x
+        traceback.print_exc(file=standardError)
+
+
 #---------------------------------------------------------------------------------------------------
 # Joey refreshing timer
 #---------------------------------------------------------------------------------------------------
@@ -974,6 +1095,9 @@ def joeyd_refresher_timeout():
 #time we care about)
 
     try:
+        # remember the last time we were called so that we can report it.
+        global joeyd_stat_refresher_timeout_last_called
+        joeyd_stat_refresher_timeout_last_called = time.ctime()
         
         logMessage("firing timeout...");
         
@@ -1021,6 +1145,7 @@ if __name__ == "__main__":
                     (None, 'UserName', True, "", 'the name of the user in the database'),
                     (None, 'Password', True, "", 'the password for the user in the database'),
                     (None, 'logPathName', True, "./joeyd.log", 'a progressive log of all runs of the update script'),
+                    (None, 'statPathName', True, "./joeyd_stat.log", 'a snapshot of the current state of the update script'),
                     (None, 'UploadDir', True, "", 'Where are all the uploads stored?'),
                     ('t',  'threadcount', True, 100, 'Number of threads that should be in our thread pool.'),
                     (None, 'listenAddress', True, 'localhost', 'Address to listen on'),
@@ -1038,37 +1163,43 @@ if __name__ == "__main__":
         print >>standardError, "m1 %s\n%s\nFor usage, try --help" % (version, x)
         sys.exit()
     
-try:
-    logMessage("joeyd starting.",1)
-    
-    
-    logMessage("joeyd db setup.",1)
-    
-    joeyd_threadpool = ThreadPool(workingEnvironment["threadcount"])
-    
-    logMessage("joeyd threadpool setup.",1)      
-    
-    Transcode = Transcode();
-    Update = Update();
-    
-    if "listen" in workingEnvironment:
+    try:
         
-        joeyd_refresher_timer = Timer(15*60.0, joeyd_refresher_timeout)
-        joeyd_refresher_timer.start()
-        logMessage("joeyd timer setup.", 1)
+        logMessage("joeyd starting.",1)
         
-        joeyd_server     = HTTPServer((workingEnvironment["listenAddress"], workingEnvironment["listenPort"]), RequestHandler)
-        logMessage("Connected on: %s:%s" % (workingEnvironment["listenAddress"], workingEnvironment["listenPort"]),1)
-        joeyd_server.serve_forever() 
         
-        joeyd_threadpool.joinAll()
+        logMessage("joeyd db setup.",1)
         
-except KeyboardInterrupt:
-    print >>standardError, "Interrupted..."
-    sys.exit()
-    pass
+        joeyd_threadpool = ThreadPool(workingEnvironment["threadcount"])
+        
+        logMessage("joeyd threadpool setup.",1)      
 
-except Exception, x:
-    print >>standardError, x
-    traceback.print_exc(file=standardError)
-    
+        Transcode = Transcode();
+        Update = Update();
+        
+        if "listen" in workingEnvironment:
+            
+            joeyd_refresher_timer = Timer(15*60.0, joeyd_refresher_timeout)
+            joeyd_refresher_timer.start()
+            logMessage("joeyd timer setup.", 1)
+            
+            joeyd_heartbeat_timer = Timer(10.0, joeyd_heartbeat_timeout)
+            joeyd_heartbeat_timer.start()
+            logMessage("joeyd heartbeat setup.", 1)
+            
+            joeyd_server     = HTTPServer((workingEnvironment["listenAddress"], workingEnvironment["listenPort"]), RequestHandler)
+            logMessage("Connected on: %s:%s" % (workingEnvironment["listenAddress"], workingEnvironment["listenPort"]),1)
+            joeyd_server.serve_forever() 
+            
+            joeyd_threadpool.joinAll()
+            
+    except KeyboardInterrupt:
+        print >>standardError, "Interrupted..."
+        sys.exit()
+        pass
+
+    except Exception, x:
+        print >>standardError, x
+        traceback.print_exc(file=standardError)
+        sys.exit()
+        pass

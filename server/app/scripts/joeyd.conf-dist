@@ -3,3 +3,5 @@ ServerName=
 UserName=
 Password=
 UploadDir=
+FfmpegCmd=
+ConvertCmd=
