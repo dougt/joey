@@ -416,7 +416,7 @@ class Transcode:
 
             self._transcodeVideo(fromFile, toFile, previewFile, 100, 100) #@TODO width/height from _phone_data
 
-            db.updateFileTypes(data, "vido/3gpp", None, "image/png")
+            db.updateFileTypes(data, "video/3gpp", None, "image/png")
 
             global joeyd_stat_processed_videos
             joeyd_stat_processed_videos = joeyd_stat_processed_videos + 1
@@ -1057,7 +1057,7 @@ def joeyd_heartbeat_timeout():
 
         heartbeat_file.write("joeyd stats\n")
 
-        heartbeat_file.write(time.ctime() + "\n")
+        heartbeat_file.write("At the tone, the time will be: " + time.ctime() + "\n")
 
         heartbeat_file.write("\n")
 
