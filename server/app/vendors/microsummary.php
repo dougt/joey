@@ -448,8 +448,12 @@ if ($argc == 3) {
   $gen = fread ($f, filesize($argv[1]));
   fclose($f);
 
+  $f = fopen($argv[2], "r");
+  $ref = fread ($f, filesize($argv[2]));
+  fclose($f);
+
   $_ms->load($gen);
-  $_ms->execute($argv[2], false);
+  $_ms->execute($ref, false);
 
   $f = fopen($argv[1], "w");
   fwrite($f, $_ms->result);

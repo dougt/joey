@@ -742,10 +742,17 @@ class Update:
         out.write(data.source)
         out.close()
 
-        #TODO  -- are we absolutely sure that os.spawnlp escapes params?  This is a huge hole if not.  
+        
+        # avoid passing user supplied paramaters to spawn and just pass the value via a file
+        tmppath = os.tempnam(workingEnvironment['UploadDir'] + "/cache", "ms_ref")
+        tmpfl = open(tmppath, 'w+')
+        tmpfl.write(data.upload_referrer)
+        tmpfl.close()
 
-        if not os.spawnlp(os.P_WAIT, "php", "", '-f', '../vendors/microsummary.php', originalFile, data.upload_referrer) == 0:
+        if not os.spawnlp(os.P_WAIT, "php", "", '-f', '../vendors/microsummary.php', originalFile, tmppath) == 0:
             logMessage("failure.\n")
+
+        os.unlink(tmppath)
 
         # copy it over to the new file.
         os.system("cp %s %s" % (originalFile, newFile))
