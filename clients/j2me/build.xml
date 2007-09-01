@@ -278,15 +278,6 @@
 		<jvmarg value="-Xmx256m" />
 		<arg value="-Dlocales=en_US" />
 	</java>
-	<java
-		classname="org.apache.tools.ant.launch.Launcher"
-		classpath="${java.class.path}"
-		fork="true"
-	>
-		<jvmarg value="-XX:MaxPermSize=512m" />
-		<jvmarg value="-Xmx128m" />
-		<arg value="-Dlocales=de_DE" />
-	</java>
 </target>
 
 </project>

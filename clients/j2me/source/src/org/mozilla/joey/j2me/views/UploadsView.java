@@ -189,6 +189,9 @@ camera here or in the MainMenu view.
 
             if (upload.isDeleted() == true)  // todo this shoudl be removed since we should clear these out of RMS
                 continue;
+
+            if (upload.getMimetype() == null)
+                continue;
             
             Item uploadItem = null;
             if (upload.getMimetype().startsWith(mimeType)) 

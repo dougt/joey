@@ -122,8 +122,8 @@ public class JoeyController
 	public static final Command CMD_NO = new Command(Locale.get("command.no"), Command.CANCEL, 1);
 	public static final Command CMD_MEDIA_OPEN = new Command(Locale.get("command.media_open"), Command.SCREEN, 1);
 
-	private static final String RMS_USERDATA = "joey_userdata";
-	private static final String RMS_UPLOADS = "joey_uploads";
+	private static final String RMS_USERDATA = "joey_userdata.1";
+	private static final String RMS_UPLOADS = "joey_uploads.1";
 
 	private int nextEvent = EVENT_NONE;
 	private Displayable currentView;
