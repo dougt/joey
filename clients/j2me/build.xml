@@ -95,7 +95,7 @@
 	<property name="dir.work" value="build/real" />
 	<property name="deploy-url" value="" />
 
-	<property name="joey.version" value="0.1" />
+	<property name="joey.version" value="0.1.1" />
 	<property name="joey.update.url" value="http://joey.labs.mozilla.com/app/webroot/ff/" />
 </target>
  
