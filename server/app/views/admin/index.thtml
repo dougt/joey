@@ -2,26 +2,38 @@
 <br>
 
 <div>
+
+       <h3> joey user information </h3>
+
        <div>
-         <?php echo "User count == " . $summary['user_count']; ?>
+         <?php echo "<pre>Total User count == " . $summary['user_count'] . "</pre>"; ?>
        </div>
 
        <div>
-         <?php echo "Upload count == " . $summary['upload_count']; ?>
-       </div>
-
-
-       <div>
-         <?php echo "New User count == " . $summary['new_user_count']; ?>
+         <?php echo "<pre>Users in last 24 hours == " . $summary['new_user_count'] . "</pre>"; ?>
        </div>
 
        <div>
-         <?php echo "New Upload count == " . $summary['new_upload_count']; ?>
+         <?php echo "<pre>Users with pending confirmations == " . $summary['pending_users_count'] . "</pre>"; ?>
        </div>
 
+       <h3> joey upload information </h3>
 
        <div>
-         <?php echo "Users with pending confirmations == " . $summary['pending_users_count']; ?>
+         <?php echo "<pre>Total Upload count == " . $summary['upload_count'] . "</pre>"; ?>
+       </div>
+
+       <div>
+         <?php echo "<pre>Uploads in last 24 hours == " . $summary['new_upload_count'] . "</pre>"; ?>
+       </div>
+
+       
+       <div>
+        <h3> joeyd offline upload processor information </h3>
+       </div>
+       
+       <div>
+         <?php echo "<pre>" . $summary['joeyd_stats'] . "</pre>"; ?>
        </div>
 
 

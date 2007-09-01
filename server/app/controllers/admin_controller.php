@@ -38,6 +38,7 @@ class AdminController extends AppController
     }
 
     function index() {
+        $this->layout = null;
         $this->summary();
     }
 
@@ -70,9 +71,22 @@ class AdminController extends AppController
 
 
       $result = $this->User->query("SELECT count(*) from users WHERE confirmationcode is not NULL");
-      $_summary["new_upload_count"] = $result[0][0]["count(*)"];
+      $_summary["pending_users_count"] = $result[0][0]["count(*)"];
 
-      $this->set('summary', $_summary);
+
+      $_summary["joeyd_stats"] = "Problem reading joeyd stat file!";
+      
+      if (is_readable(JOEYD_STAT_FILE) && is_file(JOEYD_STAT_FILE)) {
+        $handle = fopen(JOEYD_STAT_FILE, "r");
+        $result = fread($handle, filesize(JOEYD_STAT_FILE));
+
+        $_summary["joeyd_stats"] = $result;
+        
+        fclose($handle);
+      }
+
+        $this->set('summary', $_summary);
+        
 
     }
 }

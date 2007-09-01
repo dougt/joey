@@ -46,6 +46,13 @@
 define('JOEYD_SERVER_ADDRESS', 'localhost:8777');
 
 /**
+ * Location of where joeyd outputs its status information
+ * for reporting.  Optional.
+ */
+
+define('JOEYD_STAT_FILE', '/data/joeyd_stat.log');
+
+/**
  * Email address to be used when sending out registration 
  * activate and password reminder emails
  */

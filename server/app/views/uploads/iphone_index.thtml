@@ -29,7 +29,7 @@ if (empty($browserstuff))
 <ul id="videos" title="Videos">
 <?php
 foreach ($videos as $item): 
-   echo "<li><a href=\"#i" . $item['File']['id'] . "\">" . str_replace("\"", "", $item['Upload']['title']) . "</a></li>";
+  echo "<li><a href=\"".FULL_BASE_URL."/files/wrapper/".$item['File']['id']."\">".$item['Upload']['title']."</a></li>";
 endforeach;
 if (empty($videos))
   echo "<h2> Empty </h2>";
