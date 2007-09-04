@@ -37,6 +37,9 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from urlparse import urlparse
 from IPy import IP
 
+from lxml import etree
+from StringIO import StringIO
+
 
 # init reporting variables
 
@@ -118,7 +121,9 @@ def processUpload (db, uploadId):
 #   style attacks.
 #
 #---------------------------------------------------------------------------------------------------
-
+class UnauthorizedOpener(urllib.FancyURLopener):
+    def prompt_user_passwd(self, host, realm):
+        raise Unauthorized, 'The URLopener was asked for authentication'
 
 def safeExternalOnlyGet (url):
 
@@ -144,10 +149,13 @@ def safeExternalOnlyGet (url):
     # Do we need to use the ip that we just looked up?  TODO
 
     # remember item count for reporting
+    global joeyd_stat_fetched_item_bytes
+    global joeyd_stat_fetched_item_failure_count
     global joeyd_stat_fetched_item_count
+    
     joeyd_stat_fetched_item_count = joeyd_stat_fetched_item_count +1
 
-    url_opener = urllib.URLopener()
+    url_opener = UnauthorizedOpener() #urllib.URLopener()
 
     try:
 
@@ -156,12 +164,15 @@ def safeExternalOnlyGet (url):
         f.close()
 
         # remember byte count for reporting
-        global joeyd_stat_fetched_item_bytes
         joeyd_stat_fetched_item_bytes = joeyd_stat_fetched_item_bytes + len(result)
 
+    except Unauthorized:
+        joeyd_stat_fetched_item_failure_count = joeyd_stat_fetched_item_failure_count + 1
+        result = False
+        logMessage("Error loading content -- unauthorized");
+        
     except IOError, error_code:
         # remember item count for reporting
-        global joeyd_stat_fetched_item_failure_count
         joeyd_stat_fetched_item_failure_count = joeyd_stat_fetched_item_failure_count + 1
         error = "unknown"
         if error_code[0] == "http error" :
@@ -173,6 +184,9 @@ def safeExternalOnlyGet (url):
                 error = error_code
         result = False
         logMessage("Error loading content %s" %(error));
+    except Exception, x:
+        print >>standardError, x
+        traceback.print_exc(file=standardError)
 
     return result
 
@@ -368,7 +382,7 @@ class Transcode:
         previewFile = os.path.join(workingEnvironment['UploadDir'], str(data.user_id), 'previews' , data.preview_name)
 
         if not os.path.isfile(fromFile):
-            logMessage("failure (file not found)\n")
+            logMessage("transcodeByUploadData.  isfile failure (file not found) upload id (%d)\n" %(data.upload_id))
             return 1
         
         #TODO we need to write these file basename's to the DB
@@ -434,13 +448,13 @@ class Transcode:
 
         # Encode the file, wait for the command to return
         if not os.spawnlp(os.P_WAIT, workingEnvironment['FfmpegCmd'], os.path.basename(workingEnvironment['FfmpegCmd']), '-y', '-i', fromFile, '-ar', '8000', '-ac', '1', '-ab', '7400', '-f', 'amr', toFile) == 0:
-            logMessage("failure.\n")
+            logMessage("_transcodeAudio spawnlp failure to upldate upload id (%d)\n" %(data.upload_id))
             return 1
 
         if not os.path.isfile(toFile): 
-            logMessage("failure.\n")
+            logMessage("_transcodeAudio isfile failure to upldate upload id (%d)\n" %(data.upload_id))
             return 1
-        logMessage("success.\n")
+        logMessage("successfully updated upload id (%d).\n" %(data.upload_id))
         return 0
 
     def _transcodeBrowserStuff(self, db, data, fromFile, toFile, preview):
@@ -448,23 +462,23 @@ class Transcode:
 
         # Copy the file, wait for the command to return
         if not os.spawnlp(os.P_WAIT, 'cp', 'cp', fromFile, toFile) == 0:
-            logMessage("failure.\n")
+            logMessage("_transcodeBrowserStuff spawnlp failure to upldate upload id (%d)\n" %(data.upload_id))
             return 1
 
         if not os.path.isfile(toFile): 
-            logMessage("failure.\n")
+            logMessage("_transcodeBrowserStuff isfile failure to upldate upload id (%d)\n" %(data.upload_id))
             return 1
 
         # Copy the file to preview, wait for the command to return
         if not os.spawnlp(os.P_WAIT, 'cp', 'cp', fromFile, preview) == 0:
-            logMessage("failure.\n")
+            logMessage("_transcodeBrowserStuff spawnlp 2 failure to upldate upload id (%d)\n" %(data.upload_id))
             return 1
 
         if not os.path.isfile(preview): 
-            logMessage("failure.\n")
+            logMessage("_transcodeBrowserStuff isfile 2 failure to upldate upload id (%d)\n" %(data.upload_id))
             return 1
 
-        logMessage("success.\n")
+        logMessage("successfully updated upload id (%d).\n" %(data.upload_id))
         return 0
 
     def _transcodeImage(self, fromFile, toFile, width=100, height=100):
@@ -472,14 +486,14 @@ class Transcode:
 
         # Encode the file, wait for the command to return
         if not os.spawnlp(os.P_WAIT, workingEnvironment['ConvertCmd'], os.path.basename(workingEnvironment['ConvertCmd']), '-geometry', ("%sx%s"% (width, height)), fromFile, toFile) == 0:
-            logMessage("failure.\n")
+            logMessage("_transcodeImage spawnlp failure to upldate upload id (%d)\n" %(data.upload_id))
             return 1
 
         if not os.path.isfile(toFile): 
-            logMessage("failure.\n")
+            logMessage("_transcodeImage spawnlp failure to upldate upload id (%d)\n" %(data.upload_id))
             return 1
 
-        logMessage("success.\n")
+        logMessage("successfully updated upload id (%d).\n" %(data.upload_id))
         return 0
 
     def _transcodeImageAndPreview(self, fromFile, toFile, previewFile, width=100, height=100):
@@ -503,14 +517,14 @@ class Transcode:
 
         # Copy the file, wait for the command to return
         if not os.spawnlp(os.P_WAIT, 'cp', 'cp', fromFile, toFile) == 0:
-            logMessage("failure.\n")
+            logMessage("_transcodeText spawnlp failure to upldate upload id (%d)\n" %(data.upload_id))
             return 1
 
         if not os.path.isfile(toFile): 
-            logMessage("failure.\n")
+            logMessage("_transcodeText isfile failure to upldate upload id (%d)\n" %(data.upload_id))
             return 1
 
-        logMessage("success.\n")
+        logMessage("successfully updated upload id (%d).\n" %(data.upload_id))
         return 0
 
     def _transcodeVideo(self, fromFile, toFile, previewFile, width, height):
@@ -525,7 +539,7 @@ class Transcode:
         
         os.system("%s -y -i %s -ss 5 -vcodec png -vframes 1 -an -f rawvideo -s '%dx%d' %s" % (workingEnvironment['FfmpegCmd'] , fromFile, width, height, previewFile))
 
-        logMessage("success.\n")
+        logMessage("successfully updated upload id (%d).\n" %(data.upload_id))
         return 0
 
 
@@ -689,14 +703,14 @@ class Update:
 
                         # todo transcode audio (Can I simply call Transcode.transcodeAudio?)
                         if not os.spawnlp(os.P_WAIT, workingEnvironment['FfmpegCmd'], os.path.basename(workingEnvironment['FfmpegCmd']), '-y', '-i', originalFile, '-ar', '8000', '-ac', '1', '-ab', '7400', '-f', 'amr', newFile) == 0:
-                            logMessage("failure.\n")
+                            logMessage("_updateRssTypeFromUploadData spawnlp failure to upldate upload id (%d)\n" %(data.upload_id))
                             return 1
                         
                         if not os.path.isfile(newFile): 
-                            logMessage("failure.\n")
+                            logMessage("_updateRssTypeFromUploadData isfile failure to upldate upload id (%d)\n" %(data.upload_id))
                             return 1
-                        logMessage("success.\n")
-
+                        logMessage("successfully updated upload id (%d).\n" %(data.upload_id))
+                        
                         # update the file types.
                         db.updateFileTypes(data, "audio/amr", enclosure.type, None)
                                 
@@ -731,35 +745,45 @@ class Update:
         originalFile = "%s/%d/originals/%s" % (workingEnvironment['UploadDir'], data.user_id, data.original_name)
         newFile      = "%s/%d/%s" % (workingEnvironment['UploadDir'], data.user_id, data.file_name)
 
-        # this is a hack.  we spent a bunch of time making
-        # the DOM between FF and PHP work when using XPATHS.
-        # In order to save this work until we investigate
-        # using the PYTHON DOM, we are going to kick off php
-        # here.
+        webcontent = safeExternalOnlyGet(data.upload_referrer)
+        if webcontent == False:
+            return 1;
 
-        # save out the data.source so that PHP can see it
+        # create our MS DOM.  It does suck that i couldn't get
+        # etree.fromstring() working and had to resort to using the
+        # HTMLParser here.  When using fromstring, the corrected
+        # xpath (/generator/template/transform/template/value-of) is
+        # not found.
+        
+        parser = etree.HTMLParser()
+        root   = etree.parse(StringIO(data.source), parser)
+        
+        ms_xpath = root.xpath("/html/body/generator/template/transform/template/value-of")[0].get("select")
+
+        # create our DOM
+        parser = etree.HTMLParser()
+        tree   = etree.parse(StringIO(webcontent), parser)
+        
+        # find the right element
+        r = tree.xpath(ms_xpath)
+
+        # get the "innerHTML of the element"  
+        try:
+            updated_source = etree.tostring(r[0])
+        except:
+            updated_source = "We couldn't process this element.  Perhaps the content is generated dynamically?"
+
+        # copy the |updated_source| to the original file
         out = open(originalFile, 'w+')
-        out.write(data.source)
+        out.write(updated_source)
         out.close()
 
-        
-        # avoid passing user supplied paramaters to spawn and just pass the value via a file
-        tmppath = os.tempnam(workingEnvironment['UploadDir'] + "/cache", "ms_ref")
-        tmpfl = open(tmppath, 'w+')
-        tmpfl.write(data.upload_referrer)
-        tmpfl.close()
+        # copy the |updated_source| to the new file
+        out = open(newFile, 'w+')
+        out.write(updated_source)
+        out.close()
 
-        if not os.spawnlp(os.P_WAIT, "php", "", '-f', '../vendors/microsummary.php', originalFile, tmppath) == 0:
-            logMessage("failure.\n")
-
-        os.unlink(tmppath)
-
-        # copy it over to the new file.
-        os.system("cp %s %s" % (originalFile, newFile))
-        if not os.path.isfile(newFile): 
-            logMessage("failure.\n")
-            return 1
-
+        logMessage("successfully updated upload id (%d).\n" %(data.upload_id))
         return 0
 
     def _updateJoeyWidgetTypeFromUploadData(self, data):
