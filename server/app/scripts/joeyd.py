@@ -29,6 +29,7 @@ import threading
 import time
 import traceback
 import urllib
+import httplib2
 
 from time import sleep
  
@@ -111,6 +112,7 @@ def processUpload (db, uploadId):
         db.markUpdated(x)
 
     db.commit()
+    logMessage("Done processing upload id (%d)..." % id)
 
 
 #---------------------------------------------------------------------------------------------------
@@ -155,38 +157,23 @@ def safeExternalOnlyGet (url):
     
     joeyd_stat_fetched_item_count = joeyd_stat_fetched_item_count +1
 
-    # don't wait forever.
-    urllib.socket.setdefaulttimeout(10)
+    logMessage("Fetching url: %s" % (url))
 
-    url_opener = UnauthorizedOpener() #urllib.URLopener()
-
-    try:
-
-        f = url_opener.open(url)
-        result = f.read()
-        f.close()
-
+    h = httplib2.Http(workingEnvironment['UploadDir'] + "/cache")
+    resp, result = h.request(url, "GET")
+    
+    if (resp.status == 200):
         # remember byte count for reporting
         joeyd_stat_fetched_item_bytes = joeyd_stat_fetched_item_bytes + len(result)
-
-    except IOError, error_code:
+    else:
         # remember item count for reporting
         joeyd_stat_fetched_item_failure_count = joeyd_stat_fetched_item_failure_count + 1
-        error = "unknown"
-        if error_code[0] == "http error" :
-            if error_code[1] == 401 : 	# password protected site
-                error = "Authorization required"
-            elif error_code[1] == 404 :		# file not found
-                error = "File not found"
-            else :
-                error = error_code
+
+        print resp
         result = False
-        logMessage("Error loading content %s" %(error));
-    except Exception, x:
-        result = False
-        logMessage("Error loading content %s" %(error));
-        print >>standardError, x
-        traceback.print_exc(file=standardError)
+        logMessage("Error loading content...");
+
+    logMessage("Done fetching url: %s" % (url))
 
     return result
 
@@ -732,9 +719,7 @@ class Update:
             db.updateFileSizes(data)
     
         except:
-            #look at this mess.  what happened to simply being able to get the exception passed to you?
-            msg = "ERROR:\n" + traceback.format_tb(sys.exc_info()[2])[0] + "\nError Info:\n    " + str(sys.exc_type)+ ": " + str(sys.exc_value) + "\n"
-            logMessage("Problem updating files on disk for upload id (%d):\n%s" %(data.upload_id, msg),1)
+            logMessage("Problem updating files on disk for upload id (%d):\n%s" %(data.upload_id),1)
             return 1
 
         return 0
