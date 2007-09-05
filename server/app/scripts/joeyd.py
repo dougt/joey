@@ -257,7 +257,8 @@ class Database:
            UPDATE
               uploads
            SET
-              ever_updated = 1
+              ever_updated = 1,
+              modified = NOW()
            WHERE
              id = '%d' """ % (data.upload_id)
 
@@ -1116,10 +1117,6 @@ def joeyd_heartbeat_timeout():
 #---------------------------------------------------------------------------------------------------
 def joeyd_refresher_timeout():
 
-#todo in addtion, we should only query for files with a
-#modification date greater than 15 min (or whatever refresh
-#time we care about)
-
     try:
         # remember the last time we were called so that we can report it.
         global joeyd_stat_refresher_timeout_last_called
@@ -1133,7 +1130,10 @@ def joeyd_refresher_timeout():
                    JOIN uploads as Upload ON uploads_users.upload_id = Upload.id
                    LEFT JOIN files as File ON Upload.id = File.upload_id
                    LEFT JOIN contentsources as Contentsource ON File.id = Contentsource.file_id
-                   WHERE (Contentsource.source IS NOT NULL OR Upload.ever_updated = 0) AND Upload.deleted IS NULL"""
+                   WHERE (Contentsource.source IS NOT NULL OR Upload.ever_updated = 0) AND
+                   Upload.deleted IS NULL AND
+                   Upload.modified < DATE_SUB(NOW(), INTERVAL 30 MINUTE)
+"""
     
         # noisy at startup.  logMessage("Creating connection to DB")
         joey_db = cse.MySQLDatabase.MySQLDatabase(workingEnvironment["DatabaseName"],
