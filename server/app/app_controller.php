@@ -91,7 +91,8 @@ class AppController extends Controller
         //      array(controller=>array(action,...))
         $_no_session_check = array(
                                    'users' => array('activate', 'login', 'register', 'resetpasswordemail', 'resetpassword'),
-                                   'uploads' => array('updateAllUploads')
+                                   'users' => array('activate', 'login', 'register', 'resetpasswordemail', 'resetpassword'),
+                                   'newversion' => array('index')
                                    );
                                         
         $_skip_check = false;

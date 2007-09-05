@@ -7,7 +7,7 @@ class AdminController extends AppController
 
   var $name = 'Admin';
 
-      var $components = array('Joey', 'Pagination', 'Session', 'Storage');
+  var $components = array('Joey', 'Pagination', 'Session', 'Storage');
 
 //@todo review these
     var $uses = array('Phone', 'Contentsource', 'Contentsourcetype', 'File', 'Upload','User');
