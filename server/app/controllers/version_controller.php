@@ -46,7 +46,10 @@ class VersionController extends AppController
     var $uses = array('Phone', 'Contentsource', 'Contentsourcetype', 'File', 'Upload','User');
     var $helpers = array('Form','Html','Javascript');
     
-    function index($version = "0.0") {
+    function index($version = "0.0", $firstrun = false) {
+      
+      $this->set('firstrun', (isset($firstrun) && $firstrun == "firstrun"));
+
       $_filename = '../webroot/release_notes/'. $version;
       if (file_exists($_filename))
         $this->set('content', file_get_contents($_filename));
