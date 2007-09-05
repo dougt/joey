@@ -92,7 +92,7 @@ class AppController extends Controller
         $_no_session_check = array(
                                    'users' => array('activate', 'login', 'register', 'resetpasswordemail', 'resetpassword'),
                                    'users' => array('activate', 'login', 'register', 'resetpasswordemail', 'resetpassword'),
-                                   'newversion' => array('index')
+                                   'version' => array('index')
                                    );
                                         
         $_skip_check = false;
