@@ -1148,7 +1148,6 @@ def joeyd_refresher_timeout():
         for x in result:
             joeyd_threadpool.queueTask(processUpload, x.id, None)
 
-
     except Exception, x:
 
         print >>standardError, x
@@ -1207,7 +1206,7 @@ if __name__ == "__main__":
             
             joeyd_refresher_timeout()
 
-            joeyd_refresher_timer = Timer(15*60.0, joeyd_refresher_timeout)
+            joeyd_refresher_timer = Timer(30*60.0, joeyd_refresher_timeout)
             joeyd_refresher_timer.start()
             logMessage("joeyd timer setup.", 1)
             
