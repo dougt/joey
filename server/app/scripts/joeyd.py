@@ -123,7 +123,7 @@ def processUpload (db, uploadId):
 #---------------------------------------------------------------------------------------------------
 class UnauthorizedOpener(urllib.FancyURLopener):
     def prompt_user_passwd(self, host, realm):
-        raise Unauthorized, 'The URLopener was asked for authentication'
+        raise Exception, 'The URLopener was asked for authentication'
 
 def safeExternalOnlyGet (url):
 
@@ -166,11 +166,6 @@ def safeExternalOnlyGet (url):
         # remember byte count for reporting
         joeyd_stat_fetched_item_bytes = joeyd_stat_fetched_item_bytes + len(result)
 
-    except Unauthorized:
-        joeyd_stat_fetched_item_failure_count = joeyd_stat_fetched_item_failure_count + 1
-        result = False
-        logMessage("Error loading content -- unauthorized");
-        
     except IOError, error_code:
         # remember item count for reporting
         joeyd_stat_fetched_item_failure_count = joeyd_stat_fetched_item_failure_count + 1
@@ -185,6 +180,8 @@ def safeExternalOnlyGet (url):
         result = False
         logMessage("Error loading content %s" %(error));
     except Exception, x:
+        result = False
+        logMessage("Error loading content %s" %(error));
         print >>standardError, x
         traceback.print_exc(file=standardError)
 
@@ -357,7 +354,6 @@ class Database:
 class Transcode:
 
     def transcodeByUploadData(self, db, data):
-        logMessage("transcoding...");
 
         _phone_data = db.getPhoneDataByUserId(int(data.user_id))
 
@@ -575,7 +571,6 @@ class Update:
 
     def updateByUploadData(self, db, data):
 
-        logMessage("updating...")
         try:
             if (data.contentsourcetype_name == 'rss-source/text'):
                 self._updateRssTypeFromUploadData(db, data)
