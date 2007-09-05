@@ -155,6 +155,9 @@ def safeExternalOnlyGet (url):
     
     joeyd_stat_fetched_item_count = joeyd_stat_fetched_item_count +1
 
+    # don't wait forever.
+    urllib.socket.setdefaulttimeout(10)
+
     url_opener = UnauthorizedOpener() #urllib.URLopener()
 
     try:
