@@ -35,6 +35,7 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+const JOEY_VERSION = "0.3.0.0";
 
 /* 
  * Event listeners associated to the joeyOverlay app 
@@ -441,17 +442,32 @@ function joeyStartup()
 
     g_joey_statusUpdateObject = new JoeyStatusUpdateClass();
 
-    var psvc = Components.classes["@mozilla.org/preferences-service;1"]
+    var pref = Components.classes["@mozilla.org/preferences-service;1"]
                          .getService(Components.interfaces.nsIPrefBranch);
 
     /* 
      * First Run function..
      */ 
     try {
-       if(psvc.getBoolPref("joey.firstRun")) {
-            psvc.setBoolPref("joey.firstRun",false);     
-            joeyLaunchPreferences();        
-       }
+        var firstRun = pref.getCharPref("joey.lastversion"); 
+        var url = getJoeyServerURL() + "/version/index/" + JOEY_VERSION;
+        var showNotes = false;
+
+        if(firstRun == "firstrun") {
+            url += "/firstrun";
+            showNotes = true;
+        } 
+        else if(firstRun != JOEY_VERSION) {
+            showNotes = true;
+        }
+
+        if (showNotes == true) {
+            setTimeout(function() { 
+                    window.openUILinkIn(url, "tab");
+                    pref.setCharPref("joey.lastversion", JOEY_VERSION);
+                }, 500);
+        }
+
     } catch(i) { joeyDumpToConsole(i) } 
 
 

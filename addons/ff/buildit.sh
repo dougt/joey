@@ -2,7 +2,7 @@
 
 pushd components
 rm *.xpt
-/Users/dougt/builds/ff2/mozilla/dist/bin/xpidl -m typelib -I"/Users/dougt/builds/ff2/mozilla/dist/idl" mocoJoey.idl
+/Users/dougt/builds/gecko-sdk/bin/xpidl -m typelib -I"/Users/dougt/builds/gecko-sdk/idl" mocoJoey.idl
 popd
 
 rm -rf work
