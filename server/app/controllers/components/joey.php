@@ -83,10 +83,10 @@ class JoeyComponent extends Object
 
     function getJ2MEMidletVersion() {
 
-      $version_string = "0.1";  // default if something bad happens below
+      $version_string = "0.0";  // default if something bad happens below
 
       //@todo maybe we shouldn't use __FILE__ and instead use a built in cake value.
-      $filename = dirname(__FILE__) . '/../webroot/ff/build.properties';
+      $filename = dirname(__FILE__) . '/../../webroot/ff/build.properties';
       
       if(($handle = fopen($filename,'r')) != FALSE) 
       {
