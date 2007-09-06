@@ -157,25 +157,19 @@ def safeExternalOnlyGet (url):
     
     joeyd_stat_fetched_item_count = joeyd_stat_fetched_item_count +1
 
-    logMessage("Fetching url: %s" % (url))
-
     h = httplib2.Http(workingEnvironment['UploadDir'] + "/cache")
     resp, result = h.request(url, "GET")
     
     if (resp.status == 200):
         # remember byte count for reporting
         joeyd_stat_fetched_item_bytes = joeyd_stat_fetched_item_bytes + len(result)
-    else:
-        # remember item count for reporting
-        joeyd_stat_fetched_item_failure_count = joeyd_stat_fetched_item_failure_count + 1
+        logMessage("Done fetching url: %s" % (url))
+        return result
 
-        print resp
-        result = False
-        logMessage("Error loading content...");
-
-    logMessage("Done fetching url: %s" % (url))
-
-    return result
+    # remember item count for reporting
+    joeyd_stat_fetched_item_failure_count = joeyd_stat_fetched_item_failure_count + 1
+    logMessage("Error fetching url: %s (%s)" %(url, resp));
+    return False
 
 #---------------------------------------------------------------------------------------------------
 # Database Class
@@ -374,7 +368,7 @@ class Transcode:
         
         #TODO we need to write these file basename's to the DB
         if (data.original_type in ["audio/x-wav","audio/mpeg","audio/mid","audio/amr"]):
-            self._transcodeAudio(data)
+            self._transcodeAudio(fromFile, toFile)
             db.updateFileTypes(data, "audio/amr", None, None)
             
             global joeyd_stat_processed_audio
@@ -431,21 +425,19 @@ class Transcode:
         return 0
 
     def _transcodeAudio(self, fromFile, toFile):
-        logMessage("type=audio...")
 
         # Encode the file, wait for the command to return
         if not os.spawnlp(os.P_WAIT, workingEnvironment['FfmpegCmd'], os.path.basename(workingEnvironment['FfmpegCmd']), '-y', '-i', fromFile, '-ar', '8000', '-ac', '1', '-ab', '7400', '-f', 'amr', toFile) == 0:
-            logMessage("_transcodeAudio spawnlp failure to upldate upload id (%d)\n" %(data.upload_id))
+            logMessage("_transcodeAudio spawnlp failure (%s)\n" %(FromFile))
             return 1
 
         if not os.path.isfile(toFile): 
-            logMessage("_transcodeAudio isfile failure to upldate upload id (%d)\n" %(data.upload_id))
+            logMessage("_transcodeAudio isfile failure (%s)\n" %(fromFile))
             return 1
-        logMessage("successfully updated upload id (%d).\n" %(data.upload_id))
+
         return 0
 
     def _transcodeBrowserStuff(self, db, data, fromFile, toFile, preview):
-        logMessage("type=browserstuff...")
 
         # Copy the file, wait for the command to return
         if not os.spawnlp(os.P_WAIT, 'cp', 'cp', fromFile, toFile) == 0:
@@ -465,22 +457,19 @@ class Transcode:
             logMessage("_transcodeBrowserStuff isfile 2 failure to upldate upload id (%d)\n" %(data.upload_id))
             return 1
 
-        logMessage("successfully updated upload id (%d).\n" %(data.upload_id))
         return 0
 
     def _transcodeImage(self, fromFile, toFile, width=100, height=100):
-        logMessage("type=image...")
 
         # Encode the file, wait for the command to return
         if not os.spawnlp(os.P_WAIT, workingEnvironment['ConvertCmd'], os.path.basename(workingEnvironment['ConvertCmd']), '-geometry', ("%sx%s"% (width, height)), fromFile, toFile) == 0:
-            logMessage("_transcodeImage spawnlp failure to upldate upload id (%d)\n" %(data.upload_id))
+            logMessage("_transcodeImage spawnlp failure (%s)\n" %(fromFile))
             return 1
 
         if not os.path.isfile(toFile): 
-            logMessage("_transcodeImage spawnlp failure to upldate upload id (%d)\n" %(data.upload_id))
+            logMessage("_transcodeImage isfile failure (%s)\n" %(fromFile))
             return 1
 
-        logMessage("successfully updated upload id (%d).\n" %(data.upload_id))
         return 0
 
     def _transcodeImageAndPreview(self, fromFile, toFile, previewFile, width=100, height=100):
@@ -500,7 +489,6 @@ class Transcode:
         return 0
 
     def _transcodeText(self, db, data, fromFile, toFile):
-        logMessage("type=text...")
 
         # Copy the file, wait for the command to return
         if not os.spawnlp(os.P_WAIT, 'cp', 'cp', fromFile, toFile) == 0:
@@ -515,7 +503,6 @@ class Transcode:
         return 0
 
     def _transcodeVideo(self, fromFile, toFile, previewFile, width, height):
-        logMessage("type=video...")
         
         tmpfile = os.tempnam(workingEnvironment['UploadDir'] + "/cache", "ffmpeg.log")
 
@@ -526,7 +513,6 @@ class Transcode:
         
         os.system("%s -y -i %s -ss 5 -vcodec png -vframes 1 -an -f rawvideo -s '%dx%d' %s" % (workingEnvironment['FfmpegCmd'] , fromFile, width, height, previewFile))
 
-        logMessage("successfully updated upload id (%d).\n" %(data.upload_id))
         return 0
 
 
@@ -718,8 +704,8 @@ class Update:
 
             db.updateFileSizes(data)
     
-        except:
-            logMessage("Problem updating files on disk for upload id (%d):\n%s" %(data.upload_id),1)
+        except Exception, x:
+            logMessage("Problem updating files on disk for upload id (%d):\%s" %(data.upload_id, x),1)
             return 1
 
         return 0
