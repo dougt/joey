@@ -196,7 +196,7 @@ class UsersController extends AppController
                 // mark the uploads so that it gets updated
                 // against the new phone id
                 if ($this->data['Phone']['name'] != $this->_user['phone_id']) {
-                  $this->Upload->setEverUpdatedForUser($this->_user['id'], 0)
+                  $this->Upload->setEverUpdatedForUser($this->_user['id'], 0);
                 }
   
                 $changed['phone_id']    = $this->data['Phone']['name'];
