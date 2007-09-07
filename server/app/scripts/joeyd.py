@@ -94,8 +94,6 @@ def processUpload (db, uploadId):
 
     id = int(uploadId)
 
-    logMessage("Processing upload id (%d)..." % id)
-
     for x in db.getDataById(id):
 
         uploadDir = os.path.join(workingEnvironment['UploadDir'], str(x.user_id))
@@ -105,14 +103,15 @@ def processUpload (db, uploadId):
           return
 
         if x.source is None:
-            Transcode.transcodeByUploadData(db, x)
+            result = Transcode.transcodeByUploadData(db, x)
         else:
-            Update.updateByUploadData(db, x)
+            result = Update.updateByUploadData(db, x)
 
+        # result is 0 for success, >0 for errors.
+        db.setResultCode(id, result)
         db.markUpdated(x)
 
     db.commit()
-    logMessage("Done processing upload id (%d)..." % id)
 
 
 #---------------------------------------------------------------------------------------------------
@@ -198,6 +197,35 @@ class Database:
             WHERE User.id = '%d' """ % id 
 
         return self.joey_db.executeSql(query)
+
+
+    #    
+    # result 1 for failure, 0 otherwise
+    #
+    def setResultCode(self, id, result):
+        
+        # we want to do two things.  we want to 
+
+        if result > 0:
+            # too bad, this update failed.  Lets remember it
+            # in the table
+
+            query = "SELECT errors from uploads where id = %d" % ( id )
+            result = self.joey_db.executeSql(query)
+
+            # it would be nicer if this was just result.error or something.
+            error = result.content[0][0]
+
+            # inc error
+            error = error + 1
+        else:
+            
+            # great.  Lets just reset the error back to zero
+            error = 0
+
+        query = "UPDATE uploads set errors = %d where id = %d" % ( error, id )
+        self.joey_db.executeSql(query)
+        return
 
 
     def getDataById(self, id):
@@ -368,28 +396,36 @@ class Transcode:
         
         #TODO we need to write these file basename's to the DB
         if (data.original_type in ["audio/x-wav","audio/mpeg","audio/mid","audio/amr"]):
-            self._transcodeAudio(fromFile, toFile)
+
+            result = self._transcodeAudio(fromFile, toFile)
+
             db.updateFileTypes(data, "audio/amr", None, None)
             
             global joeyd_stat_processed_audio
             joeyd_stat_processed_audio = joeyd_stat_processed_audio + 1
 
         elif (data.original_type in ["browser/stuff"]):
-            self._transcodeBrowserStuff(db, data, fromFile, toFile, previewFile)
+
+            result = self._transcodeBrowserStuff(db, data, fromFile, toFile, previewFile)
+
             db.updateFileTypes(data, "text/html", "browser/stuff", None)
             
             global joeyd_stat_processed_browser
             joeyd_stat_processed_browser = joeyd_stat_processed_browser + 1
 
         elif (data.original_type in ["image/png","image/jpeg","image/tiff","image/bmp","image/gif"]):
-            self._transcodeImageAndPreview(fromFile, toFile, previewFile) #@TODO width/height from _phone_data
+
+            result = self._transcodeImageAndPreview(fromFile, toFile, previewFile) #@TODO width/height from _phone_data
+
             db.updateFileTypes(data, "image/png", None, "image/png")
             
             global joeyd_stat_processed_pictures
             joeyd_stat_processed_pictures = joeyd_stat_processed_pictures + 1
 
         elif (data.original_type in ["text/plain"]):
-            self._transcodeText(db, data, fromFile, toFile)
+
+            result = self._transcodeText(db, data, fromFile, toFile)
+
             db.updateFileTypes(data, "text/plain", "text/plain", None)
 
             global joeyd_stat_processed_text
@@ -409,7 +445,7 @@ class Transcode:
                 data.preview_name = os.path.basename(previewFile)
                 db.changeFileNames(data, None, None, os.path.basename(previewFile))
 
-            self._transcodeVideo(fromFile, toFile, previewFile, 100, 100) #@TODO width/height from _phone_data
+            result = self._transcodeVideo(fromFile, toFile, previewFile, 100, 100) #@TODO width/height from _phone_data
 
             db.updateFileTypes(data, "video/3gpp", None, "image/png")
 
@@ -419,10 +455,11 @@ class Transcode:
 
         else:
             logMessage("Attempt to transcode unsupported type (%s) for upload id (%d)" % (data.original_type, data.upload_id),1)
+            return 1
         
         db.updateFileSizes(data)
 
-        return 0
+        return result
 
     def _transcodeAudio(self, fromFile, toFile):
 
@@ -512,6 +549,7 @@ class Transcode:
             os.unlink(tmpfile);
         
         os.system("%s -y -i %s -ss 5 -vcodec png -vframes 1 -an -f rawvideo -s '%dx%d' %s" % (workingEnvironment['FfmpegCmd'] , fromFile, width, height, previewFile))
+        #todo return result here.
 
         return 0
 
@@ -550,25 +588,31 @@ class Update:
 
         try:
             if (data.contentsourcetype_name == 'rss-source/text'):
-                self._updateRssTypeFromUploadData(db, data)
+
+                result = self._updateRssTypeFromUploadData(db, data)
 
                 global joeyd_stat_processed_rss
                 joeyd_stat_processed_rss = joeyd_stat_processed_rss + 1
 
             elif (data.contentsourcetype_name == 'microsummary/xml'):
-                self._updateMicrosummaryTypeFromUploadData(data)
+
+                result = self._updateMicrosummaryTypeFromUploadData(data)
 
                 global joeyd_stat_processed_ms
                 joeyd_stat_processed_ms = joeyd_stat_processed_ms + 1
 
             elif (data.contentsourcetype_name == 'widget/joey'):
-                self._updateJoeyWidgetTypeFromUploadData(data)
+                result = self._updateJoeyWidgetTypeFromUploadData(data)
             else:
                 logMessage("Attempt to update unsupported type (%s) for upload id (%d)" % (data.contentsourcetype_name, data.upload_id) ,1)
+                return 0
         except Exception, x:
             print >>standardError, x
             traceback.print_exc(file=standardError)
             logMessage("something bad happened with upload id (%d)" %(data.upload_id))
+            return 0
+
+        return result
             
 
     def _updateRssTypeFromUploadData(self, db, data):
@@ -1166,7 +1210,6 @@ if __name__ == "__main__":
         
         logMessage("joeyd starting.",1)
         
-        
         logMessage("joeyd db setup.",1)
         
         joeyd_threadpool = ThreadPool(workingEnvironment["threadcount"])
@@ -1175,7 +1218,7 @@ if __name__ == "__main__":
 
         Transcode = Transcode();
         Update = Update();
-        
+
         if "listen" in workingEnvironment:
             
             joeyd_refresher_timeout()
