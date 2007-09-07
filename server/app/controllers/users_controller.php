@@ -188,9 +188,17 @@ class UsersController extends AppController
                 $changed['confirmationcode'] = uniqid();
             }
 
+
             // Does our data validate?
             if ($this->User->validates(array('User' => $changed)) && $this->Phone->validates($this->data) && $this->Operator->validates($this->data)) {
 
+                // If they're changing their phone, lets
+                // mark the uploads so that it gets updated
+                // against the new phone id
+                if ($this->data['Phone']['name'] != $this->_user['phone_id']) {
+                  $this->Upload->setEverUpdatedForUser($this->_user['id'], 0)
+                }
+  
                 $changed['phone_id']    = $this->data['Phone']['name'];
                 $changed['operator_id'] = $this->data['Operator']['provider'];
 

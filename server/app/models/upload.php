@@ -97,6 +97,19 @@ class Upload extends AppModel
 
     }
 
+    /**
+     * set the Upload.ever_updated flag of all Uploads owned by the user.
+     */
+    function setEverUpdatedForUser($user_id, $ever_updated) {
+     
+      if (is_numeric($upload_id) && is_numeric($user_id)) {
+
+        // TODO: ....
+        return true;
+      }
+      return false;
+    }
+
 
     function setOwnerForUploadIdAndUserId($upload_id, $user_id) {
         if (is_numeric($upload_id) && is_numeric($user_id)) {
