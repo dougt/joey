@@ -13,25 +13,33 @@ if ($i/2 == round($i/2)) {
 
 <div class="<?=$class?>">
 
-<span class="view">[<a href="../files/view/<?=$upload['File']['id']?>">View</a>]</span> 
+<?php 
+  $preview_name = $upload['File']['preview_name'];
+  if($upload['File']['original_type']=='image/jpeg' || $upload['File']['original_type']=='image/gif') {
+?>
+
+        <br/>
+        <a href="../files/view/<?=$upload['File']['id']?>">
+          <img src="../files/view/<?=$upload['File']['id']?>/preview"/>
+        </a>
+
+<?php
+} else {
+?>
+
+        <span class="view">[<a href="../files/view/<?=$upload['File']['id']?>">View</a>]</span> 
+
+<?php
+}
+?>
+
+
+
 
 <?=$upload['Upload']['title']?>
 
 <span class="delete">[<a href="../uploads/delete/<?=$upload['Upload']['id']?>">Delete</a>]</span>
 
-<?php 
-  $preview_name = $upload['File']['preview_name'];
-  if (!empty($preview_name)) {
-?>
-
-<br/>
-<a href="../files/view/<?=$upload['File']['id']?>">
-  <img src="../files/view/<?=$upload['File']['id']?>/preview"/>
-</a>
-
-<?php
-}
-?>
 
 </div>
 
