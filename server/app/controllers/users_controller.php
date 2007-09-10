@@ -42,7 +42,7 @@ uses('sanitize');
 class UsersController extends AppController
 {
     var $name = 'Users';
-    var $components = array('Joey');
+    var $components = array('Joey', 'Sms');
     var $uses = array('Operator', 'Phone', 'User');
     var $helpers = array('Form','Html','Javascript');
     var $securityLevel = 'low';
@@ -59,7 +59,6 @@ class UsersController extends AppController
       $http_url = $http_url.'/app/webroot/ff/'. $phone['Phone']['jad_name'];
 
       $this->set('url_to_jad', $http_url);
-
       $this->set('url_to_xpi', str_replace("https://", "http://", FULL_BASE_URL) . '/app/webroot/ff/joey.xpi');
 
       
@@ -77,26 +76,13 @@ class UsersController extends AppController
         return;
       }
 
-      // Find out what operator the user is using.
-      $operator = $this->Operator->findById($this->_user['operator_id']);
-
-      $username = str_replace( "-", "", $this->_user['phonenumber']);
-      
-      //@todo very US centric.
-      if (empty($operator['Operator']['emaildomain'])) {
-        $this->flash("Sorry, we don't know how to send you an SMS.");
-        return;
-      }
-
-      $email = $username . '@' . $operator['Operator']['emaildomain'];
-
       //@todo localize
-      $message = "go to " . $http_url;
+      $result = $this->Sms->sendCurrentUserSMS("Want Joey?", "go to " . $http_url);
 
-      // Send a mail to the user
-      mail($email, 'Want Joey?', $message, "From: ".JOEY_EMAIL_ADDRESS."\r\n");
-
-      $this->flash("Mail sent to ". $email, '/users/getSoftware', 2);
+      if ($result == 0)
+        $this->flash("SMS sent", '/users/getSoftware', 2);
+      else
+        $this->flash("Error sending SMS", '/users/getSoftware', 2);
 
       return;
     }
