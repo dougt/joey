@@ -567,18 +567,18 @@ class Update:
 
     def _buildRssOutput(self, feed):
         
-        output = "<h2>Channel Title: " + self.xmlescape(feed["channel" ][ "title" ])+ "</h2>"
+        output = "<h2>Channel Title: " + feed["channel" ][ "title" ]+ "</h2>"
 
         output = output + "<dl>"
 
         entries = feed.entries
         for entry in entries:
             if hasattr(entry, "link"):
-                output = output + "<dt><a href=\""+self.xmlescape(entry['link'])+"\">"+self.xmlescape(entry['title'])+"</a></dt>"
+                output = output + "<dt><a href=\""+entry['link']+"\">"+entry['title']+"</a></dt>"
             else:
-                output = output + "<dt>"+self.xmlescape(entry['title'])+"</dt>"
+                output = output + "<dt>"+entry['title']+"</dt>"
 
-            output = output + "<dd>" + self.xmlescape(entry['description']) + "</dd>"
+            output = output + "<dd>" + (entry['description']) + "</dd>"
         
         output = output + "</dl>"
 
