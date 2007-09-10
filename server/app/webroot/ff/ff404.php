@@ -1,1 +1,1 @@
-That file is nowhere to be found.
+<a href="../..">Click here</a> to login to Joey.
