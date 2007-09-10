@@ -1,11 +1,6 @@
-
 <div class="joey-warning" >
-<!-- this can be used to the uploads page - the message you put here shows up there --> 
-
 <div style="font-style: italic;">
-    <p><b>Yo!</b> If you haven't done so already, download the software for your phone.</p><br />
-    <p> Click <?php echo $html->link( "here", "/users/edit");?> to edit which phone you have, then go <?php echo $html->link( "here", "/users/getSoftware");?> to the download software.</p>
+    <p>Did you know that you can access your Joey with your phone's web browser?  Just <?php echo $html->link( "click here", "/users/getSoftware/sendJoeyURL");?> and we will send your phone a url.</p>
+</div>
 </div>
 
-
-</div>

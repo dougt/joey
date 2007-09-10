@@ -47,7 +47,23 @@ class UsersController extends AppController
     var $helpers = array('Form','Html','Javascript');
     var $securityLevel = 'low';
 
-    function getSoftware() {
+    function getSoftware($verb="") {
+
+      $http_url = str_replace("https://", "http://", FULL_BASE_URL);
+
+      if ($verb == "sendJoeyURL")
+      {
+        //@todo localize
+        $result = $this->Sms->sendCurrentUserSMS("Want Joey?", "go to " . $http_url);
+        
+        if ($result == 0)
+          $this->flash("SMS sent", '/uploads', 2);
+        else
+          $this->flash("Error sending SMS", '/uploads/', 2);
+
+        return;
+      }
+
 
       // Set the local user variable to the Session's User
       $this->_user = $this->Session->read('User');
@@ -55,7 +71,6 @@ class UsersController extends AppController
       // What kind of phone does the user have.
       $phone = $this->Phone->findById($this->_user['phone_id']);
 
-      $http_url = str_replace("https://", "http://", FULL_BASE_URL);
       $http_url = $http_url.'/app/webroot/ff/'. $phone['Phone']['jad_name'];
 
       $this->set('url_to_jad', $http_url);
