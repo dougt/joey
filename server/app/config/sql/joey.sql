@@ -113,6 +113,7 @@ CREATE TABLE `uploads` (
   `referrer` varchar(255) NOT NULL default '',
   `deleted` datetime default NULL,
   `ever_updated` tinyint(1) NOT NULL default 0,
+  `errors` int(11) NOT NULL default 0,
   `created` datetime NOT NULL,
   `modified` datetime NOT NULL,
   PRIMARY KEY  (`id`)
@@ -183,7 +184,7 @@ INSERT INTO `contentsourcetypes` VALUES (3,'microsummary/xml','2007-03-18 09:45:
 INSERT INTO `contentsourcetypes` VALUES (4,'widget/joey','2007-03-18 09:45:49','2007-03-18 09:45:49');
 
 INSERT INTO `operators` VALUES (1,'Not Sure', '','2007-03-18 09:19:04','0000-00-00 00:00:00');
-INSERT INTO `operators` VALUES (2,'AT&T', 'mobile.att.net','2007-03-18 09:19:04','0000-00-00 00:00:00');
+INSERT INTO `operators` VALUES (2,'AT&T', 'txt.att.net','2007-03-18 09:19:04','0000-00-00 00:00:00');
 INSERT INTO `operators` VALUES (3,'Cellular One','mobile.celloneusa.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
 INSERT INTO `operators` VALUES (4,'Cingular', 'mycingular.net','2007-03-18 09:19:04','0000-00-00 00:00:00');
 INSERT INTO `operators` VALUES (5,'Metro PCS', 'mymetropcs.com','2007-03-18 09:19:04','0000-00-00 00:00:00');
