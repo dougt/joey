@@ -98,16 +98,30 @@ class Upload extends AppModel
     }
 
     /**
-     * set the Upload.ever_updated flag of all Uploads owned by the user.
+     * This will flip the ever_updated flag for ALL of a user's uploads.  This is
+     * useful in specific situations, for example, when a user switches their phone
+     * type.  By flipping ever_updated to false, joeyd will pick up and reencode all
+     * the uploads the next time it runs.
+     *
+     * @param int user id
+     * @param boolean ever_updated flag
+     * @return bolean success
      */
     function setEverUpdatedForUser($user_id, $ever_updated) {
-     
-      if (is_numeric($upload_id) && is_numeric($user_id)) {
 
-        // TODO: ....
-        return true;
-      }
-      return false;
+        if (is_numeric($user_id) && is_bool($ever_updated)) {
+
+            if ($ever_updated) {
+                $_query = "UPDATE uploads SET ever_updated=1 WHERE id IN (SELECT upload_id FROM uploads_users WHERE user_id='{$user_id}')";
+            } else {
+                $_query = "UPDATE uploads SET ever_updated=0 WHERE id IN (SELECT upload_id FROM uploads_users WHERE user_id='{$user_id}')";
+            }
+
+            $this->execute($_query);
+
+            return true;
+        }
+        return false;
     }
 
 
