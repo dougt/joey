@@ -104,16 +104,15 @@ public class UploadsView
 
 		try
 		{
-            imgVideo = Image.createImage("/video_16x16.png");
-			imgMusic = Image.createImage("/music_16x16.png");
-			imgPictures = Image.createImage("/pictures_16x16.png");
-			imgRss = Image.createImage("/rss_16x16.png");
-			imgText = Image.createImage("/text_16x16.png");
-			imgMs = Image.createImage("/ms_16x16.png");
-            imgPrefs = Image.createImage("/prefs_16x16.png");
+            imgVideo = Image.createImage("/video.png");
+			imgMusic = Image.createImage("/music.png");
+			imgPictures = Image.createImage("/pictures.png");
+			imgRss = Image.createImage("/rss.png");
+			imgText = Image.createImage("/text.png");
+			imgMs = Image.createImage("/ms.png");
 
 //#if polish.api.mmapi
-            imgCamera = Image.createImage("/camera_16x16.png");
+            imgCamera = Image.createImage("/camera.png");
 //#endif
 		}
 		catch (Exception e)
