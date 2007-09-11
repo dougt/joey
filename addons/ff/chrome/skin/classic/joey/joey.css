@@ -12,9 +12,34 @@
 }
 
 #joeyProgressLayer{
-  background-color:blue;
+  background-color:#9999ff;
   -moz-opacity:.5;
 }
+
+.joeyProgressLayer
+{
+  -moz-border-radius:3px;
+  background:blue 0 0 no-repeat;
+  color:White;
+  padding-left:1em;
+  margin-left:2px;
+}
+
+.joeyTypeVideo 
+{
+	 background-image:url("chrome://joey/skin/type_video.png");
+
+}
+.joeyTypeAudio
+{
+	 background-image:url("chrome://joey/skin/type_music.png");
+
+}
+.joeyTypeText
+{
+	 background-image:url("chrome://joey/skin/type_text.png");
+}
+
 
 #joey_activeRSSLink {
    -moz-image-region: rect(0px, 36px, 18px, 18px);
