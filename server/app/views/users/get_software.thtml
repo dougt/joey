@@ -34,8 +34,8 @@
 
 
 <div>
-<p> If, for some reason, you want to download the jad directly, here it is.... </p>
-<br><?php echo $html->link('Download Joey Addon for your phone', $url_to_jad); ?>
+<p> If, for some reason, you want to download the jar directly, here it is.... </p>
+<br><?php echo $html->link('Download Joey Addon for your phone', $url_to_jar); ?>
 </div>
 
 </div>

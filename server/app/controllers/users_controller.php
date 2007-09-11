@@ -71,9 +71,9 @@ class UsersController extends AppController
       // What kind of phone does the user have.
       $phone = $this->Phone->findById($this->_user['phone_id']);
 
-      $http_url = $http_url.'/app/webroot/ff/'. $phone['Phone']['jad_name'];
+      $http_url = $http_url.'/app/webroot/ff/'. $phone['Phone']['jar_name'];
 
-      $this->set('url_to_jad', $http_url);
+      $this->set('url_to_jar', $http_url);
       $this->set('url_to_xpi', str_replace("https://", "http://", FULL_BASE_URL) . '/app/webroot/ff/joey.xpi');
 
       
