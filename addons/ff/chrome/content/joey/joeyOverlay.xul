@@ -78,29 +78,31 @@
     <statusbarpanel  id="joeyStatusbar" context="barcontext" hidden="false" collapsed="false" type="menu" >
       <hbox style="padding:0px;margin:0px">
 
-        <toolbarbutton id="joeyStatusButton"
-                       oncommand="joey_launchPopup()" />
-        
         <!-- This gives us the DIV layer capability so we can stack a text
              on top of the background boxes -->
         
         <stack id="joeyStatusPanel" 
-               style="margin:4px;margin-left:0px" > 
+               style="margin:2px;margin-left:0px" > 
 
-          <box id="joeyBackgrondProgressLayers">
-            <box id="joeyProgressLayer" width="0"/>
-          </box>
+          <hbox id="joeyBackgroundProgressLayers">
+          
+          </hbox>
           
           <label id="joeyStatusTeller" />
 
         </stack>
+
+
+        <toolbarbutton id="joeyStatusButton"
+                       oncommand="joey_launchPopup()" />
+
       </hbox>
-	  
+
       <menupopup id="joeyStatusPopup" >
-        
+
         <menuitem label="&overlay.menuSite.label;" 
                   oncommand="joey_launchCloudSite()" />
-        
+
         <menuitem id="joeyMediaMenuItem" 
                   label="&overlay.menuMedia.label;"
                   disabled="true" 

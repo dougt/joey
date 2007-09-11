@@ -85,7 +85,7 @@ JoeyMediaFetcherStreamListener.prototype =
           var http = aRequest.QueryInterface(Components.interfaces.nsIHttpChannel);
           this.contenttype = http.contentType;
       } 
-      catch (ex) { joeyDumpToConsole(ex); }	
+      catch (ex) { joeyDumpToConsole(ex); }
   },
 
   onDataAvailable: function (aRequest, aContext, aStream, aSourceOffset, aLength)
@@ -109,10 +109,15 @@ JoeyMediaFetcherStreamListener.prototype =
           this.updateStatus.tellStatus("download",null,null,"completed");
 
           this.stream.close(); 
-
+ 
+ try { 
           this.upload.setContentType(this.contenttype);
           this.upload.setFile(this.file);
           this.upload.upload();
+  
+ } catch (i) { joeyDumpToConsole(i) }
+ 
+ 
       } 
       else
       {
@@ -139,7 +144,7 @@ JoeyMediaFetcherStreamListener.prototype =
   // nsIProgressEventSink (not implementing will cause annoying exceptions)
   onProgress : function (aRequest, aContext, aProgress, aProgressMax) 
   { 
-      this.updateStatus.tellStatus("download", aProgress, aProgressMax);
+      this.updateStatus.tellStatus("download", aProgress, aProgressMax, null, this.contenttype);
   },
 
   onStatus : function (aRequest, aContext, aStatus, aStatusArg) { },
