@@ -191,7 +191,7 @@ public class CommunicationController
         catch (EOFException e)
         {
             //#debug debug
-            System.out.println("EOFException:  Data read.");
+            System.out.println("EOFException: Data read.");
         }
         /*
           @todo 
@@ -201,13 +201,16 @@ public class CommunicationController
           System.out.println("Joey Host not found");
           }
         */
-        catch (Exception e)
+        catch (Throwable t)
         {
-            e.printStackTrace();
-            System.out.println(e);
+            t.printStackTrace();
+            System.out.println(t);
 
             //#debug error
             System.out.println("Error requesting url " + nr.requestURL);
+
+            // Fake an error.
+            nr.responseCode = 404;
         }
         finally {
             try
