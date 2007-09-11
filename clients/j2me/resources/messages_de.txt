@@ -1,3 +1,8 @@
+polish.command.clear=Alles l\u00f6schen
+polish.command.delete=L\u00f6schen
+polish.command.mark=Aktivieren
+polish.command.unmark=Deaktivieren
+
 title.login=Anmelden
 title.mainmenu=Hauptmen\u00fc
 title.snapshot=Schnappschuss
@@ -12,6 +17,7 @@ command.login=Anmelden
 command.delete=L\u00f6schen
 command.snapshot=Schnappschuss
 command.media_open=\u00d6ffnen
+command.save=Speichern
 
 command.yes=Ja
 command.no=Nein
@@ -34,6 +40,8 @@ form.login.rememberme=Einstellungen speichern
 media.browser.open=In Browser \u00f6ffnen
 
 form.preferences=Einstellungen
+form.preferences.server=Server
+form.preferences.update_interval=Aktualisierungsrate
 
 alert.login.error=Anmeldung auf dem Server nicht m\u00f6glich. Benutzername oder Passwort falsch?
 alert.exit.msg=Wollen sie Joey wirklich beenden?
@@ -41,3 +49,4 @@ alert.wait.msg=Bitte warten!
 alert.media.open.msg=Der Medientyp kann auf ihrem Handy nicht abgespielt werden.
 alert.apply_updates.msg=Es sind \u00c4nderungen verf\u00fcgbar. Anwenden?
 alert.new_version.msg=Eine neue Version von Joey ist verf\u00fcgbar. Sie koennen jetzt aktualisieren. Sie m\u00fcssen nach der Aktualisierung Joey neu starten. Jetzt aktualisieren?
+alert.error.display_details=Beim Anzeigen ihres Uploads ist ein Fehler aufgetreten.

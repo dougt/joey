@@ -13,6 +13,7 @@ command.login=Login
 command.delete=Delete
 command.snapshot=Snapshot
 command.media_open=Open
+command.save=Save
 
 command.ok=Ok
 command.cancel=Cancel
@@ -35,6 +36,8 @@ form.login.rememberme=Remember Me
 media.browser.open=Open in browser
 
 form.preferences=Preferences
+form.preferences.server=Server
+form.preferences.update_interval=Update interval
 
 alert.login.error=Cannot login into server. Username or password wrong?
 alert.exit.msg=Do you really want to exit Joey?
@@ -42,3 +45,4 @@ alert.wait.msg=Please wait!
 alert.media.open.msg=The media could not be opened on your handset.  We blame Justin. Don't you?
 alert.apply_updates.msg=Updates are available. Apply updates?
 alert.new_version.msg=New version of Joey available. You can update now. You need to restart Joey after the update is installed. Update now?
+alert.error.display_details=An error occured during displaying your upload.
