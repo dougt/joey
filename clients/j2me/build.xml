@@ -188,6 +188,8 @@
 				defaultexcludes="yes"
 				excludes="readme.txt"
 			>
+				<root dir="resources/images" />
+
 				<!-- you can add resources based on complex criterias: 
 				<fileset 
 					dir="resources/multimedia" 
