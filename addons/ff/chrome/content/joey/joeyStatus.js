@@ -75,7 +75,7 @@ function joeyStatusUpdateService() {
         
     }
 
-    this.createProgressElement = function createBoxElementAndLabel(nameId, currentElement) {
+    this.createProgressElement = function createBoxElementAndLabel(nameId, currentElement,styleColor) {
     
                             
                         var parentNode = document.getElementById("joeyBackgroundProgressLayers");
@@ -83,6 +83,7 @@ function joeyStatusUpdateService() {
                   
                         progressElement.setAttribute("id","joeyProgressLayer_"+nameId);
                         progressElement.setAttribute("class","joeyProgressLayer");
+                        progressElement.setAttribute("style","background-color:"+styleColor);
 
                         var commentLabel = document.createElement("label");
                         commentLabel.setAttribute("value","");
@@ -159,7 +160,7 @@ function joeyStatusUpdateService() {
              
                     if ( ! currentElement.progressElement ) {
 
-                        this.createProgressElement( nameId, currentElement );
+                        this.createProgressElement( nameId, currentElement,'darkblue' );
                        
                     } else {
                          
@@ -196,7 +197,7 @@ function joeyStatusUpdateService() {
                             
                         } else { 
                         
-                            this.createProgressElement(nameId,currentElement);
+                            this.createProgressElement(nameId,currentElement,'green');
 
                         }  
                 } 
