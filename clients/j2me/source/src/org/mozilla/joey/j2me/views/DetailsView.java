@@ -50,37 +50,31 @@ import de.enough.polish.browser.rss.*;
 import org.mozilla.joey.j2me.JoeyController;
 import org.mozilla.joey.j2me.Upload;
 
-class RssItemCommandListener extends DefaultRssItemCommandListener {
- 
-    private JoeyController controller;
-    private DetailsView view;
-
-    public void setController(DetailsView view, JoeyController controller) {
-        this.controller = controller;
-        this.view = view;
-    }
-
-    public void commandAction(Command command, Displayable displayable) {}
-
-    public void commandAction(Command command, Item item) {
-        
-		if (command == RssTagHandler.CMD_RSS_ITEM_SELECT) {
-            
-            RssItem rssItem = (RssItem) UiAccess.getAttribute(item, RssTagHandler.ATTR_RSS_ITEM);
-            
-			if (rssItem != null) {
-                this.view.setDescription(rssItem.getDescription());
-                this.controller.notifyEvent(JoeyController.EVENT_RSS_ITEM);
-			}
-		}
-    }
-}
-
 public class DetailsView
 	extends Form
 {
+	class RssItemCommandListener extends DefaultRssItemCommandListener
+	{
+	    public void commandAction(Command command, Displayable displayable)
+	    {
+	    	// Nothing to do here.
+	    }
+
+	    public void commandAction(Command command, Item item)
+	    {
+			if (command == RssTagHandler.CMD_RSS_ITEM_SELECT) {
+	            RssItem rssItem = (RssItem) UiAccess.getAttribute(item, RssTagHandler.ATTR_RSS_ITEM);
+	            
+				if (rssItem != null) {
+	                DetailsView.this.setDescription(rssItem.getDescription());
+	                DetailsView.this.controller.notifyEvent(JoeyController.EVENT_RSS_ITEM);
+				}
+			}
+	    }
+	}
+
     private Upload upload;
-    private JoeyController controller;
+    /*package-private*/ JoeyController controller;
     private String description;
 
 	public DetailsView(JoeyController controller)
@@ -112,17 +106,11 @@ public class DetailsView
         setDescription(null);
 		deleteAll();
 
-
-        if (this.upload.getMimetype().equals("rss-source/text") )
-        {
+        if (this.upload.getMimetype().equals("rss-source/text")) {
             try {
                 RssItemCommandListener listener = new RssItemCommandListener();
-                listener.setController(this, this.controller);
-
                 RssBrowser rb = new RssBrowser(listener);
-                
                 removeCommand(RssTagHandler.CMD_GO_TO_ARTICLE);
-
                 rb.loadPage( new ByteArrayInputStream( this.upload.getData() ));
                 append(rb);
             }
@@ -133,23 +121,26 @@ public class DetailsView
             }
         }
         else if (this.upload.getMimetype().equals("text/plain") ||
-                 this.upload.getMimetype().equals("microsummary/xml") )
-        {
+                 this.upload.getMimetype().equals("microsummary/xml") ) {
             //#style textcontent
             Item item = new StringItem(null, new String(this.upload.getData()));
             append(item);
         }
-        else if (this.upload.getMimetype().substring(0,5).equals("image"))
-        {
+        else if (this.upload.getMimetype().substring(0,5).equals("image")) {
+        	Item item = null;
             Image image = null;
-            try
-            {
-                image = Image.createImage(new ByteArrayInputStream(this.upload.getData()));
-            } catch (Exception ignored) {}
 
-            //#style imagecontent
-            Item item = new ImageItem(null, image, ImageItem.LAYOUT_CENTER, Long.toString(this.upload.getId()));
-            append(item);
+            try {
+                image = Image.createImage(new ByteArrayInputStream(this.upload.getData()));
+
+                //#style imagecontent
+                item = new ImageItem(null, image, ImageItem.LAYOUT_CENTER, Long.toString(this.upload.getId()));
+                append(item);
+            }
+            catch (Exception e) {
+            	// TODO: Ignore for now.
+            }
+
         }
 //#if polish.api.mmapi
         else if (this.upload.getMimetype().equals("audio/amr"))
@@ -161,14 +152,12 @@ public class DetailsView
                     player.start();
                 }
                 catch(Exception t) {
-                
                     //#style input
                     Item item = new StringItem(null, "Could not create player for audio/mpeg: " + t);
                     append(item);
                 }
             }
-            else
-            {
+            else {
                 //#style button
                 Item item = new StringItem(null, Locale.get("media.browser.open"));
                 item.setDefaultCommand(JoeyController.CMD_MEDIA_OPEN);
@@ -178,23 +167,17 @@ public class DetailsView
         }
         else if (this.upload.getMimetype().equals("video/3gpp"))
         {
-
             if ( this.upload.getData() != null) {
-
                 // it would be cool if j2me polish had a video item.
-
                 try {
                     VideoControl vc;
                     Player player;
                     
-                    // create a player instance
+                    // create and realize a player instance
                     player = Manager.createPlayer(new ByteArrayInputStream(this.upload.getData()), "video/3gpp");
-                    
-                    // realize the player
                     player.realize();
 
                     vc = (VideoControl)player.getControl("VideoControl");
-                        
                     vc.initDisplayMode(VideoControl.USE_DIRECT_VIDEO, this);
                     
                     int canvasWidth = getWidth();
@@ -215,22 +198,19 @@ public class DetailsView
                     append(item);
                 }
             }
-            else
-            {
+            else {
                 //#style button
                 Item item = new StringItem(null, Locale.get("media.browser.open"));
                 item.setDefaultCommand(JoeyController.CMD_MEDIA_OPEN);
                 item.setItemCommandListener(this.controller);
                 append(item);
             }
-
-
         }
 //#endif
         else if (this.upload.getMimetype().equals("widget/joey"))
         {
             try {
-
+            	//#debug debug
                 System.out.println(new String(this.upload.getData()));
 
                 HtmlBrowser b = new HtmlBrowser();
@@ -238,11 +218,12 @@ public class DetailsView
                 append(b);
             } catch(Exception t) {
                 t.printStackTrace();
+                //#debug error
                 System.out.println("assertion: " + t);
             }
         }
-        else
-        {
+        else {
+        	//#style input
             Item item = new StringItem(null, "Mime type not supported yet (" + this.upload.getMimetype() + ")");
             append(item);
         }
