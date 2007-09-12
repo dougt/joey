@@ -80,10 +80,8 @@ public class UploadsView
 
 	private void initCommandsArea()
 	{
-
         // Order of the elements matter.  If you change
         // them, be sure to change the values above
-
 
 		//#style commandsarea
 		this.commands = new ChoiceGroup(null, Choice.EXCLUSIVE);
@@ -102,8 +100,7 @@ public class UploadsView
         Image imgCamera = null;
 //#endif
 
-		try
-		{
+		try {
             imgVideo = Image.createImage("/video.png");
 			imgMusic = Image.createImage("/music.png");
 			imgPictures = Image.createImage("/pictures.png");
@@ -115,8 +112,7 @@ public class UploadsView
             imgCamera = Image.createImage("/camera.png");
 //#endif
 		}
-		catch (Exception e)
-		{
+		catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -186,14 +182,16 @@ camera here or in the MainMenu view.
         {
 			Upload upload = (Upload) this.uploads.elementAt(i); 
 
-            if (upload.isDeleted() == true)  // todo this shoudl be removed since we should clear these out of RMS
+			// TODO: this should be removed since we should clear these out of RMS
+            if (upload.isDeleted() == true)
                 continue;
 
             if (upload.getMimetype() == null)
                 continue;
             
             Item uploadItem = null;
-            if (upload.getMimetype().startsWith(mimeType)) 
+            String mimetypeOfUpload = upload.getMimetype();
+            if (mimetypeOfUpload != null && mimetypeOfUpload.startsWith(mimeType)) 
             {
                 uploadItem = getImagePreviewForUpdate(upload);
                 
