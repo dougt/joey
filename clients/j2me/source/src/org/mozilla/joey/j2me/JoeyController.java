@@ -35,6 +35,7 @@ import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Display;
 import javax.microedition.lcdui.Displayable;
+import javax.microedition.lcdui.Gauge;
 import javax.microedition.lcdui.Item;
 import javax.microedition.lcdui.ItemCommandListener;
 import javax.microedition.lcdui.List;
@@ -261,6 +262,7 @@ public class JoeyController
 	{
 		Displayable view;
 		Alert alert;
+		Gauge gauge;
 
 		switch (viewId)
 		{
@@ -349,6 +351,9 @@ public class JoeyController
 			case ALERT_WAIT:
 				//#style alertWait
 				alert = new Alert(null, Locale.get("alert.wait.msg"), null, AlertType.INFO);
+				//#style gaugeWait
+				gauge = new Gauge(null, false, Gauge.INDEFINITE, Gauge.CONTINUOUS_RUNNING);
+				alert.setIndicator(gauge);
 				alert.setTimeout(Alert.FOREVER);
 				alert.addCommand(CMD_CANCEL);
 				alert.setCommandListener(this.commandListener);
