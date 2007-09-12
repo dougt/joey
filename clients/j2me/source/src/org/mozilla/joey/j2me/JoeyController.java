@@ -708,12 +708,12 @@ public class JoeyController
 						byte[] image = this.snapshotScreen.getSnapshot(encodings[0]);
 	
 						// TODO: Is this the correct format for time? Is this correct for all locales? 
-						String modified = new Date().toString();
+						long modified = new Date().getTime();
 	
 						// TODO: Send this to the server, then do an an update.
-						//						Upload upload = new Upload("image/jpeg", image, image, modified);
-						//						this.uploads.addElement(upload);
-						//                      this.commController.add(upload, this);
+						Upload upload = new Upload(-1, "image/jpeg", "Camera snapshot", image, image, modified, "");
+						this.uploads.addElement(upload);
+						this.commController.add(upload, this);
 					}
 					catch (MediaException e)
 					{
@@ -745,7 +745,6 @@ public class JoeyController
 
 			switch (event) {
 				case EVENT_SAVE:
-					System.out.println("Michael: Speichern");
 					this.userdata.setUpdateInterval(view.getUpdateInterval());
 					break;
 

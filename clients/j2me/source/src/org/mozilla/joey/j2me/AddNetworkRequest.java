@@ -27,9 +27,9 @@ package org.mozilla.joey.j2me;
 public class AddNetworkRequest
     extends NetworkRequest
 {
-    public AddNetworkRequest(String title, byte[] data)
+    public AddNetworkRequest(Upload upload)
     {
-        String content = new String(data);
+        String content = new String(upload.getData());
 
         StringBuffer sb = new StringBuffer();
 
@@ -37,13 +37,15 @@ public class AddNetworkRequest
         sb.append("Content-disposition: form-data;name=\"rest\"\r\n\r\n1\r\n");
         sb.append("--111222111\r\n");
         sb.append("Content-disposition: form-data;name=\"data[Upload][title]\"\r\n\r\n");
-        sb.append(title);
+        sb.append(upload.getTitle());
         sb.append("\r\n--111222111\r\n");
         sb.append("Content-disposition: form-data;name=\"data[Upload][referrer]\"\r\n\r\n");
-        sb.append("http://www.mozilla.org/\r\n");
+        sb.append(upload.getReferrer());
         sb.append("--111222111\r\n");
         sb.append("Content-disposition: form-data;name=\"data[File][Upload]\";filename=\"data[File][Upload]\"\r\n");
-        sb.append("Content-Type: text/plain\r\n");
+        sb.append("Content-Type: ");
+        sb.append(upload.getMimetype());
+        sb.append("\r\n");
         sb.append("Content-Length: " + content.length() + "\r\n\r\n");
         sb.append(content);
         sb.append("\r\n--111222111--\r\n");
