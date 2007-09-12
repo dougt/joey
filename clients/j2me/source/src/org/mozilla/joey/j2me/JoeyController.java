@@ -601,11 +601,13 @@ public class JoeyController
 		// Handle main menu screen.
 		if (event == EVENT_NETWORK_REQUEST_SUCCESSFUL) {
 			// Check if there is a newer version available
-			System.out.println("Michael: " + VERSION);
 			String currentVersion = this.commController.getCurrentVersion();
-			System.out.println("Michael: " + currentVersion);
-			if (!VERSION.equals(currentVersion)
-				&& !VERSION_UNKNOWN.equals(currentVersion)) {
+
+			//#debug debug
+			System.out.println("Versioninfo: build version: " + VERSION + " newest version: " + currentVersion);
+
+			if (!VERSION_UNKNOWN.equals(currentVersion)
+				&& VERSION.compareTo(currentVersion) < 0) {
 				showView(ALERT_NEW_VERSION_AVAILABLE);
 				event = waitYesNo();
 
