@@ -85,6 +85,7 @@ public class JoeyController
 	public static final int EVENT_DELETE = 8;
 	public static final int EVENT_MEDIA_OPEN = 9;
 	public static final int EVENT_RSS_ITEM = 10;
+	public static final int EVENT_SAVE = 11;
 
 	public static final int EVENT_NETWORK_REQUEST_FAILED = 100;
 	public static final int EVENT_NETWORK_REQUEST_SUCCESSFUL = 101;
@@ -107,6 +108,7 @@ public class JoeyController
 	private static final int ALERT_MEDIA_OPEN_ERROR = 12;
 	private static final int ALERT_APPLY_UPDATES = 13;
 	private static final int ALERT_NEW_VERSION_AVAILABLE = 14;
+	private static final int ALERT_ERROR_DISPLAY_DETAILS = 15;
 
 	public static final String ATTR_UPLOAD = "upload";
 
@@ -121,6 +123,7 @@ public class JoeyController
 	public static final Command CMD_YES = new Command(Locale.get("command.yes"), Command.OK, 1);
 	public static final Command CMD_NO = new Command(Locale.get("command.no"), Command.CANCEL, 1);
 	public static final Command CMD_MEDIA_OPEN = new Command(Locale.get("command.media_open"), Command.SCREEN, 1);
+	public static final Command CMD_SAVE = new Command(Locale.get("command.save"), Command.SCREEN, 10);
 
 	private static final String RMS_USERDATA = "joey_userdata";
 	private static final String RMS_UPLOADS = "joey_uploads";
@@ -299,6 +302,7 @@ public class JoeyController
 			case VIEW_PREFERENCES:
 				view = new PreferencesView();
 				view.addCommand(CMD_BACK);
+				view.addCommand(CMD_SAVE);
 				view.setCommandListener(this.commandListener);
 				return view;
 	
@@ -375,6 +379,14 @@ public class JoeyController
 				alert.addCommand(CMD_NO);
 				alert.setCommandListener(this.commandListener);
 				return alert;
+
+			case ALERT_ERROR_DISPLAY_DETAILS:
+				//#style alertError
+				alert = new Alert(null, Locale.get("alert.error.display_details"), null, AlertType.ERROR);
+				alert.setTimeout(Alert.FOREVER);
+				alert.addCommand(CMD_OK);
+				alert.setCommandListener(this.commandListener);
+				return alert;
 	
 			default:
 				//#debug fatal
@@ -430,6 +442,9 @@ public class JoeyController
 				}
 				else if (command == CMD_LOGIN) {
 					notifyEvent(EVENT_SELECT);
+				}
+				else if (command == CMD_SAVE) {
+					notifyEvent(EVENT_SAVE);
 				}
 				else if (command == CMD_DELETE) {
 					notifyEvent(EVENT_DELETE);
@@ -722,12 +737,18 @@ public class JoeyController
 	private void doPreferences()
 	{
 		int event;
-		showView(VIEW_PREFERENCES);
+		PreferencesView view = (PreferencesView) showView(VIEW_PREFERENCES);
+		view.setUpdateInterval(this.userdata.getUpdateInterval());
 
 		do {
 			event = waitEventAndProcessUpdates();
 
 			switch (event) {
+				case EVENT_SAVE:
+					System.out.println("Michael: Speichern");
+					this.userdata.setUpdateInterval(view.getUpdateInterval());
+					break;
+
 				case EVENT_BACK:
 					break;
 	
@@ -735,7 +756,8 @@ public class JoeyController
 					event = EVENT_NONE;
 					break;
 			}
-		} while (event != EVENT_BACK);
+		} while (event != EVENT_BACK
+				 && event != EVENT_SAVE);
 	}
 
 	private int doExitConfirmation()
@@ -762,7 +784,7 @@ public class JoeyController
 
 	private void doUploadDetails(Upload upload)
 	{
-		int event;
+		int event = EVENT_NONE;
 		boolean fetchData = true;
 
 		//#if polish.api.mmapi
@@ -788,9 +810,22 @@ public class JoeyController
 					 && event != EVENT_NETWORK_REQUEST_FAILED);
 		}
 
+		if (event != EVENT_NETWORK_REQUEST_FAILED) {
 		do {
 			DetailsView view = (DetailsView) showView(VIEW_DETAILS);
-			view.setUpload(upload);
+
+			try {
+				view.setUpload(upload);
+			}
+			catch (Throwable t) {
+				//#debug debug
+				t.printStackTrace();
+				
+				showView(ALERT_ERROR_DISPLAY_DETAILS);
+				waitEvent();
+				break;
+			}
+
 			event = waitEvent();
 
 			switch (event) {
@@ -837,6 +872,11 @@ public class JoeyController
 					break;
 			}
 		} while (event != EVENT_BACK);
+		}
+		else {
+			showView(ALERT_ERROR_DISPLAY_DETAILS);
+			waitEvent();
+		}
 	}
 
 	public int waitOkCancel()
