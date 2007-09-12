@@ -58,7 +58,8 @@ function joeyStatusUpdateService() {
     this.temporaryStackMessages  = new Array();
     
     this.progressElements = 0;
-    this.progressBoxObject = document.getBoxObjectFor(document.getElementById("joeyStatusPanel")); 
+    
+    this.progressBoxObject = document.getBoxObjectFor(document.getElementById("joeyUDManager")); 
 
     this.createInstance = function factory() {
     
@@ -75,41 +76,48 @@ function joeyStatusUpdateService() {
         
     }
 
-    this.createProgressElement = function createBoxElementAndLabel(nameId, currentElement,styleColor) {
+    this.createProgressElement = function createBoxElementAndLabel(nameId, currentElement) {
     
+                        /* Tooltip Check Kick collapse OFF */
+                        document.getElementById("joeyUDManager").collapsed=false;
                             
-                        var parentNode = document.getElementById("joeyBackgroundProgressLayers");
-                        var progressElement = document.createElement("box"); 
+                        var parentNode = document.getElementById("joeyUDManager");
+                        var progressElement = document.createElement("stack"); 
                   
                         progressElement.setAttribute("id","joeyProgressLayer_"+nameId);
-                        progressElement.setAttribute("class","joeyProgressLayer");
-                        progressElement.setAttribute("style","background-color:"+styleColor);
+                        
+                        var progressMeter2 = document.createElement("box");
+                        progressMeter2.setAttribute("width","100");
+                        progressMeter2.setAttribute("class","joeyProgressMeter");
+                        progressMeter2.setAttribute("height","16");
+                        
+                        progressElement.appendChild(progressMeter2);
 
                         var commentLabel = document.createElement("label");
-                        commentLabel.setAttribute("value","");
+                        commentLabel.setAttribute("style","padding-left:16px");
                         progressElement.appendChild(commentLabel);
                         
-                        var classValue = progressElement.getAttribute("class");
+
+                        var classValue = commentLabel.getAttribute("class");
 
                         if(currentElement.contentType) {
                             
                             if(currentElement.contentType.indexOf("video")>-1) {
-                                progressElement.setAttribute("class",classValue+" joeyTypeVideo");
+                                commentLabel.setAttribute("class",classValue+" joeyTypeVideo");
+
                             } else if(currentElement.contentType.indexOf("audio")>-1) {                            
-                                progressElement.setAttribute("class",classValue+" joeyTypeAudio");
+                                commentLabel.setAttribute("class",classValue+" joeyTypeAudio");
                             }
                             
                         } else {
-                            /* This is our temporary default icon */                       
-                            progressElement.setAttribute("class",classValue+" joeyTypeText");     
-                        
+                            commentLabel.setAttribute("class",classValue+" joeyTypeText");                             
                         }
                         
-                        // this is the base initial size due to the icon content type ( video etc ) 
-                        progressElement.setAttribute("width",16);
                     
                         parentNode.appendChild(progressElement);
+                        
                         currentElement.progressElement = progressElement;
+                        currentElement.progressMeter = progressMeter2;
                         currentElement.labelElement = commentLabel;
                         
                         // we want to account the total of elements displayed.
@@ -160,16 +168,23 @@ function joeyStatusUpdateService() {
              
                     if ( ! currentElement.progressElement ) {
 
-                        this.createProgressElement( nameId, currentElement,'darkblue' );
+                        this.createProgressElement( nameId, currentElement );
                        
                     } else {
+                      
+               
+                      var percentage = currentElement.percentage;
+                      
+                      if(percentage>0) {
+
+                          varTotalWidth = this.progressBoxObject.width;
                          
-                        var percentage = currentElement.percentage;
-                      //  var totalWidth = 100 / this.progressElements;
-                       // var totalWidth = 40;
-                       // var percentInt = parseInt(percentage*totalWidth);                
-                       // currentElement.progressElement.width=16 + percentInt;
-                        currentElement.labelElement.value = parseInt(percentage*100)+"%";
+                          currentElement.labelElement.value = parseInt(percentage*100)+"%";
+
+                          currentElement.progressMeter.style.backgroundPosition = (varTotalWidth-parseInt(percentage*varTotalWidth))+"px 0px";
+                     
+                      } 
+                      
                     }
                     
                 }
@@ -180,24 +195,17 @@ function joeyStatusUpdateService() {
                          * ( download == 2 status completed is the assumption */  
                                                 
                         if( currentElement.progressElement ) { 
-                        
-                            var percentage = currentElement.percentage;
-                            //var totalWidth = 100 / this.progressElements;
-                          //  var totalWidth = 40;
-                           // var percentInt = parseInt(percentage*totalWidth); 
-                            
-                            //if(percentInt > 0) {                 
-                            //} else {
-                            //  percentInt =0;
-                            //} 
-                                         
-                            //currentElement.progressElement.width=16+totalWidth - percentInt;
-                            currentElement.labelElement.value = parseInt(percentage*100)+"%";
-
-                            
+                                  
+                          var percentage = currentElement.percentage;
+                          if(percentage>=0) {
+                              varTotalWidth = this.progressBoxObject.width;
+                              currentElement.labelElement.value = parseInt(percentage*100)+"%";
+                              currentElement.progressMeter.style.backgroundPosition = parseInt(percentage*varTotalWidth)+"px 0px";
+                          }
+     
                         } else { 
                         
-                            this.createProgressElement(nameId,currentElement,'green');
+                            this.createProgressElement(nameId,currentElement);
 
                         }  
                 } 
@@ -268,7 +276,6 @@ function joeyStatusUpdateService() {
                     var elementName=currentCommand.split("downloadCompleted-")[1];
                     var currentStatusObject = this.statusObjects[elementName];
 
-                    currentStatusObject.progressElement.setAttribute("style","background-color:green;color:white");
                     currentStatusObject.labelElement.setAttribute("value",joeyString("downloadCompleted"));
             }
 
@@ -312,6 +319,13 @@ function joeyStatusUpdateService() {
 
                     currentStatusObject.progressElement.parentNode.removeChild(currentStatusObject.progressElement);
                    
+                   this.statusObjects[elementName]=null;
+                   
+                   /* And we may collapse the Status tooltip */
+                   if(this.statusObjects.length==0) {
+                       document.getElementById("joeyUDManager").collapsed=true;
+                   }
+                    
                     // need to delete the statusObject;
                     
                  } catch (i) { joeyDumpToConsole(i) } 
@@ -325,7 +339,7 @@ function joeyStatusUpdateService() {
         } 
         
         if(this.globalMessages.length > 0) {
-            setTimeout("g_joey_statusUpdateService.renderer()",3333);
+            setTimeout("g_joey_statusUpdateService.renderer()",1111);
         } else {
             this.execRender=false;
         }        
@@ -376,7 +390,9 @@ JoeyStatusUpdateClass.prototype =
        var percentage=0; 
        try { 
            percentage = ((from/to));
-       } catch (i) { } 
+       } catch (i) { 
+           percentage = 0;
+       } 
         
         if (verb == "upload") 
         {
