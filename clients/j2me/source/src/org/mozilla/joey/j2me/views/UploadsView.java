@@ -95,11 +95,6 @@ public class UploadsView
 		Image imgText = null;
 		Image imgMs = null;
         
-        Image imgPrefs  = null;
-//#if polish.api.mmapi
-        Image imgCamera = null;
-//#endif
-
 		try {
             imgVideo = Image.createImage("/video.png");
 			imgMusic = Image.createImage("/music.png");
@@ -107,10 +102,6 @@ public class UploadsView
 			imgRss = Image.createImage("/rss.png");
 			imgText = Image.createImage("/text.png");
 			imgMs = Image.createImage("/ms.png");
-
-//#if polish.api.mmapi
-            imgCamera = Image.createImage("/camera.png");
-//#endif
 		}
 		catch (Exception e) {
 			// TODO Auto-generated catch block
