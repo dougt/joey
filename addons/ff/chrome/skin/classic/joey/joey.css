@@ -11,15 +11,16 @@
 
 }
 
-#joeyProgressLayer{
-  background-color:#9999ff;
-  -moz-opacity:.5;
+.joeyProgressMeter 
+{
+	-moz-opacity:.5;
+	background: darkblue url("chrome://joey/skin/meterbg.jpg") 100% 0 no-repeat;	
 }
+
+
 
 .joeyProgressLayer
 {
-  background:darkblue 0 0 no-repeat;
-  color:White;
   padding:0px;margin:0px;
   padding-left:14px;
   margin-left:2px;
@@ -27,17 +28,17 @@
 
 .joeyTypeVideo 
 {
-	 background: darkblue url("chrome://joey/skin/type_video.png") 0 1px no-repeat;
+	 background: transparent url("chrome://joey/skin/type_video.png") 0 1px no-repeat;
 
 }
 .joeyTypeAudio
 {
-	 background: darkblue url("chrome://joey/skin/type_music.png") 0 1px no-repeat;
+	 background: transparent url("chrome://joey/skin/type_music.png") 0 1px no-repeat;
 
 }
 .joeyTypeText
 {
-	 background: darkblue url("chrome://joey/skin/type_text.png") 0 1px no-repeat;
+	 background: transparent url("chrome://joey/skin/type_text.png") 0 1px no-repeat;
 }
 
 
