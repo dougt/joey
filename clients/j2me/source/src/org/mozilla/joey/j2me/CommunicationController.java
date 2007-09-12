@@ -132,6 +132,7 @@ public class CommunicationController
             }
             
             connection.setRequestMethod(HttpConnection.POST);
+            connection.setRequestProperty("Connection", "keep-alive");
             connection.setRequestProperty("Content-Type", nr.contenttype);
             
             // Write body content.
