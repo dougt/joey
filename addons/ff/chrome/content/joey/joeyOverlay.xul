@@ -93,7 +93,7 @@
         </stack>
 
 
-        <toolbarbutton id="joeyStatusButton"
+        <toolbarbutton id="joeyStatusButton" tooltip="joeyUDManager" 
                        oncommand="joey_launchPopup()" />
 
       </hbox>
@@ -118,7 +118,13 @@
                   insertafter="context-stop"
                   oncommand="joeyLaunchPreferences();"/>
       </menupopup>
-  </statusbarpanel>
+
+
+      <tooltip id="joeyUDManager" orient="vertical"  noautohide="true" collapsed="true">
+
+      </tooltip>
+
+    </statusbarpanel>
 </statusbar>
 
 </overlay>
