@@ -350,7 +350,8 @@ public class JoeyController
 	
 			case ALERT_WAIT:
 				//#style alertWait
-				alert = new Alert(null, Locale.get("alert.wait.msg"), null, AlertType.INFO);
+				alert = new Alert(null, null, null, AlertType.INFO);
+//				alert = new Alert(null, Locale.get("alert.wait.msg"), null, AlertType.INFO);
 				//#style gaugeWait
 				gauge = new Gauge(null, false, Gauge.INDEFINITE, Gauge.CONTINUOUS_RUNNING);
 				alert.setIndicator(gauge);
