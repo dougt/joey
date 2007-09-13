@@ -31,8 +31,8 @@ colors {
 
 	fontColor: black;
 	titleColor: white;
-	bgColorFocused: gray;
-	borderColorFocused: yellowgreen;
+	bgColorFocused: white;
+	borderColorFocused: joeyGreen;
 	
 	bgColor: black;
 	bgColorInput: gray;
@@ -70,7 +70,7 @@ backgrounds {
 borders {
 	buttonBorder {
 		type: round-rect;
-		color: bgColorFocused;
+		color: gray;
 	}	
 }
 
@@ -201,33 +201,39 @@ focused {
 
 	border {
 		type: drop-shadow;
-		inner-color: #AA8D8D67;
-		outer-color: #442D2D25;
+		inner-color: #888D8D67;
+		outer-color: #222D2D25;
 		width: 3;
 		orientation: all-sides;
 	}
 }
 
 .inputLabel {
+	margin-left: 3;
 	font-color: white;
 	font-style: bold;
 	layout: left | newline-after;
 }
 
 .checkbox {
-	/*
-	checkbox-s0lected: url( choice-checked.png );
-	checkbox-plain: url( choice-unchecked.png );
-	*/
 	font-color: textColor;
+	/*
+	layout: top;
+	*/
+	margin-left: 3;
+	checkbox-plain: url( checkbox-unselected.png );
+	checkbox-selected: url( checkbox-selected.png );
+	text-horizontal-adjustment: 2;
 }
 
 .checkbox:hover {
 	font-color: joeyGreen;
+	checkbox-plain: url( checkbox-focused-unselected.png );
+	checkbox-selected: url( checkbox-focused-selected.png );
 }
 
 .checkbutton {
-	padding: 2;	
+	padding: 2;
 }
 
 .radiobox {
@@ -410,16 +416,17 @@ rightcommand extends leftcommand {
 
 alertWait {
     repaint-previous-screen: true;
+    font-size: large;
+    font-color: white;
+    padding: 5;
+    layout: vertical-expand | horizontal-expand | vcenter | center;
+
     background {
     	/*
         type: round-rect;
         */
-        color: gray;
+        color: black;
     }
-    font-size: large;
-    font-color: white;
-    padding: 5;
-    layout: vertical-expand | horizontal-expand | center | vcenter;
 }
 
 alertcontent {
@@ -441,6 +448,7 @@ alertcontent {
  }
 
 .button {
+	margin-left: 3;
 	padding: 2;
 	border: buttonBorder;
 	font-color: white;
