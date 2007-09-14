@@ -37,8 +37,7 @@
 
 var moco_joey_url = "https://joey.labs.mozilla.com";
 
-var g_joey_hasLogged = false;
-var g_joey_in_progress = false;
+
 
 function getJoeyURL()
 {
@@ -150,6 +149,8 @@ function mocoJoey()
 
 mocoJoey.prototype = 
 {	
+    joey_hasLogged:false,
+    joey_in_progress:false,
 	joey_listener: null,                     
 	joey_username: "",
 	joey_password: "",
@@ -253,10 +254,10 @@ mocoJoey.prototype =
 
     uploadDataInternal: function(title, url, data, type)
     {
-        if (g_joey_in_progress == true)
+        if (this.joey_in_progress == true)
             return -1;
 
-        g_joey_in_progress = true;
+        this.joey_in_progress = true;
 
         this.joey_title = title;
         this.joey_url = url;
@@ -264,11 +265,11 @@ mocoJoey.prototype =
         this.joey_data = data;
 
         // kick off the action
-        if (g_joey_hasLogged == false)
+        if (this.joey_hasLogged == false)
         {
             if (this.setLoginInfo() == false)
             {
-                g_joey_in_progress = false;
+                this.joey_in_progress = false;
                 this.joey_title = null;
                 this.joey_url = null;
                 this.joey_content_type = null;
@@ -331,7 +332,7 @@ mocoJoey.prototype =
 	{
         if (status == 200)
         {
-            g_joey_hasLogged = true;
+            this.joey_hasLogged = true;
 			
             if (self.joey_listener != null)
                 self.joey_listener.onStatusChange("login", 0);
@@ -345,8 +346,8 @@ mocoJoey.prototype =
         {
             self.joey_listener.onStatusChange("login", -1);
         }
-        g_joey_hasLogged=false;
-        g_joey_in_progress = false;
+        this.joey_hasLogged=false;
+        this.joey_in_progress = false;
         self.setListener(null);
 	},
 
@@ -386,7 +387,7 @@ mocoJoey.prototype =
 	{
         var listener = self.joey_listener;
         self.setListener(null);
-        g_joey_in_progress = false;
+        this.joey_in_progress = false;
 
         if (listener == null)
             return;
@@ -407,8 +408,8 @@ mocoJoey.prototype =
         if (status == 511)
         {
             // set the hasLogged to false, and try again.
-            g_joey_in_progress = false;
-            g_joey_hasLogged = false;
+            this.joey_in_progress = false;
+            this.joey_hasLogged = false;
 
             this.uploadDataInternal( this.joey_title,
                                      this.joey_url, 
