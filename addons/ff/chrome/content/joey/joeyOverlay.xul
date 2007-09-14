@@ -75,25 +75,20 @@
   <!-- status bar static joey presence UI --> 
   
   <statusbar id="status-bar">
+    
     <statusbarpanel  id="joeyStatusbar" context="barcontext" hidden="false" collapsed="false" type="menu" >
+      
       <hbox style="padding:0px;margin:0px">
 
-        <!-- This gives us the DIV layer capability so we can stack a text
-             on top of the background boxes -->
-        
-        <stack id="joeyStatusPanel" 
-               style="margin:2px;margin-left:0px" > 
+        <toolbarbutton width="1"
+                       id="joeyStatusBox"
+                       tooltip="joeyUDManagerTooltip"
+                       collapsed="true"
+                       oncommand="joey_launchUDManagerPopup()" 
+                       class="joeyUDGeneralProgress" />
 
-          <hbox id="joeyBackgroundProgressLayers">
-          
-          </hbox>
-          
-          <label id="joeyStatusTeller" />
-
-        </stack>
-
-
-        <toolbarbutton id="joeyStatusButton" tooltip="joeyUDManager" 
+        <toolbarbutton id="joeyStatusButton"
+                       tooltip="joeyIconTooltip"
                        oncommand="joey_launchPopup()" />
 
       </hbox>
@@ -120,9 +115,25 @@
       </menupopup>
 
 
-      <tooltip id="joeyUDManager" orient="vertical"  noautohide="true" collapsed="true">
+      <popup id="joeyUDManager" >
+
+        <description>Joey Uploads!</description>
+
+      </popup>
+
+
+      <tooltip id="joeyUDManagerTooltip" >
+
+        <description>Joey Uploads Manager</description>
 
       </tooltip>
+
+      <tooltip id="joeyIconTooltip" >
+
+        <description>Joey Options</description>
+
+      </tooltip>
+
 
     </statusbarpanel>
 </statusbar>
