@@ -41,10 +41,6 @@
  * and again as an object.
  */
 
-/* 
-TODO need to fix the progressElements counter 
-*/
-
 
 function joeyStatusUpdateService() {
 
@@ -57,39 +53,31 @@ function joeyStatusUpdateService() {
     this.temporaryStack          = new Array();
     this.temporaryStackMessages  = new Array();
     
-    this.progressElements = 0;
-    
     this.progressBoxObject = document.getBoxObjectFor(document.getElementById("joeyUDManager")); 
 
+    this.uniqueCounter = 0;
+    
     this.createInstance = function factory() {
     
         var newSharedObject = new JoeyStatusUpdateClass(this);
-        newSharedObject.nameId = Math.random();     
-        this.statusObjects[newSharedObject.nameId] = newSharedObject;
+        var intUniqueID = this.uniqueCounter++;
+        newSharedObject.nameId = intUniqueID;   
+        this.statusObjects[intUniqueID] = newSharedObject;
         return newSharedObject;
-    
-    }
-    /* Not in use - it should */
-    this.destroyInstance = function destroyObject(refElement) {
-    
-        this.statusObjects[refElement.nameId]=null;
         
     }
 
     this.createProgressElement = function createBoxElementAndLabel(nameId, currentElement) {
-    
-                        /* Tooltip Check Kick collapse OFF */
-                        document.getElementById("joeyUDManager").collapsed=false;
-                            
-                        var parentNode = document.getElementById("joeyUDManager");
-                        var progressElement = document.createElement("stack"); 
+                
+            var parentNode = document.getElementById("joeyUDManager");
+            var progressElement = document.createElement("stack"); 
                   
-                        progressElement.setAttribute("id","joeyProgressLayer_"+nameId);
+            progressElement.setAttribute("id","joeyProgressLayer_"+nameId);
                         
-                        var progressMeter2 = document.createElement("box");
-                        progressMeter2.setAttribute("width","100");
-                        progressMeter2.setAttribute("class","joeyProgressMeter");
-                        progressMeter2.setAttribute("height","16");
+            var progressMeter2 = document.createElement("box");
+            progressMeter2.setAttribute("width","100");
+            progressMeter2.setAttribute("class","joeyProgressMeter");
+            progressMeter2.setAttribute("height","16");
                         
                         progressElement.appendChild(progressMeter2);
 
@@ -120,21 +108,62 @@ function joeyStatusUpdateService() {
                         currentElement.progressMeter = progressMeter2;
                         currentElement.labelElement = commentLabel;
                         
-                        // we want to account the total of elements displayed.
-                        
-                        this.progressElements++;
- 
+
     }
     
+    this.generalUDUpdate = function refreshGeneralStatusObject() {
+    
+         var totalPercentage = 0;
+         var count =0;
+         for ( eKey in this.statusObjects ) { 
 
+            var currentElement = this.statusObjects[eKey];
+
+            if(currentElement) { 
+            
+                      count++;
+                      var percentage = currentElement.percentage;
+                      if(percentage>=0) {
+                        var localProgress = parseInt(percentage*50);
+                        if(currentElement.downloadStatus==2) { 
+                            localProgress+=50;
+                        }
+                        totalPercentage += localProgress;
+                      } 
+            } 
+            
+         }
+        
+        var statusBoxObject = document.getElementById("joeyStatusBox");
+        if(count>0) { 
+            if(statusBoxObject.collapsed) { 
+                statusBoxObject.collapsed=false;
+                statusBoxObject.width="100";
+            } 
+            statusBoxObject.style.backgroundPosition = parseInt(totalPercentage/count)+"px 0px";
+            
+        } else {
+            statusBoxObject.collapsed=true;
+        }
+    }
+    
+    this.accessObject = function retrieveStatusObjectFromHash(keyVariant) {
+        var objectRef = this.statusObjects[ parseInt( keyVariant ) ];
+        return objectRef;
+    }
+
+    this.dumpObject = function dumpStatusObjectFromHash(keyVariant) {
+        var intKey = parseInt(keyVariant);
+        this.statusObjects[ intKey ] = null;
+    }
+    
     this.refreshActions = function refreshUI(nameId) {
     
-        var currentElement = this.statusObjects[nameId];    
-                  
-        while(currentElement.actionQueue.length>0) {
+        var currentElement = this.accessObject(nameId);    
+        
+        while(currentElement.actionQueue.length > 0) {
         
                 var currentCommand = null;
-
 
                 // Get rid of the queued elements, temporarily to a stack, til we reach the First.    
                 while(currentElement.actionQueue.length>1) {
@@ -148,9 +177,8 @@ function joeyStatusUpdateService() {
                 while(this.temporaryStack.length>=1) {
                     currentElement.actionQueue.push(this.temporaryStack.pop());
                 }
-                
+      
                 var newCommand=currentCommand;
-                
 
                 if( newCommand == "login") {
                 
@@ -158,57 +186,34 @@ function joeyStatusUpdateService() {
                     if ( currentState == 1 ) 
                     {
                         /* need to review if this is working .. */
-                        
                         this.globalMessages.push("logginin");
                     } 
                 }
              
-                if( newCommand == "download" ) {
+                if ( newCommand == "download" || newCommand == "upload" ) {
 
-             
                     if ( ! currentElement.progressElement ) {
-
                         this.createProgressElement( nameId, currentElement );
-                       
                     } else {
-                      
-               
-                      var percentage = currentElement.percentage;
-                      
-                      if(percentage>0) {
 
-                          varTotalWidth = this.progressBoxObject.width;
-                         
-                          currentElement.labelElement.value = parseInt(percentage*100)+"%";
+                      var percentage  = currentElement.percentage;
+                      
+                      if(percentage>=0) {
 
-                          currentElement.progressMeter.style.backgroundPosition = (varTotalWidth-parseInt(percentage*varTotalWidth))+"px 0px";
+                          var TotalWidth  = parseInt(this.progressBoxObject.width/2);
+                          var curProgress = parseInt(percentage*TotalWidth);
+
+                          if(currentElement.downloadStatus==2) {
+                           curProgress += TotalWidth;
+                          }
+                          
+                          currentElement.labelElement.setAttribute("value", curProgress+"%");
+                          currentElement.progressMeter.style.backgroundPosition = curProgress+"px 0px";
+                          this.generalUDUpdate();
                      
                       } 
-                      
                     }
-                    
                 }
-
-                if( newCommand == "upload" ) {
-                        
-                        /* We update upload progress meter just if we have the Download/Upload element
-                         * ( download == 2 status completed is the assumption */  
-                                                
-                        if( currentElement.progressElement ) { 
-                                  
-                          var percentage = currentElement.percentage;
-                          if(percentage>=0) {
-                              varTotalWidth = this.progressBoxObject.width;
-                              currentElement.labelElement.value = parseInt(percentage*100)+"%";
-                              currentElement.progressMeter.style.backgroundPosition = parseInt(percentage*varTotalWidth)+"px 0px";
-                          }
-     
-                        } else { 
-                        
-                            this.createProgressElement(nameId,currentElement);
-
-                        }  
-                } 
                 
                 if ( newCommand == "clear") {
                 
@@ -221,17 +226,18 @@ function joeyStatusUpdateService() {
                             this.globalMessages.push("uploadCompleted-"+nameId);
                             this.globalMessages.push("clear-"+nameId);
                             this.globalMessages.push("delete-"+nameId);
+                            
                     } else if (currentElement.downloadStatus==2) {
+                    
                             this.globalMessages.push("downloadCompleted-"+nameId);
+
                             this.globalMessages.push("clear-"+nameId);
                     } 
                     
-                      // Kicks the renderer, which is timer-based. 
-                        
-                        if(!this.rendering) {
-                            this.execRender=true;
-                            this.renderer();
-                        }
+                    if(!this.rendering) {
+                        this.execRender=true;
+                        this.renderer();
+                    }
                 }
                 if ( newCommand == "failed") {
                     if(currentElement.uploadStatus==-1) {
@@ -250,7 +256,6 @@ function joeyStatusUpdateService() {
         } 
     }
 
-    // Global actions consumer and rendering engine. 
     this.execRender = false;
     
     this.renderer = function rendering() {
@@ -258,7 +263,7 @@ function joeyStatusUpdateService() {
         var currentCommand = null;
            
         // Get rid of the queued elements, temporarily to a stack, til we reach the First.    
-        while(this.globalMessages.length>1) {
+        while(this.globalMessages.length > 1) {
             this.temporaryStackMessages.push(this.globalMessages.pop());
         }
         // Consume the first. 
@@ -271,78 +276,62 @@ function joeyStatusUpdateService() {
         }
         
         if(currentCommand) {
-            
-            if(currentCommand.indexOf("downloadCompleted-")>-1) {
-                    var elementName=currentCommand.split("downloadCompleted-")[1];
-                    var currentStatusObject = this.statusObjects[elementName];
 
+            var stringParams = currentCommand.split("-");
+            var commandValue = stringParams[0];
+            var nameValue    = stringParams[1];
+                        
+            var currentStatusObject = this.accessObject(nameValue);
+            
+            if(commandValue == "downloadCompleted") {
+                    var currentStatusObject = this.accessObject(nameValue);
                     currentStatusObject.labelElement.setAttribute("value",joeyString("downloadCompleted"));
             }
 
-            if(currentCommand.indexOf("uploadCompleted-")>-1) {
-                    var elementName=currentCommand.split("uploadCompleted-")[1];
-                    var currentStatusObject = this.statusObjects[elementName];
-
-                    //currentStatusObject.progressElement.setAttribute("style","");
+            if(commandValue == "uploadCompleted") {
+                    var currentStatusObject = this.accessObject(nameValue);
                     currentStatusObject.labelElement.setAttribute("value",joeyString("uploadCompleted"));
-                    
+                    document.getElementById("joeyStatusBox").label= joeyString("uploadCompleted");
+                    this.generalUDUpdate();
             }
-            if(currentCommand.indexOf("downloadFailed-")>-1) {
+            if(commandValue == "downloadFailed") {
             
-                    var elementName=currentCommand.split("downloadFailed-")[1];
-                    var currentStatusObject = this.statusObjects[elementName];
-
+                    var currentStatusObject = this.accessObject(nameValue);
                     currentStatusObject.progressElement.setAttribute("style","background-color:red");
                     currentStatusObject.labelElement.setAttribute("value",joeyString("downloadFailed"));
             }  
-            if(currentCommand.indexOf("uploadFailed-")>-1) {
-            
-                    var elementName=currentCommand.split("uploadFailed-")[1];
-                    var currentStatusObject = this.statusObjects[elementName];
-
+            if(commandValue == "uploadFailed") {
+              
+                    var currentStatusObject = this.accessObject(nameValue);
                     currentStatusObject.progressElement.setAttribute("style","background-color:red");
                     currentStatusObject.labelElement.setAttribute("value",joeyString("uploadFailed"));
                     
             }            
-            if(currentCommand.indexOf("clear-")>-1) {
-
-                    var elementName=currentCommand.split("clear-")[1];
-                    var currentStatusObject = this.statusObjects[elementName];
+            if(commandValue == "clear") {
+                    var currentStatusObject = this.accessObject(nameValue);
                     currentStatusObject.labelElement.setAttribute("value","");
+                    document.getElementById("joeyStatusBox").label= "";
               
             }
-         if(currentCommand.indexOf("delete-")>-1) {
+            if(commandValue == "delete") {
             
-            try {
-                    var elementName=currentCommand.split("delete-")[1];
-                    var currentStatusObject = this.statusObjects[elementName];
-
+                    var currentStatusObject = this.accessObject(nameValue);
                     currentStatusObject.progressElement.parentNode.removeChild(currentStatusObject.progressElement);
-                   
-                   this.statusObjects[elementName]=null;
-                   
-                   /* And we may collapse the Status tooltip */
-                   if(this.statusObjects.length==0) {
-                       document.getElementById("joeyUDManager").collapsed=true;
-                   }
-                    
-                    // need to delete the statusObject;
-                    
-                 } catch (i) { joeyDumpToConsole(i) } 
+                    this.dumpObject(nameValue);
+                    this.generalUDUpdate();
                     
             }
-            if(currentCommand == "logginin") {
-                    var value = joeyString("loggingin"); 
-                    document.getElementById("joeyStatusTeller").value = value;
+            if(commandValue == "logginin") {
+                    //var value = joeyString("loggingin"); 
+                    //document.getElementById("joeyStatusTeller").value = value;
             }
-           
         } 
         
         if(this.globalMessages.length > 0) {
             setTimeout("g_joey_statusUpdateService.renderer()",1111);
         } else {
             this.execRender=false;
-        }        
+        }       
     }     
 }
 
@@ -389,25 +378,22 @@ JoeyStatusUpdateClass.prototype =
        var value=null;
        var percentage=0; 
        try { 
-           percentage = ((from/to));
+           percentage = from/to;
        } catch (i) { 
            percentage = 0;
        } 
         
         if (verb == "upload") 
         {
-
             this.percentage = percentage;
             this.uploadStatus = 1;  // 1 = course, 2 completed, -1 failed; 
             this.actionQueue.push("upload");
- 
         }
         if (from==to)
         {
             // this might not be entirely true... basically,
             // at ths point we are waiting to upload...
             this.statusLogin = 1; // 1 = course, 2= completed, -1 failed; 
-   
         }
         
         if(verb =="download") {
@@ -416,19 +402,13 @@ JoeyStatusUpdateClass.prototype =
            
             this.downloadStatus=1;  // 1 = course, 2 completed, -1 failed; 
             this.actionQueue.push("download");
-            
         } 
-
-      
 
         /* adverb */
        
         if(adverb=="completed") 
         {
-            //this.progressElement.width=0;
-            
             this.percentage = percentage;
-
             if(verb=="download") { 
                 this.downloadStatus = 2;
             } 
@@ -446,7 +426,6 @@ JoeyStatusUpdateClass.prototype =
                 this.uploadStatus=-1;
             } 
             this.actionQueue.push("failed");
-
         }
         this.parentService.refreshActions(this.nameId);
     }
@@ -471,7 +450,7 @@ joey_listener.prototype =
     },
 
     onStatusChange: function (action, status)
-    {
+    {    
         if (action == "login")
         {
             if (status == 0)
@@ -490,7 +469,10 @@ joey_listener.prototype =
                 {
                     // Clear the username and password and try again.
                     clearLoginData();
-                    setTimeout(this.upload.upload, 500); // give enough time for us to leave the busy check
+                    var myThis = this;
+                    var omega = function myFunc() { myThis.upload() } ;
+                    
+                    setTimeout(omega, 500); // give enough time for us to leave the busy check
                 }
             }
 
@@ -508,8 +490,6 @@ joey_listener.prototype =
                 var prompts = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
                                         .getService(Components.interfaces.nsIPromptService);
                 prompts.alert(null, joeyString("uploadFailed"), joeyString("uploadFailedDetail"));
-                
-                
                 
             }
             return;
