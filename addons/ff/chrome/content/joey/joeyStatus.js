@@ -138,9 +138,8 @@ function joeyStatusUpdateService() {
         if(count>0) { 
             if(statusBoxObject.collapsed) { 
                 statusBoxObject.collapsed=false;
-                statusBoxObject.width="100";
             } 
-            statusBoxObject.style.backgroundPosition = parseInt(totalPercentage/count)+"px 0px";
+            statusBoxObject.label = "Joey Uploading: "+parseInt(totalPercentage/count)+"%";
             
         } else {
             statusBoxObject.collapsed=true;
