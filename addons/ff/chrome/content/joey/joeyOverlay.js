@@ -137,6 +137,7 @@ joey_upload.prototype =
 
     upload: function()
     {
+        
         this.askUserForTitle();
 
         var joey = Components.classes["@mozilla.com/joey;1"]
@@ -159,7 +160,6 @@ joey_upload.prototype =
                             this.contentType);
         }
     }
-    
 }
 
 
@@ -437,6 +437,7 @@ function joey_uploadFoundMedia() // refactor with joey_selectedImage
     upload.setContentType(g_joey_media_type);
 
     JoeyMediaFetcher( statusUpdateObject , upload, g_joey_media_url);
+    
 }
 
 function contentLoaded()
@@ -516,7 +517,6 @@ function g_run_tab_upload()
     g_joey_tab_upload_timer = setTimeout("g_run_tab_upload()", timeout);
 }
 
-
 function joeyDumpToConsole(aMessage) {
     try {   
         var psvc = Components.classes["@mozilla.org/preferences-service;1"]
@@ -532,6 +532,7 @@ function joeyDumpToConsole(aMessage) {
     } 
     catch (i) {}
 }
+
 
 /* 
  * Prefs launcher 
@@ -659,4 +660,34 @@ function joey_enableSelection() {
 }
 
 
+/* 
+ * Status Manager 
+ */
+ function joey_launchUDManagerPopup() 
+{
+  document.getElementById('joeyUDManager').showPopup(document.getElementById('joeyStatusBox'),-1,-1,'popup','topright', 'bottomright')
+}
 
+
+gJoeyDumpWindow = null;
+gJoeyDumpWindowLastRef =null;
+
+function joeyDumpToWindow(aMessage) {
+
+    try { 
+    if(!gJoeyDumpWindow) {
+
+        gJoeyDumpWindow = window.open("chrome://joey/content/dump.html","dumpwindow","resizable=1,scrollbars=1,width=700,height=500");
+        gJoeyDumpWindowLastRef = gJoeyDumpWindow.document.getElementById("ref1");
+        
+    }
+    
+    var newElement = gJoeyDumpWindow.document.createElement("div");
+    var newText = gJoeyDumpWindow.document.createTextNode(aMessage);
+    newElement.appendChild(newText);
+    gJoeyDumpWindowLastRef = gJoeyDumpWindow.document.getElementById("dumparea").insertBefore(newElement,gJoeyDumpWindowLastRef);
+
+
+    } catch(i) { joeyDumpToConsole(i) } 
+    
+}
