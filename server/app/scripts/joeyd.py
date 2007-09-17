@@ -24,6 +24,7 @@ import os
 import re
 import socket
 import sys
+import string
 import thread
 import threading
 import time
@@ -153,11 +154,16 @@ def safeExternalOnlyGet (url):
     global joeyd_stat_fetched_item_bytes
     global joeyd_stat_fetched_item_failure_count
     global joeyd_stat_fetched_item_count
+
+    # make sure that this url doesn't have any trailing ws.
+    url = string.strip(url)
     
     joeyd_stat_fetched_item_count = joeyd_stat_fetched_item_count +1
 
+    # we must lie because some site actually return 400 or 500 if we send our python user agent.
+    headers = {'user-agent': 'Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en-US; rv:1.8.1.6) Gecko/20070725 Firefox/2.0.0.6'} 
     h = httplib2.Http(workingEnvironment['UploadDir'] + "/cache")
-    resp, result = h.request(url, "GET")
+    resp, result = h.request(url, "GET", None, headers)
     
     if (resp.status == 200):
         # remember byte count for reporting
@@ -167,7 +173,7 @@ def safeExternalOnlyGet (url):
 
     # remember item count for reporting
     joeyd_stat_fetched_item_failure_count = joeyd_stat_fetched_item_failure_count + 1
-    logMessage("Error fetching url: %s (%s)" %(url, resp));
+    logMessage("Error fetching url: %s (%s)(%s)" %(url, resp, result));
     return False
 
 #---------------------------------------------------------------------------------------------------
