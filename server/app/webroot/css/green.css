@@ -67,10 +67,15 @@ table { width:100% }
 	margin-left:auto;
 	padding:1em;
 	margin-right:auto;
-	max-width:350px;
 	text-align:left;
 }
 
+.joey-panel {
+        margin-top:.5em;
+	padding:1em;
+	border:1px solid #aaaaaa;
+	background-color:#333333;
+}
 
 #joey-registration-content {
 	margin-left:auto;
