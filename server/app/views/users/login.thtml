@@ -25,11 +25,16 @@ audio, videos, RSS, and other media.
 Using either your phones built-in browser, or our Joey
 application, you quickly get to your data.
 
-<h2>Learn more..</h2>
-<img src="/img/joeyplay.jpg" align="left" />
+<h2>Try it now</h2>
+
 <p>
 Although we are in the early stages of development, much of
-Joey is usable today. Feel free to give Joey a try.</p>
+Joey is usable today. Feel free to give Joey a <a href="/users/register/">try now</a>.</p>
+
+
+<h2>Learn more..</h2>
+<p>Check out this hot video:</p>
+<img src="/img/joeyplay.jpg" align="left" />
 
 
 </td>
@@ -62,9 +67,6 @@ Joey is usable today. Feel free to give Joey a try.</p>
       echo "<div><b><a href=\"" . $secure_page . "\">Use Secure Login</a></b></div>";
 ?>
 
-<div>
-<?=$html->link('Register', 'register')?>
-</div>
 
 <div>
 <?=$html->link('Forgot Password?', 'resetpasswordemail')?><br />
