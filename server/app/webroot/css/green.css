@@ -66,6 +66,7 @@ table { width:100% }
 #joey-login-content {
 	margin-left:auto;
 	padding:1em;
+	padding-bottom:0;
 	margin-right:auto;
 	text-align:left;
 }
@@ -423,12 +424,10 @@ div#container {
 
 #footer-content {
 margin:0px;
-padding:1em;
-padding-top:0em;
 text-align: left;
 background: url(style/bottombanner.gif) no-repeat 100% 100%;
-height:140px;
-
+height:130px;
+padding-left:3em;
 }
 
 #pagination {
