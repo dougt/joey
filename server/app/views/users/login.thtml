@@ -8,6 +8,34 @@
     <div class="error_message"><?=$error_mesg?></div>
 <?php endif; ?>
 
+<table cellpadding="15" cellspacing="15"  >
+<tr>
+<td valign="top" >
+
+Project Joey brings the Web content you need most to your
+mobile phone.
+
+<h2 style="margin:0px" >Send content to your phone</h2>
+
+   Our Firefox extension allows you to select and upload text,
+audio, videos, RSS, and other media.
+
+<h2>Simple access to your mobile content</h2>
+
+Using either your phones built-in browser, or our Joey
+application, you quickly get to your data.
+
+<h2>Learn more..</h2>
+<p>
+Although we are in the early stages of development, much of
+Joey is usable today. Feel free to give Joey a try.</p>
+
+<object width="425" height="350" bgcolor="#000000"><param name="movie" value="http://www.youtube.com/v/uH_S_9qYt5w"></param><param name="bgcolor" value="#000000" ></param><param name="wmode" value="transparent"></param><embed src="http://www.youtube.com/v/uH_S_9qYt5w" type="application/x-shockwave-flash" wmode="transparent" width="425" height="350"></embed></object>
+
+</td>
+<td valign="top">
+
+<div class="joey-panel">
 
 <h2>Login</h2>
 
@@ -30,10 +58,15 @@
     </div>
 </form>
 
+
+</div>
+
+<div style="margin-top:.5em">
 <?php 
     if (isset($secure_page))
       echo "<div><b><a href=\"" . $secure_page . "\">Use Secure Login</a></b></div>";
 ?>
+</div>
 
 <div>
 <?=$html->link('Register', 'register')?>
@@ -43,6 +76,10 @@
 <?=$html->link('Forgot Password?', 'resetpasswordemail')?>
 </div>
 
+</td>
+
+</tr>
+</table>
 </div>
 </div>
 
