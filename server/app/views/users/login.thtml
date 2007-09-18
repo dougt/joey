@@ -30,7 +30,7 @@ application, you quickly get to your data.
 Although we are in the early stages of development, much of
 Joey is usable today. Feel free to give Joey a try.</p>
 
-<object width="425" height="350" bgcolor="#000000"><param name="movie" value="http://www.youtube.com/v/uH_S_9qYt5w"></param><param name="bgcolor" value="#000000" ></param><param name="wmode" value="transparent"></param><embed src="http://www.youtube.com/v/uH_S_9qYt5w" type="application/x-shockwave-flash" wmode="transparent" width="425" height="350"></embed></object>
+<img src="/img/joeyplay.jpg" />
 
 </td>
 <td valign="top">
@@ -40,7 +40,6 @@ Joey is usable today. Feel free to give Joey a try.</p>
 <h2>Login</h2>
 
 <?php //@todo remove this temporary message ?>
-<p style="font-style:italic;"> If you created an account in the past, please recreate your account.  Sorry for this, and thanks for testing!</p>
 
 <form action="" method="post" class="joey-form" >
     <div>
@@ -58,15 +57,10 @@ Joey is usable today. Feel free to give Joey a try.</p>
     </div>
 </form>
 
-
-</div>
-
-<div style="margin-top:.5em">
 <?php 
     if (isset($secure_page))
       echo "<div><b><a href=\"" . $secure_page . "\">Use Secure Login</a></b></div>";
 ?>
-</div>
 
 <div>
 <?=$html->link('Register', 'register')?>
@@ -74,6 +68,9 @@ Joey is usable today. Feel free to give Joey a try.</p>
 
 <div>
 <?=$html->link('Forgot Password?', 'resetpasswordemail')?>
+</div>
+
+
 </div>
 
 </td>
