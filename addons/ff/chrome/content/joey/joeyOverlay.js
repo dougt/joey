@@ -415,11 +415,12 @@ var httpscanner = {
                         document.getElementById("joeyMediaMenuItem").setAttribute("class","menuitem-iconic");
                         document.getElementById("joeyMediaMenuItem").setAttribute("image","chrome://joey/skin/type_music.png");
                     }
+                    document.getElementById("menuItem-joeyMedia-tooltip").setAttribute("value","Upload: "+document.commandDispatcher.focusedWindow.document.title);
                     g_joey_media_type = contentType;
                     g_joey_media_url = mediaLocation;
                 }
             }
-        } catch (e) {}
+        } catch (e) { joeyDumpToConsole(e)}
     }
 }
 var observerService = Components.classes["@mozilla.org/observer-service;1"].getService(Components.interfaces.nsIObserverService);
@@ -431,11 +432,14 @@ function joey_uploadFoundMedia() // refactor with joey_selectedImage
 
     var statusUpdateObject = g_joey_statusUpdateService.createInstance();
     
+    statusUpdateObject.referenceTitle = focusedWindow.document.title;
+    
     var upload = new joey_upload( statusUpdateObject );
     upload.setTitle(focusedWindow.document.title);
     upload.setURL(focusedWindow.location.href);
     upload.setContentType(g_joey_media_type);
 
+    
     JoeyMediaFetcher( statusUpdateObject , upload, g_joey_media_url);
     
 }

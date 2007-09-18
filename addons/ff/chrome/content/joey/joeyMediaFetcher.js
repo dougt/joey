@@ -110,18 +110,15 @@ JoeyMediaFetcherStreamListener.prototype =
 
           this.stream.close(); 
  
- try { 
           this.upload.setContentType(this.contenttype);
           this.upload.setFile(this.file);
           this.upload.upload();
   
- } catch (i) { joeyDumpToConsole(i) }
- 
+
  
       } 
       else
       {
-          // request failed
           this.updateStatus.tellStatus("download",null,null,"failed");
       }
   },

@@ -80,7 +80,7 @@
       
       <hbox style="padding:0px;margin:0px">
 
-        <toolbarbutton width="1"
+        <toolbarbutton 
                        id="joeyStatusBox"
                        tooltip="joeyUDManagerTooltip"
                        collapsed="true"
@@ -98,7 +98,7 @@
         <menuitem label="&overlay.menuSite.label;" 
                   oncommand="joey_launchCloudSite()" />
 
-        <menuitem id="joeyMediaMenuItem" 
+        <menuitem id="joeyMediaMenuItem"  tooltip="menuItem-joeyMedia" 
                   label="&overlay.menuMedia.label;"
                   disabled="true" 
                   oncommand="joey_uploadFoundMedia()" />
@@ -123,15 +123,15 @@
 
 
       <tooltip id="joeyUDManagerTooltip" >
-
         <description>Joey Uploads Manager</description>
-
       </tooltip>
 
       <tooltip id="joeyIconTooltip" >
-
         <description>Joey Options</description>
+      </tooltip>
 
+      <tooltip id="menuItem-joeyMedia">
+        <label id="menuItem-joeyMedia-tooltip" value="Upload Joey Media" />
       </tooltip>
 
 

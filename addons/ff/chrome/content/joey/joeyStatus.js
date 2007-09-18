@@ -139,6 +139,9 @@ function joeyStatusUpdateService() {
             if(statusBoxObject.collapsed) { 
                 statusBoxObject.collapsed=false;
             } 
+            
+            /* Need to be friendly with the Renderer, so top messages are more important than this */
+            
             statusBoxObject.label = "Joey Uploading: "+parseInt(totalPercentage/count)+"%";
             
         } else {
@@ -200,13 +203,17 @@ function joeyStatusUpdateService() {
                       if(percentage>=0) {
 
                           var TotalWidth  = parseInt(this.progressBoxObject.width/2);
+                          
+                          
                           var curProgress = parseInt(percentage*TotalWidth);
-
+                          var curPercentage = parseInt ( percentage*50);
+                          
                           if(currentElement.downloadStatus==2) {
                            curProgress += TotalWidth;
+                           curPercentage += 50;
                           }
                           
-                          currentElement.labelElement.setAttribute("value", curProgress+"%");
+                          currentElement.labelElement.setAttribute("value", curPercentage +"%"+" of "+ currentElement.referenceTitle );
                           currentElement.progressMeter.style.backgroundPosition = curProgress+"px 0px";
                           this.generalUDUpdate();
                      
@@ -358,6 +365,7 @@ JoeyStatusUpdateClass.prototype =
 
     percentage      : -1,
     contentType     : null,
+    referenceTitle  : "",
     actionQueue     : new Array(),
     statusLogin     : 0,
     uploadStatus    : 0,
