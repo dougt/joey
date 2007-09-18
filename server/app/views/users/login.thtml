@@ -26,11 +26,11 @@ Using either your phones built-in browser, or our Joey
 application, you quickly get to your data.
 
 <h2>Learn more..</h2>
+<img src="/img/joeyplay.jpg" align="left" />
 <p>
 Although we are in the early stages of development, much of
 Joey is usable today. Feel free to give Joey a try.</p>
 
-<img src="/img/joeyplay.jpg" />
 
 </td>
 <td valign="top">
@@ -67,7 +67,7 @@ Joey is usable today. Feel free to give Joey a try.</p>
 </div>
 
 <div>
-<?=$html->link('Forgot Password?', 'resetpasswordemail')?>
+<?=$html->link('Forgot Password?', 'resetpasswordemail')?><br />
 </div>
 
 
