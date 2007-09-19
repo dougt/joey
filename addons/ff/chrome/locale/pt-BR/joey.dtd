@@ -11,6 +11,17 @@
 
 <!ENTITY options.uploadOptions.label  "Enviando:" >
 <!ENTITY options.askForTitle.label    "Sempre perguntar um título para objetos enviados" >
+<!ENTITY options.tab.upload.enabled.label "Fazer upload das Tabs em uso frequentemente" >
+<!ENTITY options.basic.label              "Joey Opções" >
+<!ENTITY options.advanced.label           "Opções avançadas" >
+<!ENTITY options.watchRSS.label           "Fazer upload de RSS de sites visitados" >
 <!ENTITY options.restoreButton.label  "Recuperar Padrões" >
+<!ENTITY options.registerFeedListener.label      "Registrar Joey! como leitor de Feeds">
 
-<!ENTITY overlay.menuPreferences.label "Preferências do Joey...">
+<!ENTITY overlay.menuPreferences.label   "Preferências do Joey...">
+<!ENTITY overlay.tooltipUploads.label    "Gerenciador de Uploads Joey!" >
+<!ENTITY overlay.tooltipIcon.label       "Menu Joey.."          >
+<!ENTITY overlay.tooltipMenuMedia.label  "Fazer upload de mídia"    >
+
+
+
