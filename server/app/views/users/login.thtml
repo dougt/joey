@@ -1,4 +1,4 @@
-<style> h2 { margin-top:1em } </style>
+<style> h2 { margin-top:.5em } </style>
 <div id="content">
 
 <div id="joey-login-frame">
@@ -35,7 +35,7 @@ Joey is usable today. Feel free to give Joey a <a href="/users/register/">try no
 
 <h2>Learn more..</h2>
 <p>Check out this hot video:</p>
-<img src="/img/joeyplay.jpg" align="left" />
+<a href="http://www.youtube.com/watch?v=uH_S_9qYt5w" ><img border="0" src="/img/joeyplay.jpg" align="left" /></a>
 
 
 </td>
