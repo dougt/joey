@@ -439,7 +439,8 @@ function joey_uploadFoundMedia() // refactor with joey_selectedImage
     upload.setURL(focusedWindow.location.href);
     upload.setContentType(g_joey_media_type);
 
-    
+    statusUpdateObject.tellStatus("queued", null, null, null, g_joey_media_type);
+
     JoeyMediaFetcher( statusUpdateObject , upload, g_joey_media_url);
     
 }

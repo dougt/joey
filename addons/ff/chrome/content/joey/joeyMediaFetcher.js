@@ -86,6 +86,7 @@ JoeyMediaFetcherStreamListener.prototype =
           this.contenttype = http.contentType;
       } 
       catch (ex) { joeyDumpToConsole(ex); }
+      
   },
 
   onDataAvailable: function (aRequest, aContext, aStream, aSourceOffset, aLength)

@@ -141,9 +141,11 @@ function joeyStatusUpdateService() {
             } 
             
             /* Need to be friendly with the Renderer, so top messages are more important than this */
-            
+            if(totalPercentage>0) {
             statusBoxObject.label = joeyString("joeyWord")+": "+parseInt(totalPercentage/count)+"%";
-            
+            } else {
+            statusBoxObject.label = joeyString("joeyWord")+": initializing..";
+            }
         } else {
             statusBoxObject.collapsed=true;
         }
@@ -192,10 +194,16 @@ function joeyStatusUpdateService() {
                     } 
                 }
              
-                if ( newCommand == "download" || newCommand == "upload" ) {
+                if ( newCommand == "download" || newCommand == "upload"  || newCommand=="queued") {
 
                     if ( ! currentElement.progressElement ) {
                         this.createProgressElement( nameId, currentElement );
+                        
+                             if(newCommand=="queued") {
+                             
+                                currentElement.labelElement.setAttribute("value", "Pending: "+ currentElement.referenceTitle );                            
+                                this.generalUDUpdate();
+                             }
                     } else {
 
                       var percentage  = currentElement.percentage;
@@ -213,8 +221,11 @@ function joeyStatusUpdateService() {
                            curPercentage += 50;
                           }
                           
-                          currentElement.labelElement.setAttribute("value", curPercentage +"%"+" of "+ currentElement.referenceTitle );
-                          currentElement.progressMeter.style.backgroundPosition = curProgress+"px 0px";
+                          if(newCommand == "download" || newCommand=="upload") {
+                            currentElement.labelElement.setAttribute("value", curPercentage +"%"+" of "+ currentElement.referenceTitle );                            
+                            currentElement.progressMeter.style.backgroundPosition = curProgress+"px 0px";
+                                              
+                          } 
                           this.generalUDUpdate();
                      
                       } 
@@ -394,7 +405,7 @@ JoeyStatusUpdateClass.prototype =
         {
             this.percentage = percentage;
             this.uploadStatus = 1;  // 1 = course, 2 completed, -1 failed; 
-            this.actionQueue.push("upload");
+            this.actionQueue.push(verb);
         }
         if (from==to)
         {
@@ -402,13 +413,16 @@ JoeyStatusUpdateClass.prototype =
             // at ths point we are waiting to upload...
             this.statusLogin = 1; // 1 = course, 2= completed, -1 failed; 
         }
-        
+        if(verb =="queued") {
+            this.contentType=contentType;
+            this.actionQueue.push(verb);        
+        }
         if(verb =="download") {
             this.percentage = percentage;
             this.contentType=contentType;
            
             this.downloadStatus=1;  // 1 = course, 2 completed, -1 failed; 
-            this.actionQueue.push("download");
+            this.actionQueue.push(verb);
         } 
 
         /* adverb */
