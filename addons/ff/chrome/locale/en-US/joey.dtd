@@ -1,23 +1,26 @@
 
-<!ENTITY about.productVersion.label   "version 0.2">
+<!ENTITY about.productVersion.label    "version 0.2">
 <!ENTITY about.creatorTitle.label      "Created By:">
 <!ENTITY about.serverTitle.label       "Home Page:">
 <!ENTITY about.serverValue.label       "https://joey.labs.mozilla.com">
 
-<!ENTITY options.optionTitle.label     "Options">
-<!ENTITY options.privacyTitle.label    "Privacy">
-<!ENTITY options.privacyButton.label   "Clear Private Data">
+<!ENTITY options.optionTitle.label      "Options">
+<!ENTITY options.privacyTitle.label     "Privacy">
+<!ENTITY options.privacyButton.label    "Clear Private Data">
 <!ENTITY options.serverTitle.label      "Server URL:">
 
-<!ENTITY options.uploadOptions.label   "Upload Settings:" >
-<!ENTITY options.askForTitle.label      "Always ask for a title when uploading items" >
+<!ENTITY options.uploadOptions.label      "Upload Settings:" >
+<!ENTITY options.askForTitle.label        "Always ask for a title when uploading items" >
 <!ENTITY options.watchRSS.label           "Upload RSS of frequently visited sites" >
 <!ENTITY options.tab.upload.enabled.label "Upload current tabs frequently" >
-<!ENTITY options.restoreButton.label  "Restore Defaults" >
-<!ENTITY options.basic.label  "Joey Options" >
-<!ENTITY options.advanced.label  "Advanced  Options" >
-<!ENTITY options.restoreButton.label  "Restore Defaults" >
+<!ENTITY options.restoreButton.label      "Restore Defaults" >
+<!ENTITY options.basic.label              "Joey Options" >
+<!ENTITY options.advanced.label           "Advanced  Options" >
+<!ENTITY options.restoreButton.label      "Restore Defaults" >
 
 <!ENTITY options.registerFeedListener.label      "Register Joey! Feed Reader">
 
-<!ENTITY overlay.menuPreferences.label "Joey! Preferences...">
+<!ENTITY overlay.menuPreferences.label   "Joey! Preferences..." >
+<!ENTITY overlay.tooltipUploads.label    "Joey Uploads Manager" >
+<!ENTITY overlay.tooltipIcon.label       "Joey menu.."          >
+<!ENTITY overlay.tooltipMenuMedia.label  "Upload Joey Media"    >
