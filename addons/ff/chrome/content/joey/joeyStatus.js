@@ -142,7 +142,7 @@ function joeyStatusUpdateService() {
             
             /* Need to be friendly with the Renderer, so top messages are more important than this */
             
-            statusBoxObject.label = "Joey Uploading: "+parseInt(totalPercentage/count)+"%";
+            statusBoxObject.label = joeyString("joeyWord")+": "+parseInt(totalPercentage/count)+"%";
             
         } else {
             statusBoxObject.collapsed=true;
