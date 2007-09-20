@@ -25,6 +25,7 @@
 package org.mozilla.joey.j2me.views;
 
 import de.enough.polish.ui.FramedForm;
+import de.enough.polish.ui.IconItem;
 import de.enough.polish.ui.UiAccess;
 import de.enough.polish.util.Locale;
 
@@ -36,7 +37,6 @@ import javax.microedition.lcdui.Choice;
 import javax.microedition.lcdui.ChoiceGroup;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
-import javax.microedition.lcdui.ImageItem;
 import javax.microedition.lcdui.Item;
 import javax.microedition.lcdui.StringItem;
 
@@ -46,29 +46,23 @@ import org.mozilla.joey.j2me.Upload;
 public class UploadsView
 	extends FramedForm
 {
-	private ChoiceGroup commands;
-
-    private JoeyController controller;
-    private Vector uploads;
-
-
 	public static final int COMMAND_ID_VIDEOS = 0;
 	public static final int COMMAND_ID_MUSIC = 1;
 	public static final int COMMAND_ID_PICTURES = 2;
 	public static final int COMMAND_ID_RSS = 3;
 	public static final int COMMAND_ID_TEXT = 4;
-    public static final int COMMAND_ID_MICROSUM = 5;
-    public static final int COMMAND_ID_CAMERA = 6;
-    public static final int COMMAND_ID_PREFS = 7;	
+	public static final int COMMAND_ID_MICROSUM = 5;
+	
+	private ChoiceGroup commands;
+    private JoeyController controller;
+    private Vector uploads;
 
-    
 	public UploadsView(JoeyController controller)
 	{
 		//#style uploadScreen
 		super(Locale.get("title.uploads"));
 
         this.controller = controller;
-
 		initCommandsArea();
 	}
 
@@ -147,27 +141,29 @@ camera here or in the MainMenu view.
 
     private Item getImagePreviewForUpdate(Upload upload)
     {
+        try {
+        	String title = upload.getTitle();
+        	Image image = Image.createImage(new ByteArrayInputStream(upload.getPreview()));
 
-        Image image = null;
-        try
-        {
-            image = Image.createImage(new ByteArrayInputStream(upload.getPreview()));
+        	if (title == null) {
+//        		title = Locale.get("No title available");
+        		title = "No title available";
+        	}
 
-            //#style uploadItem
-            return new ImageItem(null, image, ImageItem.LAYOUT_CENTER, Long.toString(upload.getId()));
-
+        	//#if true
+	            //#style uploadItem
+	            //#= return new IconItem(title, image);
+        	//#else
+        		return null;
+        	//#endif
         }
-        catch (Exception e)
-        {
+        catch (Exception e) {
             return null;
         }
     }
 
     private void updateDefaultUploadsView(String title, String mimeType)
     {
-        Item command = new StringItem(null, title);
-        append(command);
-
         int size = this.uploads.size();
         for (int i = 0; i < size; i++) 
         {
@@ -182,18 +178,17 @@ camera here or in the MainMenu view.
             
             Item uploadItem = null;
             String mimetypeOfUpload = upload.getMimetype();
-            if (mimetypeOfUpload != null && mimetypeOfUpload.startsWith(mimeType)) 
-            {
+            if (mimetypeOfUpload != null && mimetypeOfUpload.startsWith(mimeType)) {
                 uploadItem = getImagePreviewForUpdate(upload);
                 
-                if (uploadItem == null)
-                {
+                if (uploadItem == null) {
                     //#style uploadItem
                     uploadItem = new StringItem(null, upload.getTitle());
                 }
 
-                if (uploadItem == null)
+                if (uploadItem == null) {
                     continue;
+                }
                 
                 uploadItem.setDefaultCommand(JoeyController.CMD_SELECT);
                 uploadItem.setItemCommandListener(this.controller);
@@ -276,21 +271,9 @@ camera here or in the MainMenu view.
         updateDefaultUploadsView("Joey Microsummaries", "microsumm");
     }
 
-    private void updateCamera()
-    {
-        append(new StringItem(null, "Joey Camera"));
-    }
-
-    
-    private void updatePrefs()
-    {
-        append(new StringItem(null, "Joey Preferences"));
-    }
-
 	public void update()
 	{
 		this.container.clear();
-
         int commandid = this.commands.getSelectedIndex();
 
         switch (commandid) 
@@ -318,14 +301,6 @@ camera here or in the MainMenu view.
         case COMMAND_ID_MICROSUM:
             updateMicrosummaries();
             break;
-
-        case COMMAND_ID_CAMERA:
-            updateCamera();
-            break;
-
-        case COMMAND_ID_PREFS:
-            updatePrefs();
-            break;
         }
 	}
 
@@ -336,19 +311,22 @@ camera here or in the MainMenu view.
 		if ((gameAction == LEFT && keyCode != Canvas.KEY_NUM4) ||
             (gameAction == RIGHT && keyCode != Canvas.KEY_NUM6)) {
 
-			handled = UiAccess.handleKeyPressed( this.commands, keyCode, gameAction);
+			handled = UiAccess.handleKeyPressed(this.commands, keyCode, gameAction);
 
             if (handled) {
             	update();
+
+                if (this.container.size() > 0) {
+                	this.container.focus(0);
+                }
             }
 		}
         else if ((gameAction == UP && keyCode != Canvas.KEY_NUM2) || 
                  (gameAction == DOWN && keyCode != Canvas.KEY_NUM8)) {
-            handled = UiAccess.handleKeyPressed(this.container, keyCode, gameAction);
+            return UiAccess.handleKeyPressed(this.container, keyCode, gameAction);
         }
 
         this.currentlyActiveContainer = this.container;
-        this.container.focus(0);
 
         if (!handled ) {
         	handled = super.handleKeyPressed(keyCode, gameAction);
