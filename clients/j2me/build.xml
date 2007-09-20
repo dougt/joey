@@ -282,4 +282,20 @@
 	</java>
 </target>
 
+	<taskdef name="obexpush" classname="de.enough.obexpush.ObexPushTask" classpath="${polish.home}/lib/obexpush.jar:../obexpush/lib/commons-httpclient-3.0.1.jar:../obexpush/lib/commons-logging-1.1.jar:../obexpush/lib/commons-codec-1.3.jar"/>
+
+	<target name="push">
+		<!-- Nokia E50 -->
+		<!--
+		<obexpush device="00:19:B7:40:42:7A" filename="dist/Nokia-E50-de_DE-joey.jar"/>
+		-->
+
+		<!-- Sony-Ericcson W800i -->
+		<!--
+		<obexpush device="00:12:EE:89:7C:5E" filename="dist/Sony-Ericsson-W800-de_DE-joey.jar"/>
+		-->
+
+		<!-- Sony-Ericcson W900i -->
+		<obexpush device="00:12:EE:D1:17:A6" filename="dist/Sony-Ericsson-W900-de_DE-joey.jar"/>
+	</target>
 </project>

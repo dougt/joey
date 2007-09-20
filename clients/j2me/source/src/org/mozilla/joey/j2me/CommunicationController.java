@@ -42,9 +42,9 @@ public class CommunicationController
 	private static final String JOEY_VERSION = "X-joey-version";
 
 	//#if serverUrl:defined
-		//#= private String serverURL = "${serverUrl}";
+		//#= private String serverUrl = "${serverUrl}";
 	//#else
-		private String serverURL = "http://joey.labs.mozilla.com";
+		private String serverUrl = "http://joey.labs.mozilla.com";
 	//#endif
 
 	private JoeyController controller;
@@ -61,7 +61,7 @@ public class CommunicationController
 
         updateServerURL();
         //#debug info
-        System.out.println("server url: " + this.serverURL);
+        System.out.println("server url: " + this.serverUrl);
 	}
 
 	public synchronized NetworkRequest getNextRequest() 
@@ -119,13 +119,12 @@ public class CommunicationController
         nr.onStart();
 
         try {
-
             updateServerURL();
 
             //#debug info
-            System.out.println("creating connection to: " + this.serverURL + nr.requestURL);
+            System.out.println("creating connection to: " + this.serverUrl + nr.requestURL);
 
-            connection = new RedirectHttpConnection(this.serverURL + nr.requestURL);
+            connection = new RedirectHttpConnection(this.serverUrl + nr.requestURL);
             
             if (this.cookieStr != null) {
                 connection.setRequestProperty("Cookie", this.cookieStr);
@@ -301,12 +300,17 @@ public class CommunicationController
         return nr.raw_url;
     }
 
+    public void setServerUrl(String serverUrl)
+    {
+    	this.serverUrl = serverUrl;
+    }
+
     private void updateServerURL()
     {
         if (this.userData.isUseSsl())
-        	this.serverURL = TextUtil.replace(this.serverURL, "http:", "https:");
+        	this.serverUrl = TextUtil.replace(this.serverUrl, "http:", "https:");
         else
-        	this.serverURL = TextUtil.replace(this.serverURL, "https:", "http:");
+        	this.serverUrl = TextUtil.replace(this.serverUrl, "https:", "http:");
     }
 
     public String getCurrentVersion()

@@ -165,13 +165,11 @@ public class JoeyController
 		this.midlet = midlet;
 		this.display = Display.getDisplay(midlet);
 		this.uploads = new Vector();
-
 		loadUserdata();
-
 		this.commandListener = new ThreadedCommandListener(this);
 		this.commController = new CommunicationController(this);
+		this.commController.setServerUrl(this.userdata.getServer());
 		this.commController.start();
-
 		this.uploadsView = null;
 
 		//#if polish.api.mmapi
@@ -746,6 +744,7 @@ public class JoeyController
 	{
 		int event;
 		PreferencesView view = (PreferencesView) showView(VIEW_PREFERENCES);
+		view.setServer(this.userdata.getServer());
 		view.setUpdateInterval(this.userdata.getUpdateInterval());
 
 		do {
@@ -753,6 +752,7 @@ public class JoeyController
 
 			switch (event) {
 				case EVENT_SAVE:
+					this.userdata.setServer(view.getServer());
 					this.userdata.setUpdateInterval(view.getUpdateInterval());
 					break;
 

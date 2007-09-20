@@ -34,7 +34,7 @@ public class GetNetworkRequest
     {
         this.upload = upload;
 
-        this.requestURL = "/files/view/" + upload.getId();
+        this.requestURL = "/files/view/" + upload.getId() + "/original";
         this.contenttype = "application/x-www-form-urlencoded";
         this.postdata = "rest=1";
     }
