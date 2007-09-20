@@ -144,7 +144,7 @@ function joeyStatusUpdateService() {
             if(totalPercentage>0) {
             statusBoxObject.label = joeyString("joeyWord")+": "+parseInt(totalPercentage/count)+"%";
             } else {
-            statusBoxObject.label = joeyString("joeyWord")+": initializing..";
+            statusBoxObject.label = joeyString("joeyWord")+": waiting..";
             }
         } else {
             statusBoxObject.collapsed=true;
