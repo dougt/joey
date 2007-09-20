@@ -87,23 +87,13 @@ focused {
 	font-color: titleColor;
 	border: none;
 	layout: left | horizontal-expand;
-
-	background {
-		color: joeyGreen;
-	}
+	background-color: joeyGreen;
 }
 
 .inputScreen {
-	padding: 5;
+	padding: 0;
 	title-style: screenTitle;
-
-	background {
-		color: black;
-		/*
-		color: blue;
-		image: url(joey.png);
-		*/
-	}
+	background-color: black;
 }
 
 .loginScreen extends inputScreen {
@@ -127,7 +117,6 @@ focused {
 .rssItemScreen extends inputScreen {
 }
 
-
 .rssUploadItem {
 	padding: 1;
 	border-width: 1;
@@ -146,6 +135,8 @@ focused {
 	border-width: 1;
 	layout: expand | left;
 	background-color: black;
+	font-color: white;
+	
 	border {
 		type: bottom;
 		width: 1;
@@ -154,15 +145,10 @@ focused {
 }
 
 .uploadItem:hover {
-	/*
-	background {
-		color: bgColorFocused;
-	}
-	*/
+	font-color: joeyGreen;
 }
 
 .imagecontent extends uploadItem {
-
 }
 
 .input {
@@ -292,21 +278,16 @@ focused {
 
 .textcontent {
 	padding: 2;
-	background {
-		color: bgColorInput;
-		border-color: borderColorInput;
-	}
 	font-size: small;
 	font-color: white;
 	layout: expand;
+	background-color: black;
 }
 
 .browser {
 	font-size: small;
 }
 
-/*
-*/
 menubar {
 	background-color: white;
 }
@@ -405,6 +386,7 @@ rightcommand extends leftcommand {
 	padding: 10;
 	layout: vertical-shrink | horizontal-shrink | bottom | center;
 	repaint-previous-screen: true;
+	font-color: black;
 	background {
 		type: round-rect;
 		color: bgColorFocused;
@@ -431,7 +413,7 @@ alertWait {
 
 alertcontent {
     font-size: large;
-    font-color: white;
+    font-color: black;
     font-style: bold;
     layout: top;
 }
