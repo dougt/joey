@@ -145,8 +145,6 @@
 			<and>
 				<requirement name="Feature" value="supportsPolishGui" />
 				<requirement name="JavaPlatform" value="MIDP/2.0+" />
-				<!--
-				-->
 				<requirement name="Term" value="!polish.blackberry" />
 				<requirement name="Term" value="!(polish.identifier == Generic/DotNetCF1.1)" />
 				<requirement name="Term" value="!(polish.identifier == Nokia/Series90)" />
