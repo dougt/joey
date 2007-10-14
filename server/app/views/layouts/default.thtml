@@ -52,6 +52,7 @@
 
 	<!-- this is the cake compliant ajax infra -->
 	<?php echo $javascript->link('prototype.js') ?>
+	<?php echo $javascript->link('__utm.js') ?>
 
 </head>
 
