@@ -1,1 +1,1 @@
-<a href="../..">Click here</a> to login to Joey.
+<a href="../..">Login to Joey.</a>
