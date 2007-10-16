@@ -64,7 +64,7 @@ var g_joey_tab_upload_timer = null;
 function joey_upload(updateObject)
 {
     this.updateObject = updateObject;
-
+    this.updateObject.registerAssociatedUpload(this);
     this.data = null;
     this.file = null;
     this.title= null;
@@ -160,6 +160,7 @@ joey_upload.prototype =
                             this.contentType);
         }
     }
+    
 }
 
 

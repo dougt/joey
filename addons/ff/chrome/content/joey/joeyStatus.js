@@ -57,6 +57,7 @@ function joeyStatusUpdateService() {
 
     this.uniqueCounter = 0;
     
+
     this.createInstance = function factory() {
     
         var newSharedObject = new JoeyStatusUpdateClass(this);
@@ -131,9 +132,7 @@ function joeyStatusUpdateService() {
                         totalPercentage += localProgress;
                       } 
             } 
-            
          }
-        
         var statusBoxObject = document.getElementById("joeyStatusBox");
         if(count>0) { 
             if(statusBoxObject.collapsed) { 
@@ -144,6 +143,7 @@ function joeyStatusUpdateService() {
             if(totalPercentage>0) {
             statusBoxObject.label = joeyString("joeyWord")+": "+parseInt(totalPercentage/count)+"%";
             } else {
+            
             statusBoxObject.label = joeyString("joeyWord")+": waiting..";
             }
         } else {
@@ -192,6 +192,14 @@ function joeyStatusUpdateService() {
                         /* need to review if this is working .. */
                         this.globalMessages.push("logginin");
                     } 
+                    
+                    if ( currentState == -2 ) {
+                        this.globalMessages.push("loginFailedRetry-"+nameId);                        
+                        if(!this.rendering) {
+                            this.execRender=true;
+                            this.renderer();
+                        }
+                    }
                 }
              
                 if ( newCommand == "download" || newCommand == "upload"  || newCommand=="queued") {
@@ -304,12 +312,22 @@ function joeyStatusUpdateService() {
                     var currentStatusObject = this.accessObject(nameValue);
                     currentStatusObject.labelElement.setAttribute("value",joeyString("downloadCompleted"));
             }
+            
+            if(commandValue == "loginFailedRetry" ) {
+            
+                    var currentStatusObject = this.accessObject(nameValue);
+                    var refUploadObject = currentStatusObject.uploadObject;
+                    clearLoginData();
+                    refUploadObject.upload();
+            }
 
             if(commandValue == "uploadCompleted") {
                     var currentStatusObject = this.accessObject(nameValue);
                     currentStatusObject.labelElement.setAttribute("value",joeyString("uploadCompleted"));
                     document.getElementById("joeyStatusBox").label= joeyString("uploadCompleted");
+                    
                     this.generalUDUpdate();
+
             }
             if(commandValue == "downloadFailed") {
             
@@ -381,6 +399,7 @@ JoeyStatusUpdateClass.prototype =
     statusLogin     : 0,
     uploadStatus    : 0,
     downloadStatus  : 0,
+    uploadObject    : null,
     
     destructor: function () 
     {
@@ -390,7 +409,9 @@ JoeyStatusUpdateClass.prototype =
     loginStatus: function (aMode,aAdVerb)
     {
 	},
-
+    registerAssociatedUpload: function (refObject) {
+        this.uploadObject = refObject;        
+    },
     tellStatus:function(verb,from,to,adverb,contentType) 
     {
        var value=null;
@@ -401,6 +422,7 @@ JoeyStatusUpdateClass.prototype =
            percentage = 0;
        } 
         
+
         if (verb == "upload") 
         {
             this.percentage = percentage;
@@ -413,6 +435,11 @@ JoeyStatusUpdateClass.prototype =
             // at ths point we are waiting to upload...
             this.statusLogin = 1; // 1 = course, 2= completed, -1 failed; 
         }
+        if (verb == "login" && adverb =="failed,tryagain") {
+            this.statusLogin=-2;
+            this.actionQueue.push(verb);            
+        }
+        
         if(verb =="queued") {
             this.contentType=contentType;
             this.actionQueue.push(verb);        
@@ -488,12 +515,7 @@ joey_listener.prototype =
                 var result = prompts.confirm(null, joeyString("loginFailedShort"), joeyString("loginFailedQuestion"));
                 if (result == true)
                 {
-                    // Clear the username and password and try again.
-                    clearLoginData();
-                    var myThis = this;
-                    var omega = function myFunc() { myThis.upload() } ;
-                    
-                    setTimeout(omega, 500); // give enough time for us to leave the busy check
+                    this.updateObject.tellStatus("login",null,null,"failed,tryagain");
                 }
             }
 

@@ -24,7 +24,7 @@ function clearPrivateData()
 
 function clearLoginData()
 {
-    
+
     // sometimes the password manager remembers username
     // and password that are wrong or have changed.  If
     // we failed to login, lets purge this data.  I hate
