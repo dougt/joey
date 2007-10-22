@@ -1,0 +1,372 @@
+
+.highlight {
+	background-color:#666666;
+	padding: .3em;
+	-moz-border-radius:3px;
+}
+	
+html {
+	background: white url(/img/welcome/mainshade.jpg) repeat-x;
+	padding:0px; 
+	margin:0px;
+}
+
+
+#messagesBar {
+	padding-top:.5em;
+}
+
+*{
+margin:0;
+padding:0;
+}
+
+
+table { width:100% } 
+
+#joey-login-frame {
+	width:100%;
+	text-align:center;
+}
+
+/* used in users -> register */
+
+#joey-general-frame {
+	width:100%;
+
+}
+
+#joey-login-content {
+	margin-left:auto;
+	padding:1em;
+	padding-bottom:0;
+	margin-right:auto;
+	text-align:left;
+}
+
+.joey-panel {
+	width:230px;
+	padding-left:1em;
+}
+
+#joey-registration-content {
+	margin-left:auto;
+	margin-right:auto;
+	padding:1em;
+	max-width:550px;
+	text-align:left;
+}
+
+
+/*
+
+*/
+.joey-upload-sidebar {
+}
+
+.joey-upload-mediaicon {	
+	color:gray;
+	float:left;
+}
+
+
+#joey-upload-frame {
+	padding:1em;
+	margin:0px;	
+}
+/* Used by the system messages in panels such as the UPload */ 
+/* For example, uploads/index, You have no uploads yet. */
+
+.joey-warning {
+        margin-top:.5em;
+	padding:1em;
+	border:1px solid #666600;
+	background-color:#333300;
+}
+
+.joey-message {
+	padding:1em;
+	border:1px solid gray;
+	background-color:#444444;
+}
+
+.joey-loading {
+	background: url(/img/loading.gif) no-repeat 10px 10px;
+padding-left:16px;
+}
+
+
+table.joey-upload-list, .joey-upload-list td {
+	padding:1em;
+}
+.joey-upload-list td {
+padding:.5em;	
+}
+
+/* This produces a gray border at the bottom of each row */
+
+.joey-item-thumb, .joey-item-information, .joey-item-control {
+	border-bottom:1px solid #555555;
+}
+
+.joey-item-information {
+	text-align:left;
+ 	vertical-align:top;
+}
+
+.videoPlayer {
+	width:324px;
+	margin:4px;	
+	border:1px solid white;
+	padding:4px;
+}
+
+.videobutton-play {
+	background: transparent url(/img/play.png) 3px 3px no-repeat;
+}
+.videobutton-pause {
+	background: transparent url(/img/pause.png) 3px 3px no-repeat;
+}
+.videobutton-stop {
+	background: transparent url(/img/stop.png) 3px 3px no-repeat;
+}
+.videobutton-thumb {
+	background: transparent url(/img/thumb.png) no-repeat;
+}
+
+
+td.joey-item-thumb {
+ max-width:110px;
+ text-align:center;
+ vertical-align:top;
+}
+
+.joey-upload-image-thumb {
+	margin:6px;
+	width:100px;
+ 	padding:1px;	
+}
+
+.joey-upload-preview-thumb {
+	margin:6px;
+	border:16px solid #333333;
+	padding:1px;
+}
+
+
+.framecontent {
+	max-width:880px;
+	text-align:left;
+}
+
+body{
+
+font-family: sans-serif;
+
+color:black;
+font-size: 76%;
+
+}
+
+.topcontent {
+	width:492px;
+	height:9px;
+	background: url(/img/welcome/box-top.jpg) no-repeat 0 0;
+}
+
+.midcontent {
+	width:492px;
+	background:  url(/img/welcome/box-mid.jpg) repeat-y 0 0;
+}
+
+.midcontentpanel {
+	padding:20px;
+}
+.bottomcontent {
+
+	width:492px;
+	height:35px;
+	background: url(/img/welcome/box-bot.jpg) repeat-y 0 0;
+
+}
+
+.button {
+	width:213px;
+	height:64px;
+	background: url(/img/welcome/button2.gif) no-repeat 0 0;	
+	text-align:center;
+	font-weight:bold;
+	font-size:18px;
+	padding-top:14px;
+}
+
+
+#topbanner {
+	background: url(/img/welcome/toppreamble.jpg) repeat-x;
+	height:34px;
+ 	width:100%;
+
+}
+
+#barleft {
+	background:url(style/bar-left.jpg) no-repeat;
+	height:29px;
+}
+
+#barmiddle {
+
+	width:270px;
+	margin-left:8px;
+	background:url(style/bar-middle.jpg) repeat-x;
+	height:29px;
+	text-align:right;
+	color:black;
+
+}
+
+#barmiddle p {
+	padding-top:6px;
+}
+
+#barmiddle p a {
+	color:black;
+	font-size:12px;
+	font-weight:bold;
+	
+}
+
+#barmiddle p a:hover {
+	color:
+}
+
+
+#joeyserverlink {
+	float:left;
+	padding-top:85px;
+
+}
+
+a{
+color: darkorange;
+text-decoration:underline;
+}
+
+a:hover{
+color:orange;
+text-decoration:none;
+}
+
+a img{
+border:none;
+}
+
+h1, h2, h3, h4{
+font-weight:bold;
+}
+
+
+
+h1{
+color: white; 
+padding:0.3em 0;
+font-size: 180%;
+}
+
+h2{
+color:rgb(220,255,0);;
+padding-top: 1em;
+padding:0.3em 0;
+font-size: 180%;
+}
+
+h3{
+font-size: 110%;
+color:rgb(180,90,0);
+}
+
+.titleupload a {
+	text-decoration:none;
+	margin:0px;
+	color:white;
+	font-size:130%;
+	font-weight:bold;
+	padding:0px;
+
+}
+
+h4{
+color:#c6c65b;
+padding-top:0.5em;
+font-weight:normal;
+}
+
+em {
+font-size: 12px;
+}
+
+ul, li {
+margin: 0 12px;
+}
+
+/* Layout */
+
+
+div#container {
+ background:  url(style/border-shade-vertical.jpg) no-repeat 100% 0;
+}
+
+#innercontent {
+
+}
+
+
+#header{
+	background: url(/img/welcome/background-logo.jpg) no-repeat 50% 0;
+	height:172px;
+}
+
+#content{
+}
+
+#footer-content {
+}
+
+#pagination {
+	max-width:670px;
+}
+#pagination-pagesize {
+ float:right;
+}
+
+#footer {
+height:2em;
+color:gray;
+margin:0px;
+margin-top:2px;
+padding:1em;
+text-align: center;
+}
+
+p {
+  font-size:86%;
+  padding:.3em;
+  padding-left:0px;
+
+
+}
+
+.panel {
+	display:none;
+}
+
+.button a {
+ color:black;
+padding:10px;
+padding-right:20px;
+padding-left:20px;
+ text-decoration:none;
+}
+
+a:hover {
+	color:orange;
+}
