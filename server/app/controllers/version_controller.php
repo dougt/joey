@@ -47,14 +47,20 @@ class VersionController extends AppController
     var $helpers = array('Form','Html','Javascript');
     
     function index($version = "0.0", $firstrun = false) {
-      
+
+      $this->layout = 'joeyclient';
+ 
       $this->set('firstrun', (isset($firstrun) && $firstrun == "firstrun"));
 
       $_filename = '../webroot/release_notes/'. $version;
-      if (file_exists($_filename))
+      if (file_exists($_filename)) {
         $this->set('content', file_get_contents($_filename));
-      else
+	}
+
+      else {
+	$this->set('filename_spec',$_filename);
         $this->set('content', "");
+	}
 
     }
 
