@@ -1,0 +1,186 @@
+<center>
+<table  width="500" border="0" style="width:600px;" cellspacing="0" cellpadding="0"><tr>
+<td valign="top" style="padding-right:1em" >
+
+<div class="button">
+<a href="javascript:" onmouseover="button(this)" onmouseout="buttonOut(this)"  onclick="panel('panel1');return false">Get Started</a>
+</div>
+<div class="button">
+<a href="javascript:"   onmouseover="button(this)" onmouseout="buttonOut(this)" onclick="panel('panel2');return false">Learn More</a>
+</div>
+<div class="button">
+<a href="javascript:"  onmouseover="button(this)" onmouseout="buttonOut(this)" onclick="panel('panel3');return false">Get Involved</a>
+</div>
+
+
+</td>
+<td valign="top" width="500">
+
+<div id="panel1" >
+
+<div class="topcontent">
+
+</div>
+<div class="midcontent">
+<div class="midcontentpanel">
+
+<h3>Try Joey! Text</h3>
+<p>
+Here is a quick hands-on experience. To send the following text to your mobile, first select it using the mouse:</p>
+
+<div style="border:1px solid white;background-color:#ffffaa;-moz-border-radius:9px;margin:.3em;padding:1em">
+** Send me to Joey **
+</div>
+<div id="pass1" style="display:none">
+<p>Smooth!. Now you can click right mouse button, and select the option:
+[Joey Selected Text!]
+</p>
+</div>
+</div>
+</div>
+
+<div class="bottomcontent">
+</div>
+</div>
+
+<div id="panel2" class="panel">
+
+<div class="topcontent">
+
+</div>
+<div class="midcontent">
+<div class="midcontentpanel">
+
+<h3>Joey Video Demonstration</h3>
+<p>
+This tutorial shows how to send video, music, and more.</p>
+<p style="margin-left:13px"><object width="425" height="350"><param name="movie" value="http://www.youtube.com/v/uH_S_9qYt5w"></param><param name="wmode" value="transparent"></param><embed src="http://www.youtube.com/v/uH_S_9qYt5w" type="application/x-shockwave-flash" wmode="transparent" width="425" height="350"></embed></object></p>
+
+</div>
+</div>
+
+<div class="bottomcontent">
+</div>
+</div>
+
+<div id="panel3" class="panel">
+
+<div class="topcontent">
+
+</div>
+<div class="midcontent">
+<div class="midcontentpanel">
+
+<h3>Forum Support</h3>
+<p>
+To get help check the <a href="https://labs.mozilla.com/forum/index.php?board=3.0">Joey! Forum</a>.</p>
+
+<h3 style="margin-top:1em">Developer Channels</h3>
+<p>
+For developer information please refer to the <a href="http://wiki.mozilla.org/Labs/Joey">Mozilla Labs Joey Project</a>.
+</p>
+
+</div>
+</div>
+
+<div class="bottomcontent">
+</div>
+</div>
+
+
+<script>
+
+function button(refObject) {
+	refObject.parentNode.style.background="url(/img/welcome/button3.gif) no-repeat 0 0 ";
+}
+function buttonOut(refObject) {
+	refObject.parentNode.style.background="url(/img/welcome/button2.gif) no-repeat 0 0";
+
+}
+
+var allPanels = ['panel1','panel2','panel3'];
+
+function panel(refPanel) {
+
+	for( var i=0;i<3;i++) {
+		var currentPanel = allPanels[i];
+		if(currentPanel==refPanel) {
+
+			document.getElementById(currentPanel).style.display="block";
+
+		} else {
+			document.getElementById(currentPanel).style.display="none";
+
+		}
+
+	}
+}
+
+
+document.body.addEventListener("DOMNodeInserted",joeyMutation,false);
+
+function joeyMutation(e) {
+
+       var eventNode = e.target;
+	if(eventNode.getAttribute("command")=="ready") {
+
+
+		sniffSelection();
+
+	}
+
+}
+
+var gPassed1 = false;
+
+function sniffSelection() {
+
+
+	var probeStr = document.getSelection();
+	var checkStr = "** Send me to Joey **";
+
+	try { 
+
+		if(probeStr!="") {
+		if(checkStr.indexOf(probeStr)>-1) {
+
+			pass2();
+			gPassed1=true;
+
+		}
+		}
+
+	} catch(i) {} 
+	
+	if(!gPassed1) {
+		setTimeout("sniffSelection()",3000);
+	}
+
+}
+
+function pass2() {
+
+	document.getElementById("pass1").style.display="block";
+
+}
+
+gCurrentPanel="pass0";
+gFadeCounter = 0;
+
+function fadeIn() {
+
+	if(gFadeCounter<100) {
+
+
+	}
+
+}
+
+</script>
+
+
+</td>
+</tr>
+</table>
+</center>
+
