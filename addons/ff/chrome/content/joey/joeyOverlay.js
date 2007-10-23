@@ -478,8 +478,6 @@ function contentLoaded_firstRun() {
 
 function joeyPageTalk() {
 
-alert(5);
-
     try { 
     
         var alienDocument = g_joey_gBrowser.selectedBrowser.contentDocument;
