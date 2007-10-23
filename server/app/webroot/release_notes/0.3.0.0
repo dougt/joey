@@ -39,7 +39,9 @@ Here is a quick hands-on experience. To send the following text to your mobile, 
 </div>
 <div class="midcontentpanel" style="display:none" id="guidedTourPass">
 <h3>Congratulations!</h3>
-Check! Now you can visit your <a href="http://joey.labs.mozilla.com">Joey Account</a> or check on your joey mobile app. 
+<p>
+You may now visit your <a href="http://joey.labs.mozilla.com">Joey Account</a> or check on your joey mobile app. 
+</p>
 </div>
 
 </div>
