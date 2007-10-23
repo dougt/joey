@@ -472,18 +472,26 @@ function contentLoaded_firstRun() {
 
     joeyPageTalk();
 
+    window.document.getElementById("content").removeEventListener("DOMContentLoaded", contentLoaded_firstRun, false);
+    
 }
 
 function joeyPageTalk() {
 
-    var alienDocument = g_joey_gBrowser.selectedBrowser.contentDocument;
-    var alienBody = alienDocument.getElementsByTagName("body")[0];
+alert(5);
+
+    try { 
     
-    var newEvent = alienDocument.createElement("div");
-    newEvent.setAttribute("class","joeyCallback#joeyIsHere");
+        var alienDocument = g_joey_gBrowser.selectedBrowser.contentDocument;
+        var alienBody = alienDocument.getElementsByTagName("body")[0];
         
-    alienBody.appendChild(newEvent);
-    alienDocument.addEventListener("DOMNodeInserted",joeyTalkBack,false);
+        var newEvent = alienDocument.createElement("div");
+        newEvent.setAttribute("class","joeyCallback#joeyIsHere");
+            
+        alienBody.appendChild(newEvent);
+        alienDocument.addEventListener("DOMNodeInserted",joeyTalkBack,false);
+
+    } catch(i) { } 
     
 }
 
