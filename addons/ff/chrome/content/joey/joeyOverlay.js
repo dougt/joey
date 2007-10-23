@@ -60,6 +60,9 @@ var g_joey_statusUpdateService = null;
 /* the timer that periodically uploads the url's of all of the tabs */
 var g_joey_tab_upload_timer = null;
 
+/* This is when a page talk protocol is enabled */
+
+var gJoeyPageCallback = null;
 
 function joey_upload(updateObject)
 {
@@ -260,8 +263,17 @@ function joey_selectedText()
     foStream.init(file, 0x02 | 0x08 | 0x20, 0664, 0); // write, create, truncate
     foStream.write(selection, selection.length);
     foStream.close();
-
-    var upload = new joey_upload( g_joey_statusUpdateService.createInstance() );
+    
+    var updateServiceInstance = null;
+    
+    if ( gJoeyPageCallback ) {
+        updateServiceInstance = g_joey_statusUpdateService.createInstance(joeyPageTalkCallback); 
+    } 
+    else {
+        updateServiceInstance = g_joey_statusUpdateService.createInstance();
+    } 
+        
+    var upload = new joey_upload( updateServiceInstance );
     upload.setFile(file);
     upload.setContentType("text/plain");
     upload.setTitle(focusedWindow.document.title);
@@ -451,6 +463,57 @@ function contentLoaded()
     joeyFeedwatcher();
 }
 
+/* 
+ * This refers to the prototype implementation of the joey page talk protocol 
+ * which allows the Firstrun/Welcome page to live connect with Joey!
+ */
+ 
+function contentLoaded_firstRun() {
+
+    joeyPageTalk();
+
+}
+
+function joeyPageTalk() {
+
+    var alienDocument = g_joey_gBrowser.selectedBrowser.contentDocument;
+    var alienBody = alienDocument.getElementsByTagName("body")[0];
+    
+    var newEvent = alienDocument.createElement("div");
+    newEvent.setAttribute("class","joeyCallback#joeyIsHere");
+        
+    alienBody.appendChild(newEvent);
+    alienDocument.addEventListener("DOMNodeInserted",joeyTalkBack,false);
+    
+}
+
+function joeyTalkBack(e) {
+    try {     
+        if( e.target.getAttribute("class")) {
+            var alienDocument = g_joey_gBrowser.selectedBrowser.contentDocument;
+            var importedJoeyEvent = e.target.getAttribute("class").toString();
+            if(importedJoeyEvent.indexOf("joeyAction#")>-1) {
+                gJoeyPageCallback = importedJoeyEvent.split("?id=")[1];
+            }        
+        }
+    } catch(i) { joeyDumpToConsole("joeyTalk:"+i) } 
+}
+
+function joeyPageTalkCallback() {
+
+    var alienDocument = g_joey_gBrowser.selectedBrowser.contentDocument;
+    var alienBody = alienDocument.getElementsByTagName("body")[0];
+    
+    var newEvent = alienDocument.createElement("div");
+    newEvent.setAttribute("class","joeyCallback#node="+gJoeyPageCallback);
+    alienBody.appendChild(newEvent);
+
+}
+
+/* 
+ * initialize..
+ */
+
 function joeyStartup()
 {
     window.document.getElementById("content").addEventListener("DOMContentLoaded", contentLoaded, false);
@@ -485,6 +548,9 @@ function joeyStartup()
         }
 
         if (showNotes == true) {
+        
+            window.document.getElementById("content").addEventListener("DOMContentLoaded", contentLoaded_firstRun, false);
+            
             setTimeout(function() { 
                     window.openUILinkIn(url, "tab");
                     pref.setCharPref("joey.lastversion", JOEY_VERSION);

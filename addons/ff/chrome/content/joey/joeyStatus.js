@@ -58,12 +58,13 @@ function joeyStatusUpdateService() {
     this.uniqueCounter = 0;
     
 
-    this.createInstance = function factory() {
+    this.createInstance = function factory(pageTalkCallback) {
     
-        var newSharedObject = new JoeyStatusUpdateClass(this);
+        var newSharedObject = new JoeyStatusUpdateClass(this,pageTalkCallback);
         var intUniqueID = this.uniqueCounter++;
         newSharedObject.nameId = intUniqueID;   
         this.statusObjects[intUniqueID] = newSharedObject;
+                
         return newSharedObject;
         
     }
@@ -371,7 +372,7 @@ function joeyStatusUpdateService() {
 }
 
 
-function JoeyStatusUpdateClass(parentService) {
+function JoeyStatusUpdateClass(parentService,pageTalkCallback) {
 
   /* We have now the XUL stack with elements in it. 
    * A background Layer and the top layer for 
@@ -382,6 +383,10 @@ function JoeyStatusUpdateClass(parentService) {
   this.nameId          = null;
   this.progressElement = null;
 
+  if(pageTalkCallback) {
+    this.externalCallback = pageTalkCallback;
+  }
+  
 }
 
 /* 
@@ -400,6 +405,7 @@ JoeyStatusUpdateClass.prototype =
     uploadStatus    : 0,
     downloadStatus  : 0,
     uploadObject    : null,
+    externalCalback : null,
     
     destructor: function () 
     {
@@ -462,6 +468,9 @@ JoeyStatusUpdateClass.prototype =
             } 
             else if(verb=="upload") { 
                 this.uploadStatus = 2;
+                if( this.externalCallback ) {
+                    this.externalCallback();
+                }
             } 
             this.actionQueue.push("completed");
         } 
