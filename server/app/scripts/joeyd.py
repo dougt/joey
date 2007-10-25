@@ -73,15 +73,12 @@ standardError = sys.stderr
 def logMessage (msg, error=0):
     msg = time.ctime() + " - " + msg
 
-    if "verbose" in workingEnvironment:
+    if not error == 0 or "verbose" in workingEnvironment:
         LogFile = open(workingEnvironment["logPathName"], "a")
         LogFile.write(msg + "\n")
         LogFile.close()
 
     if "debug" in workingEnvironment:
-        error = 1
-
-    if not error == 0:
         print >>standardError, msg
 
 #---------------------------------------------------------------------------------------------------
@@ -100,7 +97,7 @@ def processUpload (db, uploadId):
         uploadDir = os.path.join(workingEnvironment['UploadDir'], str(x.user_id))
 
         if not os.access(uploadDir, os.R_OK|os.W_OK):
-          logMessage("Upload directory (%s) is not readable or writable, failing.\n" % (uploadDir, id),1)
+          logMessage("Upload directory (%s) is not readable or writable, failing.\n" % (uploadDir, id), 1)
           return
 
         if x.source is None:
@@ -171,9 +168,14 @@ def safeExternalOnlyGet (url):
         logMessage("Done fetching url: %s" % (url))
         return result
 
+    if (resp.status == 400):
+        # remember byte count for reporting
+        logMessage("Auth failed for url: %s" % (url))
+        return "This required authorization which is not supported yet.  Sorry."
+
     # remember item count for reporting
     joeyd_stat_fetched_item_failure_count = joeyd_stat_fetched_item_failure_count + 1
-    logMessage("Error fetching url: %s (%s)(%s)" %(url, resp, result));
+    logMessage("Error fetching url: %s (%s)(%s)" %(url, resp, result), 1);
     return False
 
 #---------------------------------------------------------------------------------------------------
@@ -397,7 +399,7 @@ class Transcode:
         previewFile = os.path.join(workingEnvironment['UploadDir'], str(data.user_id), 'previews' , data.preview_name)
 
         if not os.path.isfile(fromFile):
-            logMessage("transcodeByUploadData.  isfile failure (file not found) upload id (%d)\n" %(data.upload_id))
+            logMessage("transcodeByUploadData.  isfile failure (file not found) upload id (%d)\n" %(data.upload_id), 1)
             return 1
         
         #TODO we need to write these file basename's to the DB
@@ -471,11 +473,11 @@ class Transcode:
 
         # Encode the file, wait for the command to return
         if not os.spawnlp(os.P_WAIT, workingEnvironment['FfmpegCmd'], os.path.basename(workingEnvironment['FfmpegCmd']), '-y', '-i', fromFile, '-ar', '8000', '-ac', '1', '-ab', '7400', '-f', 'amr', toFile) == 0:
-            logMessage("_transcodeAudio spawnlp failure (%s)\n" %(FromFile))
+            logMessage("_transcodeAudio spawnlp failure (%s)\n" %(FromFile), 1)
             return 1
 
         if not os.path.isfile(toFile): 
-            logMessage("_transcodeAudio isfile failure (%s)\n" %(fromFile))
+            logMessage("_transcodeAudio isfile failure (%s)\n" %(fromFile), 1)
             return 1
 
         return 0
@@ -484,20 +486,20 @@ class Transcode:
 
         # Copy the file, wait for the command to return
         if not os.spawnlp(os.P_WAIT, 'cp', 'cp', fromFile, toFile) == 0:
-            logMessage("_transcodeBrowserStuff spawnlp failure to upldate upload id (%d)\n" %(data.upload_id))
+            logMessage("_transcodeBrowserStuff spawnlp failure to upldate upload id (%d)\n" %(data.upload_id), 1)
             return 1
 
         if not os.path.isfile(toFile): 
-            logMessage("_transcodeBrowserStuff isfile failure to upldate upload id (%d)\n" %(data.upload_id))
+            logMessage("_transcodeBrowserStuff isfile failure to upldate upload id (%d)\n" %(data.upload_id), 1)
             return 1
 
         # Copy the file to preview, wait for the command to return
         if not os.spawnlp(os.P_WAIT, 'cp', 'cp', fromFile, preview) == 0:
-            logMessage("_transcodeBrowserStuff spawnlp 2 failure to upldate upload id (%d)\n" %(data.upload_id))
+            logMessage("_transcodeBrowserStuff spawnlp 2 failure to upldate upload id (%d)\n" %(data.upload_id), 1)
             return 1
 
         if not os.path.isfile(preview): 
-            logMessage("_transcodeBrowserStuff isfile 2 failure to upldate upload id (%d)\n" %(data.upload_id))
+            logMessage("_transcodeBrowserStuff isfile 2 failure to upldate upload id (%d)\n" %(data.upload_id),1)
             return 1
 
         return 0
@@ -506,11 +508,11 @@ class Transcode:
 
         # Encode the file, wait for the command to return
         if not os.spawnlp(os.P_WAIT, workingEnvironment['ConvertCmd'], os.path.basename(workingEnvironment['ConvertCmd']), '-geometry', ("%sx%s"% (width, height)), fromFile, toFile) == 0:
-            logMessage("_transcodeImage spawnlp failure (%s)\n" %(fromFile))
+            logMessage("_transcodeImage spawnlp failure (%s)\n" %(fromFile),1)
             return 1
 
         if not os.path.isfile(toFile): 
-            logMessage("_transcodeImage isfile failure (%s)\n" %(fromFile))
+            logMessage("_transcodeImage isfile failure (%s)\n" %(fromFile),1)
             return 1
 
         return 0
@@ -535,11 +537,11 @@ class Transcode:
 
         # Copy the file, wait for the command to return
         if not os.spawnlp(os.P_WAIT, 'cp', 'cp', fromFile, toFile) == 0:
-            logMessage("_transcodeText spawnlp failure to upldate upload id (%d)\n" %(data.upload_id))
+            logMessage("_transcodeText spawnlp failure to upldate upload id (%d)\n" %(data.upload_id),1)
             return 1
 
         if not os.path.isfile(toFile): 
-            logMessage("_transcodeText isfile failure to upldate upload id (%d)\n" %(data.upload_id))
+            logMessage("_transcodeText isfile failure to upldate upload id (%d)\n" %(data.upload_id),1)
             return 1
 
         logMessage("successfully updated upload id (%d).\n" %(data.upload_id))
@@ -613,9 +615,7 @@ class Update:
                 logMessage("Attempt to update unsupported type (%s) for upload id (%d)" % (data.contentsourcetype_name, data.upload_id) ,1)
                 return 0
         except Exception, x:
-            print >>standardError, x
-            traceback.print_exc(file=standardError)
-            logMessage("something bad happened with upload id (%d)" %(data.upload_id))
+            logMessage("something bad happened with upload id (%d):\n\t%s" %(data.upload_id, x), 1)
             return 0
 
         return result
@@ -634,7 +634,7 @@ class Update:
             rss_url = rss_url.replace('rss=', '')
         except:
             # no url for the icon
-            logMessage("no rss url to process for upload id (%d).  Ignoring" %(data.upload_id))
+            logMessage("no rss url to process for upload id (%d).  Ignoring" %(data.upload_id),1)
             return 1
 
         # parse out the optional icon url
@@ -654,7 +654,7 @@ class Update:
         d = feedparser.parse(source)
 
         if hasattr(d, "entries") == False:
-            logMessage("no entries for upload id (%d)" %(data.upload_id))
+            logMessage("no entries for upload id (%d)" %(data.upload_id),1)
             return 1;
 
 
@@ -725,11 +725,11 @@ class Update:
 
                         # todo transcode audio (Can I simply call Transcode.transcodeAudio?)
                         if not os.spawnlp(os.P_WAIT, workingEnvironment['FfmpegCmd'], os.path.basename(workingEnvironment['FfmpegCmd']), '-y', '-i', originalFile, '-ar', '8000', '-ac', '1', '-ab', '7400', '-f', 'amr', newFile) == 0:
-                            logMessage("_updateRssTypeFromUploadData spawnlp failure to upldate upload id (%d)\n" %(data.upload_id))
+                            logMessage("_updateRssTypeFromUploadData spawnlp failure to upldate upload id (%d)\n" %(data.upload_id),1)
                             return 1
                         
                         if not os.path.isfile(newFile): 
-                            logMessage("_updateRssTypeFromUploadData isfile failure to upldate upload id (%d)\n" %(data.upload_id))
+                            logMessage("_updateRssTypeFromUploadData isfile failure to upldate upload id (%d)\n" %(data.upload_id),1)
                             return 1
                         logMessage("successfully updated upload id (%d).\n" %(data.upload_id))
                         
@@ -1203,6 +1203,7 @@ if __name__ == "__main__":
                     (None, 'FfmpegCmd', True, "", 'Where is your ffmpeg executable?'),
                     ('v',  'verbose', False, None, 'print status information as it runs to stderr'),
                     ('d',  'debug', False, None, 'print status information as it runs to stdout'),
+                    ('u',  'uploadID', True, None, 'Manually update the given upload id.'),
                     ('l',  'listen', False, None, 'listen on the listening address and port for incoming requests'),
                     ]
         
@@ -1214,16 +1215,20 @@ if __name__ == "__main__":
     
     try:
         
-        logMessage("joeyd starting.",1)
+        logMessage("joeyd starting.")
         
-        logMessage("joeyd db setup.",1)
-        
-        joeyd_threadpool = ThreadPool(workingEnvironment["threadcount"])
-        
-        logMessage("joeyd threadpool setup.",1)      
-
         Transcode = Transcode();
         Update = Update();
+
+        if "uploadID" in workingEnvironment:
+
+            db = Database()
+            processUpload (db, workingEnvironment["uploadID"])
+            db.close()
+            sys.exit(1)
+
+        joeyd_threadpool = ThreadPool(workingEnvironment["threadcount"])    
+        logMessage("joeyd threadpool setup.")      
 
         if "listen" in workingEnvironment:
             
@@ -1231,14 +1236,14 @@ if __name__ == "__main__":
 
             joeyd_refresher_timer = Timer(30*60.0, joeyd_refresher_timeout)
             joeyd_refresher_timer.start()
-            logMessage("joeyd timer setup.", 1)
+            logMessage("joeyd timer setup.")
             
             joeyd_heartbeat_timer = Timer(10.0, joeyd_heartbeat_timeout)
             joeyd_heartbeat_timer.start()
-            logMessage("joeyd heartbeat setup.", 1)
+            logMessage("joeyd heartbeat setup.")
             
             joeyd_server     = HTTPServer((workingEnvironment["listenAddress"], workingEnvironment["listenPort"]), RequestHandler)
-            logMessage("Connected on: %s:%s" % (workingEnvironment["listenAddress"], workingEnvironment["listenPort"]),1)
+            logMessage("Connected on: %s:%s" % (workingEnvironment["listenAddress"], workingEnvironment["listenPort"]))
             joeyd_server.serve_forever() 
             
             joeyd_threadpool.joinAll()
@@ -1246,6 +1251,9 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print >>standardError, "Interrupted..."
         sys.exit()
+        pass
+    
+    except SystemExit:
         pass
 
     except Exception, x:

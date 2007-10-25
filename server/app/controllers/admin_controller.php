@@ -73,7 +73,6 @@ class AdminController extends AppController
       $result = $this->User->query("SELECT count(*) from users WHERE confirmationcode is not NULL");
       $_summary["pending_users_count"] = $result[0][0]["count(*)"];
 
-
       $_summary["joeyd_stats"] = "Problem reading joeyd stat file!";
       
       if (is_readable(JOEYD_STAT_FILE) && is_file(JOEYD_STAT_FILE)) {
