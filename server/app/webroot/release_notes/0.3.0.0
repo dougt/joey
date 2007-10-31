@@ -2,7 +2,7 @@
 <table  width="500" border="0" style="width:600px;" cellspacing="0" cellpadding="0"><tr>
 <td valign="top" style="padding-right:1em" >
 
-<div class="button">
+<div class="button" style="display:none" id="button-guided">
 <a href="javascript:" onmouseover="button(this)" onmouseout="buttonOut(this)"  onclick="panel('panel1');return false">Guided Tour</a>
 </div>
 <div class="button">
@@ -16,7 +16,7 @@
 </td>
 <td valign="top" width="500">
 
-<div id="panel1" >
+<div id="panel1" class="panel">
 
 <div class="topcontent">
 
@@ -65,7 +65,7 @@
   
 </div>
 
-<div id="panel2" class="panel">
+<div id="panel2">
 
 <div class="topcontent">
 
