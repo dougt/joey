@@ -39,6 +39,7 @@ function joeyMutation(e) {
 	var currentCommand= eventNode.getAttribute("class").toString();
 
 	if( currentCommand.indexOf("joeyCallback#joeyIsHere")>-1) {
+		showGuidedPanel();
 		sniffSelection();
 	}
 
@@ -48,6 +49,13 @@ function joeyMutation(e) {
 	if( currentCommand.indexOf("joeyCallback#action=help")>-1) {
 		showHelp();
 	}
+
+}
+
+function showGuidedPanel() {
+
+	panel("panel1");
+	document.getElementById("button-guided").style.display="block";
 
 }
 
