@@ -43,7 +43,7 @@ class UsersController extends AppController
 {
     var $name = 'Users';
     var $components = array('Joey', 'Sms');
-    var $uses = array('Operator', 'Phone', 'User');
+    var $uses = array('Operator', 'Phone', 'User', 'Upload');
     var $helpers = array('Form','Html','Javascript');
     var $securityLevel = 'low';
 
