@@ -39,6 +39,8 @@ form.preferences=Preferences
 form.preferences.server=Server
 form.preferences.update_interval=Update interval
 
+alert.security.error=Cannot login into server. Network connection was refused.
+alert.network.error=Cannot login into server. Please check your network configuration.
 alert.login.error=Cannot login into server. Username or password wrong?
 alert.exit.msg=Do you really want to exit Joey?
 alert.wait.msg=Please wait!

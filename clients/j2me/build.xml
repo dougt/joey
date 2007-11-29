@@ -180,6 +180,8 @@
 				<variable name="polish.useScrollBar" value="true"/>
 				<variable name="polish.MenuBar.useExtendedMenuBar" value="true"/>
 				<variable name="polish.TextField.useDirectInput" value="true" unless="${ isOS( Windows ) } or polish.hasPointerEvents"/>
+				<variable name="polish.FullScreen" value="false" if="${ isOS( Windows ) }"/>
+				<variable name="polish.TextField.usePredictiveInput" value="false"/>
 				<variable name="joey.update.url" value="${joey.update.url}${polish.vendor}-${polish.name}-${polish.locale}-joey.jad" />
 			</variables>
 			<!-- Here you can set the dir attribute to "resources2" for an alternative design. -->

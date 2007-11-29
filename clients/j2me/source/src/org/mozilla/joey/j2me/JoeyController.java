@@ -110,6 +110,8 @@ public class JoeyController
 	private static final int ALERT_APPLY_UPDATES = 13;
 	private static final int ALERT_NEW_VERSION_AVAILABLE = 14;
 	private static final int ALERT_ERROR_DISPLAY_DETAILS = 15;
+	private static final int ALERT_NETWORK_ERROR = 16;
+	private static final int ALERT_SECURITY_ERROR = 17;
 
 	public static final String ATTR_UPLOAD = "upload";
 
@@ -335,6 +337,20 @@ public class JoeyController
 			case ALERT_LOGIN_ERROR:
 				//#style alertConfirmation
 				alert = new Alert(null, Locale.get("alert.login.error"), null, AlertType.ERROR);
+				alert.setTimeout(Alert.FOREVER);
+				alert.setCommandListener(this.commandListener);
+				return alert;
+				
+			case ALERT_NETWORK_ERROR:
+				//#style alertConfirmation
+				alert = new Alert(null, Locale.get("alert.network.error"), null, AlertType.ERROR);
+				alert.setTimeout(Alert.FOREVER);
+				alert.setCommandListener(this.commandListener);
+				return alert;
+				
+			case ALERT_SECURITY_ERROR:
+				//#style alertConfirmation
+				alert = new Alert(null, Locale.get("alert.security.error"), null, AlertType.ERROR);
 				alert.setTimeout(Alert.FOREVER);
 				alert.setCommandListener(this.commandListener);
 				return alert;
@@ -575,7 +591,20 @@ public class JoeyController
 								break;
 		
 							case EVENT_NETWORK_REQUEST_FAILED:
-								showView(ALERT_LOGIN_ERROR);
+								switch (this.commController.getErrorCode()) {
+									case CommunicationController.ERROR_NETWORK:
+										showView(ALERT_NETWORK_ERROR);
+										break;
+
+									case CommunicationController.ERROR_SECURITY:
+										showView(ALERT_SECURITY_ERROR);
+										break;
+
+									case CommunicationController.ERROR_LOGIN_DATA:
+									default:
+										showView(ALERT_LOGIN_ERROR);
+										break;
+								}
 								waitEvent();
 								event = EVENT_NONE;
 								break;

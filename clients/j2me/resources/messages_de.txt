@@ -43,6 +43,8 @@ form.preferences=Einstellungen
 form.preferences.server=Server
 form.preferences.update_interval=Aktualisierungsrate
 
+alert.security.error=Anmeldung auf dem Server nicht m\u00f6glich. Netzwerkzugriff wurde verweigert.
+alert.network.error=Anmeldung auf dem Server nicht m\u00f6glich. Ist ihr Netzzugang richtig konfiguriert?
 alert.login.error=Anmeldung auf dem Server nicht m\u00f6glich. Benutzername oder Passwort falsch?
 alert.exit.msg=Wollen sie Joey wirklich beenden?
 alert.wait.msg=Bitte warten!

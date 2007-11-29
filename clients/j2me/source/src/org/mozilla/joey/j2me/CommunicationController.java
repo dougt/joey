@@ -29,6 +29,7 @@ import de.enough.polish.util.ArrayList;
 import de.enough.polish.util.TextUtil;
 
 import java.io.EOFException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.ByteArrayOutputStream;
@@ -38,6 +39,11 @@ import javax.microedition.io.HttpConnection;
 public class CommunicationController
 	extends Thread
 {
+	public static final int ERROR_NONE = 0;
+	public static final int ERROR_LOGIN_DATA = 1;
+	public static final int ERROR_NETWORK = 2;
+	public static final int ERROR_SECURITY = 3;
+
 	private static final String JOEY_STATUS = "X-joey-status";
 	private static final String JOEY_VERSION = "X-joey-version";
 
@@ -52,6 +58,7 @@ public class CommunicationController
     private ArrayList queue;
     private UserData userData;
     private String currentVersion = JoeyController.VERSION_UNKNOWN;
+	private int errorCode;
 
 	public CommunicationController(JoeyController controller)
 	{
@@ -113,6 +120,8 @@ public class CommunicationController
    
     private void process(NetworkRequest nr)
     {
+    	this.errorCode = ERROR_NONE;
+
         RedirectHttpConnection connection = null;
         InputStream in = null;
         
@@ -201,6 +210,20 @@ public class CommunicationController
           System.out.println("Joey Host not found");
           }
         */
+        catch (SecurityException e)
+        {
+        	//#debug error
+        	System.out.println("Error requesting url " + nr.requestURL);
+        	
+        	this.errorCode = ERROR_SECURITY;
+        }
+        catch (IOException e)
+        {
+        	//#debug error
+        	System.out.println("Error requesting url " + nr.requestURL);
+
+        	this.errorCode = ERROR_NETWORK;
+        }
         catch (Throwable t)
         {
             t.printStackTrace();
@@ -211,6 +234,8 @@ public class CommunicationController
 
             // Fake an error.
             nr.responseCode = 404;
+
+            this.errorCode = ERROR_LOGIN_DATA;
         }
         finally {
             try
@@ -307,9 +332,11 @@ public class CommunicationController
 
     private void updateServerURL()
     {
+    	//#if polish.vendor != Samsung
         if (this.userData.isUseSsl())
         	this.serverUrl = TextUtil.replace(this.serverUrl, "http:", "https:");
         else
+        //#endif
         	this.serverUrl = TextUtil.replace(this.serverUrl, "https:", "http:");
     }
 
@@ -317,4 +344,9 @@ public class CommunicationController
     {
     	return this.currentVersion;
     }
+
+	public int getErrorCode()
+	{
+		return this.errorCode;
+	}
 }
