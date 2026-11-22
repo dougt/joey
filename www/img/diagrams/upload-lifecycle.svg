@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1230" width="1000" height="1230" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1f1a">
+  <title>Life of one Joey upload</title>
+  <desc>From a right-click in Firefox, through the CakePHP server and the joeyd daemon, to the phone.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4a4d44"/>
+    </marker>
+    <marker id="arrowo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f39a2b"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="1230" fill="#fbfbf7"/>
+
+  <!-- lifelines -->
+  <g stroke="#e2e4da" stroke-width="2" stroke-dasharray="4 6">
+    <line x1="130" y1="60" x2="130" y2="1130"/>
+    <line x1="375" y1="60" x2="375" y2="1130"/>
+    <line x1="620" y1="60" x2="620" y2="1130"/>
+    <line x1="865" y1="60" x2="865" y2="1130"/>
+  </g>
+  <!-- headers -->
+  <g font-size="12" font-weight="700" fill="#7fa000" letter-spacing="1.5">
+    <text x="130" y="42" text-anchor="middle">FIREFOX ADD-ON</text>
+    <text x="375" y="42" text-anchor="middle">CAKEPHP SERVER</text>
+    <text x="620" y="42" text-anchor="middle">JOEYD DAEMON</text>
+    <text x="865" y="42" text-anchor="middle">PHONE</text>
+  </g>
+
+  <!-- A1 -->
+  <rect x="20" y="70" width="220" height="88" rx="10" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
+  <text x="130" y="92" text-anchor="middle" font-weight="700">1 · User picks content</text>
+  <text x="130" y="110" text-anchor="middle">right-click selected text or an</text>
+  <text x="130" y="126" text-anchor="middle">image, or the status-bar menu:</text>
+  <text x="130" y="142" text-anchor="middle">feed, found media, tabs, selection</text>
+  <line x1="130" y1="158" x2="130" y2="180" stroke="#4a4d44" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- A2 -->
+  <rect x="20" y="180" width="220" height="55" rx="10" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
+  <text x="130" y="202" text-anchor="middle" font-weight="700">2 · Ask for a title</text>
+  <text x="130" y="220" text-anchor="middle">prompt (pref joey.askForTitle)</text>
+  <line x1="130" y1="235" x2="130" y2="258" stroke="#4a4d44" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- A3 -->
+  <rect x="20" y="258" width="220" height="88" rx="10" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
+  <text x="130" y="280" text-anchor="middle" font-weight="700">3 · mocoJoey component</text>
+  <text x="130" y="298" text-anchor="middle">log in with Password Manager</text>
+  <text x="130" y="314" text-anchor="middle">credentials (prompt if none),</text>
+  <text x="130" y="330" text-anchor="middle">then multipart POST /uploads/add</text>
+  <line x1="240" y1="302" x2="265" y2="302" stroke="#4a4d44" stroke-width="1.8" marker-end="url(#arrow)"/>
+
+  <!-- S3 -->
+  <rect x="265" y="258" width="220" height="88" rx="10" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
+  <text x="375" y="280" text-anchor="middle" font-weight="700">4 · UploadsController::add</text>
+  <text x="375" y="298" text-anchor="middle">rest=1 marks a client call;</text>
+  <text x="375" y="314" text-anchor="middle">validate; quota (MAX_DISK_USAGE</text>
+  <text x="375" y="330" text-anchor="middle">20 MB); duplicate source check</text>
+  <line x1="375" y1="346" x2="375" y2="370" stroke="#4a4d44" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- S4 -->
+  <rect x="265" y="370" width="220" height="88" rx="10" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
+  <text x="375" y="392" text-anchor="middle" font-weight="700">5 · Persist</text>
+  <text x="375" y="410" text-anchor="middle">Upload + File rows (+ Contentsource)</text>
+  <text x="375" y="426" text-anchor="middle">file saved to UPLOAD_DIR/&lt;uid&gt;/originals/</text>
+  <text x="375" y="442" text-anchor="middle">ever_updated = 0</text>
+  <line x1="375" y1="458" x2="375" y2="482" stroke="#4a4d44" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- S5 -->
+  <rect x="265" y="482" width="220" height="72" rx="10" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
+  <text x="375" y="504" text-anchor="middle" font-weight="700">6 · notifyJoeyD</text>
+  <text x="375" y="522" text-anchor="middle">GET localhost:8777/&lt;upload_id&gt;</text>
+  <text x="375" y="538" text-anchor="middle">reply to add-on: X-joey-status 200</text>
+  <line x1="265" y1="518" x2="240" y2="518" stroke="#4a4d44" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+  <line x1="485" y1="518" x2="510" y2="518" stroke="#f39a2b" stroke-width="1.8" marker-end="url(#arrowo)"/>
+
+  <!-- A5 -->
+  <rect x="20" y="482" width="220" height="72" rx="10" fill="#f4f8e2" stroke="#b5d623" stroke-width="1.5"/>
+  <text x="130" y="504" text-anchor="middle" font-weight="700">Status bar shows "Joey: 100%"</text>
+  <text x="130" y="522" text-anchor="middle">upload-manager popup updates;</text>
+  <text x="130" y="538" text-anchor="middle">5xx codes show an error prompt</text>
+
+  <!-- J5 -->
+  <rect x="510" y="482" width="220" height="55" rx="10" fill="#fff" stroke="#f39a2b" stroke-width="1.8"/>
+  <text x="620" y="504" text-anchor="middle" font-weight="700">7 · processUpload(id)</text>
+  <text x="620" y="522" text-anchor="middle">load upload, file and source rows</text>
+  <line x1="620" y1="537" x2="620" y2="560" stroke="#4a4d44" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- J6 -->
+  <rect x="510" y="560" width="220" height="282" rx="10" fill="#fff" stroke="#f39a2b" stroke-width="1.8"/>
+  <text x="620" y="582" text-anchor="middle" font-weight="700">8 · Transcode or Update</text>
+  <text x="520" y="606" font-weight="700" fill="#4a4d44">Uploaded files (Transcode):</text>
+  <text x="520" y="624">image → 100x100 PNG (convert)</text>
+  <text x="520" y="641">+ 50x50 PNG preview</text>
+  <text x="520" y="658">audio → AMR 8 kHz mono (ffmpeg)</text>
+  <text x="520" y="675">video → 3GP H.263 QCIF 10 fps</text>
+  <text x="520" y="692">+ AMR-NB audio, PNG poster frame</text>
+  <text x="520" y="709">text, browser/stuff → copied</text>
+  <text x="520" y="737" font-weight="700" fill="#4a4d44">Content sources (Update):</text>
+  <text x="520" y="755">rss-source/text → fetch feed,</text>
+  <text x="520" y="772">build HTML digest, set title</text>
+  <text x="520" y="789">microsummary/xml → fetch page,</text>
+  <text x="520" y="806">apply XSLT, save text result</text>
+  <text x="520" y="823">widget/joey → fetch widget</text>
+  <line x1="620" y1="842" x2="620" y2="866" stroke="#4a4d44" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- J8 -->
+  <rect x="510" y="866" width="220" height="72" rx="10" fill="#fff" stroke="#f39a2b" stroke-width="1.8"/>
+  <text x="620" y="888" text-anchor="middle" font-weight="700">9 · Mark done</text>
+  <text x="620" y="906" text-anchor="middle">files row: new names, types, sizes</text>
+  <text x="620" y="922" text-anchor="middle">ever_updated = 1, modified = NOW()</text>
+
+  <!-- P9 / S9 -->
+  <rect x="755" y="960" width="220" height="72" rx="10" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
+  <text x="865" y="982" text-anchor="middle" font-weight="700">10 · MIDlet polls</text>
+  <text x="865" y="1000" text-anchor="middle">POST /uploads/index</text>
+  <text x="865" y="1016" text-anchor="middle">rest=1&amp;since=&lt;ts&gt; (every 300 s)</text>
+  <rect x="265" y="960" width="220" height="72" rx="10" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
+  <text x="375" y="982" text-anchor="middle" font-weight="700">index for rest clients</text>
+  <text x="375" y="1000" text-anchor="middle">key=value lines: id.N, title.N,</text>
+  <text x="375" y="1016" text-anchor="middle">type.N, modified.N, preview.N (b64)</text>
+  <line x1="755" y1="980" x2="485" y2="980" stroke="#4a4d44" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <line x1="485" y1="1012" x2="755" y2="1012" stroke="#4a4d44" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+  <text x="620" y="974" text-anchor="middle" fill="#4a4d44">items changed since last poll</text>
+  <text x="620" y="1028" text-anchor="middle" fill="#4a4d44">plain text + X-joey-status</text>
+
+  <!-- P10 / S10 -->
+  <rect x="755" y="1054" width="220" height="72" rx="10" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
+  <text x="865" y="1076" text-anchor="middle" font-weight="700">11 · Open an item</text>
+  <text x="865" y="1094" text-anchor="middle">/uploads/raw/&lt;id&gt; (MIDlet)</text>
+  <text x="865" y="1110" text-anchor="middle">/files/view/&lt;id&gt; (browsers)</text>
+  <rect x="265" y="1054" width="220" height="72" rx="10" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
+  <text x="375" y="1076" text-anchor="middle" font-weight="700">FilesController::view</text>
+  <text x="375" y="1094" text-anchor="middle">streams the processed file</text>
+  <text x="375" y="1110" text-anchor="middle">(or /original, /preview variants)</text>
+  <line x1="755" y1="1080" x2="485" y2="1080" stroke="#4a4d44" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <line x1="485" y1="1106" x2="755" y2="1106" stroke="#4a4d44" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+  <text x="620" y="1072" text-anchor="middle" fill="#4a4d44">phone-sized media</text>
+
+  <!-- legend -->
+  <rect x="20" y="1150" width="955" height="62" rx="10" fill="#f1f3e6" stroke="#e2e4da"/>
+  <text x="35" y="1172" font-weight="700">X-joey-status response header (read by the add-on and the MIDlet)</text>
+  <text x="35" y="1192">200 OK · 511 no session · 512 login error · 513 account not activated · 514 cannot delete · 515 not permitted · 516 file error · 517 out of space · 518 upload error · 519 duplicate</text>
+</svg>
