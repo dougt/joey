@@ -5,7 +5,7 @@ body { padding: 20px; }
 #shot { width: 420px; height: 220px; position: relative; overflow: hidden; background: #fff; border: 1px solid #aca899; }
 #shot .content { height: 197px; padding: 14px 18px; font: 13px Georgia, serif; color: #555; }
 #shot .statusbar { position: absolute; left: 0; right: 0; bottom: 0; }
-#shot .udmanager { left: 186px; top: 110px; width: 190px; }
+#shot .udmanager { left: 160px; top: 110px; width: 216px; }
 </style></head><body>
 <div class="stage">
 <div id="shot">
@@ -19,10 +19,12 @@ body { padding: 20px; }
     <span class="panel" style="width:100px"><span style="width:90px;height:12px;border:1px solid #aca899;background:#fff;display:inline-block"></span></span>
   </div>
   <!-- joeyUDManager popup; rows built by joeyStatusUpdateService.createProgressElement; status strings from joey.properties -->
+  <!-- progress is drawn by sliding the (white) meterbg.jpg right: style.backgroundPosition = curProgress+"px 0px",
+       revealing the darkblue box underneath; in-flight rows are labelled "NN% of <title>" -->
   <div class="udmanager">
-    <div class="joeyProgressLayer"><div class="joeyProgressMeter" style="width:100px"></div><label class="joeyTypeVideo">Upload completed</label></div>
-    <div class="joeyProgressLayer"><div class="joeyProgressMeter" style="width:100px"></div><label class="joeyTypeAudio">Download completed</label></div>
-    <div class="joeyProgressLayer"><div class="joeyProgressMeter" style="width:38px"></div><label class="joeyTypeText">Uploading...</label></div>
+    <div class="joeyProgressLayer"><div class="joeyProgressMeter" style="width:100px;background-position:100px 0"></div><label class="joeyTypeVideo">Upload completed</label></div>
+    <div class="joeyProgressLayer"><div class="joeyProgressMeter" style="width:100px;background-position:100px 0"></div><label class="joeyTypeAudio">Download completed</label></div>
+    <div class="joeyProgressLayer"><div class="joeyProgressMeter" style="width:100px;background-position:38px 0"></div><label class="joeyTypeText">38% of Kangaroo - Wikipedia</label></div>
   </div>
 </div>
 <div class="footnote" style="position:static;margin-top:8px">Reconstruction from source; not a capture of the original software.</div>

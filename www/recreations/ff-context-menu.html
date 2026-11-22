@@ -8,9 +8,10 @@ body { padding: 20px; }
 #shot .content .by { font: 11px Verdana, sans-serif; color: #777; margin-bottom: 12px; }
 #shot .content p { line-height: 1.55; margin: 0 0 10px; }
 #shot .content .sel { background: #3399ff; color: #fff; }
-#shot .content img.photo { float: right; margin: 0 0 10px 18px; width: 220px; height: 150px; border: 1px solid #999; }
+#shot .content .photo { float: right; margin: 0 0 10px 18px; width: 220px; height: 150px; border: 1px solid #999; }
 #shot .statusbar { position: absolute; left: 0; right: 0; bottom: 0; }
-#shot .menupopup { left: 330px; top: 232px; min-width: 190px; }
+#shot .menupopup { left: 300px; top: 300px; min-width: 190px; }
+#shot .cursor { position: absolute; left: 292px; top: 290px; width: 0; height: 0; border-left: 8px solid #000; border-top: 12px solid transparent; border-bottom: 0; transform: rotate(-20deg); filter: drop-shadow(0 0 1px #fff); }
 </style></head><body>
 <div class="stage">
 <div id="shot">
@@ -47,6 +48,7 @@ body { padding: 20px; }
     <div class="item">View Page Source</div>
     <div class="item">View Page Info</div>
   </div>
+  <div class="cursor"></div>
 </div>
 <div class="footnote" style="position:static;margin-top:8px">Reconstruction from source; not a capture of the original software.</div>
 </div>
