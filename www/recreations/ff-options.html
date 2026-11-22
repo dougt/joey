@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Reconstruction: Joey options dialog (joeyOptions.xul)</title><link rel="stylesheet" href="ff.css">
+<style>
+body { padding: 20px; background: #6d8fc2; }
+#shot { width: 520px; }
+#shot .dialog { width: 520px; }
+</style></head><body>
+<div class="stage">
+<div id="shot">
+<div class="dialog">
+  <div class="titlebar"><img src="assets/ff/joey16x16.png" alt="" style="width:16px;height:16px">Joey - Options<span class="ctl"><span class="x">&#10005;</span></span></div>
+  <div class="body">
+    <!-- strings: joey.dtd options.* ; window title: brand.dtd options.windowTitle.title -->
+    <div class="groupbox"><div class="caption">Privacy</div>
+      <div class="row"><button class="xp" style="min-width:120px">Clear Private Data</button></div>
+    </div>
+    <div class="groupbox"><div class="caption">Joey Options</div>
+      <div class="checkbox"><i class="on"></i>Always ask for a title when uploading items</div>
+      <div class="checkbox"><i></i>Upload RSS of frequently visited sites</div>
+      <div class="checkbox"><i></i>Upload current tabs frequently</div>
+    </div>
+    <div class="groupbox"><div class="caption">Advanced  Options</div>
+      <div class="row label">Server URL:</div>
+      <div class="row"><input class="xp" style="width:340px" value="https://joey.labs.mozilla.com" readonly><button class="xp" style="min-width:110px">Restore Defaults</button></div>
+      <div class="row" style="margin-top:10px"><button class="xp" style="min-width:160px">Register Joey! Feed Reader</button></div>
+    </div>
+  </div>
+  <div class="buttons"><button class="xp default">OK</button><button class="xp">Cancel</button></div>
+</div>
+</div>
+<div class="footnote" style="position:static;margin-top:8px;color:#fff">Reconstruction from source; not a capture of the original software.</div>
+</div>
+</body></html>

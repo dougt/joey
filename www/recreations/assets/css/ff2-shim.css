@@ -1,0 +1,4 @@
+/* Not an original file. Firefox 2 honoured the -moz-border-radius rules in
+   green.css / joeyclient.css; modern Chromium needs the unprefixed property. */
+.item { border-radius: 4px; }
+.highlight { border-radius: 3px; }

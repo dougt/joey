@@ -1,0 +1,528 @@
+
+/* joeyMedia items - For the RSS Visualizer function - check joebag.js inline XSLT template */
+
+.item { margin:4px; background-color:#777777; padding:.2em;-moz-border-radius:4px }
+
+.item a {
+  text-decoration:none;
+  color:white;
+}
+
+/* joeyMedia items - the image preview element that shows on uploads page */
+
+.joeymedia-previewimage {
+ padding:.5em;
+ border:1px solid gray;
+ margin:.5em;
+ width:320px;
+}
+
+.joeymedia-previewtext {
+ padding:.5em;
+ border:1px solid gray;
+ margin:.5em;
+ background-color:white;
+ width:320px;
+}
+
+
+/* .. */
+
+.highlight {
+	background-color:#666666;
+	padding: .3em;
+	-moz-border-radius:3px;
+}
+	
+html {
+	background-color:black;
+}
+
+
+#messagesBar {
+	padding-top:.5em;
+}
+
+*{
+margin:0;
+padding:0;
+}
+
+
+table { width:100% } 
+
+#joey-login-frame {
+	width:100%;
+	text-align:center;
+}
+
+/* used in users -> register */
+
+#joey-general-frame {
+	width:100%;
+
+}
+
+#joey-login-content {
+	margin-left:auto;
+	padding:1em;
+	padding-bottom:0;
+	margin-right:auto;
+	text-align:left;
+}
+
+.joey-panel {
+	width:230px;
+	padding-left:1em;
+	border-left:1px solid #999999;
+}
+
+#joey-registration-content {
+	margin-left:auto;
+	margin-right:auto;
+	padding:1em;
+	max-width:550px;
+	text-align:left;
+}
+
+
+/*
+
+*/
+.joey-upload-sidebar {
+}
+
+.joey-upload-mediaicon {	
+	color:gray;
+	float:left;
+}
+
+.joey-mediaicon-video {
+        background: #333333 url(style/icons/media-video.png) 0 0 no-repeat;
+        width:100px;
+        height:80px;
+}
+
+.joey-mediaicon-audio {
+        background: #333333 url(style/icons/media-music.png) 0 0 no-repeat;
+        width:100px;
+        height:80px;
+}
+
+.joey-mediaicon-text {
+        background: #333333 url(style/icons/media-text.png) 0 0 no-repeat;
+        width:100px;
+        height:80px;
+}
+
+.joey-mediaicon-ms {
+        background: #333333 url(style/icons/media-ms.png) 0 0 no-repeat;
+        width:100px;
+        height:80px;
+}
+
+.joey-mediaicon-rss {
+        background: #333333 url(style/icons/media-rss.png) 0 0 no-repeat;
+        width:100px;
+        height:80px;
+}
+
+.joey-mediaicon-image {
+        background: #333333 url(style/icons/media-pictures.png) 0 0 no-repeat;
+        width:100px;
+        height:80px;
+}
+
+
+.joey-upload-preview {
+
+
+}
+
+#joey-upload-frame {
+	padding:1em;
+	margin:0px;	
+}
+/* Used by the system messages in panels such as the UPload */ 
+/* For example, uploads/index, You have no uploads yet. */
+
+.joey-warning {
+        margin-top:.5em;
+	padding:1em;
+	border:1px solid #666600;
+	background-color:#333300;
+}
+
+.joey-message {
+	padding:1em;
+	border:1px solid gray;
+	background-color:#444444;
+}
+
+.joey-loading {
+	background: url(../img/loading.gif) no-repeat 10px 10px;
+padding-left:16px;
+}
+
+
+table.joey-upload-list, .joey-upload-list td {
+	padding:1em;
+}
+.joey-upload-list td {
+padding:.5em;	
+}
+
+/* This produces a gray border at the bottom of each row */
+
+.joey-item-thumb, .joey-item-information, .joey-item-control {
+	border-bottom:1px solid #555555;
+}
+
+.joey-item-information {
+	text-align:left;
+ 	vertical-align:top;
+}
+
+.videoPlayer {
+	width:324px;
+	margin:4px;	
+	border:1px solid white;
+	padding:4px;
+}
+
+.videobutton-play {
+	background: transparent url(../img/play.png) 3px 3px no-repeat;
+}
+.videobutton-pause {
+	background: transparent url(../img/pause.png) 3px 3px no-repeat;
+}
+.videobutton-stop {
+	background: transparent url(../img/stop.png) 3px 3px no-repeat;
+}
+.videobutton-thumb {
+	background: transparent url(../img/thumb.png) no-repeat;
+}
+
+
+td.joey-item-thumb {
+ max-width:110px;
+ text-align:center;
+ vertical-align:top;
+}
+
+.joey-upload-image-thumb {
+	margin:6px;
+	width:100px;
+ 	padding:1px;	
+}
+
+.joey-upload-preview-thumb {
+	margin:6px;
+	border:16px solid #333333;
+	padding:1px;
+}
+
+
+.framecontent {
+	max-width:880px;
+	text-align:left;
+ 	background-color:rgb(15,14,16);
+}
+
+body{
+
+font-family: sans-serif;
+
+padding:10px;
+padding-bottom:0px;
+color:white;
+font-size: 76%;
+
+}
+
+
+#topbanner {
+
+        padding-left:20px;
+	background: url(style/topbanner.jpg) no-repeat;
+	height:120px;
+
+}
+
+#topbanner a {
+	color:black;
+	font-weight:bold;
+}
+
+#barleft {
+	background:url(style/bar-left.jpg) no-repeat;
+	height:29px;
+}
+
+#barmiddle {
+
+	width:270px;
+	margin-left:8px;
+	background:url(style/bar-middle.jpg) repeat-x;
+	height:29px;
+	text-align:right;
+	color:black;
+
+}
+
+#barmiddle p {
+	padding-top:6px;
+}
+
+#barmiddle p a {
+	color:black;
+	font-size:12px;
+	font-weight:bold;
+	
+}
+
+#barmiddle p a:hover {
+	color:
+}
+
+
+#joeyserverlink {
+	float:left;
+	padding-top:85px;
+
+}
+
+
+#toprightlink {
+	float:right;
+	padding:10px;
+}
+
+#toprightlink a {
+	text-decoration:none;
+	color:rgb(200,255,0);
+}
+
+#getsoftware a {
+	text-decoration:none;
+	color:rgb(200,255,0);
+}
+
+#getsoftware {
+
+	background:transparent url(style/arrow-right.gif) no-repeat 100% 0;
+	float:right;
+	padding:10px;
+	padding-right:24px;
+	padding-top:4px;
+
+}
+
+
+#getsoftware a:hover {
+	color:orange;
+}
+
+#barright {
+	float:right;
+	background:url(style/bar-right.jpg) no-repeat;
+	height:29px;
+	width:38px;
+
+}
+
+#barright {
+	float:right;
+	background:url(style/bar-right.jpg) no-repeat;
+	height:29px;
+	width:38px;
+
+}
+
+a{
+color: rgb(200,255,0);
+text-decoration:underline;
+}
+a:hover{
+color:orange;
+text-decoration:none;
+}
+
+a img{
+border:none;
+}
+
+h1, h2, h3, h4{
+font-weight:normal;
+}
+
+
+
+h1{
+color: white; 
+padding:0.3em 0;
+font-size: 180%;
+}
+
+h2{
+color:rgb(220,255,0);;
+padding-top: 1em;
+padding:0.3em 0;
+font-size: 180%;
+}
+
+h3{
+color:#771;
+padding-top:2em;
+font-size: 140%;
+}
+
+.titleupload a {
+	text-decoration:none;
+	margin:0px;
+	color:white;
+	font-size:130%;
+	font-weight:bold;
+	padding:0px;
+
+}
+
+h4{
+color:#c6c65b;
+padding-top:0.5em;
+font-weight:normal;
+}
+
+em {
+font-size: 12px;
+}
+
+ul, li {
+margin: 0 12px;
+}
+
+/* Layout */
+
+
+div#container {
+ background:  url(style/border-shade-vertical.jpg) no-repeat 100% 0;
+}
+
+#innercontent {
+ background:  url(style/border-shade-vertical.jpg) no-repeat 100% 0;
+
+}
+
+
+#header{
+	background: url(style/border-shade.jpg) no-repeat 100% 0;
+	border-right:1px solid rgb(108,108,108);
+}
+
+#content{
+}
+
+#footer-content {
+margin:0px;
+text-align: left;
+background: url(style/bottombanner.gif) no-repeat 100% 100%;
+height:130px;
+padding-left:3em;
+}
+
+#pagination {
+	max-width:670px;
+}
+#pagination-pagesize {
+ float:right;
+}
+
+#footer {
+background: black url(style/bottombanner.jpg) no-repeat 50% 0; 
+height:2em;
+color:gray;
+margin:0px;
+margin-top:2px;
+padding:1em;
+text-align: center;
+}
+
+/* tables */
+
+/* scaffold show */
+
+div.related {
+clear:both;
+display:block;
+}
+dl {
+line-height:2em;
+margin:0em 1em;
+float:left;
+width: 400px;
+}
+dt {
+font-weight: bold;
+vertical-align:top;
+}
+dd {
+margin-left:10em;
+margin-top:-2em;
+vertical-align:top;
+}
+
+/* notices and errors */
+
+#flashMessage, .error, .error_message {
+
+margin: 8px 0px;
+font-weight: bold;
+}
+.error_message {
+clear: both;
+}
+.error em {
+font-size: 18px;
+color: #003d4c;
+}
+.notice {
+color: #656565;
+font-size: 14px;
+background-color: #f4f4f4;
+padding: 0.5em;
+margin: 1em 0;
+display:block;
+}
+.tip {
+color: #656565;
+background-color: #ddd;
+}
+
+/* forms */
+
+.required{
+clear: both;
+color:#222;
+font-weight:bold;
+}
+.optional{
+clear: both;
+color:#555;
+}
+.submit {
+clear: both;
+margin-top: 40px;
+margin-left: 140px;
+}
+/* action links */
+ul.actions {
+float: left;
+margin-left:20px;
+width: 200px;
+}
+ul.actions li {
+margin-top: 4px;
+}
+pre {
+padding: 1em;
+}

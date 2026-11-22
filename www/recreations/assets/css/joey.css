@@ -1,0 +1,109 @@
+
+#cakeSqlLog {
+ background-color:white;
+ color:black;
+ border:1px solid gray;
+ padding:.5em;
+ font-family:verdana;
+}
+#cakeSqlLog td {
+	padding:.2em;
+	border-bottom:1px solid gray;
+}
+div#container {
+    padding-left:1em;
+}
+
+.joey-form div {
+    margin: 1.3em 0;
+}
+
+.joey-submit {
+    background-color: #eee;
+    border: 2px #999 outset;
+}
+
+.joey-submit:hover {
+    background-color: #fff;
+    cursor: pointer;
+}
+
+.joey-cancel {
+}
+
+.joey-label-large, .joey-label-medium, .joey-label-small {
+    border-top: 1px dotted #444444;
+    padding-bottom:.5em;
+    float: left;
+}
+
+select {
+
+	background-color:#aaaaaa;
+}
+input {
+	
+	background-color:#aaaaaa;
+}
+
+.joey-label-large {
+    width: 16em; 
+    padding:5px;
+
+   padding-left:0px;
+}
+
+.joey-label-medium {
+    width: 8em;
+}
+
+.joey-label-small {
+    width: 8em;
+}
+
+.joey-label-xsmall {
+    width: 6em;
+}
+
+.joey-form-error {
+    background-color: #eee;
+    border: 1px dashed #c66;
+    color: #c00;
+    margin: 5px 0;
+    padding: .5em;
+}
+
+.form_error {
+    background-color: #ecc;
+    color: #c00;
+    margin: 5px 0;
+    padding: .5em;
+}
+
+div.error_message {
+    color: #c00;
+    margin: 0;
+    padding-bottom: 1em;
+}
+
+
+
+
+.clearboth {
+    clear:both;
+}
+
+
+.joey-upload {
+}
+
+.joey-upload h3{
+    font-size:1em;
+}
+
+
+.joey-upload-preview {
+    float:left;
+    width:200px;
+    /* height:100px; */
+}

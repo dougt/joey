@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>History and context · Project Joey</title>
+<meta name="description" content="Timeline, people, context and sources for Project Joey, the 2007 Mozilla Labs experiment.">
+<link rel="icon" href="img/brand/joey-16.png">
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="img/brand/joey-32.png" alt=""><span>Project <b>Joey</b></span></a>
+    <nav class="site-nav" aria-label="Site">
+      <a href="index.html">Overview</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="firefox-addon.html">Firefox add-on</a>
+      <a href="server.html">Server</a>
+      <a href="mobile.html">Phone clients</a>
+      <a href="screenshots.html">Screenshots</a>
+      <a href="history.html" aria-current="page">History</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <p class="eyebrow">Timeline, people, context</p>
+    <h1>History and context</h1>
+    <p class="lede">Joey lived for roughly a year, from an internal 0.1 in March 2007 to a quiet stop in 2008. This page puts the code's own dates next to what Mozilla and the press said at the time.</p>
+
+    <h2>Timeline</h2>
+    <ul class="timeline">
+      <li><time>December 2004</time>Mozilla hires Doug Turner to work full-time on mobile, first on Minimo, the embedded Gecko browser.</li>
+      <li><time>March 2007</time>Joey 0.1 is marked complete on the Mozilla Labs roadmap. The seed rows in <code>joey.sql</code> (content source types, carriers, the "Not Sure" phone) are dated 2007-03-18, and the privacy policy document was last printed 2007-03-23.</li>
+      <li><time>Mid-May 2007</time>Public launch under Mozilla Labs. On May 26 RCR Wireless reports that Joey "launched two weeks ago" and is "still in the testing stage", with Turner estimating "a few thousand people" using it. A Java phone app and RSS support are described as planned.</li>
+      <li><time>June 29, 2007</time>The first iPhone goes on sale. It has a real browser and no third-party apps. The code soon grows an <code>iphone</code> layout built on iUI.</li>
+      <li><time>August 13, 2007</time>Mozilla Labs posts a Joey tutorial video, by then introducing it as something "we introduced back in May".</li>
+      <li><time>September 18, 2007</time>The Subversion history preserved in this repository begins, with Marcio Galli's UI polish of the login page. The Java ME client is already present; Michael Koch's commits that week switch it to the newer J2ME Polish and add the server URL property. Doug Turner tags the J2ME build as 0.3.</li>
+      <li><time>October 2007</time>Wil Clouser adds Google Analytics (bug 399038). Galli builds the 0.3.x first-run "Welcome to Joey!" page with its guided tour, and the DOM "page talk" handshake between the page and the extension. A login bug (399929) is patched.</li>
+      <li><time>November 27, 2007</time>Turner announces that Minimo is no longer supported. Two days later the last J2ME Polish import lands in Joey.</li>
+      <li><time>December 16, 2007</time>Last commit on the trunk (svn.mozilla.org/labs/joey/trunk@8907). The extension's manifest still says 0.3.0.0.</li>
+      <li><time>2008</time>Mozilla's mobile work consolidates on Fennec, the project that became Firefox for Android. The App Store opens in July. Joey is not updated again; the Labs wiki records "no plans to productize Joey".</li>
+      <li><time>February 2009</time>InfoWorld, writing about Fennec, notes that Joey "fizzled after about a year and is no longer supported".</li>
+      <li><time>January 4, 2014</time>Doug Turner publishes the tree on GitHub with a one-line README: "A project from pre-iphone days."</li>
+    </ul>
+
+    <h2>What the code itself tells you</h2>
+    <dl class="kv">
+      <dt>Commits</dt><dd>55, from 2007-09-18 to 2007-12-16, plus the 2014 README. Earlier history stayed in Mozilla's Subversion.</dd>
+      <dt>Authors</dt><dd>Marcio Galli (37), Michael Koch (6), Wil Clouser (3), Doug Turner (3 + the README).</dd>
+      <dt>Files</dt><dd>472 tracked files: 38 in the Firefox add-on, 131 in the Java ME client (most of them J2ME Polish's bundled libraries), the rest in the server, including a vendored CakePHP.</dd>
+      <dt>Versions</dt><dd>Extension 0.3.0.0 (<code>install.rdf</code>); the About dialog still says "version 0.2". Release notes exist for 0.3.0.0 only. The daemon calls itself 0.1.</dd>
+      <dt>Licence</dt><dd>MPL 1.1 / GPL 2.0 / LGPL 2.1 tri-licence, the standard Mozilla header of the era. The Java client's own files are MPL 1.1 by Michael Koch; it bundles BouncyCastle's Base64 and J2ME Polish under their own licences.</dd>
+      <dt>Hosts</dt><dd>joey.labs.mozilla.com (production), dougt.joey-dev.labs.mozilla.com (Turner's dev server, in <code>dougt.properties</code>).</dd>
+    </dl>
+
+    <h2>The people</h2>
+    <div class="grid">
+      <div class="card"><h3>Doug Turner</h3><p>Creator and lead. Then Mozilla's lead engineer for mobile technology, previously the lead on Minimo. Author of the extension's XUL and JavaScript, the <code>mocoJoey</code> XPCOM component, the server scripts and <code>joeyd.py</code>, and the microsummary and feed-watcher features. Later led the Fennec and Firefox OS platform work.</p></div>
+      <div class="card"><h3>Marcio Galli</h3><p>UI and front end. The green "Project Joey" theme, the AJAX uploads page and its inline media players, the status-bar upload manager with progress meters, the page-area highlighter, the first-run welcome page and guided tour, and the pt-BR locale. The most active committer in the preserved history.</p></div>
+      <div class="card"><h3>Michael Koch</h3><p>Java ME client. An engineer at Enough Software, makers of J2ME Polish, which is why the MIDlet is a showcase of Polish's CSS-styled LCDUI, device database and per-handset builds. Added the German locale.</p></div>
+      <div class="card"><h3>Wil Clouser</h3><p>Mozilla web developer (addons.mozilla.org). Server-side CakePHP work, the Kubla CMS-derived layouts and elements, and Google Analytics. Several model and element files carry his original-author header.</p></div>
+    </div>
+
+    <h2>The 2007 context</h2>
+    <p><strong>The carrier deck.</strong> Most phones reached the Web through a carrier portal and a WAP browser. RCR Wireless framed Joey as letting users "create their own mobile deck", which is exactly what the uploads list was: a personal portal of things you chose, rendered simply enough for any phone.</p>
+    <p><strong>Java ME was the app platform.</strong> There was no App Store. A downloadable app meant a MIDlet, packaged per device because every handset's Java differed. Joey's registration form asked for your phone model and carrier so the server could pick the right JAR and e-mail its download link to your phone as an SMS through the carrier's e-mail gateway. The <code>operators</code> table of 42 carriers and their gateway domains is a fossil of that world.</p>
+    <p><strong>Mozilla had no mobile browser.</strong> Minimo had proven that Gecko on a 2005 phone was too slow and too big. Joey was a way to be useful on phones without solving that problem, by moving the rendering work to Firefox on the desktop and to the server. Fennec, started as Joey wound down, took the opposite bet: wait for phones that could run Gecko.</p>
+    <p><strong>The iPhone changed the question.</strong> Within weeks of launch the server had an iPhone layout, but the honest state of that code, with debug <code>print_r</code> dumps where the audio and video players should be, shows the problem: a phone with a real browser and no Flash, no AMR and no 3GP support did not want Joey's transcoded output. It wanted the original Web.</p>
+
+    <h2>Sources</h2>
+    <ul>
+      <li>This repository: <code>addons/ff</code>, <code>server</code>, <code>clients/j2me</code> and the git log imported from svn.mozilla.org/labs/joey/trunk.</li>
+      <li>Mozilla Labs, <a href="https://blog.mozilla.org/labs/featured-projects/">Old Featured Projects</a>: "Joey is a server, Firefox add-on, and a Java midlet that allow you to pass data from Firefox to your mobile phone." Created by Doug Turner, Mozilla.</li>
+      <li>Mozilla Labs, <a href="https://blog.mozilla.org/labs/2007/08/introduction-to-joey-video/">Joey Tutorial Video</a>, August 13, 2007.</li>
+      <li>MozillaWiki, <a href="https://wiki.mozilla.org/Labs/Joey">Labs/Joey</a> and <a href="https://wiki.mozilla.org/Labs/Joey/Roadmap">Labs/Joey/Roadmap</a> (the roadmap marks 0.1 complete in March 2007; the project page states there are no plans to productize Joey).</li>
+      <li>RCR Wireless, <a href="https://www.rcrwireless.com/20070526/archived-articles/mozillas-joey-allows-users-to-create-their-own-mobile-deck">Mozilla's Joey allows users to create their own mobile deck</a>, May 26, 2007.</li>
+      <li>InfoWorld, <a href="https://www.infoworld.com/article/2222383/early-mozilla-mobile-browser-has-showstopper-flaw-2.html">Early Mozilla mobile browser has 'showstopper' flaw</a>, February 17, 2009.</li>
+      <li>Wikipedia, <a href="https://en.wikipedia.org/wiki/Minimo">Minimo</a>, for the November 27, 2007 end of Minimo and Turner's role.</li>
+    </ul>
+    <p class="note">Dates drawn from the code are exact. Dates drawn from press coverage are as reported there. The Mozilla wiki pages are behind an interstitial that blocks automated fetching, so their content is quoted from search excerpts rather than read directly.</p>
+
+    <nav class="pager"><a href="screenshots.html">← Screenshots</a><a href="index.html">Overview →</a></nav>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>Project Joey was a Mozilla Labs experiment (2007). This retrospective was reconstructed from the source tree in this repository.</span>
+    <span>Original code: MPL 1.1 / GPL 2.0 / LGPL 2.1 tri-license.</span>
+  </div>
+</footer>
+</body>
+</html>

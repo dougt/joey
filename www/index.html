@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project Joey · Send the Web to your phone (Mozilla Labs, 2007)</title>
+<meta name="description" content="A retrospective of Project Joey, the 2007 Mozilla Labs experiment that let Firefox users push text, images, audio, video, feeds and live page regions to a mobile phone.">
+<link rel="icon" href="img/brand/joey-16.png">
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="img/brand/joey-32.png" alt=""><span>Project <b>Joey</b></span></a>
+    <nav class="site-nav" aria-label="Site">
+      <a href="index.html" aria-current="page">Overview</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="firefox-addon.html">Firefox add-on</a>
+      <a href="server.html">Server</a>
+      <a href="mobile.html">Phone clients</a>
+      <a href="screenshots.html">Screenshots</a>
+      <a href="history.html">History</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Mozilla Labs · 2007 · a project from pre-iPhone days</p>
+        <h1>Send the Web to your phone.</h1>
+        <p class="lede">Project Joey was a three-part experiment: a Firefox extension that let you right-click anything on a page and send it to a server, a server that reshaped that content for a tiny screen, and a phone app (or just the phone's browser) that fetched it. It shipped in May 2007, six weeks before the first iPhone.</p>
+        <p>
+          <span class="pill green">Firefox 2 add-on</span>
+          <span class="pill">CakePHP + MySQL server</span>
+          <span class="pill">Python transcoding daemon</span>
+          <span class="pill">Java ME phone app</span>
+          <span class="pill orange">iPhone and WAP views</span>
+        </p>
+      </div>
+      <figure>
+        <img src="img/screenshots/web-uploads-hero.png" alt="Reconstruction of the Joey uploads page: a dark green-themed list of items sent from Firefox, each with a thumbnail, size, upload date and delete link.">
+        <figcaption>The "Joey! Uploads" page at joey.labs.mozilla.com, reconstructed from the original templates and stylesheet. Every screenshot on this site is a reconstruction; see <a href="screenshots.html">how they were made</a>.</figcaption>
+      </figure>
+    </section>
+
+    <h2>What it was for</h2>
+    <p>In 2007 a phone's view of the Web was whatever its carrier put on the "deck", plus whatever a cramped WAP browser could render. Joey's premise, in Doug Turner's words to RCR Wireless at launch, was to "put the user back in control": you would build your own mobile deck out of the pieces of the desktop Web you actually cared about. The login page said it plainly: "Project Joey brings the Web content you need most to your mobile phone."</p>
+    <p>The trick was that the pieces could be more than bookmarks. You could clip a paragraph, an image, an MP3 or a Flash video and the server would transcode it into something a 2007 handset could play. You could send an RSS feed and the server would keep re-fetching it into a phone-sized digest. And you could point at a region of a page, a scoreboard or a stock ticker, and the server would re-scrape just that region every time you looked at it from the phone. That last feature reused Firefox 2's microsummary machinery, an XPath plus an XSLT template, and it is the part of Joey that still feels ahead of its time.</p>
+
+    <div class="grid">
+      <div class="card"><img class="icon" src="img/brand/media-text.png" alt=""><h3>Selected text</h3><p>Highlight anything, right-click, "Joey! Selected Text". Saved as <code>text/plain</code> with the page title and URL.</p></div>
+      <div class="card"><img class="icon" src="img/brand/media-pictures.png" alt=""><h3>Images</h3><p>Right-click an image and choose "Joey! Selected Image". The server resizes it to 100×100 and makes a 50×50 preview for the phone's list view.</p></div>
+      <div class="card"><img class="icon" src="img/brand/media-video.png" alt=""><h3>Audio and video</h3><p>The add-on sniffed every HTTP response for FLV, MOV, WMV, AVI, MPEG, MP3 and WAV. One click on "Joey! Media on page" fetched the media and uploaded it; ffmpeg turned it into 3GP video or AMR audio.</p></div>
+      <div class="card"><img class="icon" src="img/brand/media-rss.png" alt=""><h3>RSS feeds</h3><p>Send a site's feed and the daemon re-fetches it into an HTML digest. Sites you visited ten times got their feed sent automatically, if you opted in.</p></div>
+      <div class="card"><img class="icon" src="img/brand/media-ms.png" alt=""><h3>Live page regions</h3><p>A page-area picker highlights elements as you hover; click one ("Joey! Summary Capture") and Joey uploads a microsummary generator for it. The server re-scrapes that XPath so the phone always sees the current value.</p></div>
+      <div class="card"><img class="icon" src="img/brand/widgets.png" alt=""><h3>Your open tabs</h3><p>An optional timer uploaded a list of every open window and tab every five minutes, so your phone could pick up where your desktop left off.</p></div>
+    </div>
+
+    <h2>How it worked</h2>
+    <ol class="steps">
+      <li><strong>Clip in Firefox.</strong> The add-on added two context-menu items and a status-bar menu. Whatever you chose was handed to an XPCOM component that logged in (using Firefox's password manager) and POSTed a multipart form to <code>/uploads/add</code> on the Joey server.</li>
+      <li><strong>Store and queue on the server.</strong> A CakePHP 1.1 application validated the upload, checked a 20 MB per-user quota, wrote the original file to disk and inserted <code>uploads</code>, <code>files</code> and, for feeds and summaries, <code>contentsources</code> rows. It then pinged <code>joeyd</code>, a Python daemon listening on localhost, with the new upload's id.</li>
+      <li><strong>Transcode or refresh in joeyd.</strong> A thread pool processed each id: ImageMagick for pictures, ffmpeg for audio and video, feedparser for RSS, lxml's XSLT for microsummaries. Results went back next to the originals, with a PNG preview, and the row was marked <code>ever_updated</code>.</li>
+      <li><strong>Pick up on the phone.</strong> The Java ME MIDlet polled <code>/uploads/index?since=…&amp;rest=1</code> every five minutes and parsed a plain key=value response with base64 previews. Phones without the app got a WAP page, and an iPhone got an iUI-styled list in Safari.</li>
+      <li><strong>Send something back.</strong> The MIDlet could take a camera snapshot and upload it through the same endpoint, so the server was a two-way shoebox, not just a push channel.</li>
+    </ol>
+    <figure class="diagram">
+      <img src="img/diagrams/architecture.svg" alt="Architecture diagram: Firefox add-on on the left, Joey server with CakePHP app, MySQL and joeyd daemon in the middle, phone clients on the right.">
+      <figcaption>The three tiers and the paths between them. Details on the <a href="architecture.html">architecture page</a>.</figcaption>
+    </figure>
+
+    <h2>The three pieces</h2>
+    <div class="grid">
+      <div class="card">
+        <h3><a href="firefox-addon.html">The Firefox add-on</a></h3>
+        <p>About 3,000 lines of XUL and JavaScript: a browser overlay, a status-bar upload manager, a page-area picker, a media sniffer, a feed watcher and the <code>mocoJoey</code> XPCOM component that talks to the server. Shipped as <code>joey.xpi</code> version 0.3.0.0 for Firefox 0.8 through 3.0, with English and Brazilian Portuguese locales.</p>
+      </div>
+      <div class="card">
+        <h3><a href="server.html">The server</a></h3>
+        <p>A CakePHP 1.1 app (users, uploads, files, version and admin controllers) with five layouts chosen by user-agent sniffing, plus <code>joeyd.py</code>, a 1,300-line Python daemon that does the transcoding and feed refreshing, and small scripts for cron, load testing and importing the phone build list.</p>
+      </div>
+      <div class="card">
+        <h3><a href="mobile.html">The phone clients</a></h3>
+        <p>A Java ME MIDlet built with J2ME Polish (per-device JARs for Nokia, Motorola, HTC and generic MIDP 2 handsets, English and German), an iPhone web view built on Joe Hewitt's iUI, and a plain XHTML Mobile Profile view for everything else.</p>
+      </div>
+    </div>
+
+    <h2>Why it mattered, and why it stopped</h2>
+    <p>Joey was Mozilla's first serious attempt at the question "what is the browser's job on a phone?" before Mozilla had a phone browser worth using. Minimo, the earlier embedded Gecko port, was shut down in November 2007; Fennec, which became Firefox for Android, was only being started. Joey sidestepped the hard problem of rendering the real Web on a 240×320 screen by moving the work to the desktop and the server, which is also why it could reach ordinary feature phones through nothing but a JAR file and an SMS with a download link.</p>
+    <p>Two things overtook it within a year. The iPhone shipped on June 29, 2007 with a browser good enough that "send the Web to your phone" stopped being a problem worth a server, and the App Store followed in 2008. Meanwhile Mozilla's mobile energy moved to Fennec. The Mozilla Labs wiki states there were "no plans to productize Joey"; InfoWorld later summarised it as having "fizzled after about a year". The last change to this tree is dated December 2007, and the README added in 2014 says only: "A project from pre-iphone days."</p>
+    <div class="callout green">
+      <p><strong>What survived.</strong> The ideas did. Sending open tabs to another device became Firefox Sync's tab sync and later "Send Tab". Clip-to-read-later became Pocket, which Mozilla bought in 2017. Server-side transcoding for weak clients is what every video platform does. And "watch this region of a page and tell me when it changes" is still a product category on its own.</p>
+    </div>
+
+    <h2>Who built it</h2>
+    <p>Joey came out of Mozilla Labs under <strong>Doug Turner</strong>, then Mozilla's lead engineer for mobile, who wrote the extension, the XPCOM component and much of the server and daemon. <strong>Marcio Galli</strong> designed the green web theme, the welcome page and guided tour, the status-bar upload manager and the Portuguese locale. <strong>Michael Koch</strong> of Enough Software, the company behind J2ME Polish, wrote the Java ME client. <strong>Wil Clouser</strong> from Mozilla's web team worked on the CakePHP side and analytics. The page layouts carry the header of the addons.mozilla.org codebase they were borrowed from. See the <a href="history.html">history page</a> for the timeline and sources.</p>
+
+    <h2>About this site</h2>
+    <p>Everything here was written by reading the source tree in this repository: 472 files across <code>addons/ff</code>, <code>server</code> and <code>clients/j2me</code>, plus the 55 commits imported from Mozilla's Subversion. The original service at joey.labs.mozilla.com is long gone and no screenshots were preserved with the code, so the images on this site were regenerated: the web pages were rebuilt from the original CakePHP templates, CSS and image assets and rendered in a modern browser; the Firefox and phone screens are CSS mock-ups built from the XUL, the string bundles and the J2ME Polish theme. The <a href="screenshots.html">screenshots page</a> explains exactly how, and the sources for each page are in <code>www/recreations/</code>.</p>
+
+    <nav class="pager"><span></span><a href="architecture.html">Architecture →</a></nav>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>Project Joey was a Mozilla Labs experiment (2007). This retrospective was reconstructed from the source tree in this repository.</span>
+    <span>Original code: MPL 1.1 / GPL 2.0 / LGPL 2.1 tri-license.</span>
+  </div>
+</footer>
+</body>
+</html>

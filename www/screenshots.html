@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Screenshots · Project Joey</title>
+<meta name="description" content="Reconstructed screenshots of Project Joey's web site, Firefox add-on and Java ME phone client, with an explanation of how each was regenerated from source.">
+<link rel="icon" href="img/brand/joey-16.png">
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="img/brand/joey-32.png" alt=""><span>Project <b>Joey</b></span></a>
+    <nav class="site-nav" aria-label="Site">
+      <a href="index.html">Overview</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="firefox-addon.html">Firefox add-on</a>
+      <a href="server.html">Server</a>
+      <a href="mobile.html">Phone clients</a>
+      <a href="screenshots.html" aria-current="page">Screenshots</a>
+      <a href="history.html">History</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <p class="eyebrow">Gallery</p>
+    <h1>Screenshots, regenerated from source</h1>
+    <p class="lede">No screenshots were preserved with the code and the service went offline in 2008. Every image below was produced for this site from what the repository contains. They are reconstructions. Read the method notes before treating any detail as a record of the live product.</p>
+
+    <div class="callout">
+      <p><strong>Three levels of fidelity.</strong> The web pages are the most faithful: they use the original templates, stylesheets and image files, with only the PHP replaced by static sample data. The Firefox add-on images are mock-ups of XUL dialogs drawn in HTML from the XUL, CSS and string files. The phone images are mock-ups built from the MIDlet's views, its string table and its J2ME Polish theme. The page sources for all of them are in <a href="recreations/index.html"><code>www/recreations/</code></a>.</p>
+    </div>
+
+    <h2>The web site (joey.labs.mozilla.com)</h2>
+    <p>Rendered from <code>server/app/views</code> and <code>server/app/webroot/css</code> in a current Chromium at 1024 pixels wide. Differences from Firefox 2 in 2007: the rounded corners written as <code>-moz-border-radius</code> do not apply, default fonts differ, and the Flash players for FLV and MP3 are shown as their static fallbacks.</p>
+    <div class="shots">
+      <figure><img src="img/screenshots/web-login.png" alt="Joey login page reconstruction"><figcaption><strong>Login and front page.</strong> The pitch, the login panel, and the still from the tutorial video. <code>users/login.thtml</code>, default layout, green theme.</figcaption></figure>
+      <figure><img src="img/screenshots/web-uploads.png" alt="Joey uploads list reconstruction"><figcaption><strong>Your uploads.</strong> Type filters, one row per item with thumbnail, size, date and AJAX delete. Sample items are invented; the markup per type is the template's. <code>uploads/index.thtml</code>.</figcaption></figure>
+      <figure><img src="img/screenshots/web-register.png" alt="Joey registration form reconstruction"><figcaption><strong>Registration.</strong> Phone model and carrier are required so the server can pick a JAR and text you the link. The carrier list is the real seed data. <code>users/register.thtml</code>.</figcaption></figure>
+      <figure><img src="img/screenshots/web-welcome-firstrun.png" alt="Joey first-run welcome page reconstruction"><figcaption><strong>First-run welcome page.</strong> Opened in a tab by the add-on after install. The guided tour button only appears once the extension's DOM handshake succeeds. <code>version/index.thtml</code>, <code>joeyclient</code> layout.</figcaption></figure>
+      <figure><img src="img/screenshots/web-get-software.png" alt="Joey get-the-software page reconstruction"><figcaption><strong>Get the software.</strong> Download the XPI, or have the server SMS your phone the MIDlet link via the carrier's e-mail gateway. <code>users/get_software.thtml</code>.</figcaption></figure>
+    </div>
+    <div class="shots phones" style="margin-top:1.5rem">
+      <figure><img src="img/screenshots/web-iphone.png" alt="Joey iPhone view reconstruction"><figcaption><strong>iPhone view.</strong> iUI list navigation at 320 pixels. <code>uploads/iphone_index.thtml</code>.</figcaption></figure>
+      <figure><img src="img/screenshots/web-wap.png" alt="Joey WAP view reconstruction"><figcaption><strong>WAP / XHTML-MP view.</strong> What every other phone browser got, at 240 pixels. <code>uploads/mp_index.thtml</code>.</figcaption></figure>
+    </div>
+
+    <h2>The Firefox add-on</h2>
+    <p>Firefox 2's chrome cannot be run here, so these are HTML drawings of the XUL in <code>addons/ff/chrome/content/joey</code>. Menu labels, dialog text, checkbox labels and status strings are copied from <code>brand.dtd</code>, <code>joey.dtd</code> and <code>joey.properties</code>; icons are the original PNGs from the add-on's skin. Window decoration is generic.</p>
+    <div class="shots">
+      <figure><img src="img/screenshots/ff-context-menu.png" alt="Context menu with Joey items, reconstruction"><figcaption><strong>Context menu.</strong> "Joey! Selected Text" and "Joey! Selected Image", inserted after Stop, shown when text is selected or an image is under the pointer.</figcaption></figure>
+      <figure><img src="img/screenshots/ff-statusbar-menu.png" alt="Status bar Joey menu, reconstruction"><figcaption><strong>Status-bar menu.</strong> "My Joey!", "Joey! Media on page", "Joey! Summary Capture" and "Joey! Preferences...". The aggregate progress label sits beside the icon.</figcaption></figure>
+      <figure><img src="img/screenshots/ff-upload-progress.png" alt="Joey uploads manager popup, reconstruction"><figcaption><strong>Uploads manager.</strong> One progress meter per transfer with a type icon, built by <code>joeyStatus.js</code>.</figcaption></figure>
+      <figure><img src="img/screenshots/ff-title-prompt.png" alt="Edit page title prompt, reconstruction"><figcaption><strong>Title prompt.</strong> Shown before each upload unless you untick "Always ask to edit titles".</figcaption></figure>
+      <figure><img src="img/screenshots/ff-options.png" alt="Joey options dialog, reconstruction"><figcaption><strong>Options.</strong> Privacy, the three upload behaviours, and the server URL. <code>joeyOptions.xul</code>.</figcaption></figure>
+      <figure><img src="img/screenshots/ff-about.png" alt="Joey about dialog, reconstruction"><figcaption><strong>About.</strong> Still labelled "version 0.2" in the 0.3.0.0 build. <code>about.xul</code>.</figcaption></figure>
+    </div>
+
+    <h2>The Java ME phone client</h2>
+    <p>Mock-ups of the MIDlet's screens drawn at 240×320 inside a generic candy-bar phone frame. Colours and shapes follow <code>clients/j2me/resources/polish.css</code> (black background, white text, the Joey green <code>#B5D623</code> for focus and titles); strings are from <code>messages.txt</code>; icons are the originals from <code>resources/images</code>. A real device would render them through J2ME Polish's own widgets, so spacing and fonts would differ by handset.</p>
+    <div class="shots phones">
+      <figure><img src="img/screenshots/j2me-login.png" alt="MIDlet login screen mock-up"><figcaption><strong>Login.</strong> Username, password, SSL toggle, Remember Me.</figcaption></figure>
+      <figure><img src="img/screenshots/j2me-mainmenu.png" alt="MIDlet main menu mock-up"><figcaption><strong>Main menu.</strong> View uploads, Take snapshot, Preferences.</figcaption></figure>
+      <figure><img src="img/screenshots/j2me-uploads.png" alt="MIDlet uploads list mock-up"><figcaption><strong>Uploads.</strong> Previews with titles, and the type filter bar along the bottom.</figcaption></figure>
+      <figure><img src="img/screenshots/j2me-details.png" alt="MIDlet details screen mock-up"><figcaption><strong>Details.</strong> One item, with Open and Delete.</figcaption></figure>
+      <figure><img src="img/screenshots/j2me-prefs.png" alt="MIDlet preferences mock-up"><figcaption><strong>Preferences.</strong> Server URL and update interval.</figcaption></figure>
+      <figure><img src="img/screenshots/j2me-alert.png" alt="MIDlet delete confirmation mock-up"><figcaption><strong>Delete confirmation.</strong> The string is exactly as shipped.</figcaption></figure>
+    </div>
+
+    <h2>How to regenerate them</h2>
+    <p>The reconstruction pages and the two Playwright scripts live in <code>www/recreations/</code>. With Node and Playwright's Chromium available:</p>
+    <pre><code>cd www/recreations
+node shoot-web.js       # web site pages  → ../img/screenshots/web-*.png
+node shoot-clients.js   # add-on and phone → ../img/screenshots/ff-*.png, j2me-*.png</code></pre>
+    <p class="note">If you have a real capture of Joey from 2007, it belongs here instead of these. The reconstructions are honest about what the code says but cannot show what the service looked like with real data, real phones, or the bugs of the day.</p>
+
+    <nav class="pager"><a href="mobile.html">← Phone clients</a><a href="history.html">History →</a></nav>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>Project Joey was a Mozilla Labs experiment (2007). This retrospective was reconstructed from the source tree in this repository.</span>
+    <span>Original code: MPL 1.1 / GPL 2.0 / LGPL 2.1 tri-license.</span>
+  </div>
+</footer>
+</body>
+</html>

@@ -1,0 +1,64 @@
+/* Firefox 2 (Windows "Luna" era) chrome look-alike used by the Joey add-on mock-ups.
+   Reconstruction from source; not a capture of the original software. */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #d4d0c8; font: 11px Tahoma, "Segoe UI", Verdana, sans-serif; color: #000; }
+.stage { position: relative; }
+
+/* Browser window pieces */
+.titlebar { height: 30px; background: linear-gradient(#0a5bdc, #0d4fc0 60%, #0a46ab); color: #fff; font-weight: bold; font-size: 12px; padding: 7px 10px; display: flex; align-items: center; gap: 8px; }
+.titlebar .ctl { margin-left: auto; display: flex; gap: 2px; }
+.titlebar .ctl span { width: 21px; height: 21px; border-radius: 3px; background: linear-gradient(#5f93e8, #2b63c9); border: 1px solid #fff; display: inline-block; text-align: center; line-height: 19px; font-size: 11px; }
+.titlebar .ctl span.x { background: linear-gradient(#e8936b, #c7421a); }
+.menubar { height: 22px; background: #ece9d8; display: flex; align-items: center; padding: 0 4px; gap: 12px; border-bottom: 1px solid #c8c4b4; }
+.toolbar { height: 36px; background: #ece9d8; display: flex; align-items: center; padding: 0 6px; gap: 6px; border-bottom: 1px solid #aca899; }
+.toolbar .btn { width: 26px; height: 26px; border-radius: 4px; background: #f6f4ea; border: 1px solid #c8c4b4; display: inline-block; }
+.toolbar .btn.back { background: radial-gradient(circle at 50% 50%, #7bd16b, #2e8b2e); border-color: #1f5f1f; border-radius: 50%; width: 30px; height: 30px; }
+.toolbar .url { flex: 1; height: 22px; background: #fff; border: 1px solid #7f9db9; display: flex; align-items: center; padding: 0 4px; gap: 4px; font-size: 11px; }
+.toolbar .search { width: 150px; height: 22px; background: #fff; border: 1px solid #7f9db9; display: flex; align-items: center; padding: 0 4px; color: #777; }
+.content { background: #fff; position: relative; overflow: hidden; }
+.statusbar { height: 23px; background: #ece9d8; border-top: 1px solid #fff; box-shadow: inset 0 1px 0 #aca899; display: flex; align-items: center; padding: 0 4px; font-size: 11px; }
+.statusbar .msg { flex: 1; padding-left: 4px; color: #333; }
+.statusbar .panel { border-left: 1px solid #aca899; box-shadow: -1px 0 0 #fff; height: 19px; display: flex; align-items: center; padding: 0 6px; gap: 4px; }
+.statusbar .panel.joey { gap: 2px; }
+.statusbar .panel.joey .udbox { font-size: 11px; padding: 1px 3px; border: 1px solid transparent; }
+.statusbar .panel.joey .udbox.pressed, .statusbar .panel.joey .icon.pressed { border: 1px solid #7f9db9; background: #fff; }
+.statusbar .panel.joey .icon { width: 20px; height: 18px; display: inline-flex; align-items: center; justify-content: center; }
+.statusbar .panel.joey .icon img { width: 16px; height: 16px; display: block; }
+
+/* XUL menupopup */
+.menupopup { position: absolute; background: #fff; border: 1px solid #aca899; box-shadow: 2px 2px 3px rgba(0,0,0,.35); padding: 2px; min-width: 180px; font-size: 11px; }
+.menupopup .item { display: flex; align-items: center; gap: 6px; padding: 3px 22px 3px 24px; white-space: nowrap; position: relative; }
+.menupopup .item img { position: absolute; left: 4px; width: 14px; height: 14px; }
+.menupopup .item.hover { background: #316ac5; color: #fff; }
+.menupopup .item.disabled { color: #aca899; }
+.menupopup .item .accel { margin-left: auto; padding-left: 20px; color: #666; }
+.menupopup .item.hover .accel { color: #e8e8e8; }
+.menupopup .sep { height: 1px; background: #aca899; margin: 3px 1px; }
+.menupopup .item.checked::before { content: "\2713"; position: absolute; left: 7px; font-size: 11px; }
+
+/* Dialogs (prefwindow / prompt / about) */
+.dialog { background: #ece9d8; border: 1px solid #0a46ab; box-shadow: 2px 3px 6px rgba(0,0,0,.4); display: inline-block; min-width: 320px; }
+.dialog .titlebar { height: 28px; font-size: 12px; padding: 0 8px; }
+.dialog .body { padding: 12px 14px 10px; }
+.dialog .buttons { display: flex; justify-content: flex-end; gap: 6px; padding: 6px 12px 12px; }
+button.xp { font: 11px Tahoma, Verdana, sans-serif; min-width: 75px; height: 23px; padding: 0 10px; background: linear-gradient(#fff, #ece9d8); border: 1px solid #003c74; border-radius: 3px; color: #000; }
+button.xp.default { box-shadow: inset 0 0 0 1px #9fb8e2; }
+.groupbox { border: 1px solid #d0d0bf; border-radius: 4px; padding: 10px 10px 8px; margin-bottom: 10px; position: relative; }
+.groupbox > .caption { position: absolute; top: -8px; left: 8px; background: #ece9d8; padding: 0 3px; color: #0046d5; }
+.row { display: flex; align-items: center; gap: 6px; margin: 6px 0; }
+.checkbox { display: flex; align-items: center; gap: 5px; margin: 5px 0; }
+.checkbox i { width: 13px; height: 13px; border: 1px solid #1c5180; background: linear-gradient(#fff, #e3e3df); display: inline-block; position: relative; }
+.checkbox i.on::after { content: ""; position: absolute; left: 3px; top: 0px; width: 4px; height: 8px; border: solid #21a121; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+input.xp { font: 11px Tahoma, Verdana, sans-serif; height: 21px; border: 1px solid #7f9db9; padding: 2px 4px; background: #fff; }
+.label { color: #000; }
+.url-text { color: #0000ee; text-decoration: underline; cursor: pointer; }
+.footnote { position: absolute; left: 0; right: 0; bottom: -22px; font-size: 10px; color: #666; text-align: center; }
+
+/* Joey Uploads Manager popup (joeyUDManager) — mirrors addons/ff/chrome/skin/classic/joey/joey.css */
+.udmanager { position: absolute; background: #fff; border: 1px solid #aca899; box-shadow: 2px 2px 3px rgba(0,0,0,.35); padding: 4px 6px; }
+.joeyProgressLayer { position: relative; height: 18px; margin: 2px 0; padding-left: 14px; margin-left: 2px; display: flex; align-items: center; }
+.joeyProgressMeter { position: absolute; left: 0; top: 0; height: 16px; margin-top: 1px; opacity: .5; background: darkblue url("assets/ff/meterbg.jpg") 100% 0 no-repeat; }
+.joeyProgressLayer label { position: relative; padding-left: 16px; font-size: 11px; white-space: nowrap; }
+.joeyTypeVideo { background: transparent url("assets/ff/type_video.png") 0 1px no-repeat; }
+.joeyTypeAudio { background: transparent url("assets/ff/type_music.png") 0 1px no-repeat; }
+.joeyTypeText  { background: transparent url("assets/ff/type_text.png") 0 1px no-repeat; }

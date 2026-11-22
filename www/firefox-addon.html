@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Firefox add-on · Project Joey</title>
+<meta name="description" content="How the Joey 0.3 Firefox extension captured text, images, media, feeds, tabs and page fragments and pushed them to the Joey server.">
+<link rel="icon" href="img/brand/joey-16.png">
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="img/brand/joey-32.png" alt=""><span>Project <b>Joey</b></span></a>
+    <nav class="site-nav" aria-label="Site">
+      <a href="index.html">Overview</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="firefox-addon.html" aria-current="page">Firefox add-on</a>
+      <a href="server.html">Server</a>
+      <a href="mobile.html">Phone clients</a>
+      <a href="screenshots.html">Screenshots</a>
+      <a href="history.html">History</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <p class="eyebrow">Component 1 of 3 · <code>addons/ff/</code></p>
+    <h1>The Firefox add-on</h1>
+    <p class="lede">The desktop half of Joey was a Firefox 2-era XPI. It put a kangaroo in the status bar and two items in the right-click menu, watched the pages you visited, and pushed whatever you chose up to <code>joey.labs.mozilla.com</code> so a phone could pick it up later.</p>
+
+    <nav class="toc" aria-label="On this page">
+      <ul>
+        <li><a href="#what">What it is</a></li>
+        <li><a href="#entry-points">Entry points in the UI</a></li>
+        <li><a href="#capture-paths">Every capture path, in detail</a></li>
+        <li><a href="#component">The <code>mocoJoey</code> XPCOM component</a></li>
+        <li><a href="#status">Status and progress UI</a></li>
+        <li><a href="#prefs">Preferences</a></li>
+        <li><a href="#build">Build and ship</a></li>
+        <li><a href="#today">Reading the code today</a></li>
+      </ul>
+    </nav>
+
+    <h2 id="what">What it is</h2>
+    <p>The add-on is a classic overlay extension. It layers <code>joeyOverlay.xul</code> onto Firefox's main window (and, in <code>chrome.manifest</code>, onto the old Mozilla Suite <code>navigator.xul</code> too), ships one JavaScript XPCOM component that does the HTTP work, and carries two locales. There is no build system beyond two shell scripts.</p>
+
+    <dl class="kv">
+      <dt>Name / version</dt><dd>Joey 0.3.0.0 (the <code>JOEY_VERSION</code> constant and <code>install.rdf</code> agree; other files do not, see <a href="#today">below</a>)</dd>
+      <dt>Extension id</dt><dd><code>joey@mozilla.corporation</code></dd>
+      <dt>Target</dt><dd>Firefox <code>{ec8030f7-…}</code>, minVersion 0.8, maxVersion 3.0 in <code>install.rdf</code>; 1.5 to 3.0a6 in <code>update.rdf</code></dd>
+      <dt>Creator</dt><dd>Doug Turner; Marcio Galli is credited as contributor in the overlay and status code and wrote the pt-BR locale</dd>
+      <dt>License</dt><dd>MPL 1.1 / GPL 2.0 / LGPL 2.1 tri-license headers on every source file</dd>
+      <dt>Locales</dt><dd><code>en-US</code> and <code>pt-BR</code> (<code>joey.dtd</code>, <code>brand.dtd</code>, <code>joey.properties</code>)</dd>
+      <dt>Home / updates</dt><dd><code>https://joey.labs.mozilla.com/</code>; auto-update manifest at <code>/app/webroot/ff/update.rdf</code></dd>
+      <dt>Size</dt><dd>About 2,660 lines of JavaScript across seven files, plus XUL, IDL and CSS</dd>
+    </dl>
+
+    <table>
+      <thead><tr><th>File</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td><code>chrome/content/joey/joeyOverlay.xul</code></td><td>Context-menu items, status-bar panel, menus, tooltips, Uploads Manager popup</td></tr>
+        <tr><td><code>joeyOverlay.js</code> (771 lines)</td><td>All capture logic: selection, image, media sniffer, feed watcher, tab upload, first run, page-talk, microsummary builder</td></tr>
+        <tr><td><code>joeyStatus.js</code> (561)</td><td>Per-upload status objects, aggregate progress label, Uploads Manager rendering, the <code>joey_listener</code> bridge from the component back to the UI</td></tr>
+        <tr><td><code>joeyMediaFetcher.js</code> (166)</td><td>Downloads a remote media URL to a temp file, then hands it to the uploader</td></tr>
+        <tr><td><code>joeyDivHighlighter.js</code> (279)</td><td>The green dotted box that follows the mouse in "Summary Capture" mode</td></tr>
+        <tr><td><code>joeyXPath.js</code> (208)</td><td>Builds an XPath for the element the user clicked</td></tr>
+        <tr><td><code>joeyCommon.js</code> (88)</td><td>Server URL helper, Clear Private Data, Restore Defaults, feed-reader registration</td></tr>
+        <tr><td><code>joeyOptions.xul</code> / <code>about.xul</code></td><td>Preferences window and About dialog (<code>joeyOptions.js</code> exists but is empty)</td></tr>
+        <tr><td><code>components/mocoJoey.idl</code> / <code>.xpt</code> / <code>.js</code> (588)</td><td>The <code>@mozilla.com/joey;1</code> component: login and multipart upload over <code>nsIHttpChannel</code></td></tr>
+        <tr><td><code>defaults/preferences/joey.js</code></td><td>Default prefs</td></tr>
+        <tr><td><code>chrome/skin/classic/joey/</code></td><td>Kangaroo icons (16, 32, 48 px), type icons, progress-meter background, selector tile, <code>joey.css</code></td></tr>
+      </tbody>
+    </table>
+    <span class="src">Source: <code>addons/ff/install.rdf</code>, <code>addons/ff/chrome.manifest</code>, <code>addons/ff/chrome/content/joey/</code></span>
+
+    <h2 id="entry-points">Entry points in the UI</h2>
+    <p>Everything the user could do started from one of four places: the page context menu, the status-bar kangaroo and its menu, the Uploads Manager popup next to it, and the Options window. The rest of the add-on worked silently in the background.</p>
+
+    <div class="shots">
+      <figure>
+        <img src="img/screenshots/ff-context-menu.png" alt="Firefox right-click menu with two Joey items">
+        <figcaption><strong>Context menu.</strong> "Joey! Selected Text" appears only when there is a selection; "Joey! Selected Image" only when the right-click landed on an <code>&lt;img&gt;</code>. Reconstruction from the XUL and CSS source, not a capture.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/screenshots/ff-statusbar-menu.png" alt="Firefox status bar with the Joey icon and its popup menu">
+        <figcaption><strong>Status bar menu.</strong> My Joey!, Joey! Media on page (disabled until media is sniffed), Joey! Summary Capture, Joey! Preferences. Reconstruction from the XUL and CSS source, not a capture.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/screenshots/ff-upload-progress.png" alt="Joey Uploads Manager popup with progress meters">
+        <figcaption><strong>Uploads Manager.</strong> The "Joey: 42%" box appears while uploads are in flight; clicking it opens a popup with one meter per item. Reconstruction from the XUL and CSS source, not a capture.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/screenshots/ff-title-prompt.png" alt="Edit page title prompt dialog">
+        <figcaption><strong>Title prompt.</strong> Before each upload, unless the user unticked "Always ask to edit titles". Reconstruction from the XUL and CSS source, not a capture.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/screenshots/ff-options.png" alt="Joey Options window">
+        <figcaption><strong>Options.</strong> Clear Private Data, three checkboxes, the server URL and the feed-reader registration button. Reconstruction from the XUL and CSS source, not a capture.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/screenshots/ff-about.png" alt="Joey About dialog">
+        <figcaption><strong>About.</strong> Still says "version 0.2" in the 0.3 release. Reconstruction from the XUL and CSS source, not a capture.</figcaption>
+      </figure>
+    </div>
+
+    <h3>The status bar panel</h3>
+    <p>The overlay adds a <code>statusbarpanel</code> with two buttons. <code>joeyStatusButton</code> carries the 16 px kangaroo and opens the menu. <code>joeyStatusBox</code> starts collapsed and is shown by <code>joeyStatus.js</code> only while something is queued, downloading or uploading; its label is the aggregate percentage and clicking it opens the <code>joeyUDManager</code> popup.</p>
+    <pre><code>&lt;menupopup id="joeyStatusPopup" &gt;
+  &lt;menuitem label="&amp;overlay.menuSite.label;"      oncommand="joey_launchCloudSite()" /&gt;
+  &lt;menuitem id="joeyMediaMenuItem" label="&amp;overlay.menuMedia.label;"
+            disabled="true"                     oncommand="joey_uploadFoundMedia()" /&gt;
+  &lt;menuitem id="joey_selectContextual" label="&amp;overlay.menuSummary.label;"
+                                                oncommand="joey_enableSelection();"/&gt;
+  &lt;menuitem id="joey_configurePreferences" label="&amp;overlay.menuPreferences.label;"
+                                                oncommand="joeyLaunchPreferences();"/&gt;
+&lt;/menupopup&gt;</code></pre>
+    <p>"My Joey!" simply loads <code>&lt;server&gt;/uploads</code> in the current tab. <code>brand.dtd</code> also defines a "Joey! Current Feed" label (<code>overlay.menuRSS.label</code>), but no menu item uses it in 0.3; feeds only go up through the automatic watcher or the registered feed handler described below.</p>
+    <span class="src">Source: <code>addons/ff/chrome/content/joey/joeyOverlay.xul</code>, <code>addons/ff/chrome/locale/en-US/brand.dtd</code></span>
+
+    <h3>Context menu visibility</h3>
+    <p>There is no <code>popupshowing</code> handler. Instead a window-level <code>mousedown</code> listener checks for button 3, records the image under the pointer, and toggles the two menu items' <code>hidden</code> attribute based on whether there is an image and whether the content document has a non-empty selection.</p>
+    <pre><code>function joeyOnMouseDown(e)
+{
+	if (e.which == 3)
+	{
+		var target = e.target;
+		var classname = e.target.toString();
+		if (classname.match(/ImageElement/))
+        {
+			var hie = target.QueryInterface(Components.interfaces.nsIDOMHTMLImageElement);
+			if (hie != null)
+				setImageSource(hie);</code></pre>
+    <span class="src">Source: <code>addons/ff/chrome/content/joey/joeyOverlay.js</code> (<code>joeyOnMouseDown</code>, <code>setImageSource</code>)</span>
+
+    <h2 id="capture-paths">Every capture path, in detail</h2>
+    <p>All paths converge on one small object, <code>joey_upload</code>, which holds a title, a referrer URL, a content type and either a string (<code>data</code>) or an <code>nsIFile</code> (<code>file</code>). Its <code>upload()</code> method optionally prompts for a title, creates a fresh <code>mocoJoey</code> instance, attaches a <code>joey_listener</code>, and calls <code>uploadFile</code> or <code>uploadData</code>. Which of the two is used decides how the server stores the item: a file becomes a <code>File</code> row the daemon transcodes; a string becomes a <code>Contentsource</code> row the daemon refreshes.</p>
+
+    <table>
+      <thead><tr><th>Trigger</th><th>Function</th><th>Payload</th><th>Content type sent</th><th>Title / referrer</th></tr></thead>
+      <tbody>
+        <tr><td>Context menu on a selection</td><td><code>joey_selectedText</code></td><td>Selection text written to a temp file (tabs replaced with CRLF)</td><td><code>text/plain</code> (file)</td><td>Page title / page URL</td></tr>
+        <tr><td>Context menu on an image</td><td><code>joey_selectedImage</code> → <code>JoeyMediaFetcher</code></td><td>Image bytes downloaded to a temp file</td><td>Whatever the HTTP channel reported (file)</td><td>Page title / page URL</td></tr>
+        <tr><td>Status menu "Media on page"</td><td><code>joey_uploadFoundMedia</code> → <code>JoeyMediaFetcher</code></td><td>Last sniffed audio/video URL downloaded to a temp file</td><td>Sniffed <code>Content-Type</code> (file)</td><td>Page title / page URL</td></tr>
+        <tr><td>Status menu "Summary Capture", then a click on the page</td><td><code>joey_selectedTarget</code></td><td>Microsummary generator XML containing an XPath</td><td><code>microsummary/xml</code> (data)</td><td>"Microsummary from : URL" / page URL</td></tr>
+        <tr><td>Automatic, after N visits to a page with a feed</td><td><code>joeyFeedwatcher</code> → <code>joey_feed</code></td><td><code>rss=&lt;feed&gt;\r\nicon=&lt;favicon&gt;\r\n</code></td><td><code>rss-source/text</code> (data)</td><td>Feed title or URL / feed URL</td></tr>
+        <tr><td>Automatic timer (opt-in)</td><td><code>joey_currentTabs</code></td><td>HTML <code>&lt;ul&gt;</code> of every window's tabs</td><td><code>browser/stuff</code> (file)</td><td>"Current Tabs" / <code>about:CurrentTabs</code></td></tr>
+        <tr><td>Firefox feed preview, "Subscribe using Joey!"</td><td>registered content handler</td><td>None; the browser opens <code>/uploads/add/rss/?source=%s</code> on the server</td><td>n/a</td><td>Set server-side</td></tr>
+      </tbody>
+    </table>
+    <span class="src">Source: <code>addons/ff/chrome/content/joey/joeyOverlay.js</code>, <code>joeyMediaFetcher.js</code>, <code>joeyCommon.js</code></span>
+
+    <h3>Selected text</h3>
+    <p>The selection is read from the focused window, tabs are turned into line breaks, and the string is written to <code>joey-selected-text.tmp</code> in the OS temp directory with <code>createUnique</code>. The temp file is then uploaded as <code>text/plain</code>. If the "page talk" guided tour is active (see below), the status object gets an extra callback so the welcome page can show "Congratulations!" when the upload completes.</p>
+
+    <h3>Images and sniffed media: the media fetcher</h3>
+    <p>Joey never uploaded a URL for the server to fetch. For images and for audio/video, <code>JoeyMediaFetcher</code> opens its own <code>nsIChannel</code> to the resource, streams the bytes into <code>joeymedia.tmp</code> with an <code>nsIBinaryOutputStream</code>, reports download progress to the status UI, and on <code>onStopRequest</code> sets the file and the channel's <code>contentType</code> on the pending <code>joey_upload</code> and calls <code>upload()</code>. So a 20 MB video on YouTube's CDN came down to the user's disk and then went back up to Mozilla's server, twice crossing the user's link. The reason is practical: the add-on was running inside the user's session, with the user's cookies, so it could reach media the server could not.</p>
+
+    <h3>The HTTP response sniffer</h3>
+    <p>At overlay load an observer is registered for <code>http-on-examine-response</code>, which fires for every HTTP response Firefox receives. If the <code>Content-Type</code> contains <code>video</code>, <code>audio</code> or <code>octet</code>, and either the type or the URL matches one of the known extensions, the "Media on page" menu item is enabled, given a video or music icon, and its tooltip becomes "Upload: &lt;page title&gt;". The URL and type are stashed in two globals.</p>
+    <pre><code>var g_joey_media_content_types = ['flv','mov','wmv','avi','mpeg','mp3','wav'];</code></pre>
+    <p>This is how Joey caught Flash-era video: the page's player requested an <code>.flv</code>, the sniffer saw it go by, and the user could then push that exact file to their phone. The globals are not per-tab (the code carries a <code>todo: this needs to be per page</code> comment), so the menu item reflects the last media response seen in any tab.</p>
+    <span class="src">Source: <code>addons/ff/chrome/content/joey/joeyOverlay.js</code> (<code>httpscanner</code>, <code>joey_uploadFoundMedia</code>)</span>
+
+    <h3>Summary Capture: pick an element, get a microsummary</h3>
+    <p>"Joey! Summary Capture" turns on <code>g_joeySelectorService</code>. It injects four absolutely-positioned XHTML <code>div</code>s tiled with <code>selector-tile.png</code> into the content document and, on a 150 ms timer, snaps them around the element under the mouse using <code>getBoxObjectFor</code>, rounding the box to a multiple of the 4 px tile so the dotted border lines up. A left click calls back with the element and tears everything down; any key cancels.</p>
+    <p>The callback, <code>joey_selectedTarget</code>, runs <code>joey_buildXPath</code> over the element (preferring <code>id('…')</code> when any ancestor has an id, skipping <code>a</code>, <code>img</code>, <code>ul</code> and <code>font</code> wrappers, indexing siblings by position) and wraps the result in a Firefox 2 microsummary generator document:</p>
+    <pre><code>&lt;generator xmlns="http://www.mozilla.org/microsummaries/0.1" name="Microsummary for URL" uri="urn:UUID"&gt;
+ &lt;pages&gt;&lt;include&gt;URL&lt;/include&gt;&lt;/pages&gt;
+ &lt;template&gt;
+   &lt;transform xmlns="http://www.w3.org/1999/XSL/Transform" version="1.0"&gt;
+     &lt;output method="text"/&gt;
+     &lt;template match="/"&gt;&lt;value-of select="XPATH"/&gt;&lt;/template&gt;
+   &lt;/transform&gt;
+ &lt;/template&gt;
+&lt;hint&gt;&lt;/hint&gt;&lt;/generator&gt;</code></pre>
+    <p>It is uploaded as a content source of type <code>microsummary/xml</code>. The server's daemon then re-fetches the page periodically and applies the XSLT, so the phone sees a live, tiny piece of a web page (a stock price, a score, a headline) rather than a snapshot. The <code>hint</code> element was meant to carry the element's current <code>innerHTML</code> but the code blanks it (<code>hint ="";</code>) right after computing it.</p>
+    <span class="src">Source: <code>addons/ff/chrome/content/joey/joeyDivHighlighter.js</code>, <code>joeyXPath.js</code>, <code>joeyOverlay.js</code> (<code>joey_selectedTarget</code>)</span>
+
+    <h3>The feed watcher</h3>
+    <p>On every <code>DOMContentLoaded</code>, if <code>joey.watchRSS</code> is true, the overlay looks at the current browser's autodiscovered <code>feeds[0]</code>, builds a pref key from the feed URL (slashes replaced by <code>s</code>), and bumps a per-feed visit counter <code>joey.rss.&lt;key&gt;.seen</code>. When the counter passes <code>joey.rss-watch-limit</code> (default 10) it calls <code>joey_feed()</code>, which uploads a two-line text content source:</p>
+    <pre><code>var data = "rss=" + feedLocation + "\r\n";
+if (icon != null)
+    data = data + "icon=" + icon + "\r\n";
+...
+upload.setContentType("rss-source/text");</code></pre>
+    <p>The counter resets to zero and the cycle continues, which means a frequently visited site is re-uploaded every ten visits; the server treats the repeat as a duplicate (status 519) and the client treats 519 as success. The visit counters live in the pref tree and are wiped on <code>profile-change-teardown</code> by the component and by "Clear Private Data".</p>
+    <span class="src">Source: <code>addons/ff/chrome/content/joey/joeyOverlay.js</code> (<code>joeyFeedwatcher</code>, <code>joey_feed</code>)</span>
+
+    <h3>"Current Tabs" upload</h3>
+    <p><code>g_run_tab_upload</code> is started once at load and reschedules itself with <code>setTimeout</code> every <code>joey.tab.upload.timeout</code> ms (300,000, five minutes). When <code>joey.tab.upload.enabled</code> is true it walks every browser window through <code>nsIWindowMediator</code>, emits a nested HTML list of "Browser Window #n" and its tab titles linked to their URLs, writes it to a temp file and uploads it as <code>browser/stuff</code> with the fixed referrer <code>about:CurrentTabs</code>. The server special-cases that type: a new upload with the same referrer overwrites the previous original file rather than creating a second item, so the phone always has exactly one "Current Tabs" entry. This was the seed of the session-to-phone idea that later became Weave's tab sync.</p>
+    <span class="src">Source: <code>addons/ff/chrome/content/joey/joeyOverlay.js</code> (<code>joey_currentTabs</code>, <code>g_run_tab_upload</code>); <code>server/app/controllers/uploads_controller.php</code> (<code>_saveUploadedFile</code>)</span>
+
+    <h3>First run, upgrades and the "page talk" protocol</h3>
+    <p>At startup <code>joeyStartup</code> compares the <code>joey.lastversion</code> pref with <code>JOEY_VERSION</code>. The default value is the string <code>"firstrun"</code>, so a fresh install opens <code>&lt;server&gt;/version/index/0.3.0.0/firstrun</code> in a new tab half a second later; an upgrade opens the same URL without <code>/firstrun</code>. The server renders the release notes for that version inside the welcome layout.</p>
+    <p>For the first-run case only, the overlay also attaches a one-shot <code>DOMContentLoaded</code> handler that runs <code>joeyPageTalk()</code>. That function appends a <code>&lt;div class="joeyCallback#joeyIsHere"&gt;</code> to the welcome page's body and listens for <code>DOMNodeInserted</code> events coming back. The page's own script (<code>joeyclient.js</code> on the server) watches for the marker, reveals the "Guided Tour" button, and polls the selection every three seconds until the user has highlighted the sample sentence; it then inserts <code>&lt;div class="joeyAction#joeySelected?id=123"&gt;</code>. The overlay parses the id out of that class name into <code>gJoeyPageCallback</code>, and when the next selected-text upload completes it inserts <code>joeyCallback#node=123</code>, which the page turns into "Congratulations!". The two sides never share a script or a message channel; they talk only by inserting class-named <code>div</code>s into the same document. The release notes call the fallback "safe mode": without the marker the tour button stays hidden.</p>
+    <span class="src">Source: <code>addons/ff/chrome/content/joey/joeyOverlay.js</code> (<code>joeyStartup</code>, <code>joeyPageTalk</code>, <code>joeyTalkBack</code>, <code>joeyPageTalkCallback</code>); <code>server/app/webroot/js/joeyclient.js</code></span>
+
+    <h2 id="component">The <code>mocoJoey</code> XPCOM component</h2>
+    <p>All network traffic goes through one scriptable component, registered under the contract id <code>@mozilla.com/joey;1</code> and class id <code>{66b3290c-6c74-4f15-8132-d6cc74e5d37f}</code>. The interface is small:</p>
+    <pre><code>[scriptable, uuid(D7C72F59-62D1-470D-9754-26B26F95EF8B)]
+interface mocoJoeyListener : nsISupports
+{
+  void onStatusChange(in string action, in long status);
+  void onProgressChange(in PRUint32 current, in PRUint32 total);
+};
+
+[scriptable, uuid(46746F62-39D1-4A35-9F60-AF7297AC0251)]
+interface mocoJoey : nsISupports
+{
+  void setListener(in mocoJoeyListener listener);
+  void uploadData(in string title, in string uri, in string data, in string type);
+  void uploadFile(in string title, in string uri, in nsIFile file, in string type);
+};</code></pre>
+    <p>The <code>.xpt</code> typelib was generated from the IDL with the Gecko SDK's <code>xpidl</code> (see <a href="#build">Build and ship</a>). The implementation is plain JavaScript using the pre-Firefox-3 module pattern (<code>registerSelf</code>, <code>getClassObject</code>, an <code>nsIFactory</code>).</p>
+
+    <h3>Upload flow</h3>
+    <ol class="steps">
+      <li><strong>Serialise.</strong> <code>uploadDataInternal</code> refuses (returns -1) if <code>joey_in_progress</code> is already true, then stores title, URL, type and payload in instance fields. Because <code>joey_upload.upload()</code> calls <code>createInstance</code> each time, every capture gets its own component instance and this guard is per-upload, not global.</li>
+      <li><strong>Find credentials.</strong> <code>setLoginInfo</code> enumerates <code>nsIPasswordManager</code> for an entry whose <code>host</code> equals the server URL. If none exists it shows <code>promptUsernameAndPassword</code> with a "Save" checkbox and stores the result.</li>
+      <li><strong>Log in.</strong> <code>loginToService</code> POSTs <code>rest=1&amp;data[User][username]=…&amp;data[User][password]=…</code> as <code>application/x-www-form-urlencoded</code> to <code>/users/login</code>. The server answers with an <code>X-joey-status</code> header and a session cookie, which Firefox's cookie jar keeps for the next request.</li>
+      <li><strong>Upload.</strong> On status 200 the callback calls <code>uploadDataFromGlobals</code>, which assembles a <code>multipart/form-data</code> body by hand with an <code>nsIMultiplexInputStream</code> and POSTs it to <code>/uploads/add</code>.</li>
+      <li><strong>Report.</strong> <code>uploadCallback</code> maps the <code>X-joey-status</code> header to <code>onStatusChange("upload", …)</code> on the listener: 1 for success, -2 for out of space, -1 for anything else.</li>
+    </ol>
+
+    <h3>The multipart body</h3>
+    <p>The boundary is the fixed string <code>111222111</code>. Fields are named the way CakePHP 1.1 expects so the server can read them straight out of <code>$this-&gt;data</code>:</p>
+    <pre><code>var start = createParam("rest", "1") +
+            createParam("data[Upload][title]", this.joey_title) +
+            createParam("data[Upload][referrer]", this.joey_url);
+var endstring;
+if (fileBuffer == null)
+{
+    start += createParam("data[Contentsourcetype][name]", this.joey_content_type) +
+             createParam("data[Contentsource][source]", this.joey_data);
+    endstring = "--"+BOUNDARY+"--\r\n";
+}</code></pre>
+    <p>For files the extra part is named <code>data[File][Upload]</code>, with the filename literally set to the same string, a <code>Content-Type</code> of the capture's type and a <code>Content-Length</code> of <code>nsIFile.fileSize</code>. The channel's content type is set to <code>"multipart/form-data, boundary=111222111"</code> (comma, not the semicolon the RFC specifies; PHP of the day accepted it). Progress callbacks from <code>nsIProgressEventSink.onProgress</code> are forwarded as <code>onProgressChange</code>.</p>
+    <span class="src">Source: <code>addons/ff/components/mocoJoey.js</code> (<code>uploadDataFromGlobals</code>, <code>loginToService</code>, <code>JoeyStreamListener</code>)</span>
+
+    <h3>Status codes</h3>
+    <p>The server never used HTTP status codes for application state; every REST response is HTTP 200 with an <code>X-joey-status</code> header. The add-on reads it in <code>JoeyStreamListener.onStopRequest</code>. The code table lives on the server:</p>
+    <table>
+      <thead><tr><th>Code</th><th>Meaning (server constant)</th><th>Add-on behaviour</th></tr></thead>
+      <tbody>
+        <tr><td>200</td><td><code>SUCCESS</code></td><td>Login: proceed to upload. Upload: report success.</td></tr>
+        <tr><td>511</td><td><code>ERROR_NO_SESSION</code></td><td>Intended to clear <code>joey_hasLogged</code> and retry; the retry code is broken (see <a href="#today">below</a>).</td></tr>
+        <tr><td>512</td><td><code>ERROR_LOGIN</code></td><td>Login: <code>onStatusChange("login", -1)</code>; the UI asks "Login Failed. Would you like to try again?", clears saved credentials and re-prompts.</td></tr>
+        <tr><td>513</td><td><code>ERROR_ACTIVATION</code> (account not activated)</td><td>Treated as a generic login failure.</td></tr>
+        <tr><td>514</td><td><code>ERROR_DELETE</code></td><td>Never sent for add or login.</td></tr>
+        <tr><td>515</td><td><code>ERROR_NOAUTH</code></td><td>Generic upload failure.</td></tr>
+        <tr><td>516</td><td><code>ERROR_FILE</code></td><td>Generic upload failure.</td></tr>
+        <tr><td>517</td><td><code>ERROR_NO_SPACE</code> (over the 20 MB quota)</td><td><code>onStatusChange("upload", -2)</code>; the listener shows the generic "Upload Failed" alert.</td></tr>
+        <tr><td>518</td><td><code>ERROR_UPLOAD</code></td><td>Generic upload failure.</td></tr>
+        <tr><td>519</td><td><code>ERROR_DUPLICATE</code></td><td>Treated as success ("if all okay, or if there is a dup").</td></tr>
+      </tbody>
+    </table>
+    <span class="src">Source: <code>server/app/app_controller.php</code>; <code>addons/ff/components/mocoJoey.js</code> (<code>uploadCallback</code>, <code>loginCallback</code>)</span>
+
+    <h3>Housekeeping</h3>
+    <p>The component also registers itself as an observer for <code>profile-change-teardown</code> and deletes the whole <code>joey.rss</code> pref branch when the profile shuts down, so the feed-visit counters do not persist across sessions. That is the only state it keeps outside the password manager.</p>
+
+    <h2 id="status">Status and progress UI</h2>
+    <p><code>joeyStatus.js</code> is a small event-queue renderer written around XUL. A singleton <code>joeyStatusUpdateService</code> hands out <code>JoeyStatusUpdateClass</code> instances, one per capture. The capture code calls <code>tellStatus(verb, from, to, adverb, contentType)</code> with verbs <code>queued</code>, <code>download</code>, <code>upload</code>, <code>login</code> and adverbs <code>completed</code>, <code>failed</code>, <code>failed,tryagain</code>. Each call pushes onto a per-item <code>actionQueue</code>, then the service drains the queue oldest-first and updates XUL.</p>
+    <ul>
+      <li><strong>Per-item meter.</strong> The first <code>queued</code>/<code>download</code>/<code>upload</code> for an item appends a <code>&lt;stack&gt;</code> to the <code>joeyUDManager</code> popup containing a 100 px wide box styled with <code>meterbg.jpg</code> and a label. Progress is drawn by shifting the background position; the label reads "NN% of Title". A download counts for the first half of the bar and the upload for the second, so a sniffed video shows 0 to 50% while coming down and 50 to 100% while going up.</li>
+      <li><strong>Type icon.</strong> The label gets <code>joeyTypeVideo</code>, <code>joeyTypeAudio</code> or <code>joeyTypeText</code> depending on the content type, which maps to the 14 px icons in the skin.</li>
+      <li><strong>Aggregate label.</strong> <code>generalUDUpdate</code> averages every live item and sets the status-bar box to "Joey: NN%" or "Joey: waiting..", uncollapsing it while there is at least one item and collapsing it again when the last one is deleted.</li>
+      <li><strong>Global messages.</strong> Completion and failure push string commands such as <code>uploadCompleted-3</code>, <code>clear-3</code>, <code>delete-3</code> onto a second queue that <code>renderer()</code> consumes one entry every 1,111 ms, which is what gives the "Upload completed" text time to be read before the meter disappears. Failures paint the meter red.</li>
+      <li><strong>Login retry.</strong> When the component reports a login failure the <code>joey_listener</code> bridge shows a confirm dialog; on OK it calls <code>tellStatus("login", null, null, "failed,tryagain")</code>, which schedules <code>loginFailedRetry-N</code>; the renderer then calls <code>clearLoginData()</code> and <code>upload()</code> on the original <code>joey_upload</code> object, so the user gets a fresh credentials prompt.</li>
+    </ul>
+    <span class="src">Source: <code>addons/ff/chrome/content/joey/joeyStatus.js</code>, <code>addons/ff/chrome/skin/classic/joey/joey.css</code></span>
+
+    <h2 id="prefs">Preferences</h2>
+    <p>Only five prefs have defaults. Several more are read with <code>getBoolPref</code>/<code>getIntPref</code> and simply do not exist until the Options window or the code writes them.</p>
+    <table>
+      <thead><tr><th>Pref</th><th>Default</th><th>Used for</th></tr></thead>
+      <tbody>
+        <tr><td><code>joey.service_url</code></td><td><code>https://joey.labs.mozilla.com</code></td><td>Base URL for every request. Editable under "Advanced Options"; "Restore Defaults" writes the constant back.</td></tr>
+        <tr><td><code>joey.enable_logging</code></td><td><code>true</code></td><td>Gate for <code>joeyDumpToConsole</code>, which logs exceptions to the Error Console as "joey: …".</td></tr>
+        <tr><td><code>joey.lastversion</code></td><td><code>"firstrun"</code></td><td>Drives the first-run/upgrade tab; set to <code>JOEY_VERSION</code> after it opens.</td></tr>
+        <tr><td><code>joey.askForTitle</code></td><td><code>true</code></td><td>Show the "Edit page title" prompt before each upload. The prompt's checkbox writes it back.</td></tr>
+        <tr><td><code>joey.remember_username</code></td><td><code>false</code></td><td>Declared but not referenced anywhere else in the add-on.</td></tr>
+        <tr><td><code>joey.watchRSS</code></td><td>none</td><td>Enables the feed watcher. Bound to the "Upload RSS of frequently visited sites" checkbox.</td></tr>
+        <tr><td><code>joey.rss-watch-limit</code></td><td>none (code falls back to 10)</td><td>Visits before a feed is uploaded.</td></tr>
+        <tr><td><code>joey.rss.&lt;feed&gt;.seen</code></td><td>created on demand</td><td>Per-feed visit counters; deleted on shutdown and by Clear Private Data.</td></tr>
+        <tr><td><code>joey.tab.upload.enabled</code></td><td>none (code falls back to false)</td><td>Enables the periodic "Current Tabs" upload. Bound to "Upload current tabs frequently".</td></tr>
+        <tr><td><code>joey.tab.upload.timeout</code></td><td>none (code falls back to 300000)</td><td>Tab upload interval in ms. Not exposed in the UI.</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Clear Private Data</strong> calls <code>clearJoeyFeedWatcherData()</code> (delete the <code>joey.rss</code> branch) and <code>clearLoginData()</code>, which removes every password-manager entry whose host equals the current server URL. The pt-BR label is more honest about what it does: "Apagar dados de login", clear login data.</p>
+    <p><strong>Register Joey! Feed Reader</strong> calls <code>navigator.registerContentHandler</code> for the Firefox 2 feed MIME type, pointing at the server:</p>
+    <pre><code>navigator.registerContentHandler('application/vnd.mozilla.maybe.feed',
+                                 url + '/uploads/add/rss/?source=%s',
+                                 'Joey!');</code></pre>
+    <p>After that, "Joey!" appears alongside Bloglines and Google Reader in Firefox's feed preview page, and choosing it sends the user to the server's add form pre-filled with <code>rss=&lt;feed URL&gt;</code>. The server's <code>add('rss')</code> action handles the <code>source</code> query parameter for exactly this case.</p>
+    <span class="src">Source: <code>addons/ff/defaults/preferences/joey.js</code>, <code>addons/ff/chrome/content/joey/joeyOptions.xul</code>, <code>joeyCommon.js</code>; <code>server/app/controllers/uploads_controller.php</code></span>
+
+    <h2 id="build">Build and ship</h2>
+    <p>There is no makefile. <code>buildit.sh</code> regenerates the typelib, copies the tree into <code>work/</code>, strips <code>.svn</code> and <code>.DS_Store</code>, zips <code>chrome/</code> into <code>joey.jar</code> and the lot into <code>joey.xpi</code>. The paths are the author's laptop:</p>
+    <pre><code>pushd components
+rm *.xpt
+/Users/dougt/builds/gecko-sdk/bin/xpidl -m typelib -I"/Users/dougt/builds/gecko-sdk/idl" mocoJoey.idl
+popd
+...
+pushd chrome
+rm joey.jar
+zip -r joey.jar *
+popd
+zip -r joey.xpi *</code></pre>
+    <p><code>pushit.sh</code> then <code>scp</code>s <code>joey.xpi</code> and <code>update.rdf</code> to <code>/data/joey.labs.mozilla.com/</code> on the production host. The server's "Get the software" page links to <code>/app/webroot/ff/joey.xpi</code>, and <code>install.rdf</code>'s <code>em:updateURL</code> points at the uploaded <code>update.rdf</code>, whose single entry offers 0.3.0.0 from the same path. So shipping a release was: edit the version constant, run two scripts.</p>
+    <p><code>install.js</code> is a leftover from the pre-Firefox-1.0 XPInstall era (it registers chrome with <code>Install.registerChrome</code> and still says version 0.1). Firefox 1.5 and later ignore it in favour of <code>install.rdf</code> and <code>chrome.manifest</code>; the SeaMonkey/Mozilla Suite overlay line in the manifest is the other trace of that heritage.</p>
+    <span class="src">Source: <code>addons/ff/buildit.sh</code>, <code>pushit.sh</code>, <code>update.rdf</code>, <code>install.js</code>, <code>install.rdf</code></span>
+
+    <h2 id="today">Reading the code today</h2>
+    <p>This is prototype code from a two-person Labs project, and it reads that way: direct, fast, and occasionally wrong in ways that did not matter for a demo. A few things stand out.</p>
+
+    <h3>Design choices worth noticing</h3>
+    <ul>
+      <li><strong>A sniffer on every response.</strong> Observing <code>http-on-examine-response</code> globally is heavy-handed by today's standards, but it was the only way in 2007 to find the media file behind a Flash player, and it is the feature that made the demo video work.</li>
+      <li><strong>Everything becomes a temp file.</strong> Selections, tab lists and downloaded media all go through <code>TmpD</code> before upload. The uploader needed an <code>nsIFile</code> to stream large bodies without holding them in memory; small strings got the same treatment for uniformity. Temp files are never deleted.</li>
+      <li><strong>Download then re-upload.</strong> The media fetcher doubles the traffic for every image and video but keeps the server out of the user's cookies and avoids hot-linking problems.</li>
+      <li><strong>Transport by header, state by DOM.</strong> Application status rides in a custom <code>X-joey-status</code> header rather than HTTP codes, and the page-to-add-on handshake rides in CSS class names on inserted <code>div</code>s. Both are inventive and both are brittle.</li>
+      <li><strong>Hand-rolled XPCOM.</strong> Manual <code>QueryInterface</code>, fake stream listeners that implement five interfaces, <code>registerSelf</code> throwing <code>NS_ERROR_FACTORY_REGISTER_AGAIN</code>: this is exactly what extension code looked like before <code>XPCOMUtils.jsm</code> arrived in Firefox 3.</li>
+    </ul>
+
+    <h3>Bugs you can point to</h3>
+    <ul>
+      <li><strong>The saved password is the username.</strong> In <code>mocoJoey.js</code> line 227, when the user ticks "Save" in the login prompt: <pre><code>passwordManager.addUser(getJoeyURL(), u.value, u.value);</code></pre> The third argument should be <code>p.value</code>. On the next upload <code>setLoginInfo</code> reads that entry back and sends the username as the password, the server returns 512, the UI offers a retry, and <code>clearLoginData()</code> wipes the bad entry. Users who ticked "Save" would have been re-prompted on every second upload.</li>
+      <li><strong>The expired-session retry cannot run.</strong> <code>JoeyStreamListener.onStopRequest</code> invokes the callback as <code>this.mCallbackFunc(this.mOwner, …)</code>, so inside <code>uploadCallback</code> the value of <code>this</code> is the stream listener, not the component. The 511 branch does <pre><code>this.joey_hasLogged = false;
+this.uploadDataInternal( this.joey_title,
+                         this.joey_url,
+                         this.joey_file,
+                         this.joey_content_type);</code></pre> which throws because the listener has no <code>uploadDataInternal</code>, and even on the component <code>joey_file</code> is never assigned (the payload lives in <code>joey_data</code>). The same <code>this</code> confusion means <code>joey_hasLogged</code> is set on the listener and the component logs in before every single upload. The code's own TODO above this branch admits the session case was unfinished.</li>
+      <li><strong>Dead branch in <code>joey_selected</code>.</strong> <code>joeyOverlay.js</code> line 349: <pre><code>if (selection != null || selection != "")
+    return joey_selectedText();
+joey_selectedArea();</code></pre> The condition is always true, so <code>joey_selectedArea()</code> is unreachable; it is also not defined anywhere in the add-on. Nothing calls <code>joey_selected</code> in 0.3, so no user hit this.</li>
+      <li><strong>Off-by-one in the sniffer.</strong> <code>for(var i=types.length;i&gt;=0;i--)</code> reads <code>types[7]</code>, which is <code>undefined</code>, and <code>contentType.indexOf(undefined)</code> searches for the string "undefined". Harmless, but it shows how little this path was exercised beyond the happy case.</li>
+      <li><strong>Feed watcher throws until Options is opened.</strong> <code>joeyFeedwatcher</code> reads <code>joey.watchRSS</code> with <code>getBoolPref</code> outside any <code>try</code>, and the pref has no default. On a fresh profile every page load throws <code>NS_ERROR_UNEXPECTED</code> out of the <code>DOMContentLoaded</code> handler; the feature silently starts working once the user has visited the Options window, which creates the pref through the <code>&lt;preference&gt;</code> binding.</li>
+      <li><strong>Version drift.</strong> <code>JOEY_VERSION</code> and <code>install.rdf</code> say 0.3.0.0; <code>about.xul</code>'s DTD says "version 0.2"; <code>install.js</code> and <code>contents.rdf</code> say 0.1; <code>install.rdf</code> allows Firefox up to 3.0 while <code>update.rdf</code> stops at 3.0a6.</li>
+    </ul>
+
+    <div class="callout green">
+      <p><strong>What survived.</strong> Strip away the XPCOM and the shape is familiar: a browser button that sends the current selection, image or media to a cloud inbox; an opt-in tab list that follows you to your phone; a feed that lands on your handset. Joey's add-on is a 2007 sketch of what Pocket, Firefox Send-to-Device and Firefox Sync's tab sync each later did properly.</p>
+    </div>
+
+    <nav class="pager"><a href="architecture.html">← Architecture</a><a href="server.html">Server →</a></nav>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>Project Joey was a Mozilla Labs experiment (2007). This retrospective was reconstructed from the source tree in this repository.</span>
+    <span>Original code: MPL 1.1 / GPL 2.0 / LGPL 2.1 tri-license.</span>
+  </div>
+</footer>
+</body>
+</html>

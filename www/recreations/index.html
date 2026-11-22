@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reconstructed pages · Project Joey</title>
+<link rel="icon" href="../img/brand/joey-16.png">
+<link rel="stylesheet" href="../css/site.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="../index.html"><img src="../img/brand/joey-32.png" alt=""><span>Project <b>Joey</b></span></a>
+    <nav class="site-nav" aria-label="Site">
+      <a href="../index.html">Overview</a>
+      <a href="../screenshots.html">Screenshots</a>
+    </nav>
+  </div>
+</header>
+<main>
+  <div class="wrap">
+    <p class="eyebrow">Appendix</p>
+    <h1>Reconstructed server pages</h1>
+    <p class="lede">Static renderings of the Joey server's CakePHP views, built from the original templates, stylesheets and images in <code>server/app</code>. The 2007 PHP application cannot be run on a modern stack, so each page below is the markup the <code>.thtml</code> view would have emitted, with the PHP evaluated by hand and sample data filled in.</p>
+
+    <div class="callout note">
+      <p>These are reconstructions, not captures of the live <code>joey.labs.mozilla.com</code> site. The CSS, banner art, icons and iUI/XHTML-MP stylesheets are the originals; only the sample uploads are invented. Firefox 2's <code>-moz-border-radius</code> corners are shimmed with the unprefixed property.</p>
+    </div>
+
+    <h2>Desktop web (default layout)</h2>
+    <ul>
+      <li><a href="web-login.html">Login / landing page</a> — <code>users/login.thtml</code></li>
+      <li><a href="web-uploads.html">Uploads list, logged in</a> — <code>uploads/index.thtml</code></li>
+      <li><a href="web-register.html">Register</a> — <code>users/register.thtml</code></li>
+      <li><a href="web-get-software.html">Get the software</a> — <code>users/get_software.thtml</code></li>
+    </ul>
+
+    <h2>First-run page (joeyclient layout)</h2>
+    <ul>
+      <li><a href="web-welcome.html">Welcome to Joey! with the guided tour live</a> — <code>version/index.thtml</code> + <code>release_notes/0.3.0.0</code></li>
+    </ul>
+
+    <h2>Phone browsers</h2>
+    <ul>
+      <li><a href="web-iphone.html">iPhone view (iUI)</a> — <code>uploads/iphone_index.thtml</code>, best at 320px wide</li>
+      <li><a href="web-wap.html">XHTML Mobile Profile view</a> — <code>uploads/mp_index.thtml</code>, best at 240px wide</li>
+    </ul>
+
+    <h2>Rebuilding</h2>
+    <pre><code>cd www/recreations
+node build-web.js   # regenerates web-*.html from the templates in the script
+node shoot-web.js   # screenshots them into ../img/screenshots/</code></pre>
+  </div>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <span>Project Joey was a Mozilla Labs experiment (2007). This retrospective was reconstructed from the source tree in this repository.</span>
+    <span>Original code: MPL 1.1 / GPL 2.0 / LGPL 2.1 tri-license.</span>
+  </div>
+</footer>
+</body>
+</html>
