@@ -30,11 +30,11 @@
   <rect x="20" y="90" width="190" height="240" rx="12" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
   <text x="115" y="115" text-anchor="middle" font-size="15" font-weight="700">Firefox 2 (desktop)</text>
   <text x="115" y="134" text-anchor="middle" fill="#4a4d44">Joey add-on 0.3.0.0 (XPI)</text>
-  <rect x="35" y="150" width="160" height="66" rx="8" fill="#f4f8e2" stroke="#b5d623" stroke-width="1.5"/>
+  <rect x="30" y="150" width="170" height="66" rx="8" fill="#f4f8e2" stroke="#b5d623" stroke-width="1.5"/>
   <text x="115" y="170" text-anchor="middle" font-weight="700">XUL overlay</text>
   <text x="115" y="188" text-anchor="middle">status-bar icon and menu,</text>
   <text x="115" y="204" text-anchor="middle">context menu, options</text>
-  <rect x="35" y="230" width="160" height="86" rx="8" fill="#f4f8e2" stroke="#b5d623" stroke-width="1.5"/>
+  <rect x="30" y="230" width="170" height="86" rx="8" fill="#f4f8e2" stroke="#b5d623" stroke-width="1.5"/>
   <text x="115" y="250" text-anchor="middle" font-weight="700">mocoJoey XPCOM</text>
   <text x="115" y="268" text-anchor="middle">login via Password Manager,</text>
   <text x="115" y="284" text-anchor="middle">multipart POST to server,</text>
@@ -42,10 +42,12 @@
 
   <!-- add-on -> server -->
   <line x1="210" y1="140" x2="345" y2="140" stroke="#4a4d44" stroke-width="1.8" marker-end="url(#arrow)"/>
-  <text x="277" y="128" text-anchor="middle">HTTPS multipart POST</text>
-  <text x="277" y="157" text-anchor="middle">/uploads/add  rest=1</text>
+  <text x="277" y="114" text-anchor="middle">HTTPS multipart</text>
+  <text x="277" y="130" text-anchor="middle">POST, rest=1</text>
+  <text x="277" y="157" text-anchor="middle">/uploads/add</text>
   <line x1="345" y1="180" x2="210" y2="180" stroke="#4a4d44" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
-  <text x="277" y="197" text-anchor="middle" fill="#4a4d44">header X-joey-status</text>
+  <text x="277" y="197" text-anchor="middle" fill="#4a4d44">reply header</text>
+  <text x="277" y="213" text-anchor="middle" fill="#4a4d44">X-joey-status</text>
 
   <!-- SERVER: CakePHP app -->
   <rect x="345" y="90" width="250" height="125" rx="12" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
@@ -73,10 +75,10 @@
   <text x="537" y="330" text-anchor="middle">&lt;uid&gt;/previews/</text>
 
   <g stroke="#4a4d44" stroke-width="1.5">
-    <line x1="397" y1="215" x2="397" y2="255" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-    <line x1="537" y1="215" x2="537" y2="255" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-    <line x1="397" y1="345" x2="397" y2="370" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
-    <line x1="537" y1="345" x2="537" y2="370" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <line x1="368" y1="215" x2="368" y2="255" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <line x1="572" y1="215" x2="572" y2="255" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <line x1="368" y1="345" x2="368" y2="370" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <line x1="572" y1="345" x2="572" y2="370" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
   </g>
 
   <!-- joeyd -->
@@ -106,31 +108,32 @@
   <text x="875" y="224" text-anchor="middle">iphone layout (iUI)</text>
 
   <rect x="775" y="260" width="200" height="60" rx="12" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
-  <text x="875" y="281" text-anchor="middle" font-size="15" font-weight="700">WAP / XHTML-MP browser</text>
-  <text x="875" y="299" text-anchor="middle">mp layout</text>
+  <text x="875" y="281" text-anchor="middle" font-size="15" font-weight="700">WAP phone browser</text>
+  <text x="875" y="299" text-anchor="middle">XHTML-MP, mp layout</text>
 
   <!-- MIDlet -> server -->
   <line x1="775" y1="127" x2="595" y2="127" stroke="#7fa000" stroke-width="1.8" marker-end="url(#arrowg)"/>
   <text x="685" y="113" text-anchor="middle" font-weight="700">POST rest=1 to:</text>
   <text x="685" y="145" text-anchor="middle">/users/login</text>
   <text x="685" y="161" text-anchor="middle">/uploads/index?since=&lt;ts&gt;</text>
-  <text x="685" y="177" text-anchor="middle">/uploads/raw/&lt;id&gt;</text>
-  <text x="685" y="193" text-anchor="middle">/uploads/deleteByFileID/…</text>
+  <text x="685" y="177" text-anchor="middle">/uploads/raw/&lt;id&gt; (unimplemented)</text>
+  <text x="685" y="193" text-anchor="middle">/uploads/deleteByFileID</text>
 
   <!-- browsers -> server -->
   <line x1="775" y1="212" x2="595" y2="205" stroke="#7fa000" stroke-width="1.8" marker-end="url(#arrowg)"/>
   <line x1="775" y1="295" x2="595" y2="212" stroke="#7fa000" stroke-width="1.8" marker-end="url(#arrowg)"/>
+  <rect x="588" y="258" width="184" height="36" rx="4" fill="#fbfbf7"/>
   <text x="680" y="272" text-anchor="middle">GET /uploads</text>
   <text x="680" y="288" text-anchor="middle">layout chosen by user-agent</text>
 
   <!-- SMS path -->
-  <path d="M345,208 L315,208 L315,640 L740,640 L740,575 L775,575" fill="none" stroke="#4a4d44" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+  <path d="M360,215 L360,236 L315,236 L315,640 L740,640 L740,575 L775,575" fill="none" stroke="#4a4d44" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
   <text x="530" y="632" text-anchor="middle" fill="#4a4d44">getSoftware → SmsComponent → PHP mail() to carrier gateway</text>
   <rect x="775" y="540" width="200" height="70" rx="12" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
   <text x="875" y="562" text-anchor="middle" font-size="15" font-weight="700">Carrier email-to-SMS</text>
   <text x="875" y="580" text-anchor="middle">e.g. &lt;number&gt;@tmomail.net</text>
   <text x="875" y="596" text-anchor="middle">(operators table)</text>
   <line x1="875" y1="540" x2="875" y2="320" stroke="#4a4d44" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
-  <text x="885" y="425" fill="#4a4d44">SMS: "go to http://joey…"</text>
-  <text x="885" y="442" fill="#4a4d44">(link to the MIDlet)</text>
+  <text x="865" y="425" text-anchor="end" fill="#4a4d44">SMS text: "go to http://joey…"</text>
+  <text x="865" y="442" text-anchor="end" fill="#4a4d44">(download link for the MIDlet)</text>
 </svg>
