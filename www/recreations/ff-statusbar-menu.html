@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><title>Reconstruction: Joey status-bar menu (Firefox 2)</title><link rel="stylesheet" href="ff.css">
+<style>
+body { padding: 20px; }
+#shot { width: 560px; height: 300px; position: relative; overflow: hidden; background: #fff; border: 1px solid #aca899; }
+#shot .content { height: 277px; padding: 14px 18px; font: 13px Georgia, serif; color: #333; }
+#shot .statusbar { position: absolute; left: 0; right: 0; bottom: 0; }
+#shot .menupopup { left: 362px; top: 170px; }
+</style></head><body>
+<div class="stage">
+<div id="shot">
+  <div class="content">
+    <h3 style="margin:0 0 6px;font:bold 15px Verdana,sans-serif;color:#000">Mozilla Labs &raquo; Video: Introduction to Joey</h3>
+    <p style="margin:0 0 8px;line-height:1.5">A short tutorial showing how to send video, music and more from Firefox to your phone. The page embeds an FLV clip; the add-on's response sniffer noticed the <code>video/x-flv</code> stream and lit up the "Media on page" item.</p>
+    <div style="width:220px;height:120px;background:#111;border:1px solid #555;display:flex;align-items:center;justify-content:center;color:#ccc;font:11px Verdana,sans-serif">&#9654; video player</div>
+  </div>
+  <div class="statusbar">
+    <span class="msg">Done</span>
+    <span class="panel joey">
+      <span class="udbox">Joey: 50%</span>
+      <span class="icon pressed"><img src="assets/ff/joey16x16.png" alt="Joey"></span>
+    </span>
+    <span class="panel" style="width:100px"><span style="width:90px;height:12px;border:1px solid #aca899;background:#fff;display:inline-block"></span></span>
+  </div>
+  <!-- joeyStatusPopup; labels from chrome/locale/en-US/brand.dtd and joey.dtd -->
+  <div class="menupopup">
+    <div class="item">My Joey!</div>
+    <div class="item hover"><img src="assets/ff/type_video.png" alt="">Joey! Media on page</div>
+    <div class="item">Joey! Summary Capture</div>
+    <div class="item">Joey! Preferences...</div>
+  </div>
+</div>
+<div class="footnote" style="position:static;margin-top:8px">Reconstruction from source; not a capture of the original software.</div>
+</div>
+</body></html>

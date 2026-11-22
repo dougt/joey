@@ -1,0 +1,67 @@
+/* J2ME Polish theme for the Joey MIDlet, transcribed from clients/j2me/resources/polish.css.
+   colors { joeyGreen: #B5D623; bgColor: black; textColor: white; bgColorInput: gray (#656565 in .input); }
+   Reconstruction from source; not a capture of the original software. */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #f3f3f3; font-family: "DejaVu Sans", Verdana, Arial, sans-serif; }
+.stage { padding: 14px; display: inline-block; position: relative; }
+
+/* Candybar phone frame (generic; the midlet targeted MIDP 2.0 handsets such as the Nokia N95, Motorola Q, HTC TyTN). */
+.phone { width: 272px; background: linear-gradient(#3a3d42, #16181b); border-radius: 26px; padding: 26px 16px 22px; box-shadow: 0 12px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.15); }
+.phone .earpiece { width: 56px; height: 5px; border-radius: 3px; background: #0b0c0e; margin: 0 auto 14px; box-shadow: inset 0 1px 2px #000; }
+.screen { width: 240px; height: 320px; background: #000; color: #fff; overflow: hidden; position: relative; border: 2px solid #050505; box-shadow: inset 0 0 0 1px #222; font-size: 12px; }
+.softkeys { display: flex; justify-content: space-between; padding: 8px 4px 0; color: #cfd2d6; font-size: 10px; letter-spacing: .04em; }
+.keypad { margin-top: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px 8px; }
+.keypad span { height: 20px; border-radius: 10px; background: linear-gradient(#4a4e55, #26292e); box-shadow: inset 0 1px 0 rgba(255,255,255,.12); display: block; font-size: 9px; color: #c8ccd2; text-align: center; line-height: 20px; }
+.navkey { width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle at 50% 40%, #51555c, #1d1f23); margin: 10px auto 0; position: relative; box-shadow: inset 0 1px 0 rgba(255,255,255,.15); }
+.navkey::after { content: ""; position: absolute; inset: 22px; border-radius: 50%; background: #B5D623; box-shadow: inset 0 -2px 4px rgba(0,0,0,.4); }
+
+/* .screenTitle: large bold white on joeyGreen, left aligned, horizontal-expand */
+.title { background: #B5D623; color: #fff; font-weight: bold; font-size: 16px; padding: 3px 3px 3px 4px; text-shadow: 0 0 1px rgba(0,0,0,.25); }
+/* bottom command bar: leftcommand/rightcommand bold joeyGreen on bgColorCommands black */
+.cmdbar { position: absolute; left: 0; right: 0; bottom: 0; height: 18px; background: #000; color: #B5D623; font-weight: bold; font-size: 12px; display: flex; justify-content: space-between; padding: 1px 4px; border-top: 1px solid #222; }
+.body { padding: 4px 3px 22px; }
+
+/* .input: bg #656565, margin 3, padding 2 9; label white bold above (inputLabel) */
+.inputLabel { color: #fff; font-weight: bold; margin: 4px 0 1px 3px; font-size: 12px; }
+.input { margin: 0 3px 3px; padding: 2px 9px; background: #656565; color: #000; font-weight: bold; font-size: 11px; min-height: 18px; }
+.input.focus { margin: 0; background: #fff; color: #B5D623; box-shadow: 0 0 0 3px rgba(136,141,141,.4); }
+/* .checkbox: white text, 11x11 images from resources */
+.checkbox { display: flex; align-items: center; gap: 4px; margin: 4px 0 4px 3px; color: #fff; font-size: 12px; }
+.checkbox img { width: 11px; height: 11px; image-rendering: pixelated; }
+.checkbox.focus { color: #B5D623; }
+/* .button */
+.button { margin: 6px 3px; padding: 3px 6px; border: 1px solid gray; border-radius: 4px; color: #fff; font-weight: bold; display: inline-block; font-size: 12px; }
+.button.focus { background: #fff; color: #B5D623; border-color: #B5D623; }
+
+/* .mainmenuentry: padding 5, center, large bold white, bottom white 1px border; focused joeyGreen */
+.menuentry { padding: 5px; text-align: center; font-size: 16px; font-weight: bold; color: #fff; border-bottom: 1px solid #fff; }
+.menuentry.focus { color: #B5D623; }
+
+/* .uploadItem (IconItem): white text, bottom white border; focus joeyGreen */
+.uploadItem { display: flex; align-items: center; gap: 6px; padding: 1px 2px; border-bottom: 1px solid #fff; color: #fff; font-size: 12px; }
+.uploadItem.focus { color: #B5D623; }
+.uploadItem .thumb { width: 34px; height: 26px; flex: none; border: 1px solid #444; }
+/* commands area ChoiceGroup at Graphics.BOTTOM with 16x16 icons */
+.commandsarea { position: absolute; left: 0; right: 0; bottom: 18px; background: #111; display: flex; justify-content: space-around; padding: 3px 2px; border-top: 1px solid #333; }
+.commandsarea img { width: 16px; height: 16px; padding: 1px; image-rendering: pixelated; }
+.commandsarea img.focus { outline: 1px solid #B5D623; background: #fff; }
+
+/* .textcontent: small white on black */
+.textcontent { padding: 2px; font-size: 11px; color: #fff; line-height: 1.35; }
+.meta { color: #bbb; font-size: 10px; padding: 2px; }
+
+/* .radiobox exclusive-single-line: gray bg, black bold text, arrows both sides */
+.radiobox { margin: 0 3px 3px; padding: 2px 4px; background: gray; color: #000; font-weight: bold; font-size: 11px; display: flex; justify-content: space-between; border: 1px solid gray; }
+.radiobox.focus { background: #fff; border-color: #fff; }
+.radiobox .arrow { color: #000; }
+.radiobox.focus .arrow { color: #B5D623; }
+
+/* menu (left softkey): bg #2d2d2d, items white large bold; hover #242424 + joeyGreen text */
+.menu { position: absolute; left: 0; bottom: 18px; min-width: 100px; background: #2d2d2d; padding: 2px; box-shadow: 3px -3px 6px rgba(170,238,238,.25); }
+.menu div { padding: 2px 4px; color: #fff; font-size: 15px; font-weight: bold; }
+.menu div.focus { background: #242424; color: #B5D623; }
+
+/* .alertConfirmation: round-rect white, black text, padding 10, bottom center, repaint previous screen */
+.alert { position: absolute; left: 14px; right: 14px; bottom: 30px; background: #fff; color: #000; border-radius: 8px; padding: 10px; font-size: 12px; text-align: center; }
+.dim { opacity: .55; }
+.footnote { font-size: 10px; color: #666; text-align: center; margin-top: 10px; }

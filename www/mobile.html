@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phone clients · Project Joey</title>
+<meta name="description" content="How Joey reached the phone in 2007: a Java ME MIDlet built with J2ME Polish, an iPhone web view built on iUI, and a plain XHTML Mobile Profile page for everything else.">
+<link rel="icon" href="img/brand/joey-16.png">
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="img/brand/joey-32.png" alt=""><span>Project <b>Joey</b></span></a>
+    <nav class="site-nav" aria-label="Site">
+      <a href="index.html">Overview</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="firefox-addon.html">Firefox add-on</a>
+      <a href="server.html">Server</a>
+      <a href="mobile.html" aria-current="page">Phone clients</a>
+      <a href="screenshots.html">Screenshots</a>
+      <a href="history.html">History</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <p class="eyebrow">The receiving end</p>
+    <h1>Phone clients</h1>
+    <p class="lede">Joey's whole point was that the content you clipped in Firefox showed up on a phone. In 2007 there was no single way to do that, so the project shipped three: a Java ME application for feature phones and smartphones, an iPhone-specific web view, and a bare XHTML Mobile Profile page for every other handset browser.</p>
+
+    <div class="toc">
+      <strong>On this page</strong>
+      <ul>
+        <li><a href="#why-three">Why three phone paths</a></li>
+        <li><a href="#midlet">The Java ME MIDlet</a></li>
+        <li><a href="#protocol">The wire protocol, from the phone's side</a></li>
+        <li><a href="#iphone">The iPhone path</a></li>
+        <li><a href="#wap">The WAP path</a></li>
+        <li><a href="#install">Getting the software onto the phone</a></li>
+        <li><a href="#today">Reading the code today</a></li>
+      </ul>
+    </div>
+
+    <h2 id="why-three">Why three phone paths</h2>
+    <p>The phone market Joey was built for had not yet collapsed into two platforms. The dominant programmable runtime on handsets was Java ME (MIDP 2.0 on CLDC 1.1), fragmented across hundreds of devices with different screen sizes, key layouts, media codecs and vendor bugs. The iPhone had shipped on June 29, 2007, mid-way through Joey's life, with a desktop-class Safari but no native SDK; Apple's official line until the SDK arrived in 2008 was that web apps were the development model. Everything else, from Motorola RAZRs to Windows Mobile devices, had a WAP 2.0 browser that could render XHTML Mobile Profile and little more.</p>
+    <p>The server therefore sniffs the <code>User-Agent</code> and picks a layout per request. The regular expressions are short and tell you exactly which world the authors were living in:</p>
+<pre><code>function isIPhone () {
+  ...
+  $res = preg_match('/iPhone/i', $agent);
+  ...
+function isMobile () {
+  ...
+  $res = preg_match('/iemobile|windows ce|nokia|symbian|motorola|mot\-|samsung|sec\-|lg\-|sonyericsson|sie\-|up\.b|up\//i', $agent);</code></pre>
+    <p><span class="src">Source: <code>server/app/vendors/BrowserAgent.class.php</code></span></p>
+
+    <h3>Which phones were targeted</h3>
+    <p>The MIDlet is built one device at a time with J2ME Polish, and each developer kept a personal properties file listing the handsets they were building for. Between the two files and the Ant build you can read off the test fleet:</p>
+    <table>
+      <tr><th>Device identifier</th><th>Where listed</th><th>Note</th></tr>
+      <tr><td>HTC/TyTN</td><td><code>dougt.properties</code> (active), <code>mkoch.properties</code></td><td>Doug Turner's active build target: a Windows Mobile slider with a Java ME runtime</td></tr>
+      <tr><td>Generic/wtk</td><td><code>mkoch.properties</code> (active)</td><td>Michael Koch's default: the Sun Wireless Toolkit emulator</td></tr>
+      <tr><td>Nokia/N95, Nokia/6630, Nokia/E50</td><td>both</td><td>Symbian S60 phones; the README example is <code>-Ddevice=Nokia/E50</code></td></tr>
+      <tr><td>Motorola/Q, Motorola/Motorazr_V3x</td><td><code>dougt.properties</code></td><td>commented out</td></tr>
+      <tr><td>Sony-Ericsson/K750, Sony-Ericsson/W800</td><td><code>mkoch.properties</code></td><td>commented out</td></tr>
+      <tr><td>BlackBerry/8100, 8700, 8800</td><td><code>mkoch.properties</code></td><td>commented out; BlackBerry 4.0, 4.1 and 4.2 API jars are bundled in <code>polish/import</code>, and the obfuscator is skipped for BlackBerry builds</td></tr>
+      <tr><td>Generic/Midp2Cldc11, Generic/JtwiCldc11</td><td>both</td><td>lowest-common-denominator builds</td></tr>
+    </table>
+    <p>When no device is given, <code>build.xml</code> falls back to a device-database query: every phone that "supportsPolishGui", runs MIDP 2.0 or newer, is not a BlackBerry, and is not the .NET CF or Nokia Series 90 pseudo-devices. Two locales were wired in, <code>en_US</code> and <code>de_DE</code>, with the German strings maintained by Michael Koch at Enough Software, the company behind J2ME Polish. Note the loaded JAR name in the UI: <code>${polish.vendor}-${polish.name}-${polish.locale}-joey.jar</code>, which is why the server's <code>phones</code> table carries a <code>jar_name</code> per handset.</p>
+    <p><span class="src">Source: <code>clients/j2me/dougt.properties</code>, <code>clients/j2me/mkoch.properties</code>, <code>clients/j2me/build.xml</code>, <code>clients/j2me/README</code></span></p>
+
+    <h2 id="midlet">The Java ME MIDlet</h2>
+    <div class="shots phones">
+      <figure><img src="img/screenshots/j2me-login.png" alt="Joey MIDlet login form: username, password, Use SSL and Remember Me checkboxes, Login button"><figcaption>Login screen. CSS mock-up built from <code>LoginView.java</code>, the <code>messages.txt</code> strings and the <code>polish.css</code> theme, not an emulator capture.</figcaption></figure>
+      <figure><img src="img/screenshots/j2me-mainmenu.png" alt="Joey MIDlet main menu: View uploads, Preferences, Take snapshot"><figcaption>Main menu. Mock-up from <code>MainMenuView.java</code>; the third entry only exists on phones with the Mobile Media API.</figcaption></figure>
+      <figure><img src="img/screenshots/j2me-uploads.png" alt="Joey MIDlet uploads list with a bottom row of type icons"><figcaption>Uploads screen, a <code>FramedForm</code> with the type-filter icon bar docked at the bottom. Mock-up, not a capture.</figcaption></figure>
+      <figure><img src="img/screenshots/j2me-details.png" alt="Joey MIDlet details screen showing a text upload"><figcaption>Details screen for a text upload. Mock-up from <code>DetailsView.java</code>.</figcaption></figure>
+      <figure><img src="img/screenshots/j2me-prefs.png" alt="Joey MIDlet preferences: server choice and update interval"><figcaption>Preferences. Mock-up; the server radio list and update interval field come straight from <code>PreferencesView.java</code>.</figcaption></figure>
+      <figure><img src="img/screenshots/j2me-alert.png" alt="Joey MIDlet confirmation alert: Updates are available. Apply updates?"><figcaption>The "apply updates" confirmation that interrupts whatever screen you are on. Mock-up from the <code>alertConfirmation</code> style.</figcaption></figure>
+    </div>
+
+    <h3>What J2ME Polish gave the project</h3>
+    <p>Writing a MIDlet that looked acceptable on more than one phone was the hard part of Java ME development, and Joey outsourced it. <a href="http://www.j2mepolish.org">J2ME Polish</a> is an Ant-driven build system and UI toolkit from Enough Software. It contributes four things you can see in this tree:</p>
+    <ul>
+      <li><strong>A CSS-styled replacement for LCDUI.</strong> <code>resources/polish.css</code> defines colours (<code>joeyGreen: #B5D623</code> on a black background), screen styles (<code>.loginScreen</code>, <code>.uploadScreen</code>), item styles (<code>.uploadItem</code>, <code>.mainmenuentry</code>), alerts and the menu bar. Styles are attached in Java with preprocessor comments such as <code>//#style uploadItem</code>.</li>
+      <li><strong>A device database.</strong> The <code>-Ddevice=Vendor/Model</code> switch pulls screen size, supported APIs and known bugs for that handset, and the preprocessor gates code on capabilities: the camera screen and the "Take snapshot" menu entry are wrapped in <code>//#if polish.api.mmapi</code>, and the SSL URL rewrite is skipped for Samsung with <code>//#if polish.vendor != Samsung</code>.</li>
+      <li><strong>Per-device packaging.</strong> One source tree yields one JAR and JAD per device and locale, obfuscated with ProGuard except in test and BlackBerry builds, and a <code>buildlist</code> finalizer writes out the list that the server later imports.</li>
+      <li><strong>Library code.</strong> <code>ThreadedCommandListener</code>, <code>RmsStorage</code>, <code>RedirectHttpConnection</code>, <code>FramedForm</code>, <code>IconItem</code>, <code>SnapshotScreen</code>, and the <code>HtmlBrowser</code> and <code>RssBrowser</code> widgets used on the details screen all come from <code>enough-j2mepolish-client.jar</code>.</li>
+    </ul>
+    <p>The tree also vendors the <code>org.bouncycastle.util.encoders</code> package, because Java ME has no Base64 decoder of its own, and the <code>polish/legal</code> folder carries the licences for J2ME Polish, ProGuard's predecessors RetroGuard and yGuard, JDOM, ASM, RetroWeaver and SVG Salamander. The Polish copy was committed wholesale and updated twice, once in September and once in November 2007.</p>
+    <p><span class="src">Source: <code>clients/j2me/resources/polish.css</code>, <code>clients/j2me/build.xml</code>, <code>clients/j2me/polish/</code>, <code>clients/j2me/source/src/org/bouncycastle/</code></span></p>
+
+    <h3>The controller: one thread, one blocking event loop</h3>
+    <p>The MIDlet entry point is three lines: <code>JoeyMIDlet.startApp()</code> creates a <code>JoeyController</code> and starts it. <code>JoeyController</code> extends <code>Thread</code> and implements <code>CommandListener</code>, <code>ItemCommandListener</code> and <code>ResponseHandler</code>, so every soft key press and every network reply lands in the same object. UI callbacks arrive on a <code>ThreadedCommandListener</code> so they never block the LCDUI event thread; they are reduced to small integers and handed to the controller thread with <code>notifyEvent()</code>, which stores the value and calls <code>notify()</code>. The controller's own <code>run()</code> method is a straight-line script that calls <code>waitEvent()</code> wherever a 2007 developer would otherwise have written a callback:</p>
+<pre><code>private int waitEvent()
+{
+	int event = EVENT_NONE;
+	do {
+		synchronized (this) {
+			try {
+				// Wait for notification for next event.
+				wait();
+				event = this.nextEvent;
+				this.nextEvent = EVENT_NONE;
+			}
+			catch (InterruptedException e) {
+				// Ignore this.
+			}
+		}
+	} while (event == EVENT_NONE);
+	return event;
+}</code></pre>
+    <p>Screens are identified by integer constants (<code>VIEW_LOGIN</code> through <code>VIEW_RSS_ITEM</code>, ids 1 to 7) and alerts by more of the same (<code>ALERT_UPLOADS_DELETE_CONFIRMATION</code> through <code>ALERT_SECURITY_ERROR</code>, ids 8 to 17). A single <code>getView(int)</code> switch builds each one on demand, wires commands to it, and returns it. Events are also integers: <code>EVENT_YES</code>, <code>EVENT_BACK</code>, <code>EVENT_DELETE</code> and so on, plus <code>EVENT_NETWORK_REQUEST_SUCCESSFUL</code> (101) and <code>EVENT_NETWORK_REQUEST_FAILED</code> (100) from the network side. The life of a session reads top to bottom in <code>run()</code>:</p>
+    <ol class="steps">
+      <li><strong>Login loop.</strong> Show <code>LoginView</code>; on Login, copy the fields into <code>UserData</code>, show the indeterminate <code>ALERT_WAIT</code> gauge, and queue a login request. A failure maps the <code>CommunicationController</code> error code to one of three alerts: network, security (the handset refused the connection, typically a permission prompt the user declined), or bad credentials.</li>
+      <li><strong>Version check.</strong> The login response carries an <code>X-joey-version</code> header. If it compares greater than the build's own <code>VERSION</code>, the "new version available" alert offers to open the update URL with <code>platformRequest()</code> and exit. The URL is injected at build time from <code>joey.update.url</code>, which points at the JAD under <code>/app/webroot/ff/</code> on the server.</li>
+      <li><strong>Persist and resync.</strong> If "Remember Me" is ticked the credentials are saved to the RMS record store <code>joey_userdata</code>. Cached uploads are loaded from <code>joey_uploads</code>, and an incremental index request is sent with the last-sync timestamp.</li>
+      <li><strong>Start the poller.</strong> A <code>java.util.Timer</code> fires <code>updateTask</code> every <code>updateInterval</code> seconds (default 300). Each tick asks the server for anything modified since now minus one interval.</li>
+      <li><strong>Main menu loop.</strong> Dispatch on the selected row to <code>doUploads()</code>, <code>doPreferences()</code> or <code>doSnapshot()</code>, until the user confirms Exit. On the way out the uploads vector is written back to RMS.</li>
+    </ol>
+    <p>The poller never touches the UI directly. When a background index update arrives, <code>notifyResponse()</code> raises <code>EVENT_UPDATE_AVAILABLE</code>, and <code>waitEventAndProcessUpdates()</code>, used by every screen in the main loop, saves the current <code>Displayable</code>, shows the "Updates are available. Apply updates?" confirmation, merges the pending hashtable if the answer is yes, and restores the previous screen. That is the alert shown in the mock-up above.</p>
+    <p><span class="src">Source: <code>clients/j2me/source/src/org/mozilla/joey/j2me/JoeyController.java</code>, <code>JoeyMIDlet.java</code>, <code>UserData.java</code></span></p>
+
+    <h3>The screens</h3>
+    <table>
+      <tr><th>View</th><th>Base class</th><th>What it does</th></tr>
+      <tr><td><code>LoginView</code></td><td>LCDUI <code>Form</code></td><td>Username and password text fields (50 chars, predictive text off), a multiple-choice group with "Use SSL for data encryption" and "Remember Me", and a Login item. Pre-fills from stored <code>UserData</code>.</td></tr>
+      <tr><td><code>MainMenuView</code></td><td>Polish <code>List</code></td><td>"View uploads", "Preferences", and on MMAPI phones "Take snapshot". Index order is hard-wired into the controller's switch.</td></tr>
+      <tr><td><code>UploadsView</code></td><td>Polish <code>FramedForm</code></td><td>A <code>ChoiceGroup</code> of six icons appended to the <code>BOTTOM</code> frame: video, music, pictures, RSS, text, microsummaries. Left and right keys move between icons and rebuild the list; up and down move within it. Each row is an <code>IconItem</code> with the server-supplied preview thumbnail, falling back to a <code>StringItem</code> title, and carries its <code>Upload</code> object as an item attribute.</td></tr>
+      <tr><td><code>DetailsView</code></td><td>LCDUI <code>Form</code></td><td>Dispatches on MIME type. RSS feeds are rendered with Polish's <code>RssBrowser</code>, and selecting an entry raises <code>EVENT_RSS_ITEM</code>. Plain text and microsummaries become a <code>StringItem</code>. Images decode into an <code>ImageItem</code>. <code>audio/amr</code> and <code>video/3gpp</code> are played in-process with the MMAPI <code>Manager</code> and a <code>VideoControl</code> centred on the form. <code>widget/joey</code> payloads are loaded into Polish's <code>HtmlBrowser</code>. Anything else prints "Mime type not supported yet".</td></tr>
+      <tr><td><code>RssItemView</code></td><td>LCDUI <code>Form</code></td><td>Shows one feed entry's description text.</td></tr>
+      <tr><td><code>PreferencesView</code></td><td>LCDUI <code>Form</code></td><td>An exclusive choice of three servers (<code>joey.labs.mozilla.com</code>, <code>dougt.joey-dev.labs.mozilla.com</code>, <code>clouserw.joey-dev.labs.mozilla.com</code>) and a numeric update-interval field. The controller only reads the interval back; the server choice is displayed but never applied.</td></tr>
+      <tr><td><code>SnapshotScreen</code></td><td>Polish, MMAPI only</td><td>Live camera viewfinder. The Snapshot command grabs a frame in the first encoding the device reports, wraps it as an <code>Upload</code> titled "Camera snapshot" with type <code>image/jpeg</code>, and posts it to the server.</td></tr>
+    </table>
+    <p>The snapshot is the one place the phone sends content back up the pipe. The code is honest about how finished it is:</p>
+<pre><code>// TODO: Choose the best encoding instead of using the first.
+String[] encodings = SnapshotScreen.getSnapshotEncodings();
+byte[] image = this.snapshotScreen.getSnapshot(encodings[0]);
+// TODO: Is this the correct format for time? Is this correct for all locales?
+long modified = new Date().getTime();
+// TODO: Send this to the server, then do an an update.
+Upload upload = new Upload(-1, "image/jpeg", "Camera snapshot", image, image, modified, "");
+this.uploads.addElement(upload);
+this.commController.add(upload, this);</code></pre>
+    <p><span class="src">Source: <code>clients/j2me/source/src/org/mozilla/joey/j2me/views/*.java</code>, <code>JoeyController.java</code> (<code>doSnapshot</code>)</span></p>
+
+    <h3>Persistence</h3>
+    <p>Two RMS record stores hold state between launches. <code>joey_userdata</code> is a <code>UserData</code> object serialised with Polish's <code>Externalizable</code>; its format is versioned (currently 4) and the reader tolerates older records, which tells you the format changed three times during the project. It is only written when "Remember Me" is on. <code>joey_uploads</code> is the whole uploads vector, including thumbnails, so the list appears immediately on launch and the first network round trip is an incremental sync rather than a full download. Deleted items are kept in the vector with a flag and filtered at display time; a comment in <code>UploadsView</code> notes this "should be removed since we should clear these out of RMS".</p>
+
+    <h3>Opening media</h3>
+    <p>When a details screen for audio or video has no data bytes, it shows an "Open in browser" item bound to <code>CMD_MEDIA_OPEN</code>. The controller then asks <code>CommunicationController.getRawMediaURLFor(id)</code> for a URL and hands it to <code>MIDlet.platformRequest()</code>, so the phone's own browser or media player takes over. Any exception produces the one joke in the string bundle: "The media could not be opened on your handset.  We blame Justin. Don't you?" (the German translation drops the blame). In practice the exception path is the likely one, for a reason covered in the protocol section below.</p>
+    <p><span class="src">Source: <code>clients/j2me/resources/messages.txt</code>, <code>messages_de.txt</code>, <code>JoeyController.java</code> (<code>doUploadDetails</code>)</span></p>
+
+    <h2 id="protocol">The wire protocol, from the phone's side</h2>
+    <p>Everything goes over HTTP POST to the CakePHP server, through a single worker thread. <code>CommunicationController</code> extends <code>Thread</code>, owns an <code>ArrayList</code> queue, and blocks in <code>getNextRequest()</code> until something is added. <code>addRequest()</code> appends; <code>addNextRequest()</code> inserts at the front, which is how a re-login jumps the queue. Each request is a small subclass of <code>NetworkRequest</code> that fills in three fields in its constructor, <code>requestURL</code>, <code>contenttype</code> and <code>postdata</code>, and optionally overrides <code>onStop()</code> to parse the response before notifying its <code>ResponseHandler</code>.</p>
+    <table>
+      <tr><th>Class</th><th>URL</th><th>Body</th><th>Parses</th></tr>
+      <tr><td><code>LoginNetworkRequest</code></td><td><code>/users/login</code></td><td><code>rest=1&amp;data[User][username]=…&amp;data[User][password]=…</code></td><td>nothing; the session cookie and <code>X-joey-version</code> header are captured by the controller</td></tr>
+      <tr><td><code>IndexNetworkRequest</code></td><td><code>/uploads/index</code></td><td><code>rest=1&amp;limit=N&amp;start=M</code></td><td>key=value lines; reads <code>count</code> and <code>total_count</code>, then merges</td></tr>
+      <tr><td><code>IndexUpdateNetworkRequest</code></td><td><code>/uploads/index</code></td><td><code>rest=1&amp;since=&lt;unix seconds&gt;</code></td><td>same parser, same merge</td></tr>
+      <tr><td><code>GetNetworkRequest</code></td><td><code>/files/view/&lt;file id&gt;</code></td><td><code>rest=1</code></td><td>raw bytes into <code>Upload.data</code></td></tr>
+      <tr><td><code>AddNetworkRequest</code></td><td><code>/uploads/add</code></td><td>hand-built <code>multipart/form-data</code> with boundary <code>111222111</code>: <code>rest</code>, title, referrer, and the file part</td><td>nothing</td></tr>
+      <tr><td><code>DeleteNetworkRequest</code></td><td><code>/uploads/deleteByFileID/&lt;id&gt;</code></td><td><code>rest=1</code></td><td>nothing</td></tr>
+      <tr><td><code>GetRawURLNetworkRequest</code></td><td><code>/uploads/raw/&lt;id&gt;</code></td><td><code>rest=1</code></td><td>response body as a URL string</td></tr>
+    </table>
+    <p>The <code>rest=1</code> field is the whole content negotiation. On the server, <code>AppController</code> sets <code>$nbClient</code> ("non-browser client") when it sees it, and controllers then skip HTML and answer with an <code>X-joey-status</code> header instead. The phone reads that header with <code>getHeaderFieldInt("X-joey-status", -1)</code> and treats it as the response code; the HTTP status is ignored. Session handling is manual: the first <code>Set-Cookie</code> is clipped at the semicolon and replayed as <code>Cookie</code> on every later request. If any response comes back with status 511 (no active session) the request is pushed back to the head of the queue, a silent login is queued in front of it, and the original request runs again.</p>
+    <p>The index response is a line-oriented text format produced by <code>j2me_index.thtml</code>, chosen because parsing it needs nothing more than <code>indexOf('=')</code>. A two-item reply looks like this, with the base64 preview shortened:</p>
+<pre><code>total_count=14
+count=2
+id.1=312
+title.1=BBC News | Technology
+referrer.1=http://news.bbc.co.uk/rss/technology.xml
+modified.1=1192810345
+type.1=rss-source/text
+preview.1=iVBORw0KGgoAAAANSUhEUgAAADIAAAAo…
+id.2=309
+deleted.2=1</code></pre>
+    <p>Items the server has not finished processing (<code>ever_updated = 0</code>) appear as a bare <code>id.N</code> line with no fields, and deleted items carry only <code>deleted.N=1</code>. <code>processIndexUpdates()</code> walks <code>1..count</code>, removes deleted ids from the local vector, multiplies <code>modified</code> by 1000 because the server sends seconds, decodes the preview with the vendored BouncyCastle <code>Base64.decode()</code>, and inserts or replaces the <code>Upload</code>. The full index is paged: after each page the controller compares the local count against <code>total_count</code> and, if short, requests the next five starting at the current size.</p>
+    <p>Two things are worth knowing before you trust this code path. First, <code>GetRawURLNetworkRequest</code>'s <code>onStop()</code> calls <code>this.notify()</code> and the caller calls <code>nr.wait()</code> without holding the monitor, so the "Open in browser" feature would throw <code>IllegalMonitorStateException</code> before it ever reached <code>platformRequest()</code>. Second, there is no <code>raw</code> action in <code>uploads_controller.php</code> at all, so even a correct call would get a CakePHP error page. The blame-Justin alert was the realistic outcome.</p>
+    <p>Errors that are not status codes are mapped in <code>process()</code>: <code>SecurityException</code> becomes <code>ERROR_SECURITY</code>, <code>IOException</code> becomes <code>ERROR_NETWORK</code>, and any other <code>Throwable</code> is reported as <code>ERROR_LOGIN_DATA</code> with a fake 404. The login loop turns those into the three alerts listed earlier.</p>
+    <p><span class="src">Source: <code>clients/j2me/source/src/org/mozilla/joey/j2me/CommunicationController.java</code>, <code>*NetworkRequest.java</code>, <code>server/app/views/uploads/j2me_index.thtml</code>, <code>server/app/app_controller.php</code></span></p>
+
+    <h2 id="iphone">The iPhone path</h2>
+    <figure>
+      <img src="img/screenshots/web-iphone.png" alt="Joey on an iPhone-era 320 pixel wide screen: an iUI list with Browser stuff, Videos, Images, Audio, RSS and Text">
+      <figcaption>The iPhone list view at 320 pixels wide. This is a reconstruction rendered from the original <code>iphone_index.thtml</code> markup and the bundled iUI stylesheet, not a capture from a 2007 device.</figcaption>
+    </figure>
+    <p>The iPhone support was added in a hurry and it shows, in a good way: it is the smallest amount of code that could work. <code>UsersController::login()</code> and <code>UploadsController::index()</code> check <code>BrowserAgent::isIPhone()</code> and swap to the <code>iphone</code> layout and an <code>iphone_*</code> view. The layout is a dozen lines: a <code>viewport</code> meta tag pinning the width to 320 pixels with scaling disabled, an <code>@import</code> of <code>iui.css</code>, and the content. iUI is Joe Hewitt's 2007 JavaScript and CSS kit that made a list of <code>&lt;ul&gt;</code> elements behave like the iPhone's own sliding navigation; the copy under <code>webroot/vendor/iui/</code> has no version header, and the <code>._*</code> resource-fork files beside it say it was unzipped on a Mac.</p>
+    <p>The home list has six rows: Browser stuff, Videos, Images, Audio, RSS and Text. The controller builds one query per category by passing a type filter to <code>findAllUploadsForUserId()</code>, so the page arrives with every list pre-rendered and iUI simply shows and hides them. Rows link to <code>/files/wrapper/&lt;id&gt;</code>, which returns a full-window <code>&lt;iframe&gt;</code> around the file, except RSS rows which go straight to <code>/files/view/</code>. Audio rows link to in-page panels instead, and those panels are a debugging aid left in production:</p>
+<pre><code>if (!strcmp($item['File']['type'], "audio/amr"))
+{
+  echo "&lt;h2&gt;This is an audio file.  Not sure what to do with it&lt;/h2&gt;";
+}
+else if (!strcmp($item['File']['type'], "video/3gpp"))
+{
+  echo "&lt;h2&gt;This is an video file.  Not sure what to do with it&lt;/h2&gt;";
+}
+...
+echo "&lt;br&gt;Debug view of item:";
+echo "&lt;pre&gt;";
+print_r($item);</code></pre>
+    <p>That uncertainty was well founded. The server's transcoder turned every audio upload into AMR and every video into 3GPP H.263, the formats feature phones could play, and the original iPhone could play neither. It also had no Flash, so the desktop site's FLV and MP3 players were out. What did work on the iPhone was exactly what needed no plugin: images (served as PNG), clipped text, the "Current Tabs" HTML pages, rendered RSS, and microsummaries. There is also a vestigial Settings panel with Repeat and Shuffle toggles copied from the iUI sample app and wired to nothing.</p>
+    <p><span class="src">Source: <code>server/app/views/layouts/iphone.thtml</code>, <code>server/app/views/uploads/iphone_index.thtml</code>, <code>server/app/views/users/iphone_login.thtml</code>, <code>server/app/controllers/uploads_controller.php</code>, <code>server/app/webroot/vendor/iui/</code></span></p>
+
+    <h2 id="wap">The WAP path</h2>
+    <figure>
+      <img src="img/screenshots/web-wap.png" alt="Joey's plain mobile page: username header with Upload and Logout links, alternating grey rows of uploads with View and Delete links, and a Go to page footer">
+      <figcaption>The XHTML Mobile Profile view as a 2007 handset browser would have laid it out. Reconstruction from <code>mp_index.thtml</code> and <code>mp_joey.css</code>.</figcaption>
+    </figure>
+    <p>For any <code>User-Agent</code> that matches the <code>isMobile()</code> list but is not an iPhone, the same controllers switch to the <code>mp</code> layout and <code>mp_*</code> views ("mp" for mobile profile). The layout declares the XHTML Mobile Profile 1.0 doctype and, with a <code>header()</code> call placed after the doctype has already been emitted, sets the content type to <code>application/vnd.wap.xhtml+xml</code>. The stylesheet is 40 lines: alternating white and <code>#CCCCCC</code> rows, a green bold "[View]" link and a red small "[Delete]" link.</p>
+    <p>The page is deliberately dumb. The index controller forces <code>style = 'html'</code> and <code>ajaxAutoDetect = false</code> on the pagination helper with the comment "mobile browsers might support ajax stuff, but we should use the simpliest pagination", so paging is a "Go to page: 1 | 2 | 3" line. Each row is the title, a View link to <code>/files/view/</code> and a Delete link to <code>/uploads/delete/</code>, which on this path answers with a flash message and a redirect instead of the AJAX fragment the desktop site uses. JPEG and GIF uploads are shown inline as their preview image. The preview size is derived from the user's registered handset: the controller looks up <code>screen_width</code> and <code>screen_height</code> in the <code>phones</code> table and halves them, defaulting to 100 by 100 when the phone is "Not Sure". The login form labels are "You:" and "Pass:", and there is a minimal upload form so a phone with a file picker could push a photo up with the title defaulting to "Phone Upload" and the referrer fixed at <code>uploaded_from_my_phone</code>.</p>
+    <p><span class="src">Source: <code>server/app/views/layouts/mp.thtml</code>, <code>server/app/views/uploads/mp_index.thtml</code>, <code>mp_add.thtml</code>, <code>server/app/views/users/mp_login.thtml</code>, <code>server/app/views/elements/mp_*.thtml</code>, <code>server/app/webroot/css/mp_joey.css</code></span></p>
+
+    <h2 id="install">Getting the software onto the phone</h2>
+    <p>Installing a MIDlet in 2007 meant getting a JAD or JAR URL into the phone's browser, and the server had a page for exactly that. <code>UsersController::getSoftware()</code> renders links to the Firefox XPI and to the JAR for the handset chosen at registration, and offers a button that texts the link to the phone. The SMS is not sent through a carrier API; it is an e-mail to the carrier's SMS gateway, assembled from the user's phone number and the <code>emaildomain</code> column of the <code>operators</code> table, which seeds 42 carriers from AT&amp;T (<code>txt.att.net</code>) and Verizon (<code>vtext.com</code>) to Vodacom and Movistar. The component's own comment calls it "very US centric".</p>
+    <p>Both download links are rewritten from <code>https://</code> to <code>http://</code> before being shown. The code gives no reason, but the context does: Java ME phones of that era frequently lacked the root certificates to validate a server certificate, and a JAD fetched over a failing TLS connection simply would not install. The same consideration explains why the MIDlet defaults to plain HTTP and leaves SSL as an opt-in checkbox on the login form.</p>
+    <p>The per-phone JAR name comes from the J2ME Polish build. The <code>buildlist</code> finalizer writes a tab-separated file of every device built, and <code>server/tools/import_buildlist.pl</code> diffs a new build list against the previous one and emits <code>INSERT INTO phones</code> statements for the additions, with the name, locale, JAR and JAD file names, user-agent string and screen size. It refuses to proceed if a device disappeared, printing "ERROR. YOU CANNOT REMOVE DEVICES FROM BUILD LIST!!!", because users' accounts reference phone rows by id. The server also reads <code>build.properties</code> from the same build to learn the current MIDlet version, which is what it echoes back in the <code>X-joey-version</code> header.</p>
+    <p><span class="src">Source: <code>server/app/controllers/users_controller.php</code>, <code>server/app/controllers/components/sms.php</code>, <code>server/app/controllers/components/joey.php</code>, <code>server/app/config/sql/joey.sql</code>, <code>server/tools/import_buildlist.pl</code>, <code>server/app/views/users/get_software.thtml</code></span></p>
+
+    <h2 id="today">Reading the code today</h2>
+    <ul>
+      <li><strong>The MIDlet lifecycle is unimplemented.</strong> <code>pauseApp()</code> and <code>destroyApp()</code> both contain only <code>// TODO: Implement this method.</code> An incoming call or a Back-to-home key would leave the poller timer and the network thread running until the VM killed them, and nothing would be flushed to RMS.</li>
+      <li><strong>Build paths are personal.</strong> <code>build.xml</code> hard-codes <code>&lt;property name="wtk.home" value="/home/mkoch/local/WTK2.2" /&gt;</code> and <code>nokia.home</code> under the same home directory, with the per-user properties files as the override mechanism. The README's own instructions pass <code>-Dwtk.home</code> on the command line.</li>
+      <li><strong>Two dead-end features are still wired to menus.</strong> "Open in browser" calls a server action that does not exist and uses <code>wait()</code>/<code>notify()</code> without synchronisation, and the Preferences server list is read by nobody: <code>doPreferences()</code> saves only the update interval. A comment in <code>UploadsView</code> ("dougt -- not sure if we should have preferences and the camera here or in the MainMenu view") records the discussion that moved them.</li>
+      <li><strong>The multipart body is subtly malformed.</strong> <code>AddNetworkRequest</code> omits the <code>\r\n</code> after the referrer value before the next boundary, and converts the binary image through <code>new String(upload.getData())</code> and back, which is not byte-preserving on most Java ME platform encodings. Camera snapshots may well have arrived corrupted; there is no evidence in the tree either way.</li>
+    </ul>
+    <p class="note">What the MIDlet got right is also visible. Incremental sync with a cached local store, a queue-and-replay model that survives session expiry, previews pushed as base64 so the phone never makes a second request per item, and a fully localised UI built from one source tree for dozens of handsets: that was a serious mobile client for 2007, built in roughly three months by two people.</p>
+
+    <nav class="pager"><a href="server.html">← Server</a><a href="screenshots.html">Screenshots →</a></nav>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>Project Joey was a Mozilla Labs experiment (2007). This retrospective was reconstructed from the source tree in this repository.</span>
+    <span>Original code: MPL 1.1 / GPL 2.0 / LGPL 2.1 tri-license.</span>
+  </div>
+</footer>
+</body>
+</html>
