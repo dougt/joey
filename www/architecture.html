@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>System architecture · Project Joey</title>
+<meta name="description" content="How the three parts of Mozilla Labs' Joey fit together: the Firefox add-on, the CakePHP server with its joeyd transcoding daemon, and the phone clients.">
+<link rel="icon" href="img/brand/joey-16.png">
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="img/brand/joey-32.png" alt=""><span>Project <b>Joey</b></span></a>
+    <nav class="site-nav" aria-label="Site">
+      <a href="index.html">Overview</a>
+      <a href="architecture.html" aria-current="page">Architecture</a>
+      <a href="firefox-addon.html">Firefox add-on</a>
+      <a href="server.html">Server</a>
+      <a href="mobile.html">Phone clients</a>
+      <a href="screenshots.html">Screenshots</a>
+      <a href="history.html">History</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <p class="eyebrow">How it fits together</p>
+    <h1>System architecture</h1>
+    <p class="lede">Joey is three programs that agree on one HTTP protocol and one MySQL schema: a Firefox add-on that pushes things in, a PHP web application plus a Python daemon that stores and reshapes them, and a set of phone clients that pull them back out.</p>
+
+    <div class="toc">
+      <ul>
+        <li><a href="#tiers">Three tiers, and why</a></li>
+        <li><a href="#types">The content types Joey understands</a></li>
+        <li><a href="#lifecycle">Upload lifecycle</a></li>
+        <li><a href="#protocol">The wire protocol</a></li>
+        <li><a href="#routing">Device routing</a></li>
+        <li><a href="#data">Data model and storage</a></li>
+        <li><a href="#deploy">Deployment picture</a></li>
+        <li><a href="#security">Security notes, as of 2007</a></li>
+      </ul>
+    </div>
+
+    <h2 id="tiers">Three tiers, and why</h2>
+    <p>In 2007 there was no app store to publish a phone application through, no shared mobile runtime beyond Java ME, and no reliable way to get a large file onto a handset except over the carrier's data network at the phone's own pace. The iPhone had shipped in June 2007 with a browser but no third-party SDK. Joey's shape follows from those constraints.</p>
+
+    <div class="grid">
+      <div class="card">
+        <img class="icon" src="img/brand/joey-32.png" alt="">
+        <h3>Firefox add-on</h3>
+        <p>Lives where the user already is. Captures a selection, an image, a sniffed media stream, a feed, a page fragment, or the list of open tabs, and POSTs it to the server through an XPCOM component. It never talks to the phone.</p>
+      </div>
+      <div class="card">
+        <img class="icon" src="img/brand/media-video.png" alt="">
+        <h3>Server + joeyd</h3>
+        <p>A CakePHP 1.1 application owns accounts, sessions, uploads and the per-user quota. A separate Python daemon, <code>joeyd</code>, does the slow work: transcoding video to 3GP, audio to AMR, images to small PNGs, and refreshing feeds and microsummaries on a timer.</p>
+      </div>
+      <div class="card">
+        <img class="icon" src="img/brand/pictures.png" alt="">
+        <h3>Phone clients</h3>
+        <p>A Java ME midlet built per handset with J2ME Polish, a WAP-style XHTML-MP page for any phone browser, and an iUI web app for the iPhone. All three read the same upload list and the same files; the midlet speaks a tiny REST-ish dialect of it.</p>
+      </div>
+    </div>
+
+    <figure class="diagram">
+      <img src="img/diagrams/architecture.svg" alt="Architecture diagram: Firefox add-on uploads over HTTPS to the CakePHP server, which stores files on disk and rows in MySQL and pokes joeyd on localhost:8777; joeyd runs ffmpeg and ImageMagick and fetches feeds; phones pull from the server via the midlet, XHTML-MP pages or the iPhone web view; SMS download links go out through carrier e-mail gateways.">
+      <figcaption>The deployment Joey's code assumes. The browser and the phone never talk to each other; the server is the only shared state. joeyd is notified by the web app over loopback HTTP and otherwise polls the database on a 30-minute timer.</figcaption>
+    </figure>
+
+    <p>The split between the PHP app and joeyd is deliberate. A Firefox upload returns as soon as the original file is on disk and a row exists; the user sees "Joey hasn't processed this yet" in the web list until the daemon has run. Transcoding a video with ffmpeg could take longer than a PHP request should, and feeds need to be re-fetched long after the upload happened, so that work was moved to a process that outlives requests.</p>
+    <p><span class="src">Source: <code>server/app/controllers/uploads_controller.php</code>, <code>server/app/scripts/joeyd.py</code>, <code>addons/ff/components/mocoJoey.js</code>, <code>clients/j2me/source/src/org/mozilla/joey/j2me/CommunicationController.java</code></span></p>
+
+    <h2 id="types">The content types Joey understands</h2>
+    <p>Everything Joey moves is tagged with a MIME-style type. Some are real media types; others, such as <code>rss-source/text</code>, <code>browser/stuff</code> and <code>microsummary/xml</code>, are Joey's own inventions. The type decides which add-on code path produced the item, which branch of joeyd processes it, and what the phone eventually downloads.</p>
+
+    <table>
+      <thead><tr><th>Type</th><th>Where the add-on produces it</th><th>What joeyd does</th><th>What the phone receives</th></tr></thead>
+      <tbody>
+        <tr><td><code>text/plain</code></td><td>"Joey Selected Text" context-menu item writes the selection to a temp file and uploads it.</td><td>Copies the original into place unchanged (<code>_transcodeText</code>).</td><td>The text, shown in a details view or the phone browser.</td></tr>
+        <tr><td><code>image/png</code>, <code>image/jpeg</code>, <code>image/gif</code>, <code>image/tiff</code>, <code>image/bmp</code></td><td>"Joey Image" on a right-clicked image; the add-on fetches the bytes itself and uploads a file.</td><td>ImageMagick <code>convert -geometry 100x100</code> for the main file and a 50x50 preview; both become PNG. Phone screen size is a TODO in the code.</td><td>A small PNG plus a thumbnail embedded in the midlet index.</td></tr>
+        <tr><td><code>audio/x-wav</code>, <code>audio/mpeg</code>, <code>audio/mid</code>, <code>audio/amr</code></td><td>The HTTP response sniffer notices an audio stream and enables "Upload Joey Media"; the add-on downloads it and uploads a file.</td><td>ffmpeg to 8 kHz mono AMR at 7.4 kbit/s (<code>_transcodeAudio</code>).</td><td><code>audio/amr</code>, the codec every GSM handset could play.</td></tr>
+        <tr><td><code>video/3gpp</code>, <code>video/flv</code>, <code>video/mpeg</code>, <code>video/avi</code>, <code>video/quicktime</code></td><td>Same sniffer, video branch. Flash video from YouTube-era sites is the common case.</td><td>ffmpeg to QCIF H.263 at 10 fps with AMR-NB audio into a <code>.3gp</code>; a PNG frame grab at 5 seconds for the preview (<code>_transcodeVideo</code>).</td><td>A 3GP file served with a <code>Content-Disposition</code> filename so the phone's media player opens it.</td></tr>
+        <tr><td><code>rss-source/text</code></td><td><code>joey_feed()</code> uploads a two-line text body, <code>rss=&lt;url&gt;</code> and optional <code>icon=&lt;url&gt;</code>, as a content source rather than a file. Triggered by the feed watcher after the same feed has been seen ten times, or by <code>/uploads/add/rss?source=</code>.</td><td>Fetches the feed with httplib2 and parses it with feedparser. If the newest entry has an <code>audio/mpeg</code> enclosure the MP3 is downloaded and transcoded to AMR (podcast mode); otherwise the entries are rendered to an HTML digest. The upload title is replaced with the channel title. Re-run every 30 minutes.</td><td>Either an HTML digest (<code>text/html</code>) or an AMR audio file.</td></tr>
+        <tr><td><code>microsummary/xml</code></td><td>"Joey Summary" turns the cursor into an element picker; clicking builds an XPath to the element and wraps it in a Firefox 2 microsummary generator document.</td><td>Fetches the page, parses it with lxml, evaluates the stored XPath and writes the matching element's HTML out. Re-run every 30 minutes, so the phone sees a live fragment of the page.</td><td>A small HTML fragment.</td></tr>
+        <tr><td><code>browser/stuff</code></td><td>The optional tab uploader posts an HTML list of every open tab in every window as "Current Tabs" with referrer <code>about:CurrentTabs</code>. Default interval 5 minutes.</td><td>Copied through as <code>text/html</code>. The controller overwrites the previous original for the same type and referrer instead of creating a new upload, so there is one "Current Tabs" item per user.</td><td>A clickable list of links, labelled "Firefox stuff" on the iPhone view.</td></tr>
+        <tr><td><code>widget/joey</code></td><td>Nothing in the add-on produces it. The type is seeded in <code>contentsourcetypes</code> and the uploads controller accepts it.</td><td><code>_updateJoeyWidgetTypeFromUploadData</code> logs "type=widget..." and returns success. A placeholder.</td><td>Nothing usable.</td></tr>
+        <tr><td><code>application/atom+xml</code></td><td>Seeded as content source type 1, never referenced by any client code.</td><td>Falls through to "Attempt to update unsupported type".</td><td>Nothing.</td></tr>
+      </tbody>
+    </table>
+    <p><span class="src">Source: <code>addons/ff/chrome/content/joey/joeyOverlay.js</code>, <code>server/app/controllers/uploads_controller.php</code> (<code>$filetypes</code>), <code>server/app/controllers/components/storage.php</code> (<code>$suffix</code>), <code>server/app/scripts/joeyd.py</code>, <code>server/app/config/sql/joey.sql</code></span></p>
+
+    <h2 id="lifecycle">Upload lifecycle</h2>
+    <figure class="diagram">
+      <img src="img/diagrams/upload-lifecycle.svg" alt="Sequence diagram of an upload: the add-on logs in, posts multipart data, the server writes the original to disk and rows to MySQL, pokes joeyd with /id/now, joeyd transcodes and updates the rows, and the phone later polls /uploads/index?rest=1&since=...">
+      <figcaption>One upload, end to end. Solid arrows are synchronous HTTP; the dashed arrow is the loopback poke to joeyd. The phone side is pull only.</figcaption>
+    </figure>
+
+    <ol class="steps">
+      <li><strong>Capture.</strong> A menu item in Firefox builds a <code>joey_upload</code> object with a title, the page URL as "referrer", a content type and either in-memory data or an <code>nsIFile</code>. Unless the user has turned it off, a prompt lets them edit the title first.</li>
+      <li><strong>Login.</strong> The <code>mocoJoey</code> XPCOM component looks the server up in the Firefox password manager, or prompts, then POSTs <code>rest=1&amp;data[User][username]=…</code> to <code>/users/login</code>. Success is signalled by the <code>X-joey-status: 200</code> response header; the PHP session cookie carries the login from then on.</li>
+      <li><strong>POST.</strong> The component sends a multipart form to <code>/uploads/add</code> with <code>data[Upload][title]</code>, <code>data[Upload][referrer]</code>, the <code>rest</code> flag and either <code>data[File][Upload]</code> (a file) or <code>data[Contentsource][source]</code> plus <code>data[Contentsourcetype][name]</code> (a source such as a feed URL).</li>
+      <li><strong>Store.</strong> For a file, the controller checks the quota, moves the upload into <code>UPLOAD_DIR/&lt;user&gt;/originals/joey-&lt;uniqid&gt;.&lt;suffix&gt;</code>, and in one transaction inserts the <code>uploads</code> row, the <code>files</code> row and the <code>uploads_users</code> owner row. For a content source, a zero-length placeholder file is created and a <code>contentsources</code> row points at it. Duplicate sources are detected by exact string match and reported as success ("we are going to lie and say that duplicate uploads are really successful").</li>
+      <li><strong>Notify.</strong> <code>notifyJoeyD()</code> issues <code>GET http://localhost:8777/&lt;upload_id&gt;/now</code> with a five-second connect timeout. The <code>/now</code> suffix puts the job at the front of joeyd's queue.</li>
+      <li><strong>Process.</strong> A pool thread loads the upload's joined row, decides between <code>Transcode</code> (there is no source) and <code>Update</code> (there is), runs ffmpeg or convert or a fetch, renames and retypes the <code>files</code> row, records sizes, increments <code>uploads.errors</code> on failure, and finally sets <code>ever_updated = 1</code> and <code>modified = NOW()</code>.</li>
+      <li><strong>Pull.</strong> The midlet polls <code>/uploads/index?rest=1&amp;since=&lt;unix time&gt;</code> on its own timer (default 300 seconds) and only sees rows whose <code>modified</code> moved, which is exactly what step 6 did. The web, WAP and iPhone views simply list the rows on each page load.</li>
+    </ol>
+    <p><span class="src">Source: <code>addons/ff/components/mocoJoey.js</code>, <code>server/app/controllers/uploads_controller.php</code> (<code>add</code>, <code>_saveUploadedFile</code>, <code>_saveUploadedContentSource</code>, <code>notifyJoeyD</code>), <code>server/app/scripts/joeyd.py</code> (<code>processUpload</code>, <code>RequestHandler</code>), <code>clients/j2me/source/src/org/mozilla/joey/j2me/JoeyController.java</code></span></p>
+
+    <h2 id="protocol">The wire protocol</h2>
+    <h3>One flag, two personalities</h3>
+    <p>There is no separate API. Every controller action serves both the browser and the programmatic clients, and switches on a single request parameter. <code>AppController::__construct</code> sets <code>$this-&gt;nbClient = true</code> ("non-browser client") when <code>rest</code> appears in <code>$_POST</code> or <code>$_GET</code>. When it is set, actions stop rendering layouts and redirecting and instead answer with a status header and exit:</p>
+<pre><code>function returnJoeyStatusCode($statusCode)
+{
+    header ("X-joey-status: " . $statusCode, true);
+    $this->layout = null;
+    exit;
+}</code></pre>
+    <p>The HTTP status stays 200 either way; clients read <code>X-joey-status</code>. Both the XPCOM component and the midlet's <code>CommunicationController</code> do exactly that.</p>
+
+    <table>
+      <thead><tr><th><code>X-joey-status</code></th><th>Constant</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td>200</td><td><code>SUCCESS</code></td><td>OK</td></tr>
+        <tr><td>511</td><td><code>ERROR_NO_SESSION</code></td><td>No active session; log in first</td></tr>
+        <tr><td>512</td><td><code>ERROR_LOGIN</code></td><td>Unknown user or wrong password</td></tr>
+        <tr><td>513</td><td><code>ERROR_ACTIVATION</code></td><td>Account exists but the e-mail confirmation code is still set</td></tr>
+        <tr><td>514</td><td><code>ERROR_DELETE</code></td><td>Delete failed</td></tr>
+        <tr><td>515</td><td><code>ERROR_NOAUTH</code></td><td>Item belongs to another user</td></tr>
+        <tr><td>516</td><td><code>ERROR_FILE</code></td><td>File missing or unreadable on disk</td></tr>
+        <tr><td>517</td><td><code>ERROR_NO_SPACE</code></td><td>Upload would exceed the per-user quota</td></tr>
+        <tr><td>518</td><td><code>ERROR_UPLOAD</code></td><td>Generic upload or validation failure</td></tr>
+        <tr><td>519</td><td><code>ERROR_DUPLICATE</code></td><td>Identical content source already uploaded</td></tr>
+      </tbody>
+    </table>
+    <p>A successful login from a non-browser client also carries <code>X-joey-version</code>, the current midlet version read from <code>webroot/ff/build.properties</code>. The midlet compares it with its own and offers an update.</p>
+
+    <h3>Endpoints the clients use</h3>
+    <table>
+      <thead><tr><th>Request</th><th>Who</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td><code>POST /users/login</code><br><code>rest=1&amp;data[User][username]=u&amp;data[User][password]=p</code></td><td>add-on, midlet</td><td>Username is lower-cased server side. Session cookie is <code>moz_joey</code>, stored in the <code>cake_sessions</code> table.</td></tr>
+        <tr><td><code>POST /uploads/add</code> (multipart)</td><td>add-on, midlet, web form</td><td>Fields: <code>rest</code>, <code>data[Upload][title]</code>, <code>data[Upload][referrer]</code>, and either <code>data[File][Upload]</code> or <code>data[Contentsource][source]</code> + <code>data[Contentsourcetype][name]</code>. The midlet's <code>AddNetworkRequest</code> builds this by hand for camera snapshots.</td></tr>
+        <tr><td><code>GET /uploads/index?rest=1&amp;limit=N&amp;start=M</code><br><code>GET /uploads/index?rest=1&amp;since=T</code></td><td>midlet</td><td>Full index, or only rows modified since Unix time <code>T</code>. Deleted rows are included so the phone can purge its local cache. <code>type=</code> may also filter by the <code>$filetypes</code> group names (videos, audio, images, rss, microsummaries, text, browserstuff, all).</td></tr>
+        <tr><td><code>GET /files/view/&lt;file_id&gt;</code><br><code>…/original</code>, <code>…/preview</code></td><td>everyone</td><td>Streams the transcoded file, the original, or the preview image with the stored content type. Ownership is checked. If the file is unreadable, <code>na.png</code> is returned instead (and <code>X-joey-status: 516</code> for programmatic clients).</td></tr>
+        <tr><td><code>GET /files/wrapper/&lt;file_id&gt;</code></td><td>iPhone view</td><td>Returns a full-height <code>&lt;iframe&gt;</code> around <code>/files/view</code>, so iUI can slide to it as a page.</td></tr>
+        <tr><td><code>POST /uploads/deleteByFileID/&lt;file_id&gt;</code> <code>rest=1</code></td><td>midlet</td><td>Resolves the file to its upload and calls <code>delete</code>.</td></tr>
+        <tr><td><code>GET /uploads/delete/&lt;upload_id&gt;</code></td><td>web (AJAX), WAP</td><td>Soft-deletes the upload, hard-deletes the files row and unlinks all three files.</td></tr>
+        <tr><td><code>GET /uploads/rss</code></td><td>any feed reader</td><td>RSS 2.0 of your own uploads, rendered with the <code>xml</code> layout.</td></tr>
+        <tr><td><code>GET /version/index/&lt;version&gt;[/firstrun]</code></td><td>add-on</td><td>Release notes page, opened in a tab on first run or after an upgrade. Does not require a session.</td></tr>
+        <tr><td><code>GET /uploads/raw/&lt;id&gt;</code>, <code>GET /uploads/updateUpload/&lt;id&gt;</code></td><td>midlet (<code>GetRawURLNetworkRequest</code>), <code>fetcher.php</code></td><td>Referenced by callers but <strong>no such actions exist</strong> in <code>uploads_controller.php</code> in this tree. Either they were removed or lived in a different revision.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>The midlet index format</h3>
+    <p>When <code>rest</code> is set, <code>/uploads/index</code> renders <code>j2me_index.thtml</code> with no layout: a flat <code>key.N=value</code> list that a MIDP 1.0 device can parse with <code>indexOf</code> and <code>substring</code>. Previews are base64-encoded PNG bytes inlined into the response, so one round trip fetches the whole thumbnail grid.</p>
+<pre><code>total_count=3
+count=3
+id.1=42
+title.1=Mozilla Labs » Blog Archive » Introducing Joey
+referrer.1=http://labs.mozilla.com/2007/05/introducing-joey/
+modified.1=1190226112
+type.1=text/html
+preview.1=iVBORw0KGgoAAAANSUhEUgAAADIAAAAy…
+id.2=41
+deleted.2=1
+id.3=40
+title.3=Current Tabs
+referrer.3=about:CurrentTabs
+modified.3=1190225400
+type.3=text/html
+preview.3=</code></pre>
+    <p>Three states are encoded by which keys are present: a live row has title, referrer, modified, type and preview; a deleted row has only <code>deleted.N=1</code>; a row joeyd has not processed yet (<code>ever_updated = 0</code>) has only its id. The <code>type</code> value is the content source type for feeds and microsummaries and the transcoded file type otherwise, with one exception written into the template: an RSS source whose file is no longer <code>text/html</code> reports the file type, which is how a podcast feed shows up as <code>audio/amr</code>.</p>
+    <p><span class="src">Source: <code>server/app/app_controller.php</code>, <code>server/app/views/uploads/j2me_index.thtml</code>, <code>server/app/controllers/uploads_controller.php</code>, <code>server/app/controllers/files_controller.php</code>, <code>clients/j2me/source/src/org/mozilla/joey/j2me/*NetworkRequest.java</code></span></p>
+
+    <h2 id="routing">Device routing</h2>
+    <p>The same controller actions render four different front ends. The choice is made per request from the <code>User-Agent</code> header and the <code>rest</code> flag, not from the URL.</p>
+    <figure class="diagram">
+      <img src="img/diagrams/device-routing.svg" alt="Decision diagram: rest flag set gives the j2me key=value output with no layout; iPhone user agent gives the iphone layout with iUI; a mobile user agent regex gives the mp layout as XHTML Mobile Profile; otherwise the default green desktop layout. The add-on's first-run page uses the joeyclient layout and feeds use the xml layout.">
+      <figcaption>How one URL becomes four pages. The regexes live in <code>BrowserAgent.class.php</code>; the <code>rest</code> flag is checked first because it is the only one that changes the response body format.</figcaption>
+    </figure>
+<pre><code>function isIPhone () {
+    ...
+    $res = preg_match('/iPhone/i', $agent);
+    ...
+}
+function isMobile () {
+    ...
+    $res = preg_match('/iemobile|windows ce|nokia|symbian|motorola|mot\-|samsung|sec\-|lg\-|sonyericsson|sie\-|up\.b|up\//i', $agent);
+    ...
+}</code></pre>
+    <table>
+      <thead><tr><th>Condition</th><th>Layout</th><th>View</th><th>Character</th></tr></thead>
+      <tbody>
+        <tr><td><code>rest</code> in request</td><td>none</td><td><code>j2me_index.thtml</code></td><td>Plain-text key=value for the midlet; status in <code>X-joey-status</code>.</td></tr>
+        <tr><td>User-Agent matches <code>/iPhone/i</code></td><td><code>iphone.thtml</code></td><td><code>iphone_index.thtml</code>, <code>iphone_login.thtml</code></td><td>Joe Hewitt's iUI library, viewport locked to 320 px, one page per media category.</td></tr>
+        <tr><td>User-Agent matches the mobile regex</td><td><code>mp.thtml</code></td><td><code>mp_index.thtml</code>, <code>mp_add.thtml</code>, <code>mp_login.thtml</code></td><td>Served as <code>application/vnd.wap.xhtml+xml</code> with the XHTML Mobile Profile doctype; no JavaScript, plain-HTML pagination.</td></tr>
+        <tr><td>anything else</td><td><code>default.thtml</code></td><td><code>index.thtml</code>, <code>login.thtml</code>, …</td><td>The green desktop theme with prototype.js AJAX, inline Flash players and the RSS visualizer.</td></tr>
+        <tr><td><code>/version/index</code></td><td><code>joeyclient.thtml</code></td><td><code>version/index.thtml</code></td><td>The white "Welcome to Joey!" page the add-on opens on first run; carries the DOM-based page-talk hooks.</td></tr>
+        <tr><td><code>/uploads/rss</code></td><td><code>xml.thtml</code></td><td><code>rss.thtml</code></td><td><code>text/xml</code> RSS 2.0.</td></tr>
+      </tbody>
+    </table>
+    <p><span class="src">Source: <code>server/app/vendors/BrowserAgent.class.php</code>, <code>server/app/controllers/uploads_controller.php</code> (<code>index</code>, <code>add</code>, <code>delete</code>), <code>server/app/controllers/users_controller.php</code> (<code>login</code>), <code>server/app/views/layouts/</code></span></p>
+
+    <h2 id="data">Data model and storage</h2>
+    <figure class="diagram">
+      <img src="img/diagrams/data-model.svg" alt="Entity diagram: users belong to a phone and an operator; uploads_users joins users and uploads with an owner flag; files belong to uploads and carry name, original_name and preview_name triples; contentsources belong to files and to contentsourcetypes; cake_sessions stands alone.">
+      <figcaption>Eight InnoDB tables (plus MyISAM <code>cake_sessions</code>). Every upload has exactly one <code>files</code> row in practice, even when the "file" is a feed URL; the file row is where the three on-disk names live.</figcaption>
+    </figure>
+
+    <h3>Tables</h3>
+    <table>
+      <thead><tr><th>Table</th><th>Purpose</th><th>Columns worth knowing</th></tr></thead>
+      <tbody>
+        <tr><td><code>users</code></td><td>Accounts</td><td><code>username</code> (unique, lower-cased), <code>password</code> (SHA-1), <code>email</code>, <code>confirmationcode</code> (NULL once activated), <code>phone_id</code>, <code>operator_id</code>, <code>phonenumber</code>, <code>administrator</code></td></tr>
+        <tr><td><code>phones</code></td><td>Handset catalogue</td><td><code>name</code>, <code>locale</code>, <code>jad_name</code>, <code>jar_name</code>, <code>screen_width</code>, <code>screen_height</code>, <code>screen_bitdepth</code>, <code>browser_ua</code>. Filled from the J2ME Polish build list by <code>import_buildlist.pl</code>.</td></tr>
+        <tr><td><code>operators</code></td><td>Carriers</td><td><code>provider</code>, <code>emaildomain</code>. 42 rows seeded; the e-mail domain is the carrier's SMS gateway.</td></tr>
+        <tr><td><code>uploads</code></td><td>One item the user sent</td><td><code>title</code>, <code>referrer</code> (the source URL), <code>deleted</code> (datetime, NULL while live), <code>ever_updated</code>, <code>errors</code>, <code>modified</code></td></tr>
+        <tr><td><code>uploads_users</code></td><td>Join table with an <code>owner</code> flag</td><td>Modelled as has-and-belongs-to-many, which would allow sharing an upload between users. Only the owner row is ever written.</td></tr>
+        <tr><td><code>files</code></td><td>The on-disk artefacts of an upload</td><td>Three (name, type, size) triples: <code>name</code>/<code>type</code>/<code>size</code> for the phone-ready file, <code>original_*</code> for what was uploaded, <code>preview_*</code> for the thumbnail. Cascades on upload delete.</td></tr>
+        <tr><td><code>contentsources</code></td><td>Things joeyd refreshes</td><td><code>source</code> text (for example <code>rss=http://…\r\n</code>), <code>file_id</code>, <code>contentsourcetype_id</code></td></tr>
+        <tr><td><code>contentsourcetypes</code></td><td>Lookup</td><td>Seeded: <code>application/atom+xml</code>, <code>rss-source/text</code>, <code>microsummary/xml</code>, <code>widget/joey</code></td></tr>
+        <tr><td><code>cake_sessions</code></td><td>PHP sessions</td><td><code>CAKE_SESSION_SAVE</code> is <code>database</code>; cookie name <code>moz_joey</code>, timeout 2000.</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Layout on disk</h3>
+<pre><code>UPLOAD_DIR/
+  cache/                     httplib2 cache and ffmpeg pass logs
+  &lt;user_id&gt;/
+    joey-&lt;uniqid&gt;.3gp        files.name      what the phone downloads
+    originals/
+      joey-&lt;uniqid&gt;.flv      files.original_name
+    previews/
+      joey-&lt;uniqid&gt;.png      files.preview_name</code></pre>
+    <p>The three per-user directories are created at registration; if <code>mkdir</code> fails the new user row is deleted again. Names are <code>joey-</code> plus PHP's <code>uniqid('', true)</code> plus a suffix from the Storage component's MIME-to-extension map. joeyd appends <code>.3gp</code> or <code>.png</code> when a transcode changes the container and writes the new name back to the row.</p>
+
+    <h3>Quota, duplicates and deletion</h3>
+    <ul>
+      <li><strong>Quota.</strong> <code>MAX_DISK_USAGE</code> defaults to 20 MB per user. <code>User::hasAvailableSpace</code> sums <code>size + original_size + preview_size</code> across all of the user's files, so a transcoded video counts three times. Exceeding it returns status 517 and the message "You don't have enough space to save that file."</li>
+      <li><strong>Duplicates.</strong> Only content sources are deduplicated, by an exact match on the <code>source</code> string for the same owner. Files are never compared.</li>
+      <li><strong>Soft delete.</strong> <code>Upload::delete</code> is overridden to run <code>UPDATE uploads set title=null, referrer=null, deleted=NOW()</code>. The row stays so that the midlet's incremental index can report <code>deleted.N=1</code> and drop the item from its record store. The <code>files</code> row and all three files are removed for real. <code>delete.py</code> exists for an administrator to erase an upload completely.</li>
+      <li><strong>Phone change.</strong> When a user picks a different handset in Edit Account, <code>Upload::setEverUpdatedForUser(id, 0)</code> clears <code>ever_updated</code> on everything they own. joeyd's refresher query selects rows with <code>ever_updated = 0</code>, so every item is re-transcoded. The intent, visible in the <code>@TODO width/height from _phone_data</code> comments, was to size output for the new screen; the sizes are still hard-coded to 100x100.</li>
+    </ul>
+    <p><span class="src">Source: <code>server/app/config/sql/joey.sql</code>, <code>server/app/models/upload.php</code>, <code>server/app/models/user.php</code>, <code>server/app/models/contentsource.php</code>, <code>server/app/controllers/components/storage.php</code>, <code>server/app/controllers/users_controller.php</code>, <code>server/app/scripts/joeyd.py</code>, <code>server/app/scripts/delete.py</code></span></p>
+
+    <h2 id="deploy">Deployment picture</h2>
+    <dl class="kv">
+      <dt>Web tier</dt><dd>Apache with <code>mod_rewrite</code> (three nested <code>.htaccess</code> files route everything to <code>app/webroot/index.php</code>), PHP 4.3+/5 per the bundled CakePHP 1.1.12.4205 install notes, MySQL via <code>mysql_connect</code>. Sessions in the database so several web heads could share them.</dd>
+      <dt>joeyd</dt><dd>Python 2 with <code>feedparser</code>, <code>httplib2</code>, <code>lxml</code>, <code>IPy</code> and an in-house <code>cse</code> package (configuration manager and MySQL wrapper, not in this tree). Started with <code>-l</code> to listen on <code>localhost:8777</code>; default pool of 100 threads; heartbeat every 10 seconds writes the stat file the admin page displays; refresher every 30 minutes.</dd>
+      <dt>External tools</dt><dd><code>ffmpeg</code> built with <code>libamr_nb</code> for AMR audio and 3GP video; ImageMagick <code>convert</code>. Paths come from <code>config.php</code> and <code>joeyd.conf</code>; <code>services/monitor.php</code> checks both exist for Nagios.</dd>
+      <dt>Refresh</dt><dd><code>CONTENTSOURCE_REFRESH_TIME</code> (15) and <code>CONTENTSOURCE_REFRESH_ALWAYS</code> are defined in <code>config.php-dist</code> but nothing in this tree reads them; joeyd's own timer and its 30-minute <code>DATE_SUB</code> window do the work. <code>fetcher.php</code> is a cron-style helper that curls <code>/uploads/updateUpload/&lt;id&gt;</code>, an action that no longer exists.</dd>
+      <dt>SMS</dt><dd>No SMS gateway contract. <code>SmsComponent</code> builds <code>&lt;phonenumber&gt;@&lt;operator.emaildomain&gt;</code> and calls PHP <code>mail()</code>. "Get the software" uses it to text the user a download link.</dd>
+      <dt>Analytics</dt><dd>Google Analytics urchin (<code>__utm.js</code>, bug 399038) in the default layout.</dd>
+      <dt>TLS</dt><dd>The add-on and midlet default to <code>https://joey.labs.mozilla.com</code>. The web login page offers a "Use Secure Login" link when the base URL is plain HTTP; download links are rewritten to <code>http://</code> because phones of the day struggled with HTTPS.</dd>
+      <dt>Add-on distribution</dt><dd><code>joey.xpi</code>, <code>update.rdf</code> and <code>build.properties</code> were served from <code>webroot/ff/</code>, which is not in the repository; a rewrite rule sends any missing <code>/ff/</code> path to <code>ff404.php</code> ("Login to Joey.").</dd>
+    </dl>
+    <p><span class="src">Source: <code>server/.htaccess</code>, <code>server/app/webroot/.htaccess</code>, <code>server/cake/VERSION.txt</code>, <code>server/docs/INSTALL.txt</code>, <code>server/app/config/core.php</code>, <code>server/app/config/config.php-dist</code>, <code>server/app/scripts/joeyd.py</code>, <code>server/app/scripts/fetcher.php</code>, <code>server/app/controllers/components/sms.php</code>, <code>server/app/webroot/services/monitor.php</code>, <code>server/app/views/layouts/default.thtml</code></span></p>
+
+    <h2 id="security">Security notes, as of 2007</h2>
+    <p>This was a Labs experiment with a beta disclaimer on the registration page, not a product. Reading it with today's expectations, these are the things a reviewer would flag. They are listed because they are part of the record, not to score points against a sixteen-year-old prototype.</p>
+    <ul>
+      <li><strong>Password hashing.</strong> Passwords are stored as unsalted <code>sha1($password)</code> and compared with <code>==</code>. Password-manager storage on the add-on side keeps the plain password in Firefox's own store, which was the norm then.</li>
+      <li><strong>Reset tokens.</strong> The password reset link is <code>/users/resetpassword/&lt;username&gt;/&lt;md5(stored sha1 hash)&gt;</code>. The token never expires and is derived from the hash it protects.</li>
+      <li><strong>SQL construction.</strong> The CakePHP models interpolate ids and user-controlled strings into SQL (<code>findAllUploadsForUserId</code>, <code>is_duplicate</code>, <code>findDataByTypeAndURL</code> uses <code>addslashes</code> via <code>Sanitize::sql</code>); joeyd builds every query with Python <code>%</code> formatting, including the feed-supplied channel title in <code>setTitle</code>. Most inputs pass <code>is_numeric</code> checks first, but not all.</li>
+      <li><strong>Ownership.</strong> <code>FilesController::view</code> checks that the session user is associated with the upload. <code>FilesController::wrapper</code> does not; its own comment reads "Must be careful with this because we aren't checking for ownership here." The wrapper only emits an iframe that then loads <code>view</code>, so the check still happens one hop later.</li>
+      <li><strong>Shell commands.</strong> <code>_transcodeVideo</code> uses <code>os.system</code> with unquoted, interpolated file paths. Names are server-generated (<code>joey-&lt;uniqid&gt;</code>), which limits the exposure, but the pattern is fragile.</li>
+      <li><strong>Outbound fetches.</strong> <code>safeExternalOnlyGet</code> was meant to refuse private IP ranges ("to prevent princton style attacks", that is DNS rebinding); the check is commented out, so joeyd will fetch any URL a user submits.</li>
+      <li><strong>Framework security level.</strong> <code>AppController</code> defaults <code>CAKE_SECURITY</code> to <code>high</code>, but the uploads, users and files controllers set it to <code>low</code>, which in CakePHP 1.1 relaxes session checking so that phones with changing IP addresses or user agents stay logged in.</li>
+      <li><strong>Memory.</strong> <code>files/view</code> reads whole files with <code>file_get_contents</code>; the code's own TODO records "Allowed memory size of 104857600 bytes exhausted" for large videos.</li>
+    </ul>
+    <p><span class="src">Source: <code>server/app/controllers/users_controller.php</code>, <code>server/app/controllers/files_controller.php</code>, <code>server/app/models/upload.php</code>, <code>server/app/models/contentsource.php</code>, <code>server/app/app_controller.php</code>, <code>server/app/scripts/joeyd.py</code></span></p>
+
+    <nav class="pager"><a href="index.html">← Overview</a><a href="firefox-addon.html">Firefox add-on →</a></nav>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>Project Joey was a Mozilla Labs experiment (2007). This retrospective was reconstructed from the source tree in this repository.</span>
+    <span>Original code: MPL 1.1 / GPL 2.0 / LGPL 2.1 tri-license.</span>
+  </div>
+</footer>
+</body>
+</html>
