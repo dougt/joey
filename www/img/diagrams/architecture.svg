@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" width="1000" height="660" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#1d1f1a">
+  <title>Project Joey system architecture</title>
+  <desc>Firefox add-on uploads to the CakePHP server, joeyd converts content for phones, phones read it back over HTTP; SMS carries the download link.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4a4d44"/>
+    </marker>
+    <marker id="arrowg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#7fa000"/>
+    </marker>
+    <marker id="arrowo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f39a2b"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="660" fill="#fbfbf7"/>
+
+  <!-- column headers -->
+  <g font-size="12" font-weight="700" fill="#7fa000" letter-spacing="1.5">
+    <text x="115" y="40" text-anchor="middle">DESKTOP</text>
+    <text x="470" y="40" text-anchor="middle">SERVER  ·  joey.labs.mozilla.com</text>
+    <text x="875" y="40" text-anchor="middle">PHONES</text>
+  </g>
+  <g stroke="#e2e4da" stroke-width="2">
+    <line x1="20" y1="50" x2="210" y2="50"/>
+    <line x1="345" y1="50" x2="595" y2="50"/>
+    <line x1="775" y1="50" x2="975" y2="50"/>
+  </g>
+
+  <!-- DESKTOP: Firefox + add-on -->
+  <rect x="20" y="90" width="190" height="240" rx="12" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
+  <text x="115" y="115" text-anchor="middle" font-size="15" font-weight="700">Firefox 2 (desktop)</text>
+  <text x="115" y="134" text-anchor="middle" fill="#4a4d44">Joey add-on 0.3.0.0 (XPI)</text>
+  <rect x="35" y="150" width="160" height="66" rx="8" fill="#f4f8e2" stroke="#b5d623" stroke-width="1.5"/>
+  <text x="115" y="170" text-anchor="middle" font-weight="700">XUL overlay</text>
+  <text x="115" y="188" text-anchor="middle">status-bar icon and menu,</text>
+  <text x="115" y="204" text-anchor="middle">context menu, options</text>
+  <rect x="35" y="230" width="160" height="86" rx="8" fill="#f4f8e2" stroke="#b5d623" stroke-width="1.5"/>
+  <text x="115" y="250" text-anchor="middle" font-weight="700">mocoJoey XPCOM</text>
+  <text x="115" y="268" text-anchor="middle">login via Password Manager,</text>
+  <text x="115" y="284" text-anchor="middle">multipart POST to server,</text>
+  <text x="115" y="300" text-anchor="middle">progress callbacks</text>
+
+  <!-- add-on -> server -->
+  <line x1="210" y1="140" x2="345" y2="140" stroke="#4a4d44" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="277" y="128" text-anchor="middle">HTTPS multipart POST</text>
+  <text x="277" y="157" text-anchor="middle">/uploads/add  rest=1</text>
+  <line x1="345" y1="180" x2="210" y2="180" stroke="#4a4d44" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+  <text x="277" y="197" text-anchor="middle" fill="#4a4d44">header X-joey-status</text>
+
+  <!-- SERVER: CakePHP app -->
+  <rect x="345" y="90" width="250" height="125" rx="12" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
+  <text x="470" y="112" text-anchor="middle" font-size="15" font-weight="700">CakePHP 1.1 web app (PHP)</text>
+  <text x="470" y="131" text-anchor="middle">controllers: users, uploads, files,</text>
+  <text x="470" y="147" text-anchor="middle">version, admin</text>
+  <text x="470" y="165" text-anchor="middle">layouts: default, mp, iphone,</text>
+  <text x="470" y="181" text-anchor="middle">joeyclient, xml (RSS)</text>
+  <text x="470" y="199" text-anchor="middle">sessions in MySQL (cake_sessions)</text>
+
+  <!-- notify arrow (behind label) -->
+  <line x1="470" y1="215" x2="470" y2="370" stroke="#f39a2b" stroke-width="1.8" marker-end="url(#arrowo)"/>
+  <rect x="390" y="229" width="160" height="20" rx="4" fill="#fbfbf7"/>
+  <text x="470" y="243" text-anchor="middle" fill="#1d1f1a">notify: GET /&lt;upload_id&gt;</text>
+
+  <!-- MySQL + upload dir -->
+  <rect x="345" y="255" width="105" height="90" rx="10" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
+  <text x="397" y="280" text-anchor="middle" font-size="15" font-weight="700">MySQL</text>
+  <text x="397" y="300" text-anchor="middle">joey.sql schema</text>
+  <text x="397" y="316" text-anchor="middle">InnoDB tables</text>
+  <rect x="480" y="255" width="115" height="90" rx="10" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
+  <text x="537" y="280" text-anchor="middle" font-size="15" font-weight="700">Upload dir</text>
+  <text x="537" y="298" text-anchor="middle">UPLOAD_DIR/</text>
+  <text x="537" y="314" text-anchor="middle">&lt;uid&gt;/originals/</text>
+  <text x="537" y="330" text-anchor="middle">&lt;uid&gt;/previews/</text>
+
+  <g stroke="#4a4d44" stroke-width="1.5">
+    <line x1="397" y1="215" x2="397" y2="255" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <line x1="537" y1="215" x2="537" y2="255" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <line x1="397" y1="345" x2="397" y2="370" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+    <line x1="537" y1="345" x2="537" y2="370" marker-start="url(#arrow)" marker-end="url(#arrow)"/>
+  </g>
+
+  <!-- joeyd -->
+  <rect x="345" y="370" width="250" height="120" rx="12" fill="#fff" stroke="#f39a2b" stroke-width="2"/>
+  <text x="470" y="392" text-anchor="middle" font-size="15" font-weight="700">joeyd (Python daemon)</text>
+  <text x="470" y="411" text-anchor="middle">HTTP server on localhost:8777</text>
+  <text x="470" y="428" text-anchor="middle">thread pool, /now jumps the queue</text>
+  <text x="470" y="445" text-anchor="middle">ffmpeg · ImageMagick convert</text>
+  <text x="470" y="462" text-anchor="middle">feedparser · lxml · httplib2 cache</text>
+  <text x="470" y="479" text-anchor="middle">writes results to MySQL + upload dir</text>
+
+  <!-- Internet -->
+  <line x1="470" y1="490" x2="470" y2="530" stroke="#4a4d44" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <text x="480" y="514">httplib2 GET (cached)</text>
+  <rect x="345" y="530" width="250" height="50" rx="25" fill="#f1f3e6" stroke="#e2e4da" stroke-width="1.5"/>
+  <text x="470" y="551" text-anchor="middle" font-size="15" font-weight="700">Internet</text>
+  <text x="470" y="569" text-anchor="middle">feeds, pages for microsummaries</text>
+
+  <!-- PHONES -->
+  <rect x="775" y="90" width="200" height="75" rx="12" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
+  <text x="875" y="112" text-anchor="middle" font-size="15" font-weight="700">J2ME MIDlet</text>
+  <text x="875" y="130" text-anchor="middle">built per handset</text>
+  <text x="875" y="146" text-anchor="middle">with J2ME Polish</text>
+
+  <rect x="775" y="185" width="200" height="55" rx="12" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
+  <text x="875" y="206" text-anchor="middle" font-size="15" font-weight="700">iPhone Safari</text>
+  <text x="875" y="224" text-anchor="middle">iphone layout (iUI)</text>
+
+  <rect x="775" y="260" width="200" height="60" rx="12" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
+  <text x="875" y="281" text-anchor="middle" font-size="15" font-weight="700">WAP / XHTML-MP browser</text>
+  <text x="875" y="299" text-anchor="middle">mp layout</text>
+
+  <!-- MIDlet -> server -->
+  <line x1="775" y1="127" x2="595" y2="127" stroke="#7fa000" stroke-width="1.8" marker-end="url(#arrowg)"/>
+  <text x="685" y="113" text-anchor="middle" font-weight="700">POST rest=1 to:</text>
+  <text x="685" y="145" text-anchor="middle">/users/login</text>
+  <text x="685" y="161" text-anchor="middle">/uploads/index?since=&lt;ts&gt;</text>
+  <text x="685" y="177" text-anchor="middle">/uploads/raw/&lt;id&gt;</text>
+  <text x="685" y="193" text-anchor="middle">/uploads/deleteByFileID/…</text>
+
+  <!-- browsers -> server -->
+  <line x1="775" y1="212" x2="595" y2="205" stroke="#7fa000" stroke-width="1.8" marker-end="url(#arrowg)"/>
+  <line x1="775" y1="295" x2="595" y2="212" stroke="#7fa000" stroke-width="1.8" marker-end="url(#arrowg)"/>
+  <text x="680" y="272" text-anchor="middle">GET /uploads</text>
+  <text x="680" y="288" text-anchor="middle">layout chosen by user-agent</text>
+
+  <!-- SMS path -->
+  <path d="M345,208 L315,208 L315,640 L740,640 L740,575 L775,575" fill="none" stroke="#4a4d44" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+  <text x="530" y="632" text-anchor="middle" fill="#4a4d44">getSoftware → SmsComponent → PHP mail() to carrier gateway</text>
+  <rect x="775" y="540" width="200" height="70" rx="12" fill="#fff" stroke="#4a4d44" stroke-width="1.5"/>
+  <text x="875" y="562" text-anchor="middle" font-size="15" font-weight="700">Carrier email-to-SMS</text>
+  <text x="875" y="580" text-anchor="middle">e.g. &lt;number&gt;@tmomail.net</text>
+  <text x="875" y="596" text-anchor="middle">(operators table)</text>
+  <line x1="875" y1="540" x2="875" y2="320" stroke="#4a4d44" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrow)"/>
+  <text x="885" y="425" fill="#4a4d44">SMS: "go to http://joey…"</text>
+  <text x="885" y="442" fill="#4a4d44">(link to the MIDlet)</text>
+</svg>

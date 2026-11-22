@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The server · Project Joey</title>
+<meta name="description" content="A tour of Joey's server side: the CakePHP 1.1 application that owns accounts and uploads, its four front ends, and joeyd, the Python daemon that transcodes media and refreshes feeds.">
+<link rel="icon" href="img/brand/joey-16.png">
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="wrap">
+    <a class="brand" href="index.html"><img src="img/brand/joey-32.png" alt=""><span>Project <b>Joey</b></span></a>
+    <nav class="site-nav" aria-label="Site">
+      <a href="index.html">Overview</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="firefox-addon.html">Firefox add-on</a>
+      <a href="server.html" aria-current="page">Server</a>
+      <a href="mobile.html">Phone clients</a>
+      <a href="screenshots.html">Screenshots</a>
+      <a href="history.html">History</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <p class="eyebrow">Code tour</p>
+    <h1>The server: CakePHP app and joeyd</h1>
+    <p class="lede">Everything under <code>server/</code>. A conventional CakePHP 1.1 application does the web work; a Python daemon does the heavy lifting. This page walks the controllers, the four sets of views, and the daemon, quoting the code where the code says it best.</p>
+
+    <div class="toc">
+      <ul>
+        <li><a href="#layout">What is in <code>server/</code></a></li>
+        <li><a href="#controllers">Controllers</a></li>
+        <li><a href="#components">Components and helpers</a></li>
+        <li><a href="#views">Views and layouts</a></li>
+        <li><a href="#media">In-page media handlers</a></li>
+        <li><a href="#joeyd">joeyd in depth</a></li>
+        <li><a href="#phones">The phone build list</a></li>
+        <li><a href="#today">Reading the code today</a></li>
+      </ul>
+    </div>
+
+    <h2 id="layout">What is in <code>server/</code></h2>
+<pre><code>server/
+  .htaccess                 rewrite everything into app/webroot
+  index.php                 CakePHP front controller (fallback when rewriting is off)
+  docs/                     CakePHP's own INSTALL, README, CHANGELOG, COPYING
+  cake/                     vendored CakePHP 1.1.12.4205 (December 2006)
+  tools/import_buildlist.pl turn a J2ME Polish build list into phones rows
+  app/
+    app_controller.php      session check, rest flag, X-joey-status codes
+    app_model.php           adds a Sanitize instance to every model
+    config/                 core.php, routes.php, database.php, config.php-dist, sql/joey.sql
+    controllers/            admin, files, uploads, users, version + components/
+    models/                 user, upload, file, contentsource, contentsourcetype, phone, operator
+    views/                  layouts/, elements/, and one folder per controller
+    vendors/BrowserAgent.class.php
+    scripts/                joeyd.py, delete.py, fetcher.php, hammer_joeyd.sh, joeyd.conf-dist
+    webroot/                css, js, img, vendor (iUI, two Flash players), terms, release_notes, services/monitor.php</code></pre>
+    <p>The framework is the stock 1.1 tree: <code>cake/VERSION.txt</code> reads <code>1.1.12.4205</code> and the install notes still promise PHP 4 compatibility. The application code uses PHP 4 idioms throughout (<code>var</code> properties, <code>&amp;$controller</code> by-reference components, <code>.thtml</code> templates with short echo tags). Routing is almost entirely convention: <code>routes.php</code> connects only <code>/</code> to <code>uploads/index</code>.</p>
+    <p><span class="src">Source: <code>server/cake/VERSION.txt</code>, <code>server/docs/INSTALL.txt</code>, <code>server/app/config/routes.php</code></span></p>
+
+    <h2 id="controllers">Controllers</h2>
+    <h3>AppController: the shared contract</h3>
+    <p>Every controller inherits three things: the <code>nbClient</code> flag (set when <code>rest</code> is in the request), the table of <code>X-joey-status</code> codes, and a <code>beforeFilter</code> that forces a login for every action except <code>users/activate</code>, <code>login</code>, <code>register</code>, <code>resetpasswordemail</code>, <code>resetpassword</code> and <code>version/index</code>. An unauthenticated browser is remembered in <code>login_referrer</code> and bounced to <code>/users/login</code>; an unauthenticated client gets status 511 and nothing else.</p>
+
+    <table>
+      <thead><tr><th>Controller / action</th><th>What it does</th><th>Layout</th></tr></thead>
+      <tbody>
+        <tr><td><code>uploads/index</code></td><td>Lists the user's uploads, filtered by <code>type=</code> (<code>videos</code>, <code>audio</code>, <code>images</code>, <code>rss</code>, <code>microsummaries</code>, <code>text</code>, <code>browserstuff</code>, <code>all</code>) and paginated by the Pagination component. Looks up the user's phone to size thumbnails at half the screen (falls back to 100x100). For the iPhone it runs eight queries, one per category, and hands them all to one iUI page.</td><td>default / mp / iphone / none (rest)</td></tr>
+        <tr><td><code>uploads/add</code></td><td>Manual upload form, and the endpoint the add-on and midlet POST to. <code>add/rss?source=&lt;urlencoded&gt;</code> pre-fills an RSS content source so a bookmarklet or link can subscribe a feed. Dispatches to <code>_saveUploadedFile</code> or <code>_saveUploadedContentSource</code>.</td><td>default / mp</td></tr>
+        <tr><td><code>uploads/delete/&lt;id&gt;</code></td><td>Verifies ownership, soft-deletes the upload inside a transaction, hard-deletes the content source and file rows, unlinks the three files, then renders <code>deleted_success</code> or <code>deleted_failed</code> (fragments for the AJAX caller), flashes for WAP, or returns a status for clients.</td><td>fragment / mp / none</td></tr>
+        <tr><td><code>uploads/deleteAll</code></td><td>Loops <code>delete</code> over everything the user owns and flashes "N items deleted".</td><td>default</td></tr>
+        <tr><td><code>uploads/deleteByFileID/&lt;file_id&gt;</code></td><td>Midlet entry point: maps a file id to its upload and calls <code>delete</code>.</td><td>none</td></tr>
+        <tr><td><code>uploads/rss</code></td><td>RSS 2.0 of the user's uploads.</td><td>xml</td></tr>
+        <tr><td><code>files/view/&lt;id&gt;[/original|/preview]</code></td><td>Checks that the session user is attached to the upload, picks the right one of the three files, streams it with its content type and length, and forces a <code>Content-Disposition</code> filename for 3GP so handsets open the player. Missing file: <code>img/na.png</code>.</td><td>none (<code>view.thtml</code> just sets headers and echoes)</td></tr>
+        <tr><td><code>files/wrapper/&lt;id&gt;</code></td><td>Echoes a borderless full-size <code>&lt;iframe src="/files/view/…"&gt;</code> and exits. Used by the iPhone list so iUI can treat a file as a page.</td><td>none</td></tr>
+        <tr><td><code>files/delete/&lt;id&gt;</code></td><td>Redirects to <code>uploads/delete</code> for the owning upload.</td><td>redirect</td></tr>
+        <tr><td><code>users/register</code></td><td>Lower-cases the username, rejects duplicates by username or e-mail, stores <code>sha1(password)</code>, generates a <code>uniqid()</code> confirmation code, creates the three upload directories (and deletes the user again if that fails), e-mails an activation link, logs the user in, and flashes "Registration successful. Please check your email."</td><td>default</td></tr>
+        <tr><td><code>users/activate/&lt;code&gt;</code></td><td>Clears <code>confirmationcode</code> when it matches. Until then login answers 513 / "your account has not been activated".</td><td>default</td></tr>
+        <tr><td><code>users/login</code></td><td>Lower-cases the username and compares the SHA-1. Browser: redirect to <code>login_referrer</code> or <code>/uploads/index</code>. Client: <code>X-joey-version</code> plus status 200. Offers a "Use Secure Login" link when the site is on plain HTTP.</td><td>default / mp / iphone</td></tr>
+        <tr><td><code>users/edit</code></td><td>Change e-mail (re-sends an activation code), password, phone number, handset and carrier. Changing the handset clears <code>ever_updated</code> on all uploads so joeyd re-processes them.</td><td>default</td></tr>
+        <tr><td><code>users/resetpasswordemail</code>, <code>users/resetpassword/&lt;user&gt;/&lt;token&gt;</code></td><td>Looks the user up by username or e-mail, mails a link whose token is <code>md5</code> of the stored hash, and accepts a new password when the token matches.</td><td>default</td></tr>
+        <tr><td><code>users/getSoftware[/sendJoeyURL]</code></td><td>Links to <code>/app/webroot/ff/joey.xpi</code> and to the JAR named in the user's <code>phones</code> row. The button, and the <code>sendJoeyURL</code> verb used by the "Did you know…" banner, text the site URL to the phone via <code>SmsComponent</code>.</td><td>default</td></tr>
+        <tr><td><code>users/help</code>, <code>users/logout</code></td><td>Static help links; session delete and redirect to <code>/</code>.</td><td>default</td></tr>
+        <tr><td><code>version/index/&lt;ver&gt;[/firstrun]</code></td><td>Reads <code>webroot/release_notes/&lt;ver&gt;</code> and renders it inside the welcome layout. The add-on opens this on first run and on every version change. Not session-protected.</td><td>joeyclient</td></tr>
+        <tr><td><code>admin/index</code></td><td>For <code>administrator = 1</code> users only: user and upload totals, both for the last 24 hours, pending confirmations, and the raw contents of joeyd's stat file.</td><td>none</td></tr>
+      </tbody>
+    </table>
+
+    <p>Two actions that other code calls are not here: <code>uploads/raw/&lt;id&gt;</code> (the midlet's <code>GetRawURLNetworkRequest</code>) and <code>uploads/updateUpload/&lt;id&gt;</code> (<code>scripts/fetcher.php</code>). The empty <code>update_all_uploads.thtml</code> and the one-line <code>add_rss.thtml</code> ("Processing rss now.. One second, okay.") suggest they existed in an earlier revision, before the refresh work moved into joeyd.</p>
+
+    <h3>Saving a file, in the controller's own words</h3>
+    <p><code>_saveUploadedFile</code> is the heart of the upload path. The quota check and the "browser stuff" special case are worth seeing verbatim:</p>
+<pre><code>$filesize = filesize($this->data['File']['Upload']['tmp_name']);
+if (!$this->User->hasAvailableSpace($this->_user['id'], $filesize)) {
+    if ($this->nbClient) {
+        $this->returnJoeyStatusCode($this->ERROR_NO_SPACE);
+    }
+    $_used = $this->Joey->bytesToReadableSize($this->User->totalSpaceUsedByUserId($this->_user['id']));
+    $_max  = MAX_DISK_USAGE.' MB'; //this is already in MB
+    $_size = $this->Joey->bytesToReadableSize($filesize);
+    $this->Error->addError("You don't have enough space to save that file.  You're using {$_used} out of {$_max} and your upload takes up {$_size}.", 'File/Upload');
+    unlink($this->data['File']['Upload']['tmp_name']);
+    return false;
+}
+...
+if ($this->data['File']['Upload']['type'] == "browser/stuff")
+{
+  $prior_upload = $this->Upload->findDataByTypeAndURL($this->data['File']['Upload']['type'],$this->data['Upload']['referrer']);
+  if (!empty($prior_upload['File']['original_name']))
+  {
+    $_destination_file = UPLOAD_DIR."/{$this->_user['id']}/originals/".$prior_upload['File']['original_name'];
+    ...
+    $this->notifyJoeyD($prior_upload['Upload']['id']);
+    return true;
+  }
+}</code></pre>
+    <p>And the hand-off to the daemon is four lines of curl:</p>
+<pre><code>function notifyJoeyD($id) {
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, "http://" . JOEYD_SERVER_ADDRESS . "/" . $id . "/now");
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+    curl_exec($ch);
+}</code></pre>
+    <p><span class="src">Source: <code>server/app/app_controller.php</code>, <code>server/app/controllers/uploads_controller.php</code>, <code>server/app/controllers/users_controller.php</code>, <code>server/app/controllers/files_controller.php</code>, <code>server/app/controllers/version_controller.php</code>, <code>server/app/controllers/admin_controller.php</code></span></p>
+
+    <h2 id="components">Components and helpers</h2>
+    <table>
+      <thead><tr><th>Name</th><th>Role</th></tr></thead>
+      <tbody>
+        <tr><td><code>JoeyComponent</code></td><td><code>bytesToReadableSize()</code> for error messages, and <code>getJ2MEMidletVersion()</code>, which scans <code>webroot/ff/build.properties</code> for a <code>joey.version=</code> line and returns <code>"0.0"</code> if the file is missing. That value becomes the <code>X-joey-version</code> header.</td></tr>
+        <tr><td><code>StorageComponent</code></td><td>Owns the MIME-to-suffix map (<code>text/plain</code>→<code>txt</code> … <code>rss-source/text</code>→<code>rss</code>, <code>microsummary/xml</code>→<code>mcs</code>, <code>widget/joey</code>→<code>jwt</code>, <code>browser/stuff</code>→<code>bro</code>) and <code>createFileForUploadId()</code>, which inserts a placeholder <code>files</code> row typed <code>text/html</code> ("because we will update this later") and touches an empty file for content-source uploads.</td></tr>
+        <tr><td><code>SmsComponent</code></td><td><code>sendCurrentUserSMS($subject, $message)</code>: strip dashes from the phone number, append <code>@</code> and the operator's <code>emaildomain</code>, call <code>mail()</code>. Returns -1 when the carrier has no gateway domain. The code's own comment: "very US centric."</td></tr>
+        <tr><td><code>ErrorComponent</code></td><td>Collects field-keyed error strings, optionally invalidates the matching model field, and optionally writes to <code>logs/error.log</code> via <code>joeylog()</code> when <code>LOGGING_ENABLED</code>.</td></tr>
+        <tr><td><code>PaginationComponent</code> + helper</td><td>A third-party CakePHP 1.1 pagination pair. Defaults to 5 per page with choices of 2, 5, 10, 20, 50, 100, 500; auto-detects AJAX and falls back to plain links for mobile browsers.</td></tr>
+        <tr><td><code>JoeyajaxupdateHelper</code></td><td>Emits a hidden <code>&lt;div id="joeyEvent"&gt;page,limit,type,command&lt;/div&gt;</code> into AJAX responses. The page script reads it after a delete to know which list page to reload.</td></tr>
+        <tr><td><code>BrowserAgent</code> (vendor)</td><td>Two static regex tests, <code>isIPhone()</code> and <code>isMobile()</code>, that drive layout selection.</td></tr>
+      </tbody>
+    </table>
+    <p><span class="src">Source: <code>server/app/controllers/components/</code>, <code>server/app/views/helpers/</code>, <code>server/app/vendors/BrowserAgent.class.php</code></span></p>
+
+    <h2 id="views">Views and layouts</h2>
+    <p>Five layouts share one set of controller actions. The desktop theme is the "green" look: black page background, a light banner reading <em>PROJECT JOEY</em> with the kangaroo, a green header bar built from three sliced JPEGs (<code>bar-left</code>, <code>bar-middle</code>, <code>bar-right</code>), and a footer that says <em>© 2007 Mozilla Foundation - Legal - Support</em>. The layout and element files carry the license headers of the addons.mozilla.org site and Kubla CMS, with Wil Clouser and Marcio Galli added as contributors; the Joey team started from the AMO templates and restyled them.</p>
+
+    <div class="callout green">
+      <p>The images below are <strong>reconstructions</strong>. They were rendered from the templates, CSS and image assets in this repository with representative sample data, not captured from the live <code>joey.labs.mozilla.com</code>, which no longer exists.</p>
+    </div>
+
+    <div class="shots">
+      <figure>
+        <img src="img/screenshots/web-login.png" alt="Reconstructed Joey login page">
+        <figcaption><code>users/login.thtml</code> in the default layout: the pitch ("Project Joey brings the Web content you need most to your mobile phone"), a YouTube still, and the login panel with "Use Secure Login" and "Forgot Password?". Reconstruction from the original templates and CSS.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/screenshots/web-uploads.png" alt="Reconstructed Joey uploads list">
+        <figcaption><code>uploads/index.thtml</code>: type filter links, the "Did you know" SMS banner, and one row per upload with a type-specific thumbnail, title linked to the referrer, size, upload time and an AJAX Delete. Reconstruction.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/screenshots/web-register.png" alt="Reconstructed Joey registration form">
+        <figcaption><code>users/register.thtml</code>: username, e-mail, password, phone number, handset and carrier pickers, links to the Terms, EULA and Privacy Policy, and the beta disclaimer paragraph. Reconstruction.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/screenshots/web-get-software.png" alt="Reconstructed Get the software page">
+        <figcaption><code>users/get_software.thtml</code>: the XPI link, the per-handset JAR link and the button that texts the link to your phone ("This might cost you something, but you already know that."). Reconstruction.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/screenshots/web-welcome-firstrun.png" alt="Reconstructed first-run welcome page">
+        <figcaption><code>version/index.thtml</code> in the <code>joeyclient</code> layout, showing <code>release_notes/0.3.0.0</code>: the Guided Tour, Learn More and Get Involved panels. The tour button is hidden until the add-on announces itself to the page. Reconstruction.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/screenshots/web-iphone.png" alt="Reconstructed iPhone view built with iUI">
+        <figcaption>The <code>iphone</code> layout: iUI's grey pinstripes and blue toolbar, a home list of Browser stuff, Videos, Images, Audio, RSS and Text. Reconstruction at 320 px.</figcaption>
+      </figure>
+      <figure>
+        <img src="img/screenshots/web-wap.png" alt="Reconstructed XHTML Mobile Profile view">
+        <figcaption>The <code>mp</code> layout as a feature-phone browser would show it: username and Upload | Logout links, alternating rows with [View] and [Delete], "Go to page" pagination. Reconstruction.</figcaption>
+      </figure>
+    </div>
+
+    <table>
+      <thead><tr><th>Layout</th><th>Stylesheets / libraries</th><th>Used by</th></tr></thead>
+      <tbody>
+        <tr><td><code>default.thtml</code></td><td><code>green.css</code>, <code>joey.css</code>, <code>prototype.js</code>, <code>__utm.js</code>; elements <code>green_banner</code>, <code>green_header</code>, <code>green_footer</code></td><td>All desktop pages</td></tr>
+        <tr><td><code>joeyclient.thtml</code></td><td><code>joeyclient.css</code> (white, <code>mainshade.jpg</code> gradient, <code>background-logo.jpg</code> "Welcome to Joey!" banner), <code>prototype.js</code>, <code>joeyclient.js</code></td><td><code>version/index</code> (first-run and release notes)</td></tr>
+        <tr><td><code>iphone.thtml</code></td><td><code>vendor/iui/iui.css</code>, <code>iui.js</code>; <code>viewport width=320</code></td><td><code>uploads/index</code>, <code>users/login</code> when <code>isIPhone()</code></td></tr>
+        <tr><td><code>mp.thtml</code></td><td><code>mp_joey.css</code>; served as <code>application/vnd.wap.xhtml+xml</code>; elements <code>mp_header</code>, <code>mp_footer</code>, <code>mp_pagination</code></td><td><code>uploads/index</code>, <code>uploads/add</code>, <code>users/login</code> when <code>isMobile()</code></td></tr>
+        <tr><td><code>xml.thtml</code></td><td>none; emits the XML declaration</td><td><code>uploads/rss</code></td></tr>
+        <tr><td><code>plain.thtml</code></td><td><code>cake.generic.css</code>, <code>joey.css</code>; the older <code>header</code>/<code>footer</code> elements (the <code>navbar</code> element with its "Temporary menu" is included from <code>header.thtml</code> only as a commented-out line)</td><td>Not referenced by any controller in this tree; a leftover from before the green theme</td></tr>
+      </tbody>
+    </table>
+    <p>The other webroot directories hold the legal pages (<code>terms/</code>: EULA, Terms of Service and a Privacy Policy exported from Word, with the law firm's document tags still in the HTML), the release notes directory (one file, <code>0.3.0.0</code>), and the two Flash players.</p>
+    <p><span class="src">Source: <code>server/app/views/layouts/</code>, <code>server/app/views/elements/</code>, <code>server/app/webroot/css/</code>, <code>server/app/webroot/terms/</code>, <code>server/app/webroot/release_notes/0.3.0.0</code></span></p>
+
+    <h2 id="media">In-page media handlers</h2>
+    <p>The desktop uploads page is not just a list. <code>joeybag.js</code> ("JavaScript functions to support the Joey Inner-Browsing Experience") attaches a type-specific viewer to each row, opening inline in the <code>expandItem-&lt;id&gt;</code> container under the title:</p>
+    <ul>
+      <li><strong>Flash video.</strong> Clicking a video thumbnail or its "play" link calls <code>joeyMedia_mediaplayer_createPlayer</code>, which injects <code>vendor/webflv.swf?fileName=/files/view/&lt;id&gt;/original</code> at 320x240 and builds its own play/pause, stop and seek-thumb controls out of divs. The SWF reports time back through <code>visinoteembed_DoFSCommand</code> ("timeevent", "onmetadata"), and a 1.5-second <code>setTimeout</code> loop nudges it for the current position. The original FLV is played, not the 3GP.</li>
+      <li><strong>MP3.</strong> A 17x17 <code>vendor/musicplayer.swf</code> is embedded directly in the thumbnail cell with the file URL and the green <code>77bb33</code> colour scheme.</li>
+      <li><strong>RSS.</strong> <code>joeyMedia_rssfetch</code> loads the feed XML and transforms it in the browser with an inline XSLT stylesheet (<code>blenderObject</code>) that handles both RSS 1.0 (RDF) and RSS 2.0, rendering a list of <code>.item</code> links. The link text toggles between "open" and "close".</li>
+      <li><strong>Images and text.</strong> <code>joeyMedia_imageShow</code> swaps in the original at 320 px wide and adds an "Open in new window" link; <code>joeyMedia_textShow</code> loads the text file into a 320x240 iframe.</li>
+    </ul>
+    <p>Delete is an <code>$ajax-&gt;link</code> that updates <code>messagesBar</code>, hides the row, then calls <code>execJoey()</code> with the hidden <code>joeyEvent</code> payload. On <code>okay-reload</code> it issues <code>new Ajax.Updater('content', "/uploads/index?show=…&amp;page=…&amp;type=…")</code> to redraw the current page; otherwise it alerts "Opa! I believe Joey failed to delete - or something - please report this problem". The template keeps a commented-out plain link because, as the comment says, "we need to have a safe mode and always be able to fall back to non ajax when needed".</p>
+    <p><span class="src">Source: <code>server/app/webroot/js/joeybag.js</code>, <code>server/app/views/uploads/index.thtml</code>, <code>server/app/views/uploads/deleted_success.thtml</code>, <code>server/app/views/helpers/joeyajaxupdate.php</code></span></p>
+
+    <h2 id="joeyd">joeyd in depth</h2>
+    <p>The daemon's own docstring is the best summary:</p>
+<pre><code>joeyd
+
+This is an implementation of a webservice that processes
+joey uploads offline.  Once started up, we will listen to a
+high port waiting for incoming requests in the form of
+/&lt;upload_id&gt;.  When we get a request, we toss the request
+into a thread pool for processing.
+
+if "/now" is append on a request, we make an attempt to put
+the new request at the top of the queue for processing.</code></pre>
+
+    <h3>Startup and configuration</h3>
+    <p>Options come from an in-house <code>cse.ConfigurationManager</code> that merges the command line with <code>./joeyd.conf</code>. The shipped template lists only the database fields, <code>UploadDir</code>, <code>FfmpegCmd</code> and <code>ConvertCmd</code>; the rest default in code: <code>threadcount</code> 100, <code>listenAddress</code> localhost, <code>listenPort</code> 8777, <code>logPathName</code> <code>./joeyd.log</code>, <code>statPathName</code> <code>./joeyd_stat.log</code>. Run with <code>-u &lt;id&gt;</code> it processes one upload and exits; with <code>-l</code> it becomes the service:</p>
+<pre><code>if "listen" in workingEnvironment:
+    joeyd_refresher_timeout()
+    joeyd_refresher_timer = Timer(30*60.0, joeyd_refresher_timeout)
+    joeyd_refresher_timer.start()
+    logMessage("joeyd timer setup.")
+    joeyd_heartbeat_timer = Timer(10.0, joeyd_heartbeat_timeout)
+    joeyd_heartbeat_timer.start()
+    logMessage("joeyd heartbeat setup.")
+    joeyd_server     = HTTPServer((workingEnvironment["listenAddress"], workingEnvironment["listenPort"]), RequestHandler)
+    logMessage("Connected on: %s:%s" % (workingEnvironment["listenAddress"], workingEnvironment["listenPort"]))
+    joeyd_server.serve_forever()</code></pre>
+    <p>The <code>cse</code> package (configuration manager, <code>MySQLDatabase</code> wrapper) is imported but not in this repository.</p>
+
+    <h3>The listener and the queue</h3>
+    <p><code>RequestHandler.do_GET</code> splits the path, takes the second segment as the upload id, and queues <code>processUpload</code>. The thread pool is the Python Cookbook recipe with one addition, a <code>forceToTop</code> flag that inserts at index 0; that is what <code>/now</code> uses. Each pool thread opens its own <code>Database</code> connection once and reuses it. One quirk is visible in the handler: the <code>send_response(200)</code> lines sit inside the <code>else</code> branch, so a <code>/now</code> request is queued but never answered, and the PHP side relies on its connect timeout rather than a reply.</p>
+
+    <h3>The refresher</h3>
+    <p>Every 30 minutes (hard-coded; the <code>CONTENTSOURCE_REFRESH_TIME</code> constant in the PHP config is not consulted) the refresher queues every live upload that either has a content source or has never been processed, provided it has not been touched in the last half hour:</p>
+<pre><code>WHERE (Contentsource.source IS NOT NULL OR Upload.ever_updated = 0) AND
+Upload.deleted IS NULL AND
+Upload.modified &lt; DATE_SUB(NOW(), INTERVAL 30 MINUTE)</code></pre>
+    <p>This single query gives feeds and microsummaries their periodic updates, retries uploads whose first processing failed or was missed, and re-transcodes everything after a user changes handset.</p>
+
+    <h3>Transcode</h3>
+    <p><code>processUpload</code> picks <code>Transcode</code> when the row has no <code>source</code>. The command lines, exactly as spawned:</p>
+<pre><code># audio -> AMR-NB, 8 kHz mono, 7.4 kbit/s
+ffmpeg -y -i &lt;from&gt; -ar 8000 -ac 1 -ab 7400 -f amr &lt;to&gt;
+
+# image -> 100x100 PNG, then a 50x50 preview from that
+convert -geometry 100x100 &lt;from&gt; &lt;to&gt;
+convert -geometry 50x50 &lt;to&gt; &lt;preview&gt;
+
+# video -> QCIF H.263 + AMR-NB in a 3GP container, plus a PNG frame at 5 s
+ffmpeg -y -i &lt;from&gt; -ab 12.2k -ac 1 -acodec libamr_nb -ar 8000 -vcodec h263 -r 10 -s qcif -b 44K -pass 1 -passlogfile &lt;tmp&gt; &lt;to&gt;
+ffmpeg -y -i &lt;from&gt; -ss 5 -vcodec png -vframes 1 -an -f rawvideo -s '100x100' &lt;preview&gt;</code></pre>
+    <p>Text and <code>browser/stuff</code> are copied with <code>cp</code>. After each branch <code>updateFileTypes</code> rewrites the row's types (audio becomes <code>audio/amr</code>, images <code>image/png</code>, video <code>video/3gpp</code> with an <code>image/png</code> preview, browser stuff <code>text/html</code>) and <code>updateFileSizes</code> stats the three files. Only the video step checks nothing: <code>_transcodeVideo</code> always returns 0.</p>
+
+    <h3>Update</h3>
+    <p>Rows with a <code>source</code> go to <code>Update</code>, dispatched on the content source type name:</p>
+    <ul>
+      <li><strong><code>rss-source/text</code>.</strong> Extracts <code>rss=</code> (and optionally <code>icon=</code>) from the source text, fetches with <code>httplib2.Http</code> using an on-disk cache under <code>UPLOAD_DIR/cache</code> and a Firefox 2 user agent, and parses with <code>feedparser</code>. The upload title is replaced with the channel title. If the first entry has enclosures, the newest entry's <code>audio/mpeg</code> enclosure is downloaded as the original, given the entry's timestamp with <code>os.utime</code>, and transcoded to AMR; a later run skips the work when the file is already as new as the newest entry. Otherwise <code>_buildRssOutput</code> writes an HTML digest, a <code>&lt;dl&gt;</code> of linked titles and descriptions, and the file becomes <code>text/html</code> with original type <code>application/rss+xml</code>.</li>
+      <li><strong><code>microsummary/xml</code>.</strong> Fetches the referrer page, parses the stored generator document with <code>lxml.etree.HTMLParser</code>, pulls the XPath from <code>/html/body/generator/template/transform/template/value-of/@select</code>, evaluates it against the page and writes the first match's HTML to both the original and the main file. If nothing matches: "We couldn't process this element.  Perhaps the content is generated dynamically?"</li>
+      <li><strong><code>widget/joey</code>.</strong> Logs and returns success. Unimplemented.</li>
+    </ul>
+
+    <h3>Stats, monitoring and tools</h3>
+    <p>Every 10 seconds the heartbeat rewrites the stat file with a dozen counters: pending tasks, requests received, fetches and failures and bytes, and per-type processed counts. <code>admin/summary</code> reads that file into the admin page. <code>webroot/services/monitor.php</code> is the Nagios probe: it connects to MySQL, checks that <code>convert</code> and <code>ffmpeg</code> exist and that the upload and cache directories are writable, and returns HTTP 500 on any failure. <code>delete.py</code> shares joeyd's configuration and permanently removes one upload's rows and files. <code>hammer_joeyd.sh</code> is the load test: nine backgrounded <code>wget</code> calls against <code>http://localhost:8777/299</code>.</p>
+    <p><span class="src">Source: <code>server/app/scripts/joeyd.py</code>, <code>server/app/scripts/joeyd.conf-dist</code>, <code>server/app/scripts/delete.py</code>, <code>server/app/scripts/hammer_joeyd.sh</code>, <code>server/app/webroot/services/monitor.php</code>, <code>server/app/controllers/admin_controller.php</code></span></p>
+
+    <h2 id="phones">The phone build list</h2>
+    <p>J2ME Polish builds one JAR per target device. The team kept a tab-separated build list (name, locale, jar, jad, user agent, <code>WxH</code>) and <code>tools/import_buildlist.pl</code> diffs a new list against the old one and prints <code>INSERT INTO phones …</code> statements for the additions. It refuses to run if a device was removed: "ERROR. YOU CANNOT REMOVE DEVICES FROM BUILD LIST!!!", because users already point at those rows.</p>
+    <p>The <code>phones</code> row does three jobs at runtime: <code>users/getSoftware</code> links to <code>/app/webroot/ff/&lt;jar_name&gt;</code>; <code>uploads/index</code> sets <code>upload_preview_width</code> and <code>upload_preview_height</code> to half the screen; and joeyd's <code>getPhoneDataByUserId</code> fetches the row for every transcode, even though the sizes are not used yet. The registration form says it plainly: "If your phone isn't there, it means that we do not have software available for your phone. This doesn't mean you can't use Joey. Instead, try accessing Joey in your phone's browser."</p>
+    <p><span class="src">Source: <code>server/tools/import_buildlist.pl</code>, <code>server/app/controllers/users_controller.php</code>, <code>server/app/controllers/uploads_controller.php</code>, <code>server/app/views/users/register.thtml</code>, <code>server/app/config/sql/joey.sql</code></span></p>
+
+    <h2 id="today">Reading the code today</h2>
+    <ul>
+      <li><strong>It is honest about itself.</strong> The TODOs are specific and mostly right. <code>files_controller.php</code>: "for some files, this requires a TON of memory … We need to stream this content to the view instead of just reading it all into a variable." <code>joeyd.py</code>: "<code>@TODO width/height from _phone_data</code>" appears exactly where per-device sizing would go. <code>sms.php</code>: "very US centric."</li>
+      <li><strong>One flag, no API versioning.</strong> Making every action dual-purpose with <code>rest</code> kept the code small, but it also means a browser can hit <code>?rest=1</code> and get a blank page with a status header, and the midlet depends on template details such as which keys are omitted for unprocessed rows.</li>
+      <li><strong>The daemon is the real product.</strong> The PHP side is a thin shell around rows and files. Transcoding to AMR and 3GP, podcast enclosure handling, the microsummary XPath refresh and the 30-minute retry loop are where the project's ideas live, and they are all in one 1,200-line Python 2 file with globals for statistics.</li>
+      <li><strong>Dead ends are left in place.</strong> <code>widget/joey</code> and <code>application/atom+xml</code> are seeded types nothing produces; <code>plain.thtml</code> and the commented-out "Temporary menu" navbar are the pre-green theme; <code>fetcher.php</code> calls an action that is gone; the <code>IPy</code> import survives a private-network check that is commented out. The repository reads as a working snapshot of an experiment, which is what it was.</li>
+    </ul>
+
+    <nav class="pager"><a href="firefox-addon.html">← Firefox add-on</a><a href="mobile.html">Phone clients →</a></nav>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <span>Project Joey was a Mozilla Labs experiment (2007). This retrospective was reconstructed from the source tree in this repository.</span>
+    <span>Original code: MPL 1.1 / GPL 2.0 / LGPL 2.1 tri-license.</span>
+  </div>
+</footer>
+</body>
+</html>
